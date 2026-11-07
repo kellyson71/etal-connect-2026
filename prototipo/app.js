@@ -254,35 +254,73 @@
     <header class="bar">${back ? `<button class="iconbtn" data-act="back" aria-label="Voltar">${ic('back')}</button>` : '<span class="iconbtn ghost"></span>'}
     <h1 class="bar-title">${title}</h1>${right || '<span class="iconbtn ghost"></span>'}</header>`;
 
-  /* Arte do login: a própria planta do térreo desenhando-se, com a rota da entrada até a recepção. */
-  function planArt() {
-    const f = floorOf(0);
-    const shapes = f.zones.filter((z) => z.kind !== 'ramp').map((z, i) => {
-      const d = `style="--d:${(i * 45)}ms" pathLength="1"`;
-      return z.points ? `<polygon ${d} points="${z.points}"/>` : `<rect ${d} x="${z.x + 2}" y="${z.y + 2}" width="${z.w - 4}" height="${z.h - 4}" rx="6"/>`;
-    }).join('');
-    const yard = f.zones.find((z) => z.kind === 'courtyard');
-    const trees = [0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => `<circle cx="${yard.x + 26 + i * 50}" cy="${yard.y + (i % 2 ? 11 : 25)}" r="${i % 3 ? 5.500 : 7}" style="--d:${1000 + i * 70}ms"/>`).join('');
-    const pts = f.entryRoute.map((q) => q.join(',')).join(' ');
-    const rec = f.zones.find((z) => z.kind === 'reception');
-    return `<svg class="lg-plan" viewBox="0 0 900 430" aria-hidden="true"><path class="lg-out" pathLength="1" d="${[f][0].outline || ''}"/><g class="lg-rooms">${shapes}</g><g class="lg-trees">${trees}</g>
-      <polyline class="lg-route" pathLength="1" points="${pts}"/><circle class="lg-here" cx="820" cy="396" r="9"/><circle class="lg-goal" cx="${rec.x + rec.w / 2}" cy="${rec.y + rec.h / 2}" r="8"/></svg>`;
+  /* Arte do login: a fachada do campus, como nas fotos. O auditório curvo com a faixa de pastilha azul,
+     o bloco amarelo de três andares, o obelisco com a marca do IF e os arbustos de flores vermelhas.
+     O céu é o mesmo do início e segue o horário; à noite, as janelas e os postes acendem. */
+  function facadeArt() {
+    const win = (x, y, w, h, k) => `<rect class="fa-win" style="--k:${k}" x="${x}" y="${y}" width="${w}" height="${h}" rx="1"/>`;
+    let block = '';
+    [64, 120, 176].forEach((y, f) => { for (let i = 0; i < 9; i++) { const x = 190 + i * 31; block += win(x, y, 19, 25, (i * 7 + f * 3) % 10); if ((i + f) % 3 === 0) block += `<rect class="fa-ac" x="${x + 3}" y="${y + 29}" width="13" height="7" rx="1"/>`; } });
+    const aud = [24, 56, 88, 120, 152].map((x, i) => `<rect class="fa-frame" x="${x - 2}" y="142" width="14" height="70" rx="2"/>${win(x, 144, 10, 66, i * 2)}`).join('');
+    const MARK = [[0, 0, 1], [1, 0], [2, 0], [0, 1], [1, 1], [0, 2], [1, 2], [2, 2], [0, 3], [1, 3]];
+    const logo = MARK.map(([c, r, red]) => (red ? `<circle cx="${309.5 + c * 6.6}" cy="${101.5 + r * 6.6}" r="2.8" fill="#d0231f"/>` : `<rect x="${306.8 + c * 6.6}" y="${98.8 + r * 6.6}" width="5.4" height="5.4" rx=".6" fill="#2f9e44"/>`)).join('');
+    const bush = (x, y, r, i) => `<g class="fa-bush" style="--i:${i}"><circle cx="${x}" cy="${y}" r="${r}"/><circle class="fa-bloom" cx="${x - r * 0.4}" cy="${y - r * 0.35}" r="1.5"/><circle class="fa-bloom" cx="${x + r * 0.35}" cy="${y - r * 0.5}" r="1.4"/><circle class="fa-bloom" cx="${x + r * 0.1}" cy="${y + r * 0.1}" r="1.3"/></g>`;
+    let hedge = ''; let k = 0;
+    for (let x = -4; x < 292; x += 13) hedge += bush(x, 230 + (k % 2) * 2, 9 + (k % 3), k++);
+    for (let x = 344; x < 478; x += 13) hedge += bush(x, 231, 9 + (k % 3), k++);
+    const fronds = [[-44, 22], [-30, 30], [-12, 34], [8, 34], [26, 30], [42, 22], [-50, 6], [52, 8]].map(([dx, up]) => `<path d="M172 147Q${172 + dx * 0.45} ${147 - up} ${172 + dx} ${147 - up * 0.3 + 14}"/>`).join('');
+    return `<svg class="lg-facade" viewBox="0 30 470 222" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+      <defs>
+        <pattern id="faTile" width="5" height="5" patternUnits="userSpaceOnUse"><rect width="5" height="5" fill="#26388c"/><rect x=".5" y=".5" width="4" height="4" fill="#31469e"/></pattern>
+        <linearGradient id="faCurve" x1="0" x2="1"><stop offset="0" stop-color="#b98a35"/><stop offset=".35" stop-color="#e4b45a"/><stop offset=".8" stop-color="#d9a64c"/><stop offset="1" stop-color="#c39240"/></linearGradient>
+        <linearGradient id="faStone" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#cfc8ba"/><stop offset="1" stop-color="#b9b2a4"/></linearGradient>
+      </defs>
+      <g class="fa-layer fa-l1">
+        <rect x="150" y="46" width="18" height="184" fill="#bf8f3c"/><rect x="150" y="40" width="18" height="12" fill="#1f2f78"/>
+        <rect x="166" y="46" width="320" height="184" fill="#dcab52"/><rect x="166" y="38" width="320" height="14" fill="url(#faTile)"/><rect x="166" y="52" width="320" height="2.5" fill="#a77a2e" opacity=".5"/>
+        ${block}
+      </g>
+      <g class="fa-layer fa-l2">
+        <path d="M-6 104H150Q176 104 178 130V232H-6Z" fill="url(#faCurve)"/>
+        <path d="M-6 98H150Q178 98 180 126V132H-6Z" fill="url(#faTile)"/><path d="M-6 132H180" stroke="#9b7029" stroke-opacity=".45" stroke-width="2"/>
+        ${aud}
+        <g class="fa-lamp"><path d="M34 232V152M22 152h24" stroke="#2a2f3a" stroke-width="2.4" fill="none"/><circle class="fa-globe" cx="22" cy="149" r="5.5"/><circle class="fa-globe" cx="46" cy="149" r="5.5"/></g>
+        <g class="fa-palm"><path d="M172 232q-4-44 0-86" stroke="#7a6a50" stroke-width="5" fill="none" stroke-linecap="round"/><g stroke="#4c8a3a" stroke-width="3.6" fill="none" stroke-linecap="round">${fronds}</g><circle cx="172" cy="147" r="3.5" fill="#3f7a30"/></g>
+      </g>
+      <rect class="fa-ground" x="-10" y="232" width="500" height="20" fill="url(#faStone)"/>
+      <g class="fa-layer fa-l3">
+        <path d="M330 92v140h6V96Z" fill="#b9bdc2"/><rect x="300" y="92" width="30" height="140" fill="#e2e5e8"/>
+        ${logo}
+        <rect x="294" y="150" width="28" height="84" fill="#f6f6f3"/><path d="M322 150v84h3v-82Z" fill="#cfd2d4"/>
+        <text class="fa-name" transform="translate(305 226) rotate(-90)">INSTITUTO FEDERAL</text><text class="fa-name sm" transform="translate(312 226) rotate(-90)">DO RIO GRANDE DO NORTE</text><text class="fa-name sm" transform="translate(318 226) rotate(-90)">Campus Pau dos Ferros</text>
+      </g>
+      <g class="fa-hedge">${hedge}</g>
+    </svg>`;
   }
+  const guestSaved = () => { try { return JSON.parse(localStorage.getItem('etal-visitante')); } catch (_) { return null; } };
+  const GUEST_KINDS = [['estudante', 'Estudante'], ['professor', 'Professor(a)'], ['profissional', 'Profissional'], ['comunidade', 'Comunidade']];
 
   Screens.login = () => {
     const intro = !splashDone && !reduce;
     splashDone = true;
-    return {
-      chrome: false,
-      navy: true,
-      mount: (el) => { const box = $('.login', el); if (box.classList.contains('intro')) setTimeout(() => box.classList.remove('intro'), 1900); },
-      html: `<div class="login${intro ? ' intro' : ''}">
-        <div class="lg-hero">
-          ${planArt()}
-          <div class="lg-brand">${mark('mark lg-mark')}<div class="lg-word"><b>etal</b><span>connect</span></div></div>
-          <p class="lg-event">Encontro de Tecnologia do Alto Oeste Potiguar</p>
-        </div>
-        <div class="lg-sheet">
+    const guest = S.lgMode === 'guest'; const saved = guestSaved();
+    const sheet = guest ? `
+          <div class="lg-vhead"><button type="button" class="iconbtn sm" data-act="guestback" aria-label="Voltar para o login do SUAP">${ic('back')}</button><h1>Conta de visitante</h1></div>
+          <p class="lg-vsub">Para quem vem ao ETAL sem matrícula no IFRN. Leva menos de um minuto.</p>
+          <form class="login-form guest-form" data-form="guest" novalidate>
+            <label class="field" for="gname"><span>Nome completo</span><input id="gname" autocomplete="name" placeholder="Como vai aparecer no crachá" required></label>
+            <label class="field" for="gmail"><span>E-mail</span><input id="gmail" type="email" inputmode="email" autocomplete="email" placeholder="Para receber o certificado" required></label>
+            <fieldset class="g-kind"><legend>Você é</legend>${GUEST_KINDS.map(([v, t], i) => `<label><input type="radio" name="gkind" value="${v}" ${i ? '' : 'checked'}><span>${t}</span></label>`).join('')}</fieldset>
+            <div class="g-two">
+              <label class="field" for="ginst"><span>Instituição</span><input id="ginst" autocomplete="organization" placeholder="Opcional"></label>
+              <label class="field" for="gcity"><span>Cidade</span><input id="gcity" list="gcities" autocomplete="address-level2" placeholder="Sua cidade" required></label>
+            </div>
+            <datalist id="gcities">${['Pau dos Ferros', 'Mossoró', 'São Miguel', 'Alexandria', 'Encanto', 'Rafael Fernandes', 'Portalegre', 'Marcelino Vieira', 'Cajazeiras', 'Natal'].map((c) => `<option value="${c}">`).join('')}</datalist>
+            <label class="g-ok"><input type="checkbox" id="gok" required><span>Concordo que o ETAL use estes dados só para o credenciamento e os certificados.</span></label>
+            <p class="lg-err" id="lgerr" role="alert" hidden></p>
+            <button class="btn primary big" type="submit"><span>Criar conta e entrar</span><i class="spin"></i></button>
+            <p class="g-note">${ic('lock')}A conta fica salva neste aparelho. No evento, mostre o QR do crachá na recepção.</p>
+          </form>` : `
           <div class="lg-title"><h1>Entrar com</h1><img class="suap" src="assets/suap-logo.svg" alt="SUAP, sistema unificado de administração pública" width="124" height="64"></div>
           <form class="login-form" data-form="login" novalidate>
             <label class="field" for="mat"><span>Matrícula</span><input id="mat" inputmode="numeric" autocomplete="username" placeholder="Sua matrícula" required></label>
@@ -291,10 +329,37 @@
             <button class="btn primary big" type="submit"><span>Entrar</span><i class="spin"></i></button>
             <button class="btn ghost" type="button" id="lgdemo" data-act="demo" hidden>Entrar com dados de exemplo</button>
           </form>
+          <div class="lg-or"><span>ou</span></div>
+          ${saved ? `<button class="lg-guest" data-act="guestresume">${meAvOf(saved)}<span><b>Continuar como ${esc(saved.first)}</b><small>Conta de visitante neste aparelho</small></span>${ic('chev')}</button>
+          <button class="lg-guest-new" data-act="guest">Criar outra conta de visitante</button>`
+          : `<button class="lg-guest" data-act="guest"><i>${ic('users')}</i><span><b>Entrar como visitante</b><small>Não é do IFRN? Crie uma conta rápida.</small></span>${ic('chev')}</button>`}`;
+    return {
+      chrome: false,
+      navy: true,
+      mount: (el) => { applySky(); const box = $('.login', el); if (box.classList.contains('intro')) setTimeout(() => box.classList.remove('intro'), 1900); },
+      html: `<div class="login${intro ? ' intro' : ''}${guest ? ' guest' : ''}">
+        <div class="lg-hero">
+          <i class="lg-sunb"></i><i class="lg-cloud c1"></i><i class="lg-cloud c2"></i>
+          ${facadeArt()}
+          <div class="lg-brand">${mark('mark lg-mark')}<div class="lg-word"><b>etal</b><span>connect</span></div></div>
+          <p class="lg-event">Encontro de Tecnologia do Alto Oeste Potiguar</p>
         </div>
+        <div class="lg-sheet">${sheet}</div>
       </div>`,
     };
   };
+  const meAvOf = (p) => `<span class="av g-av">${esc(p.initials)}</span>`;
+  /* Conta de visitante: só o necessário para o crachá e o certificado. */
+  function guestProfile(f) {
+    const name = f.name.replace(/\s+/g, ' ').trim(); const parts = name.split(' ');
+    const kind = (GUEST_KINDS.find(([v]) => v === f.kind) || GUEST_KINDS[0])[1];
+    let h = 0; for (const ch of f.email.toLowerCase()) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+    return {
+      name, first: parts[0], initials: (parts[0][0] + (parts.length > 1 ? parts[parts.length - 1][0] : parts[0][1] || '')).toUpperCase(),
+      course: 'Visitante', courseFull: `Visitante · ${kind}${f.inst ? ` · ${f.inst}` : ''}`, year: kind, campus: f.city,
+      id: `VIS${String(h % 1000000).padStart(6, '0')}`, email: f.email, institution: f.inst || '', source: 'visitante', photo: null,
+    };
+  }
 
   function badge() {
     const ok = !!S.credAt;
@@ -957,7 +1022,7 @@
   Screens.profile = () => ({
     html: `<header class="apphead"><h1 class="title">Perfil</h1></header>
       <div class="pad stack">
-        <div class="me st" ${st(0)}>${meAv('av lg')}<div><strong>${esc(D.person.name)}</strong><span>${esc(D.person.courseFull)}</span><span>${esc(D.person.year)} · ${esc(D.person.id)}</span>${D.person.source === 'suap' ? `<span class="fromsuap">${ic('check')}Dados do SUAP</span>` : ''}</div></div>
+        <div class="me st" ${st(0)}>${meAv('av lg')}<div><strong>${esc(D.person.name)}</strong><span>${esc(D.person.courseFull)}</span><span>${esc(D.person.year)} · ${esc(D.person.id)}</span>${D.person.source === 'suap' ? `<span class="fromsuap">${ic('check')}Dados do SUAP</span>` : D.person.source === 'visitante' ? `<span class="fromsuap guest">${ic('users')}Conta de visitante</span>` : ''}</div></div>
         <button class="retro-cta st" ${st(1)} data-act="retro">${comb('tiny')}<span><b>Minha retrospectiva</b><small>O que você fez e aprendeu no ETAL</small></span>${ic('chev')}</button>
         <ul class="menu st" ${st(1)}>
           <li data-go="credential">${ic('id')}<span>Minha credencial</span><em>${S.credAt ? 'Ativa' : 'Pendente'}</em>${ic('chev', 'i chev')}</li>
@@ -1297,6 +1362,17 @@
   }
   function setTheme(v) { UI.mode = v === 'dark' ? 'escuro' : 'claro'; applyUI(); }
   function applyProfile(p) { Object.assign(D.person, p); }
+  /* Troca o painel do login sem refazer a ilustração. */
+  function lgSwap(mode) {
+    S.lgMode = mode;
+    const cur = $('.login'); if (!cur) return;
+    const tmp = document.createElement('div'); tmp.innerHTML = Screens.login().html;
+    cur.classList.toggle('guest', mode === 'guest'); cur.classList.remove('intro');
+    const next = $('.lg-sheet', tmp); next.classList.add('swap');
+    $('.lg-sheet', cur).replaceWith(next);
+    if (mode === 'guest') setTimeout(() => $('#gname')?.focus({ preventScroll: true }), 350);
+  }
+  function navReset() { const n = navUndo.length; navUndo.length = 0; if (n) { navSkip += 1; history.go(-n); } }
   function enterApp() { S.auth = true; S.tab = 'home'; show(build(top()), 'fade'); }
 
   /* ---------------- campus ---------------- */
@@ -1565,6 +1641,9 @@
         break;
       }
       case 'toast': toast(el.dataset.msg); break;
+      case 'guest': lgSwap('guest'); navPush(() => lgSwap(null), 'screen'); break;
+      case 'guestback': navBack(); break;
+      case 'guestresume': { const g = guestSaved(); if (g) { Object.keys(D.person).forEach((k) => delete D.person[k]); applyProfile(g); store.set(SAVE_KEY, g); navReset(); enterApp(); } break; }
       case 'togglepwd': { const i = $('#pwd'); i.type = i.type === 'password' ? 'text' : 'password'; break; }
       case 'logout': { const n = navUndo.length; navUndo.length = 0; if (n) { navSkip += 1; history.go(-n); } } S = fresh(); store.del(SAVE_KEY); Object.keys(D.person).forEach((k) => delete D.person[k]); Object.assign(D.person, DEMO_PERSON); vp.innerHTML = ''; show(build({ s: 'login' }), 'fade'); break;
       default: break;
@@ -1580,6 +1659,23 @@
       const id = ask.dataset.id;
       (S.asked[id] ||= []).unshift({ id: `m${Date.now()}`, who: 'Você', text, votes: 0 });
       closeOverlay(() => { rerender(); toast('Pergunta enviada'); });
+      return;
+    }
+    const gf = e.target.closest('[data-form="guest"]');
+    if (gf) {
+      e.preventDefault();
+      const err = $('#lgerr'); const say = (m, el) => { err.textContent = m; err.hidden = false; el?.focus(); };
+      const v = { name: $('#gname').value.trim(), email: $('#gmail').value.trim(), kind: (gf.querySelector('[name=gkind]:checked') || {}).value, inst: $('#ginst').value.trim(), city: $('#gcity').value.trim() };
+      err.hidden = true;
+      if (v.name.split(/\s+/).length < 2) return say('Escreva o nome e o sobrenome, como devem sair no crachá.', $('#gname'));
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email)) return say('Confira o e-mail: é por ele que chega o certificado.', $('#gmail'));
+      if (!v.city) return say('Informe a sua cidade.', $('#gcity'));
+      if (!$('#gok').checked) return say('Para criar a conta, é preciso concordar com o uso dos dados.', $('#gok'));
+      const prof = guestProfile(v);
+      Object.keys(D.person).forEach((k) => delete D.person[k]); applyProfile(prof);
+      store.set(SAVE_KEY, prof); prefs.set('etal-visitante', JSON.stringify(prof));
+      navReset(); S.lgMode = null; enterApp();
+      setTimeout(() => notify(`Boas-vindas, ${prof.first}!`, 'Sua conta de visitante está pronta. Mostre o QR do crachá na recepção.'), 900);
       return;
     }
     const f = e.target.closest('[data-form="login"]');
@@ -1602,7 +1698,7 @@
       store.set(SAVE_KEY, j.perfil);
       enterApp();
     } catch (_) {
-      say('Não foi possível falar com o servidor local. Abra o protótipo por server.py para usar o SUAP.');
+      say(navigator.onLine === false ? 'Sem internet agora. Entre como visitante ou tente de novo quando a conexão voltar.' : 'Não foi possível falar com o servidor local. Abra o protótipo por server.py para usar o SUAP, ou entre como visitante.');
       $('#lgdemo').hidden = false;
     } finally {
       btn.classList.remove('loading');
