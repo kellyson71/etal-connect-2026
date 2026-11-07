@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Painel da organização · ETAL Connect</title>
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#1b2d5c">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geologica:wght@400;500;600;700&family=Onest:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side" aria-label="Seções do painel">
+    <a class="side-brand" href="#visao"><img src="assets/icon.svg" alt="" width="30" height="30"><span><b>etal</b> connect<small>Organização</small></span></a>
+    <nav id="nav"></nav>
+    <div class="side-foot">
+      <a href="./" target="_blank" rel="noopener">Abrir o app ao lado</a>
+      <small>Os avisos e as trocas de sala chegam ao app aberto neste navegador.</small>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="top">
+      <div><h1 id="title">Visão geral</h1><p id="clock"></p></div>
+      <label class="search"><span class="sr">Buscar participante</span><input id="q" type="search" placeholder="Buscar participante, matrícula ou e-mail" autocomplete="off"></label>
+      <button class="btn primary" data-act="compose" type="button">Enviar aviso</button>
+    </header>
+    <p class="demo-note" role="note">Demonstração: participantes e números são simulados. As mudanças ficam só neste navegador.</p>
+    <main id="view" tabindex="-1"></main>
+  </div>
+</div>
+<div class="tip" id="tip" role="tooltip"></div>
+<dialog id="dlg"></dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="plan-data.js"></script>
+<script src="data.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>
