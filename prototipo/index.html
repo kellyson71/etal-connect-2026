@@ -7,6 +7,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/pwa/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ETAL">
+<meta name="description" content="Programação, crachá e mapa do Encontro de Tecnologia do Alto Oeste Potiguar.">
 <meta name="theme-color" content="#22386f">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geologica:wght@400;500;600;700&family=Onest:wght@400;500;600;700&family=Anton&family=Source+Sans+3:wght@400&display=swap">
 <link rel="stylesheet" href="app.css">
@@ -27,6 +33,8 @@
       <nav class="tabbar" id="tabbar" aria-label="Navegação principal"></nav>
       <div class="overlay" id="overlay"></div>
       <div class="notif" id="notif" role="status"></div>
+      <div class="netbar" id="netbar" role="status" aria-live="polite"></div>
+      <div class="upd" id="upd" role="status"></div>
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
       <span class="home-ind" aria-hidden="true"></span>
     </div>

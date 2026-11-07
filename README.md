@@ -1,79 +1,98 @@
-# Exportação local — ETAL Connect
+# ETAL Connect
 
-Abra **index.html** por duplo clique para usar o protótipo offline. Abra **DOCUMENTACAO.html** para ler o contexto, decisões, fluxos, mapa, pendências e instruções de edição.
+Proposta de aplicativo para o **ETAL**, o Encontro de Tecnologia do Alto Oeste Potiguar, no IFRN Campus Pau dos Ferros. O NADIC desenvolve o app em parceria com o IFRN e o ETAL. A referência de funcionamento é o app do GO!RN: crachá, programação, presença, mapa e avisos num lugar só.
 
-Pasta: `/home/kellyson/Documentos/Github/etal-connect-2026`.
+<p>
+  <img src="docs/prints/01-login.png" width="180" alt="Tela de entrada com a fachada do campus">
+  <img src="docs/prints/03-inicio.png" width="180" alt="Início com o crachá e o credenciamento">
+  <img src="docs/prints/07-andares.png" width="180" alt="Os três andares do bloco principal em 3D">
+  <img src="docs/prints/09-como-chegar.png" width="180" alt="Rota da entrada até o laboratório">
+</p>
 
-Para continuar desenvolvendo: `npm ci`, editar `app/` e executar `npm run export:html`. Para alterar a planta, editar `scripts/build-principal-plan.py` e rodar `python3 scripts/build-principal-plan.py` antes de exportar. Para editar a documentação, alterar `scripts/build-export-docs.py` e executar esse script.
+## O que o app faz
 
-`index.html` incorpora o aplicativo, fontes, CSS, JavaScript e imagens utilizadas. A pasta `maps/` acompanha a prancha SVG. O fonte original, recursos e referências ficam nesta mesma pasta. `node_modules`, credenciais, caches e histórico Git não fazem parte da entrega. Não foi criado nem enviado repositório no GitHub.
+- **Entrada pelo SUAP ou como visitante.** Quem é do IFRN entra com a matrícula. Nome, foto e curso vêm do SUAP, pela biblioteca [suapy](https://github.com/kellyson71/suapy). Quem vem de fora cria uma conta de visitante em menos de um minuto.
+- **Crachá e credenciamento.** O crachá vira e mostra o QR. O credenciamento e a presença em cada atividade são registrados pela leitura do QR na sala.
+- **Programação.** Três dias de evento, com filtros, atividades salvas, palestrantes e materiais liberados depois da presença.
+- **Mapa do campus em 3D.** O campus inteiro foi feito a partir de um levantamento no Google Earth e de fotos. O modo Evento destaca o bloco principal, o auditório, a cantina, o pátio e o obelisco. "Como chegar" traça a rota da portaria até a porta da sala e escolhe a entrada e a escada ou rampa mais rápidas.
+- **Quatro versões do 3D.** Completo, médio, leve e 2D. O app mede o aparelho e escolhe a versão; o teste de desempenho em Perfil → Personalizar mostra os quadros por segundo de cada uma.
+- **Lembretes.** Dez minutos antes da atividade, o app avisa com a sala, o andar e quantos minutos a pé ela fica da entrada, também como notificação do sistema.
+- **Funciona sem internet.** É instalável (PWA) e guarda o app no aparelho, inclusive o mapa. Isso conta porque a internet do campus costuma cair com o evento cheio.
+- **Painel da organização.** Credenciados, lotação das salas, credenciamento por hora, envio de avisos e troca de sala com aviso aos inscritos.
+- **Retrospectiva, colmeia de conquistas, campeonatos e temas.**
 
-A versão hospedada e o projeto original permanecem intactos. Os comandos abaixo em “documentação original” descrevem o projeto Vinext; a exportação HTML usa `npm run export:html`.
+| | | | |
+|---|---|---|---|
+| <img src="docs/prints/02-visitante.png" width="170" alt="Cadastro de visitante"> | <img src="docs/prints/04-agenda.png" width="170" alt="Agenda"> | <img src="docs/prints/05-lembrete.png" width="170" alt="Lembrete de atividade"> | <img src="docs/prints/06-mapa-evento.png" width="170" alt="Mapa no modo Evento"> |
+| Conta de visitante | Agenda | Lembrete | Mapa: modo Evento |
+| <img src="docs/prints/08-campus.png" width="170" alt="Campus com as cores reais"> | <img src="docs/prints/10-painel-organizacao.png" width="170" alt="Painel da organização"> | <img src="docs/prints/11-real-e-exemplo.png" width="170" alt="O que é real e o que é exemplo"> | <img src="docs/prints/12-retrospectiva.png" width="170" alt="Retrospectiva"> |
+| Campus com as cores reais | Painel da organização | Real e exemplo | Retrospectiva |
 
----
+## Rodar
 
-# Documentação original do protótipo
-
-# ETAL Connect — Campus e comunidade
-
-Protótipo independente de um aplicativo de evento inspirado na identidade do NADIC. React 19, React Native for Web (View, Text, Pressable, TextInput e StyleSheet), React Hook Form, Motion e react-zoom-pan-pinch. Vinext fornece o ambiente web.
-
-## Executar
-
-```sh
-npm install
-npm run dev -- --port 4173
-```
-
-O mockup do celular é o único elemento da página. Em celulares, ocupa a tela. Login, início, leitor, confirmação, perfil e credencial cabem sem rolagem nos tamanhos testados; listas e conteúdos extensos têm rolagem interna.
-
-## Fluxo de participação
-
-1. O primeiro acesso apresenta o login SUAP demonstrativo. Use os dados fictícios preenchidos. Um link abre o SUAP oficial em outra aba.
-2. Após entrar, o usuário navega como **ainda não participante**. Programação, mapa, campeonatos e detalhes ficam disponíveis. Login institucional não confirma participação no evento.
-3. A credencial permanece pendente até a primeira leitura de um QR reconhecido do evento.
-4. Em **QR Code**, experimente Evento, Minicurso ou Palestra. A animação dura 2,1 segundos.
-5. O QR do evento confirma somente a participação no ETAL. O QR de uma atividade confirma a participação no ETAL e também a presença naquela atividade, liberando seus materiais.
-6. Repetir a leitura não duplica a presença. Um QR inválido não é aceito como credenciamento.
-7. **Eu → Recomeçar demonstração** limpa a sessão e volta ao login.
-
-Não há autenticação real, câmera nem comunicação com o SUAP. Matrícula e senha não são transmitidas ou persistidas. A chave `etal-demo-session-v4` do sessionStorage guarda apenas o acesso demonstrativo, o status de participação e as IDs de agenda/presenças. Não é um mecanismo de segurança ou um registro oficial.
-
-## Mapa do campus
-
-`app/data/campus-survey.json` é uma cópia integral das 35 marcações de `~/projetos/jogo-3d/assets/fase/implantacao_kml.json`. Contornos e coordenadas locais em metros são preservados, sem aplicar a ampliação de 1,2 usada pelo jogo.
-
-O mapa mostra os prédios identificados, a passarela de entrada, o caminho ao anexo, jardins, áreas de árvores, árvores pontuais e o perímetro institucional. Oferece zoom, arraste, pinça, centralização, vista dos prédios ou do campus inteiro, camadas e seleção de espaços por toque ou teclado. A área exibida é calculada sobre o contorno do KML; contornos de cobertura não representam necessariamente a área útil ou as paredes.
-
-A agenda e os detalhes de atividades mostram uma miniatura ampliada da sala, seu número e andar. O toque abre a planta interna do bloco principal no andar correspondente e aproxima a sala destacada. Selecionar uma sala mostra suas atividades. Campeonatos abrem o pátio no mapa externo. Números e distribuição de atividades são demonstrativos e precisam ser validados.
-
-Procedência e arquivos originais: `docs/CAMPUS_REFERENCIAS.md`. O projeto Godot original não foi alterado. Não há chamadas à API do Google nem dependência de mapas de terceiros para desenhar a planta.
-
-## Campeonatos
-
-O atalho **Campeonatos** no início abre Mortal Kombat e FIFA. Cada modalidade tem descrição, formato, horário de exemplo, arena proposta, oito participantes fictícios e quatro confrontos ilustrativos. Os cards de localização abrem o pátio no mapa. Não há inscrição real nem competição em andamento.
-
-## Conteúdo de referência
-
-Datas e apresentadores se baseiam no VII ETAL de 26 a 28/11/2025, fornecido pelo usuário. A proposta visual é para 2026; as datas de 2025 não são datas confirmadas da edição de 2026. Salas, distribuição das atividades, campeonatos, participantes de jogos e materiais de apoio são demonstrativos. O aplicativo não é oficial do IFRN.
-
-Uma futura integração poderá usar API Python e SuaPy, conforme autorização institucional. Autenticação, permissões e registros oficiais devem ser validados e implementados no servidor.
-
-## Verificar
+Precisa de Python 3 e de acesso à internet na primeira execução.
 
 ```sh
-npx tsc --noEmit
-npm run build
+npm run prototipo        # ou: sh prototipo/rodar.sh
 ```
 
-O app é carregado no navegador com `next/dynamic` e `ssr: false`, com uma abertura leve servida pelo servidor. Componentes React Native Web são importados individualmente em `app/components/native.ts`. React Native é dependência de desenvolvimento para os tipos compartilhados.
+Abra http://127.0.0.1:8770. Na primeira vez, o script cria o ambiente Python e instala a suapy.
 
-## Planta interna do bloco principal
+Para abrir no celular pela mesma rede Wi-Fi:
 
-Abra **Mapa → Principal → Explorar planta interna**. A planta usa as imagens e as correções manuais fornecidas pelo usuário, com térreo, 1º e 2º andar. Corredores horizontais têm salas dos dois lados; nos andares superiores o corredor inferior se estende à extremidade esquerda. A escada ocupa uma caixa lateral quadrada, e a rampa à direita tem a saliência da entrada.
+```sh
+REDE=192.168.0.10 sh prototipo/rodar.sh   # troque pelo IP do computador
+```
 
-A planta é esquemática, sem escala arquitetônica ou numeração oficial. A mesma geometria gera a prancha ampliada em `/maps/bloco-principal.svg`. Para regenerar o JSON e a prancha: `python scripts/build-principal-plan.py`.
+Pelo Wi-Fi a conexão é HTTP, sem criptografia. Use só contas de teste. A instalação e o uso sem internet exigem HTTPS ou o endereço 127.0.0.1.
 
-O corredor lateral direito segue o mesmo alinhamento em todos os pisos. A recepção ocupa o fim da faixa inferior de salas do térreo, substituindo parte da última sala e deixando o corredor horizontal livre. O acesso desde a entrada utiliza a passagem ao lado da rampa de meia largura. O bebedouro aparece exclusivamente no canto inferior direito do 1º andar.
+**Sem servidor:** `npm run export:html` gera o `index.html` da raiz, um arquivo único que abre por duplo clique. Nele o login do SUAP não funciona, mas dá para entrar como visitante ou com dados de exemplo.
 
-Os ambientes recebem números demonstrativos por andar (001…, 101…, 201…), mantendo a identificação do tipo de uso nos detalhes. As atividades usam associações propostas: React Native na Sala 201, FastAPI na Sala 204, experiência com IA na Sala 001, React/Next na Sala 108 e as duas palestras no auditório do térreo.
+**Atalhos de teste:** `?tela=` abre direto numa tela (`home`, `agenda`, `atividade`, `mapa`, `bloco`, `campus`, `rota`, `org`, `sobre`, `visitante`, `perf`, `retro`…). Também há `?qualidade=alta|media|leve|simples`, `?fps=1` e `?tema=dark`.
+
+## Estrutura
+
+| Pasta | O que tem |
+|---|---|
+| `prototipo/` | O app: `index.html`, `app.js` (telas), `app.css`, `campus3d.js` (motor do mapa em Canvas), `data.js` (programação), `sw.js` e `manifest.webmanifest` (PWA), `server.py` (servidor e login no SUAP) |
+| `scripts/` | Geradores: planta do bloco (`build-principal-plan.py`, conferida por `check-principal-plan.py`), campus a partir do KML, sprites renderizados no Blender, cache offline (`build-pwa.py`) e exportação (`export-prototipo.py`) |
+| `referencias/` | Levantamento do campus em KML, imagens de referência da planta e modelos 3D (CC0) |
+| `docs/` | Contexto, fluxos, regras do mapa, propostas visuais e os prints |
+| `modelo-3d/` | Cópia congelada do mapa, de antes das otimizações |
+| `app/` | Primeira versão, em React (Vinext). Ficou como legado |
+
+Comandos úteis:
+
+```sh
+npm run planta   # regenera a planta do bloco e confere as regras
+npm run pwa      # atualiza a versão do cache offline depois de mudar o protótipo
+```
+
+## Real e exemplo
+
+O app mostra isso em Perfil → Sobre este protótipo.
+
+- **Real:**
+  - O login pelo SUAP, com nome, foto, curso e matrícula. A senha não é gravada nem registrada.
+  - O mapa do campus e a planta do bloco principal.
+  - Os textos do ETAL, do NADIC e do IFRN.
+  - A conta de visitante, os lembretes e o uso sem internet. Esses três funcionam de verdade, mas ficam só no aparelho.
+- **Exemplo:**
+  - Seis atividades seguem o VII ETAL (novembro de 2025). As outras, e os nomes dos palestrantes delas, são inventados.
+  - A distribuição das atividades pelas salas e as vagas.
+  - Credenciamento, presença, certificados e materiais. Não há integração oficial.
+  - Campeonatos, avisos e os números do painel da organização.
+- **Aproximações:**
+  - As alturas dos prédios.
+  - A posição do obelisco e o desenho do riacho no pátio.
+  - O entorno do campus.
+
+## Créditos
+
+- Modelos de árvores, arbustos e casas: Kenney (Nature Kit e City Kit Suburban), CC0. Detalhes em `referencias/modelos/CREDITOS.txt`.
+- Fontes: Geologica e Onest, via Google Fonts.
+- Informações do evento: sites do ETAL, do NADIC e do IFRN Campus Pau dos Ferros.
+
+## Histórico
+
+O versionamento com git começou em 07/11/2026. Os commits anteriores a essa data foram montados a partir das datas de modificação dos arquivos. Cada commit reúne os arquivos modificados pela última vez naquele horário, no estado em que ficaram; as versões intermediárias não foram guardadas.

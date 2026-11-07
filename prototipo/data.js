@@ -177,6 +177,8 @@ window.DATA.combs = [
 ];
 /* Campus ao vivo: números demonstrativos. */
 window.DATA.liveBase = { credenciados: 312 };
+/* Painel da organização: números simulados. */
+window.DATA.org = { inscritos: 480, porHora: [[7, 38], [8, 96], [9, 71], [10, 34], [11, 15], [12, 9], [13, 49]] };
 
 /* Resto do campus: fora da programação do evento. Nomes e andares informados pelo usuário. */
 Object.assign(window.DATA.places, {
