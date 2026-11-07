@@ -1,0 +1,8 @@
+Modelos usados para gerar os sprites do protótipo (prototipo/assets/sprites).
+
+tree_oak, tree_default, tree_fat, plant_bushDetailed: Nature Kit, Kenney (www.kenney.nl), CC0.
+  Cópias obtidas em repositórios públicos que as redistribuem; o site da Kenney exige navegador para baixar.
+building-type-*: City Kit Suburban 2.0, Kenney (www.kenney.nl), CC0.
+  Copiados de ~/projetos/jogo-3d/assets/fase/modelos/casas.
+
+CC0: http://creativecommons.org/publicdomain/zero/1.0/
