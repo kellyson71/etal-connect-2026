@@ -101,8 +101,6 @@
   const buzz = (p) => { try { navigator.vibrate?.(p); } catch (_) { /* sem suporte */ } };
   const SAVE_KEY = 'etal-perfil';
   const DEMO_PERSON = { ...D.person };
-  /* Quem explora sem conta vê programação e mapa; o crachá pede para entrar. */
-  const ANON = { name: 'Sem conta', first: 'você', initials: '?', course: 'Explorando sem conta', courseFull: 'Explorando sem conta', year: '', campus: '', id: '', source: 'anon', photo: null };
   const store = {
     get(k) { try { return JSON.parse(sessionStorage.getItem(k)); } catch (_) { return null; } },
     set(k, v) { try { sessionStorage.setItem(k, JSON.stringify(v)); } catch (_) { /* opcional */ } },
@@ -259,30 +257,27 @@
     <header class="bar">${back ? `<button class="iconbtn" data-act="back" aria-label="Voltar">${ic('back')}</button>` : '<span class="iconbtn ghost"></span>'}
     <h1 class="bar-title">${title}</h1>${right || '<span class="iconbtn ghost"></span>'}</header>`;
 
-  /* ---------------- entrada: três propostas ----------------
-     Padrões dos apps de evento (Web Summit, Doity, Whova, Brella): o evento em primeiro plano, a escolha entre
-     quem já tem conta e quem vem de fora, e o crachá como objetivo. O formulário sobe por baixo nas três.
-     ?login=cartaz|cracha|explorar, ou a escolha salva em etal-login. */
-  const LOGIN_VARIANTS = { cartaz: 'Cartaz', cracha: 'Crachá', explorar: 'Explorar' };
-  const loginVariant = () => { const v = new URLSearchParams(location.search).get('login') || prefs.get('etal-login'); return LOGIN_VARIANTS[v] ? v : 'cartaz'; };
+  /* ---------------- entrada: o crachá ----------------
+     Um crachá em branco pendurado no cordão. Enquanto a pessoa digita, os dados aparecem nele; ao entrar,
+     o cartão vira e mostra o crachá preenchido. Para abrir o app, puxa-se o crachá para baixo e a tela desce.
+     Padrão dos apps de evento: o ingresso é um QR no app (Web Summit) e a conta serve ao credenciamento (Doity). */
   const guestSaved = () => { try { return JSON.parse(localStorage.getItem('etal-visitante')); } catch (_) { return null; } };
   const GUEST_KINDS = [['estudante', 'Estudante'], ['professor', 'Professor(a)'], ['profissional', 'Profissional'], ['comunidade', 'Comunidade']];
-  const evDay = () => D.days.findIndex((d) => d.day === D.now.day) + 1;
-  const suapLogo = (cls = 'suap') => `<img class="${cls}" src="assets/suap-logo.svg" alt="SUAP" width="96" height="50">`;
+  const pins = '<svg class="pins" viewBox="0 0 60 20" aria-hidden="true"><path d="M8 20V9M30 20V9M52 20V9"/><circle cx="8" cy="5.500" r="3.400"/><circle cx="30" cy="5.500" r="3.400"/><circle cx="52" cy="5.500" r="3.400"/></svg>';
+  let lgPending = null;
 
-  function suapForm() {
-    return `<div class="lx-fhead"><button type="button" class="iconbtn sm" data-act="lgclose" aria-label="Voltar">${ic('back')}</button><h2>Entrar com</h2>${suapLogo()}</div>
-      <form class="login-form" data-form="login" novalidate>
+  function suapFields() {
+    return `<form class="login-form" data-form="login" novalidate>
         <label class="field" for="mat"><span>Matrícula</span><input id="mat" inputmode="numeric" autocomplete="username" placeholder="Sua matrícula do SUAP" required></label>
         <label class="field" for="pwd"><span>Senha</span><div class="pwd"><input id="pwd" type="password" autocomplete="current-password" placeholder="A mesma senha do SUAP" required><button type="button" class="iconbtn sm" data-act="togglepwd" aria-label="Mostrar senha">${ic('eye')}</button></div></label>
         <p class="lg-err" id="lgerr" role="alert" hidden></p>
-        <button class="btn primary big" type="submit"><span>Entrar</span><i class="spin"></i></button>
+        <button class="btn primary big" type="submit"><span>Entrar com o SUAP</span><i class="spin"></i></button>
         <button class="btn ghost" type="button" id="lgdemo" data-act="demo" hidden>Entrar com dados de exemplo</button>
-        <p class="g-note">${ic('lock')}A senha vai direto para o SUAP e não fica salva no app.</p>
       </form>`;
   }
-  function guestForm() {
-    return `<div class="lx-fhead"><button type="button" class="iconbtn sm" data-act="lgclose" aria-label="Voltar">${ic('back')}</button><h2>Conta de visitante</h2></div>
+  function guestFields() {
+    const saved = guestSaved();
+    return `${saved ? `<button class="lx-resume" type="button" data-act="guestresume"><span class="lx-ic">${esc(saved.initials)}</span><span><b>Continuar como ${esc(saved.first)}</b><small>Conta de visitante neste aparelho</small></span>${ic('chev')}</button><p class="lx-or">ou crie outra conta</p>` : ''}
       <form class="login-form guest-form" data-form="guest" novalidate>
         <label class="field" for="gname"><span>Nome completo</span><input id="gname" autocomplete="name" placeholder="Como vai aparecer no crachá" required></label>
         <label class="field" for="gmail"><span>E-mail</span><input id="gmail" type="email" inputmode="email" autocomplete="email" placeholder="Para receber o certificado" required></label>
@@ -294,85 +289,112 @@
         <datalist id="gcities">${['Pau dos Ferros', 'Mossoró', 'São Miguel', 'Alexandria', 'Encanto', 'Rafael Fernandes', 'Portalegre', 'Marcelino Vieira', 'Cajazeiras', 'Natal'].map((c) => `<option value="${c}">`).join('')}</datalist>
         <label class="g-ok"><input type="checkbox" id="gok" required><span>Concordo que o ETAL use estes dados só para o credenciamento e os certificados.</span></label>
         <p class="lg-err" id="lgerr" role="alert" hidden></p>
-        <button class="btn primary big" type="submit"><span>Criar conta e entrar</span><i class="spin"></i></button>
-        <p class="g-note">${ic('lock')}A conta fica salva neste aparelho. No evento, mostre o QR do crachá na recepção.</p>
+        <button class="btn primary big" type="submit"><span>Criar conta</span><i class="spin"></i></button>
       </form>`;
   }
-  const sheetHtml = () => (S.lgMode === 'guest' ? guestForm() : S.lgMode === 'suap' ? suapForm() : '');
-  /* Botões de entrada, iguais nas três propostas. */
-  function entryChoices(style) {
-    const saved = guestSaved();
-    const guest = saved
-      ? `<button class="lx-opt" data-act="guestresume"><span class="lx-ic g">${esc(saved.initials)}</span><span><b>Continuar como ${esc(saved.first)}</b><small>Conta de visitante neste aparelho</small></span>${ic('chev')}</button>`
-      : `<button class="lx-opt" data-act="guest"><span class="lx-ic g">${ic('users')}</span><span><b>Vim de fora</b><small>Crie uma conta de visitante</small></span>${ic('chev')}</button>`;
-    return `<div class="lx-choices ${style || ''}">
-      <button class="lx-opt suap-opt" data-act="lgsuap"><span class="lx-ic s">${ic('id')}</span><span><b>Sou do IFRN</b><small>Entrar com a matrícula do SUAP</small></span>${ic('chev')}</button>
-      ${guest}
-    </div>`;
+  /* Frente preenchida do crachá, igual à do início. */
+  function filledFace(p) {
+    const av = p.photo ? `<span class="lx-photo has"><img src="${p.photo}" alt=""></span>` : `<span class="lx-photo ini">${esc(p.initials)}</span>`;
+    return `<div class="lx-card-top">${mark('mark xs')}<b>etal</b>${pins}</div>
+      <div class="lx-card-id">${av}<span class="lx-filled"><b>${esc(p.name)}</b><span>${esc(p.course)}</span><small>${esc([p.year, p.campus].filter(Boolean).join(' · '))}</small></span></div>
+      <div class="lx-card-qr ok">${qr(7, 25)}<small><b>Seu código</b>${esc(p.id)}</small></div>
+      <div class="lx-card-foot">26 a 28 nov · IFRN Pau dos Ferros</div>`;
   }
-
-  const LoginViews = {
-    /* 1 · Cartaz: o evento como num cartaz. Datas grandes, cortes no ângulo da colmeia do logo. */
-    cartaz: () => {
-      const first = D.days[0].day, last = D.days[D.days.length - 1].day;
-      return `<div class="lx-poster">
-          <i class="lx-cut c1"></i><i class="lx-cut c2"></i><i class="lx-cut c3"></i>
-          <header class="lx-brand">${mark('mark xs')}<b>etal</b><span>connect</span></header>
-          <p class="lx-kicker">Encontro de Tecnologia<br>do Alto Oeste Potiguar</p>
-          <h1 class="lx-dates" aria-label="De ${first} a ${last} de novembro"><span>${first}</span><em>a</em><span>${last}</span></h1>
-          <p class="lx-month">novembro <i></i> IFRN Pau dos Ferros</p>
-          <p class="lx-now"><b>Hoje</b> dia ${evDay()} de ${D.days.length} · ${D.sessions.filter((x) => x.day === D.now.day).length} atividades</p>
-        </div>
-        <div class="lx-bottom"><h2 class="lx-q">Como você vai entrar?</h2>${entryChoices()}</div>`;
-    },
-    /* 2 · Crachá: um crachá em branco no cordão; entrar é preencher o crachá. */
-    cracha: () => `<header class="lx-brand dark">${mark('mark xs')}<b>etal</b><span>connect</span></header>
-        <div class="lx-hang" aria-hidden="true">
-          <i class="lx-strap"><span>etal · etal · etal · etal · etal · etal · etal</span></i><i class="lx-clip"></i>
-          <div class="lx-card">
-            <div class="lx-card-top">${mark('mark xs')}<b>etal</b><svg class="pins" viewBox="0 0 60 20"><path d="M8 20V9M30 20V9M52 20V9"/><circle cx="8" cy="5.500" r="3.400"/><circle cx="30" cy="5.500" r="3.400"/><circle cx="52" cy="5.500" r="3.400"/></svg></div>
-            <div class="lx-card-id"><span class="lx-photo">${ic('user')}</span><span class="lx-lines"><i class="w1">Seu nome</i><i class="w2">Curso ou instituição</i></span></div>
-            <div class="lx-card-qr"><span>${ic('qr')}</span><small>Seu QR aparece aqui depois de entrar</small></div>
-            <div class="lx-card-foot">26 a 28 nov · IFRN Pau dos Ferros</div>
-          </div>
-        </div>
-        <div class="lx-bottom"><h2 class="lx-q">Entre para preencher o seu crachá</h2>${entryChoices()}</div>`,
-    /* 3 · Explorar: o que o app faz, com conteúdo de verdade, e a opção de olhar sem conta. */
-    explorar: () => {
-      const today = D.sessions.filter((x) => x.day === D.now.day && !x.simple).slice(0, 4);
-      const rn = byId('react-native');
-      return `<header class="lx-brand dark">${mark('mark xs')}<b>etal</b><span>connect</span></header>
-        <div class="lx-deck" id="lxdeck">
-          <article class="lx-slide"><div class="lx-art lx-agenda">${today.map((x) => `<p><time>${x.time}</time><span><b>${esc(x.short)}</b><small>${esc(x.room)}</small></span></p>`).join('')}</div>
-            <h2>A programação no bolso</h2><p>Os três dias do ETAL, com o que está acontecendo agora e o que você salvou.</p></article>
-          <article class="lx-slide"><div class="lx-art lx-map"><canvas class="thumb3d" aria-label="Prévia do ${esc(rn.room)} no mapa"></canvas><span class="lx-pin">${esc(rn.room)}</span></div>
-            <h2>A sala certa, sem rodar o campus</h2><p>O mapa mostra o caminho da entrada até a porta, pela escada ou pela rampa.</p></article>
-          <article class="lx-slide"><div class="lx-art lx-pass"><div class="lx-mini">${mark('mark xs')}<span><b>Seu nome</b><small>Crachá do ETAL</small></span>${qr()}</div></div>
-            <h2>Crachá e presença no celular</h2><p>Mostre o QR na recepção e leia o QR da porta para registrar presença.</p></article>
-        </div>
-        <div class="lx-dots" role="tablist">${[0, 1, 2].map((i) => `<button data-act="lxdot" data-i="${i}" aria-label="Cartão ${i + 1} de 3" class="${i ? '' : 'on'}"></button>`).join('')}</div>
-        <div class="lx-bottom">${entryChoices('row')}<button class="lx-skip" data-act="explore">Explorar sem conta</button></div>`;
-    },
-  };
 
   Screens.login = () => {
     splashDone = true;
-    const v = loginVariant();
+    const guest = S.lgMode === 'guest';
     return {
       chrome: false,
-      navy: v === 'cartaz',
-      mount: (el) => {
-        if (v !== 'explorar') return;
-        const deck = $('#lxdeck', el); const dots = [...el.querySelectorAll('.lx-dots button')];
-        deck.addEventListener('scroll', () => { const i = Math.round(deck.scrollLeft / deck.clientWidth); dots.forEach((d, k) => d.classList.toggle('on', k === i)); }, { passive: true });
-        const cv = $('canvas.thumb3d', el); const rn = byId('react-native');
-        const draw = () => { if (!cv.isConnected) return; if (!window.Campus3D.preview(cv, { floor: rn.floor, zone: rn.zone })) setTimeout(draw, 600); };
-        setTimeout(draw, 300);
-      },
-      html: `<div class="login lx lx-${v}${S.lgMode ? ' lx-open' : ''}">${LoginViews[v]()}
-        <div class="lx-scrim" data-act="lgclose"></div><div class="lx-sheet">${sheetHtml()}</div></div>`,
+      mount: (el) => mountBadgeLogin(el),
+      html: `<div class="login lx lx-cracha${guest ? ' guest-mode' : ''}">
+        <header class="lx-brand dark">${mark('mark xs')}<b>etal</b><span>connect</span></header>
+        <div class="lx-hang" id="lxhang">
+          <i class="lx-strap"><span>etal · etal · etal · etal · etal · etal · etal · etal · etal · etal</span></i><i class="lx-clip"></i>
+          <div class="lx-card" aria-hidden="true"><div class="lx-flip">
+            <div class="lx-face blank">
+              <div class="lx-card-top">${mark('mark xs')}<b>etal</b>${pins}</div>
+              <div class="lx-card-id"><span class="lx-photo">${ic('user')}</span><span class="lx-lines"><i class="w1" data-live="name">Seu nome</i><i class="w2" data-live="sub">${guest ? 'Visitante' : 'Matrícula do SUAP'}</i></span></div>
+              <div class="lx-card-qr"><span>${ic('qr')}</span><small data-live="state">Seu QR aparece aqui depois de entrar</small></div>
+              <div class="lx-card-foot">26 a 28 nov · IFRN Pau dos Ferros</div>
+            </div>
+            <div class="lx-face filled"></div>
+          </div></div>
+          <p class="lx-pull" aria-hidden="true">${ic('chev')}<span>Puxe o crachá para entrar</span></p>
+        </div>
+        <div class="lx-bottom">
+          <div class="lx-start">
+            <div class="lx-seg" role="tablist" aria-label="Como você vai entrar">
+              <button type="button" role="tab" data-act="lgmode" data-v="suap" aria-selected="${!guest}">Sou do IFRN</button>
+              <button type="button" role="tab" data-act="lgmode" data-v="guest" aria-selected="${guest}">Vim de fora</button>
+            </div>
+            <div class="lx-form">${guest ? guestFields() : suapFields()}</div>
+          </div>
+          <div class="lx-done" role="status">
+            <h2 class="lx-q" data-live="hello">Tudo certo!</h2>
+            <p>Puxe o crachá para baixo para abrir o app.</p>
+            <button class="btn primary big" data-act="lgenter" type="button">Abrir o app</button>
+            <button class="btn ghost" data-act="lgredo" type="button">Não sou eu</button>
+          </div>
+        </div>
+      </div>`,
     };
   };
+  /* Dados aparecendo no crachá enquanto a pessoa digita. */
+  function mountBadgeLogin(el) {
+    const live = (k, v) => { const n = $(`[data-live="${k}"]`, el); if (n) { n.textContent = v; n.classList.add('typed'); } };
+    el.addEventListener('input', (e) => {
+      const t = e.target;
+      if (t.id === 'mat') live('sub', t.value.trim() ? `Matrícula ${t.value.trim()}` : 'Matrícula do SUAP');
+      if (t.id === 'gname') live('name', t.value.trim() || 'Seu nome');
+      if (t.id === 'gcity' || t.name === 'gkind') {
+        const kind = (GUEST_KINDS.find(([v]) => v === ($('[name=gkind]:checked', el) || {}).value) || GUEST_KINDS[0])[1];
+        live('sub', ['Visitante', kind, $('#gcity', el)?.value.trim()].filter(Boolean).join(' · '));
+      }
+    });
+    el.addEventListener('change', (e) => { if (e.target.name === 'gkind') e.target.dispatchEvent(new Event('input', { bubbles: true })); });
+    /* Puxar o crachá: o cordão estica; passando do ponto, a tela desce e mostra o app. */
+    const hang = $('#lxhang', el); const strap = $('.lx-strap', el); let y0 = null, dy = 0;
+    hang.addEventListener('pointerdown', (e) => { if (!lgPending) return; y0 = e.clientY; dy = 0; hang.setPointerCapture(e.pointerId); $('.login', el).classList.add('pulling'); });
+    hang.addEventListener('pointermove', (e) => {
+      if (y0 === null) return; dy = Math.max(0, e.clientY - y0);
+      const k = dy < 140 ? dy : 140 + (dy - 140) * 0.35; strap.style.height = `calc(var(--sh) + ${k}px)`;
+      hang.classList.toggle('ready', dy > 110);
+    });
+    const release = () => {
+      if (y0 === null) return; y0 = null; $('.login', el)?.classList.remove('pulling');
+      if (dy > 110) { lgOpenApp(); return; }
+      strap.style.height = ''; hang.classList.remove('ready');
+    };
+    hang.addEventListener('pointerup', release); hang.addEventListener('pointercancel', release);
+  }
+  /* Entrou: o cartão vira e mostra o crachá preenchido. */
+  function lgFilled(prof) {
+    lgPending = prof;
+    const lg = $('.login'); if (!lg) return;
+    $('.lx-face.filled', lg).innerHTML = filledFace(prof);
+    $('[data-live="hello"]', lg).textContent = `Tudo certo, ${prof.first}!`;
+    lg.classList.add('filled'); buzz([14, 40, 14]);
+    setTimeout(() => $('[data-act="lgenter"]', lg)?.focus({ preventScroll: true }), 700);
+  }
+  /* A tela de entrada desce como uma cortina e o app aparece por trás. */
+  function lgOpenApp() {
+    if (!lgPending) return;
+    const prof = lgPending; lgPending = null;
+    const lg = $('.login'); const screen = $('.screen');
+    const cover = document.createElement('div'); cover.className = 'lx-cover';
+    if (lg) cover.appendChild(lg);
+    screen.appendChild(cover);
+    navReset(); S.lgMode = null; enterApp();
+    requestAnimationFrame(() => requestAnimationFrame(() => cover.classList.add('go')));
+    setTimeout(() => cover.remove(), reduce ? 50 : 750);
+    if (prof.source === 'visitante') setTimeout(() => notify(`Boas-vindas, ${prof.first}!`, 'Sua conta de visitante está pronta. Mostre o QR do crachá na recepção.'), 900);
+  }
+  function lgShake(msg) {
+    const c = $('.lx-card'); if (!c) return;
+    c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake'); buzz(40);
+    const s = $('[data-live="state"]'); if (s) s.textContent = msg || 'Confira os dados abaixo';
+  }
   /* Conta de visitante: só o necessário para o crachá e o certificado. */
   function guestProfile(f) {
     const name = f.name.replace(/\s+/g, ' ').trim(); const parts = name.split(' ');
@@ -386,9 +408,6 @@
   }
 
   function badge() {
-    if (D.person.source === 'anon') return `<section class="badge anon st" ${st(0)}>
-      <div class="an-in"><span class="an-ic">${ic('id')}</span><span><b>Você está explorando sem conta</b><small>Entre para ter o crachá, registrar presença e receber certificados.</small></span></div>
-      <button class="btn primary" data-act="logout">Entrar ou criar conta</button></section>`;
     const ok = !!S.credAt;
     const pinsSvg = '<svg class="pins" viewBox="0 0 60 20" aria-hidden="true"><path d="M8 20V9M30 20V9M52 20V9"/><circle cx="8" cy="5.500" r="3.400"/><circle cx="30" cy="5.500" r="3.400"/><circle cx="52" cy="5.500" r="3.400"/></svg>';
     return `<section class="badge st" ${st(0)}>
@@ -1098,6 +1117,7 @@
     return {
       html: `${header('Painel da organização')}<div class="pad stack org">
         <p class="org-demo st" ${st(0)}>${ic('info')}<span>Visão da equipe do ETAL. Números simulados para a demonstração; os avisos e trocas de sala valem só neste aparelho.</span></p>
+        <a class="org-desk st" ${st(0)} href="admin.html" target="_blank" rel="noopener">${ic('laptop')}<span><b>Painel completo no computador</b><small>Planta ao vivo, participantes e exportação em CSV</small></span>${ic('open')}</a>
         <div class="org-kpis st" ${st(1)}>
           <div><b>${liveCred}</b><small>credenciados</small><em>de ${D.org.inscritos} inscritos</em></div>
           <div><b>${inRooms}</b><small>pessoas em sala</small><em>${now.length} atividades agora</em></div>
@@ -1566,13 +1586,14 @@
 
   function setTheme(v) { UI.mode = v === 'dark' ? 'escuro' : 'claro'; applyUI(); }
   function applyProfile(p) { Object.assign(D.person, p); }
-  /* Abre ou fecha o formulário do login sem refazer a tela de fundo. */
+  /* Troca entre IFRN e visitante sem refazer o crachá. */
   function lgSwap(mode) {
     S.lgMode = mode;
-    const cur = $('.login'); if (!cur) return;
-    const sh = $('.lx-sheet', cur);
-    if (mode) { sh.innerHTML = sheetHtml(); cur.classList.add('lx-open'); setTimeout(() => $(mode === 'guest' ? '#gname' : '#mat')?.focus({ preventScroll: true }), 380); }
-    else cur.classList.remove('lx-open');
+    const lg = $('.login'); if (!lg) return;
+    lg.classList.toggle('guest-mode', mode === 'guest');
+    lg.querySelectorAll('[data-act="lgmode"]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.v === (mode || 'suap'))));
+    const box = $('.lx-form', lg); box.innerHTML = mode === 'guest' ? guestFields() : suapFields(); box.classList.remove('swap'); void box.offsetWidth; box.classList.add('swap');
+    $('[data-live="name"]', lg).textContent = 'Seu nome'; $('[data-live="sub"]', lg).textContent = mode === 'guest' ? 'Visitante' : 'Matrícula do SUAP';
   }
   function navReset() { const n = navUndo.length; navUndo.length = 0; if (n) { navSkip += 1; history.go(-n); } }
   function enterApp() { S.auth = true; S.tab = 'home'; show(build(top()), 'fade'); }
@@ -1758,7 +1779,7 @@
       case 'scanmode': { const r = $('.scanner', ov); if (r.dataset.busy) break; r.dataset.mode = el.dataset.v; $('.scan-seg', ov).style.setProperty('--k', el.dataset.v === 'meu' ? 1 : 0); break; }
       case 'torch': { const r = $('.scanner', ov); const on = r.classList.toggle('torch'); el.setAttribute('aria-pressed', on); break; }
       case 'flip': el.classList.toggle('flipped'); el.classList.remove('hint'); S.flipSeen = true; buzz(8); break;
-      case 'demo': Object.assign(D.person, DEMO_PERSON); enterApp(); break;
+      case 'demo': Object.assign(D.person, DEMO_PERSON); lgFilled({ ...DEMO_PERSON }); break;
       case 'remind': {
         const id = el.dataset.id; const on = !S.reminders.has(id); const x = byId(id);
         if (on) S.reminders.add(id); else { S.reminders.delete(id); remFired.delete(id); }
@@ -1847,12 +1868,10 @@
         break;
       }
       case 'toast': toast(el.dataset.msg); break;
-      case 'guest': if (S.lgMode) { lgSwap('guest'); break; } lgSwap('guest'); navPush(() => lgSwap(null), 'screen'); break;
-      case 'lgsuap': lgSwap('suap'); navPush(() => lgSwap(null), 'screen'); break;
-      case 'lgclose': navBack(); break;
-      case 'lxdot': { const d = $('#lxdeck'); d?.scrollTo({ left: d.clientWidth * +el.dataset.i, behavior: reduce ? 'auto' : 'smooth' }); break; }
-      case 'explore': Object.keys(D.person).forEach((k) => delete D.person[k]); applyProfile({ ...ANON }); navReset(); enterApp(); break;
-      case 'guestresume': { const g = guestSaved(); if (g) { Object.keys(D.person).forEach((k) => delete D.person[k]); applyProfile(g); store.set(SAVE_KEY, g); navReset(); enterApp(); } break; }
+      case 'lgmode': if ((el.dataset.v === 'guest') !== (S.lgMode === 'guest')) lgSwap(el.dataset.v === 'guest' ? 'guest' : null); break;
+      case 'lgenter': lgOpenApp(); break;
+      case 'lgredo': { lgPending = null; Object.keys(D.person).forEach((k) => delete D.person[k]); Object.assign(D.person, DEMO_PERSON); store.del(SAVE_KEY); $('.login')?.classList.remove('filled'); lgSwap(S.lgMode); break; }
+      case 'guestresume': { const g = guestSaved(); if (g) { Object.keys(D.person).forEach((k) => delete D.person[k]); applyProfile(g); store.set(SAVE_KEY, g); lgFilled(g); } break; }
       case 'togglepwd': { const i = $('#pwd'); i.type = i.type === 'password' ? 'text' : 'password'; break; }
       case 'logout': { const n = navUndo.length; navUndo.length = 0; if (n) { navSkip += 1; history.go(-n); } } S = fresh(); store.del(SAVE_KEY); Object.keys(D.person).forEach((k) => delete D.person[k]); Object.assign(D.person, DEMO_PERSON); vp.innerHTML = ''; show(build({ s: 'login' }), 'fade'); break;
       default: break;
@@ -1876,6 +1895,7 @@
       const title = $('#ontitle').value.trim(); const text = $('#ontext').value.trim();
       if (!title) { $('#ontitle').focus(); return; }
       D.notices.unshift({ time: skyClock(), title, text: text || 'Aviso da organização do ETAL.', fresh: true, org: true });
+      const nid = `n${Date.now()}`; orgSeen.add(nid); orgWrite((o) => o.notices.unshift({ id: nid, time: skyClock(), title, text: text || 'Aviso da organização do ETAL.' }));
       rerender(); notify(title, text || 'Aviso da organização do ETAL.'); toast('Aviso enviado para todos');
       return;
     }
@@ -1889,13 +1909,15 @@
       Object.assign(x, { floor: r.floor, zone: r.zone, room: r.name });
       const msg = `${x.short}: agora em ${r.name}, ${floorOf(r.floor).label}`;
       D.notices.unshift({ time: skyClock(), title: 'Mudança de sala', text: `${msg}. Antes era ${from}.`, fresh: true, org: true });
+      const nid = `n${Date.now()}`; orgSeen.add(nid);
+      orgWrite((o) => { o.moves[x.id] = { floor: r.floor, zone: r.zone, room: r.name }; o.notices.unshift({ id: nid, time: skyClock(), title: 'Mudança de sala', text: `${msg}. Antes era ${from}.`, to: `inscritos em ${x.short}` }); });
       rerender(); notify('Mudança de sala', msg, x.id); toast('Sala trocada e inscritos avisados');
       return;
     }
     const gf = e.target.closest('[data-form="guest"]');
     if (gf) {
       e.preventDefault();
-      const err = $('#lgerr'); const say = (m, el) => { err.textContent = m; err.hidden = false; el?.focus(); };
+      const err = $('#lgerr'); const say = (m, el) => { err.textContent = m; err.hidden = false; el?.focus(); lgShake(); };
       const v = { name: $('#gname').value.trim(), email: $('#gmail').value.trim(), kind: (gf.querySelector('[name=gkind]:checked') || {}).value, inst: $('#ginst').value.trim(), city: $('#gcity').value.trim() };
       err.hidden = true;
       if (v.name.split(/\s+/).length < 2) return say('Escreva o nome e o sobrenome, como devem sair no crachá.', $('#gname'));
@@ -1905,8 +1927,7 @@
       const prof = guestProfile(v);
       Object.keys(D.person).forEach((k) => delete D.person[k]); applyProfile(prof);
       store.set(SAVE_KEY, prof); prefs.set('etal-visitante', JSON.stringify(prof));
-      navReset(); S.lgMode = null; enterApp();
-      setTimeout(() => notify(`Boas-vindas, ${prof.first}!`, 'Sua conta de visitante está pronta. Mostre o QR do crachá na recepção.'), 900);
+      lgFilled(prof);
       return;
     }
     const f = e.target.closest('[data-form="login"]');
@@ -1914,26 +1935,29 @@
     e.preventDefault();
     const btn = $('button[type="submit"]', f);
     const err = $('#lgerr');
-    const say = (m) => { err.textContent = m; err.hidden = false; };
+    const say = (m) => { err.textContent = m; err.hidden = false; lgShake(); };
     const mat = $('#mat').value.trim();
     const pwd = $('#pwd').value;
     err.hidden = true;
     if (!mat || !pwd) { say('Informe a matrícula e a senha.'); return; }
     btn.classList.add('loading');
     btn.disabled = true;
+    const state = $('[data-live="state"]'); if (state) state.textContent = 'Consultando o SUAP…';
+    $('.login')?.classList.add('asking');
     try {
       const r = await fetch('api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ matricula: mat, senha: pwd }) });
       const j = await r.json().catch(() => { throw new TypeError('sem servidor'); });
       if (!r.ok) { say(j.erro || 'Não foi possível entrar.'); if (r.status >= 500) $('#lgdemo').hidden = false; return; }
-      applyProfile(j.perfil);
+      Object.keys(D.person).forEach((k) => delete D.person[k]); applyProfile({ ...DEMO_PERSON, ...j.perfil });
       store.set(SAVE_KEY, j.perfil);
-      enterApp();
+      lgFilled(D.person);
     } catch (_) {
       say(navigator.onLine === false ? 'Sem internet agora. Entre como visitante ou tente de novo quando a conexão voltar.' : 'Não foi possível falar com o servidor local. Abra o protótipo por server.py para usar o SUAP, ou entre como visitante.');
       $('#lgdemo').hidden = false;
     } finally {
       btn.classList.remove('loading');
       btn.disabled = false;
+      $('.login')?.classList.remove('asking');
     }
   });
 
@@ -1948,6 +1972,21 @@
   document.addEventListener('keydown', (e) => {
     if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.flip')) { e.preventDefault(); e.target.click(); }
   });
+
+  /* ---------------- painel no computador (admin.html) ----------------
+     Avisos e trocas de sala feitos no painel ficam em etal-org e chegam aqui, mesmo com o app já aberto. */
+  const ORG_KEY = 'etal-org'; const orgSeen = new Set();
+  const orgRead = () => { try { return { notices: [], moves: {}, creds: {}, ...JSON.parse(localStorage.getItem(ORG_KEY)) }; } catch (_) { return { notices: [], moves: {}, creds: {} }; } };
+  function orgWrite(fn) { const o = orgRead(); fn(o); try { localStorage.setItem(ORG_KEY, JSON.stringify(o)); } catch (_) { /* sem armazenamento */ } }
+  function orgSync(first) {
+    const o = orgRead();
+    Object.entries(o.moves).forEach(([id, m]) => { const x = byId(id); if (x) Object.assign(x, m); });
+    const fresh = o.notices.filter((n) => !orgSeen.has(n.id));
+    fresh.slice().reverse().forEach((n) => { orgSeen.add(n.id); D.notices.unshift({ time: n.time, title: n.title, text: n.text, fresh: true, org: true }); });
+    if (!first && fresh.length) { notify(fresh[0].title, fresh[0].text); buzz([20, 40, 20]); if (S.auth && vp.querySelector('.page')) rerender(); }
+  }
+  orgSync(true);
+  window.addEventListener('storage', (e) => { if (e.key === ORG_KEY) orgSync(false); });
 
   /* ---------------- início ---------------- */
   setInterval(checkReminders, 30000); netState();
