@@ -62,6 +62,7 @@
     rotate: '<path d="M4 12a8 8 0 0 1 13.700-5.700L20 8.600M20 4v4.600h-4.600"/><path d="M20 12a8 8 0 0 1-13.700 5.700L4 15.400M4 20v-4.600h4.600"/>',
     expand: '<path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/>',
     building: '<path d="M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16M15 10h4a1 1 0 0 1 1 1v10M2 21h20M8 8h3M8 12h3M8 16h3"/>',
+    info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/>',
     users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"/>',
   };
   const ic = (n, c = 'i') => `<svg class="${c}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]}</svg>`;
@@ -110,6 +111,8 @@
     set(k, v) { try { localStorage.setItem(k, v); } catch (_) { /* opcional */ } },
   };
   let splashDone = false;
+  const REM_KEY = 'etal-lembretes'; const LEAD = 10;
+  const remSaved = () => { try { return JSON.parse(localStorage.getItem(REM_KEY)) || []; } catch (_) { return []; } };
 
   /* ---------------- personalização ---------------- */
   const THEMES = {
@@ -198,7 +201,7 @@
     agendaDay: 26, agendaFilter: 'all',
     mapView: 'evento', campusPlace: null, mapFloor: null, mapZone: null, mapRoute: false, mapVia: null, pending: false, journeying: false,
     tourTab: 'chave',
-    reminders: new Set(), votes: new Set(), ratings: {}, asked: {}, contacts: [],
+    reminders: new Set(remSaved()), votes: new Set(), ratings: {}, asked: {}, contacts: [],
   });
   let S = fresh();
 
@@ -254,35 +257,73 @@
     <header class="bar">${back ? `<button class="iconbtn" data-act="back" aria-label="Voltar">${ic('back')}</button>` : '<span class="iconbtn ghost"></span>'}
     <h1 class="bar-title">${title}</h1>${right || '<span class="iconbtn ghost"></span>'}</header>`;
 
-  /* Arte do login: a própria planta do térreo desenhando-se, com a rota da entrada até a recepção. */
-  function planArt() {
-    const f = floorOf(0);
-    const shapes = f.zones.filter((z) => z.kind !== 'ramp').map((z, i) => {
-      const d = `style="--d:${(i * 45)}ms" pathLength="1"`;
-      return z.points ? `<polygon ${d} points="${z.points}"/>` : `<rect ${d} x="${z.x + 2}" y="${z.y + 2}" width="${z.w - 4}" height="${z.h - 4}" rx="6"/>`;
-    }).join('');
-    const yard = f.zones.find((z) => z.kind === 'courtyard');
-    const trees = [0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => `<circle cx="${yard.x + 26 + i * 50}" cy="${yard.y + (i % 2 ? 11 : 25)}" r="${i % 3 ? 5.500 : 7}" style="--d:${1000 + i * 70}ms"/>`).join('');
-    const pts = f.entryRoute.map((q) => q.join(',')).join(' ');
-    const rec = f.zones.find((z) => z.kind === 'reception');
-    return `<svg class="lg-plan" viewBox="0 0 900 430" aria-hidden="true"><path class="lg-out" pathLength="1" d="${[f][0].outline || ''}"/><g class="lg-rooms">${shapes}</g><g class="lg-trees">${trees}</g>
-      <polyline class="lg-route" pathLength="1" points="${pts}"/><circle class="lg-here" cx="820" cy="396" r="9"/><circle class="lg-goal" cx="${rec.x + rec.w / 2}" cy="${rec.y + rec.h / 2}" r="8"/></svg>`;
+  /* Arte do login: a fachada do campus, como nas fotos. O auditório curvo com a faixa de pastilha azul,
+     o bloco amarelo de três andares, o obelisco com a marca do IF e os arbustos de flores vermelhas.
+     O céu é o mesmo do início e segue o horário; à noite, as janelas e os postes acendem. */
+  function facadeArt() {
+    const win = (x, y, w, h, k) => `<rect class="fa-win" style="--k:${k}" x="${x}" y="${y}" width="${w}" height="${h}" rx="1"/>`;
+    let block = '';
+    [64, 120, 176].forEach((y, f) => { for (let i = 0; i < 9; i++) { const x = 190 + i * 31; block += win(x, y, 19, 25, (i * 7 + f * 3) % 10); if ((i + f) % 3 === 0) block += `<rect class="fa-ac" x="${x + 3}" y="${y + 29}" width="13" height="7" rx="1"/>`; } });
+    const aud = [24, 56, 88, 120, 152].map((x, i) => `<rect class="fa-frame" x="${x - 2}" y="142" width="14" height="70" rx="2"/>${win(x, 144, 10, 66, i * 2)}`).join('');
+    const MARK = [[0, 0, 1], [1, 0], [2, 0], [0, 1], [1, 1], [0, 2], [1, 2], [2, 2], [0, 3], [1, 3]];
+    const logo = MARK.map(([c, r, red]) => (red ? `<circle cx="${309.5 + c * 6.6}" cy="${101.5 + r * 6.6}" r="2.8" fill="#d0231f"/>` : `<rect x="${306.8 + c * 6.6}" y="${98.8 + r * 6.6}" width="5.4" height="5.4" rx=".6" fill="#2f9e44"/>`)).join('');
+    const bush = (x, y, r, i) => `<g class="fa-bush" style="--i:${i}"><circle cx="${x}" cy="${y}" r="${r}"/><circle class="fa-bloom" cx="${x - r * 0.4}" cy="${y - r * 0.35}" r="1.5"/><circle class="fa-bloom" cx="${x + r * 0.35}" cy="${y - r * 0.5}" r="1.4"/><circle class="fa-bloom" cx="${x + r * 0.1}" cy="${y + r * 0.1}" r="1.3"/></g>`;
+    let hedge = ''; let k = 0;
+    for (let x = -4; x < 292; x += 13) hedge += bush(x, 230 + (k % 2) * 2, 9 + (k % 3), k++);
+    for (let x = 344; x < 478; x += 13) hedge += bush(x, 231, 9 + (k % 3), k++);
+    const fronds = [[-44, 22], [-30, 30], [-12, 34], [8, 34], [26, 30], [42, 22], [-50, 6], [52, 8]].map(([dx, up]) => `<path d="M172 147Q${172 + dx * 0.45} ${147 - up} ${172 + dx} ${147 - up * 0.3 + 14}"/>`).join('');
+    return `<svg class="lg-facade" viewBox="0 30 470 222" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+      <defs>
+        <pattern id="faTile" width="5" height="5" patternUnits="userSpaceOnUse"><rect width="5" height="5" fill="#26388c"/><rect x=".5" y=".5" width="4" height="4" fill="#31469e"/></pattern>
+        <linearGradient id="faCurve" x1="0" x2="1"><stop offset="0" stop-color="#b98a35"/><stop offset=".35" stop-color="#e4b45a"/><stop offset=".8" stop-color="#d9a64c"/><stop offset="1" stop-color="#c39240"/></linearGradient>
+        <linearGradient id="faStone" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#cfc8ba"/><stop offset="1" stop-color="#b9b2a4"/></linearGradient>
+      </defs>
+      <g class="fa-layer fa-l1">
+        <rect x="150" y="46" width="18" height="184" fill="#bf8f3c"/><rect x="150" y="40" width="18" height="12" fill="#1f2f78"/>
+        <rect x="166" y="46" width="320" height="184" fill="#dcab52"/><rect x="166" y="38" width="320" height="14" fill="url(#faTile)"/><rect x="166" y="52" width="320" height="2.5" fill="#a77a2e" opacity=".5"/>
+        ${block}
+      </g>
+      <g class="fa-layer fa-l2">
+        <path d="M-6 104H150Q176 104 178 130V232H-6Z" fill="url(#faCurve)"/>
+        <path d="M-6 98H150Q178 98 180 126V132H-6Z" fill="url(#faTile)"/><path d="M-6 132H180" stroke="#9b7029" stroke-opacity=".45" stroke-width="2"/>
+        ${aud}
+        <g class="fa-lamp"><path d="M34 232V152M22 152h24" stroke="#2a2f3a" stroke-width="2.4" fill="none"/><circle class="fa-globe" cx="22" cy="149" r="5.5"/><circle class="fa-globe" cx="46" cy="149" r="5.5"/></g>
+        <g class="fa-palm"><path d="M172 232q-4-44 0-86" stroke="#7a6a50" stroke-width="5" fill="none" stroke-linecap="round"/><g stroke="#4c8a3a" stroke-width="3.6" fill="none" stroke-linecap="round">${fronds}</g><circle cx="172" cy="147" r="3.5" fill="#3f7a30"/></g>
+      </g>
+      <rect class="fa-ground" x="-10" y="232" width="500" height="20" fill="url(#faStone)"/>
+      <g class="fa-layer fa-l3">
+        <path d="M330 92v140h6V96Z" fill="#b9bdc2"/><rect x="300" y="92" width="30" height="140" fill="#e2e5e8"/>
+        ${logo}
+        <rect x="294" y="150" width="28" height="84" fill="#f6f6f3"/><path d="M322 150v84h3v-82Z" fill="#cfd2d4"/>
+        <text class="fa-name" transform="translate(305 226) rotate(-90)">INSTITUTO FEDERAL</text><text class="fa-name sm" transform="translate(312 226) rotate(-90)">DO RIO GRANDE DO NORTE</text><text class="fa-name sm" transform="translate(318 226) rotate(-90)">Campus Pau dos Ferros</text>
+      </g>
+      <g class="fa-hedge">${hedge}</g>
+    </svg>`;
   }
+  const guestSaved = () => { try { return JSON.parse(localStorage.getItem('etal-visitante')); } catch (_) { return null; } };
+  const GUEST_KINDS = [['estudante', 'Estudante'], ['professor', 'Professor(a)'], ['profissional', 'Profissional'], ['comunidade', 'Comunidade']];
 
   Screens.login = () => {
     const intro = !splashDone && !reduce;
     splashDone = true;
-    return {
-      chrome: false,
-      navy: true,
-      mount: (el) => { const box = $('.login', el); if (box.classList.contains('intro')) setTimeout(() => box.classList.remove('intro'), 1900); },
-      html: `<div class="login${intro ? ' intro' : ''}">
-        <div class="lg-hero">
-          ${planArt()}
-          <div class="lg-brand">${mark('mark lg-mark')}<div class="lg-word"><b>etal</b><span>connect</span></div></div>
-          <p class="lg-event">Encontro de Tecnologia do Alto Oeste Potiguar</p>
-        </div>
-        <div class="lg-sheet">
+    const guest = S.lgMode === 'guest'; const saved = guestSaved();
+    const sheet = guest ? `
+          <div class="lg-vhead"><button type="button" class="iconbtn sm" data-act="guestback" aria-label="Voltar para o login do SUAP">${ic('back')}</button><h1>Conta de visitante</h1></div>
+          <p class="lg-vsub">Para quem vem ao ETAL sem matrícula no IFRN. Leva menos de um minuto.</p>
+          <form class="login-form guest-form" data-form="guest" novalidate>
+            <label class="field" for="gname"><span>Nome completo</span><input id="gname" autocomplete="name" placeholder="Como vai aparecer no crachá" required></label>
+            <label class="field" for="gmail"><span>E-mail</span><input id="gmail" type="email" inputmode="email" autocomplete="email" placeholder="Para receber o certificado" required></label>
+            <fieldset class="g-kind"><legend>Você é</legend>${GUEST_KINDS.map(([v, t], i) => `<label><input type="radio" name="gkind" value="${v}" ${i ? '' : 'checked'}><span>${t}</span></label>`).join('')}</fieldset>
+            <div class="g-two">
+              <label class="field" for="ginst"><span>Instituição</span><input id="ginst" autocomplete="organization" placeholder="Opcional"></label>
+              <label class="field" for="gcity"><span>Cidade</span><input id="gcity" list="gcities" autocomplete="address-level2" placeholder="Sua cidade" required></label>
+            </div>
+            <datalist id="gcities">${['Pau dos Ferros', 'Mossoró', 'São Miguel', 'Alexandria', 'Encanto', 'Rafael Fernandes', 'Portalegre', 'Marcelino Vieira', 'Cajazeiras', 'Natal'].map((c) => `<option value="${c}">`).join('')}</datalist>
+            <label class="g-ok"><input type="checkbox" id="gok" required><span>Concordo que o ETAL use estes dados só para o credenciamento e os certificados.</span></label>
+            <p class="lg-err" id="lgerr" role="alert" hidden></p>
+            <button class="btn primary big" type="submit"><span>Criar conta e entrar</span><i class="spin"></i></button>
+            <p class="g-note">${ic('lock')}A conta fica salva neste aparelho. No evento, mostre o QR do crachá na recepção.</p>
+          </form>` : `
           <div class="lg-title"><h1>Entrar com</h1><img class="suap" src="assets/suap-logo.svg" alt="SUAP, sistema unificado de administração pública" width="124" height="64"></div>
           <form class="login-form" data-form="login" novalidate>
             <label class="field" for="mat"><span>Matrícula</span><input id="mat" inputmode="numeric" autocomplete="username" placeholder="Sua matrícula" required></label>
@@ -291,10 +332,37 @@
             <button class="btn primary big" type="submit"><span>Entrar</span><i class="spin"></i></button>
             <button class="btn ghost" type="button" id="lgdemo" data-act="demo" hidden>Entrar com dados de exemplo</button>
           </form>
+          <div class="lg-or"><span>ou</span></div>
+          ${saved ? `<button class="lg-guest" data-act="guestresume">${meAvOf(saved)}<span><b>Continuar como ${esc(saved.first)}</b><small>Conta de visitante neste aparelho</small></span>${ic('chev')}</button>
+          <button class="lg-guest-new" data-act="guest">Criar outra conta de visitante</button>`
+          : `<button class="lg-guest" data-act="guest"><i>${ic('users')}</i><span><b>Entrar como visitante</b><small>Não é do IFRN? Crie uma conta rápida.</small></span>${ic('chev')}</button>`}`;
+    return {
+      chrome: false,
+      navy: true,
+      mount: (el) => { applySky(); const box = $('.login', el); if (box.classList.contains('intro')) setTimeout(() => box.classList.remove('intro'), 1900); },
+      html: `<div class="login${intro ? ' intro' : ''}${guest ? ' guest' : ''}">
+        <div class="lg-hero">
+          <i class="lg-sunb"></i><i class="lg-cloud c1"></i><i class="lg-cloud c2"></i>
+          ${facadeArt()}
+          <div class="lg-brand">${mark('mark lg-mark')}<div class="lg-word"><b>etal</b><span>connect</span></div></div>
+          <p class="lg-event">Encontro de Tecnologia do Alto Oeste Potiguar</p>
         </div>
+        <div class="lg-sheet">${sheet}</div>
       </div>`,
     };
   };
+  const meAvOf = (p) => `<span class="av g-av">${esc(p.initials)}</span>`;
+  /* Conta de visitante: só o necessário para o crachá e o certificado. */
+  function guestProfile(f) {
+    const name = f.name.replace(/\s+/g, ' ').trim(); const parts = name.split(' ');
+    const kind = (GUEST_KINDS.find(([v]) => v === f.kind) || GUEST_KINDS[0])[1];
+    let h = 0; for (const ch of f.email.toLowerCase()) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+    return {
+      name, first: parts[0], initials: (parts[0][0] + (parts.length > 1 ? parts[parts.length - 1][0] : parts[0][1] || '')).toUpperCase(),
+      course: 'Visitante', courseFull: `Visitante · ${kind}${f.inst ? ` · ${f.inst}` : ''}`, year: kind, campus: f.city,
+      id: `VIS${String(h % 1000000).padStart(6, '0')}`, email: f.email, institution: f.inst || '', source: 'visitante', photo: null,
+    };
+  }
 
   function badge() {
     const ok = !!S.credAt;
@@ -362,7 +430,7 @@
 
           ${UI.home.agenda ? `<div class="sec st" ${st(5)}><h2>Sua agenda</h2><button data-act="mine">Ver tudo</button></div>
           <ul class="next st" ${st(6)}>${next.map((n) => `<li data-go="activity" data-id="${n.id}"><span class="date"><small>${dayOf(n.day).week}</small><b>${n.day}</b></span><span class="next-tx"><b>${n.short}</b><small>${n.time} · ${n.room}</small></span>
-            <button class="remind ${S.reminders.has(n.id) ? 'on' : ''}" data-act="remind" data-id="${n.id}" aria-pressed="${S.reminders.has(n.id)}" aria-label="Lembrar 15 minutos antes">${ic('alarm')}</button></li>`).join('')}</ul>` : ''}
+            <button class="remind ${S.reminders.has(n.id) ? 'on' : ''}" data-act="remind" data-id="${n.id}" aria-pressed="${S.reminders.has(n.id)}" aria-label="Lembrar 10 minutos antes">${ic('alarm')}</button></li>`).join('')}</ul>` : ''}
 
           ${UI.home.palestrantes ? `<div class="sec st" ${st(8)}><h2>Palestrantes</h2><button data-go="speakers">Ver todos</button></div>
           <div class="people st" ${st(9)}>${speakers.map((o) => `<button data-go="speaker" data-id="${o.id}">${spAv(o, true)}<b>${o.speakerShort.split(' ')[0]}</b><small>${o.type}</small></button>`).join('')}</div>` : ''}
@@ -371,7 +439,7 @@
           <div class="duel st" ${st(10)}>${D.tournaments.map((g) => `<button class="tile-game ${g.theme}" data-go="tournament" data-id="${g.id}" aria-label="${g.name}">${gameArt(g)}${g.logo ? `<img class="p-logo" src="${g.logo}" alt="">` : ''}<small>${dayOf(g.day).week} ${g.day} · ${g.time}</small></button>`).join('')}</div>` : ''}
 
           ${UI.home.avisos ? `<div class="sec st" ${st(11)}><h2>Avisos</h2><button data-go="notices">Ver todos</button></div>
-          <button class="notice st" ${st(12)} data-go="notices"><time>${D.notices[0].time}</time><b>${D.notices[0].title}</b><small>${D.notices[0].text}</small>${ic('chev', 'i card-chev')}</button>` : ''}
+          <button class="notice st" ${st(12)} data-go="notices"><time>${D.notices[0].time}</time><b>${esc(D.notices[0].title)}</b><small>${esc(D.notices[0].text)}</small>${ic('chev', 'i card-chev')}</button>` : ''}
 
           <footer class="made st" ${st(13)}>
             <div><small>Desenvolvido por</small><button data-go="nadic" aria-label="Sobre o NADIC"><img src="assets/nadic-logo.svg" alt="NADIC" width="64" height="28"></button></div>
@@ -498,7 +566,8 @@
         <ul class="info st" ${st(3)}><li>${ic('cal')}${d.long} · ${s.time} às ${s.end}</li><li>${ic('pin')}${whereOf(s)}</li><li>${ic('users')}<span>${seatLine(s)}</span>${seatBar(s)}</li></ul>
         ${thumb(s, 4)}
         <p class="desc st" ${st(5)}>${s.description}</p>
-        <button class="remindrow st ${S.reminders.has(id) ? 'on' : ''}" ${st(6)} data-act="remind" data-id="${id}" aria-pressed="${S.reminders.has(id)}">${ic('alarm')}<span>${S.reminders.has(id) ? 'Lembrete 15 minutos antes' : 'Lembrar 15 minutos antes'}</span><i class="switch"></i></button>
+        <button class="remindrow st ${S.reminders.has(id) ? 'on' : ''}" ${st(6)} data-act="remind" data-id="${id}" aria-pressed="${S.reminders.has(id)}">${ic('alarm')}<span>${S.reminders.has(id) ? `Lembrete às ${hhmm(toMin(s.time) - LEAD)}` : `Lembrar ${LEAD} minutos antes`}<small>${S.reminders.has(id) ? `Com sala e tempo a pé${notifState() === 'granted' ? '' : ', dentro do app'}` : 'Aviso com a sala e o caminho'}</small></span><i class="switch"></i></button>
+        ${S.reminders.has(id) ? `<button class="remindtest st" ${st(6)} data-act="remindtest" data-id="${id}">${ic('bell')}Ver como o lembrete chega</button>` : ''}
         <div class="locked st" ${st(7)}>${ic('lock')}<span>${s.materials.length} materiais ficam disponíveis quando você registrar presença na sala.</span></div>
       </div>
       <div class="cta-bar"><button class="btn primary big" data-act="scan">${ic('qr')}Registrar presença</button></div>`,
@@ -637,6 +706,7 @@
     const nc = $('#nowclock'); if (nc) nc.textContent = clock;
     const r = $('#skyr'); if (r && document.activeElement !== r) r.value = h;
     const o = $('#skyo'); if (o) o.textContent = clock;
+    if (typeof checkReminders === 'function') checkReminders();
   }
   let skyAnim = 0;
   function skyTo(target) {
@@ -957,7 +1027,7 @@
   Screens.profile = () => ({
     html: `<header class="apphead"><h1 class="title">Perfil</h1></header>
       <div class="pad stack">
-        <div class="me st" ${st(0)}>${meAv('av lg')}<div><strong>${esc(D.person.name)}</strong><span>${esc(D.person.courseFull)}</span><span>${esc(D.person.year)} · ${esc(D.person.id)}</span>${D.person.source === 'suap' ? `<span class="fromsuap">${ic('check')}Dados do SUAP</span>` : ''}</div></div>
+        <div class="me st" ${st(0)}>${meAv('av lg')}<div><strong>${esc(D.person.name)}</strong><span>${esc(D.person.courseFull)}</span><span>${esc(D.person.year)} · ${esc(D.person.id)}</span>${D.person.source === 'suap' ? `<span class="fromsuap">${ic('check')}Dados do SUAP</span>` : D.person.source === 'visitante' ? `<span class="fromsuap guest">${ic('users')}Conta de visitante</span>` : ''}</div></div>
         <button class="retro-cta st" ${st(1)} data-act="retro">${comb('tiny')}<span><b>Minha retrospectiva</b><small>O que você fez e aprendeu no ETAL</small></span>${ic('chev')}</button>
         <ul class="menu st" ${st(1)}>
           <li data-go="credential">${ic('id')}<span>Minha credencial</span><em>${S.credAt ? 'Ativa' : 'Pendente'}</em>${ic('chev', 'i chev')}</li>
@@ -967,19 +1037,105 @@
           <li data-go="network">${ic('contact')}<span>Contatos</span><em>${S.contacts.length}</em>${ic('chev', 'i chev')}</li>
         </ul>
         <ul class="menu st" ${st(2)}>
+          <li data-go="org">${ic('building')}<span>Painel da organização</span><em>Equipe</em>${ic('chev', 'i chev')}</li>
           <li data-go="games" class="games-row">${ic('trophy')}<span>Campeonatos</span><em>Qui 27</em>${ic('chev', 'i chev')}</li>
         </ul>
+        ${standalone() ? '' : `<button class="install-cta st" ${st(2)} data-act="install">${ic('download')}<span><b>Instalar o ETAL Connect</b><small>Abre como app e funciona sem internet</small></span>${ic('chev')}</button>`}
         <ul class="menu st" ${st(3)}>
           <li data-go="personalizar">${ic('moon')}<span>Personalizar</span><em>${(THEMES[UI.theme] || THEMES.etal).name}</em>${ic('chev', 'i chev')}</li>
         </ul>
         <ul class="menu st" ${st(4)}>
           <li data-go="etal">${ic('info')}<span>O que é o ETAL</span>${ic('chev', 'i chev')}</li>
+          <li data-go="sobre">${ic('list')}<span>Sobre este protótipo</span><em>Real e exemplo</em>${ic('chev', 'i chev')}</li>
           <li data-go="nadic">${ic('info')}<span>Sobre o NADIC</span>${ic('chev', 'i chev')}</li>
           <li data-act="link" data-url="${D.ifrnUrl}">${ic('open')}<span>IFRN Pau dos Ferros</span></li>
         </ul>
         <ul class="menu danger st" ${st(5)}><li data-act="logout">${ic('logout')}<span>Sair</span></li></ul>
       </div>`,
   });
+
+  /* ---- painel da organização: números simulados para a demonstração ---- */
+  const roomsAll = () => P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => ({ floor: f.level, zone: z.id, name: z.kind === 'laboratory' ? `Lab ${z.roomNumber}` : `Sala ${z.roomNumber}` })));
+  function hourBars(rows) {
+    const W = 320, H = 132, top = 18, base = 104, max = Math.max(...rows.map((r) => r[1])); const bw = (W - 20) / rows.length; const peak = rows.find((r) => r[1] === max);
+    const bars = rows.map(([h, v], i) => {
+      const x = 10 + i * bw + 3, w = bw - 6, y = base - ((base - top) * v) / max;
+      return `<g class="ob-bar" tabindex="0" aria-label="${h} h: ${v} credenciamentos"><title>${h} h · ${v} credenciamentos</title><rect class="hit" x="${x - 3}" y="${top}" width="${bw}" height="${base - top + 22}"/>
+        <path d="M${x} ${base}V${y + 4}a4 4 0 0 1 4-4h${w - 8}a4 4 0 0 1 4 4V${base}Z"/>${peak && h === peak[0] ? `<text class="ob-val" x="${x + w / 2}" y="${y - 6}">${v}</text>` : ''}<text class="ob-x" x="${x + w / 2}" y="${base + 16}">${h}h</text></g>`;
+    }).join('');
+    return `<svg class="ob-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Credenciamentos por hora hoje: ${rows.map(([h, v]) => `${h} h, ${v}`).join('; ')}"><path class="ob-base" d="M8 ${base + .5}H${W - 8}"/>${bars}</svg>`;
+  }
+  Screens.org = () => {
+    const now = D.sessions.filter((x) => isNow(x) && x.seats);
+    const present = (x) => Math.min(x.seats, Math.round(x.taken * 0.86 + 1));
+    const inRooms = now.reduce((n, x) => n + present(x), 0);
+    const today = D.sessions.filter((x) => x.day === D.now.day && x.floor !== undefined && x.zone && !x.simple);
+    const sent = D.notices.filter((n) => n.org).length;
+    return {
+      html: `${header('Painel da organização')}<div class="pad stack org">
+        <p class="org-demo st" ${st(0)}>${ic('info')}<span>Visão da equipe do ETAL. Números simulados para a demonstração; os avisos e trocas de sala valem só neste aparelho.</span></p>
+        <div class="org-kpis st" ${st(1)}>
+          <div><b>${liveCred}</b><small>credenciados</small><em>de ${D.org.inscritos} inscritos</em></div>
+          <div><b>${inRooms}</b><small>pessoas em sala</small><em>${now.length} atividades agora</em></div>
+          <div><b>${Math.round((liveCred / D.org.inscritos) * 100)}%</b><small>de comparecimento</small><em>até ${skyClock()}</em></div>
+          <div><b>${sent}</b><small>avisos enviados</small><em>pela organização hoje</em></div>
+        </div>
+        <section class="org-card st" ${st(2)}><h2>Credenciamento por hora</h2>${hourBars(D.org.porHora)}</section>
+        <section class="org-card st" ${st(3)}><h2>Lotação agora</h2>
+          ${now.length ? `<ul class="org-rooms">${now.map((x) => { const n = present(x); const pc = Math.round((n / x.seats) * 100); return `<li data-go="activity" data-id="${x.id}"><span><b>${esc(x.short)}</b><small>${esc(whereOf(x))}</small></span><span class="org-meter ${pc >= 90 ? 'full' : ''}"><i style="width:${pc}%"></i></span><em>${n}/${x.seats}</em></li>`; }).join('')}</ul>` : '<p class="org-none">Nenhuma atividade com vagas acontecendo agora.</p>'}
+        </section>
+        <form class="org-card st" ${st(4)} data-form="orgnotice"><h2>Enviar aviso</h2>
+          <label class="sr" for="ontitle">Título do aviso</label><input id="ontitle" maxlength="70" placeholder="Ex.: Palestra de encerramento às 17:00" required>
+          <label class="sr" for="ontext">Texto do aviso</label><textarea id="ontext" rows="2" maxlength="180" placeholder="Detalhes para quem está no evento"></textarea>
+          <button class="btn primary" type="submit">${ic('bell')}Enviar para todos</button>
+        </form>
+        <form class="org-card st" ${st(5)} data-form="orgroom"><h2>Trocar sala</h2>
+          <label class="field" for="orx"><span>Atividade</span><select id="orx">${today.map((x) => `<option value="${x.id}">${esc(x.short)} · ${esc(x.room)}</option>`).join('')}</select></label>
+          <label class="field" for="ory"><span>Nova sala</span><select id="ory">${roomsAll().map((r) => `<option value="${r.floor}|${r.zone}">${r.name} · ${floorOf(r.floor).label}</option>`).join('')}</select></label>
+          <button class="btn soft" type="submit">${ic('route')}Mudar e avisar os inscritos</button>
+        </form>
+      </div>`,
+    };
+  };
+
+  /* ---- o que é real e o que é exemplo neste protótipo ---- */
+  Screens.sobre = () => {
+    const orig = D.sessions.filter((x) => !x.demo).length; const demo = D.sessions.length - orig;
+    const C = window.Campus3D; const q = C.quality();
+    const row = ([t, d]) => `<li><b>${t}</b><small>${d}</small></li>`;
+    return {
+      html: `${header('Sobre este protótipo')}<div class="pad stack sobre">
+        <p class="desc st" ${st(0)}>O ETAL Connect é uma proposta de app para o ETAL. Parte dele já funciona de verdade; o resto é exemplo, para mostrar como o app seria no evento.</p>
+        <section class="sb-card real st" ${st(1)}><h2>${ic('check')}Real</h2><ul>${[
+          ['Login pelo SUAP', 'Nome, foto, curso e matrícula vêm da sua conta, pela biblioteca suapy. A senha não é guardada.'],
+          ['Mapa do campus', 'Contornos do levantamento no Google Earth; cores, alturas e detalhes conferidos nas fotos do campus.'],
+          ['Planta do bloco principal', 'Desenhada a partir das referências da equipe: corredores, escada, rampa, entradas e o auditório.'],
+          ['ETAL, NADIC e IFRN', 'Textos e links dos sites oficiais. O do NADIC vem de uma cópia de abril de 2025, porque o site estava fora do ar.'],
+          ['Conta de visitante, lembretes e uso sem internet', 'Funcionam de verdade, mas ficam só neste aparelho: não há servidor do evento.'],
+          ['Desempenho do mapa', 'Medido no próprio aparelho, que escolhe a versão do 3D.'],
+        ].map(row).join('')}</ul></section>
+        <section class="sb-card demo st" ${st(2)}><h2>${ic('flash')}Exemplo</h2><ul>${[
+          ['Programação', `${orig} atividades seguem o VII ETAL (novembro de 2025). As outras ${demo}, com palestrantes de nomes inventados, são de exemplo.`],
+          ['Salas e vagas', 'A distribuição das atividades pelas salas é demonstrativa.'],
+          ['Credenciamento, presença, certificados e materiais', 'Simulados. Não há integração com o SUAP nem registro oficial de presença.'],
+          ['Campeonatos', 'Chaves, jogadores e horários de exemplo.'],
+          ['Avisos, Campus ao vivo e painel da organização', 'Números e mensagens simulados.'],
+        ].map(row).join('')}</ul></section>
+        <section class="sb-card approx st" ${st(3)}><h2>${ic('pin')}Aproximações</h2><ul>${[
+          ['Alturas', 'Bloco principal com 13,8 m, auditório com 9 m e prédio do NADIC com 13,2 m, estimados pelas fotos.'],
+          ['Obelisco e riacho do pátio', 'Posição e desenho lidos das fotos.'],
+          ['Entorno do campus', 'Ruas e casas ao redor são uma representação simples.'],
+        ].map(row).join('')}</ul></section>
+        <section class="sb-card dev st" ${st(4)}><h2>${ic('laptop')}Este aparelho</h2><ul>
+          ${row(['Uso sem internet', PWA.ready ? 'Pronto: o app abre mesmo sem conexão.' : swAllowed ? 'Preparando a cópia do app.' : 'Indisponível neste endereço: precisa de HTTPS.'])}
+          ${row(['Instalado como app', standalone() ? 'Sim' : 'Não'])}
+          ${row(['Notificações', { granted: 'Permitidas', denied: 'Bloqueadas', default: 'Ainda não pedidas', unsupported: 'Sem suporte neste navegador' }[notifState()]])}
+          ${row(['Mapa', `${TIER_LABEL[q.tier]} · ${q.why}`])}
+          ${row(['Versão', PWA.version || 'desenvolvimento'])}
+        </ul></section>
+      </div>`,
+    };
+  };
 
   /* ---- telas novas ---- */
   Screens.speakers = () => ({
@@ -1026,7 +1182,7 @@
 
   Screens.notices = () => ({
     html: `${header('Avisos')}
-      <div class="pad stack"><ul class="notes">${D.notices.map((n, i) => `<li class="st ${n.fresh ? 'fresh' : ''}" ${st(i)}><time>${n.time}</time><h4>${n.title}</h4><p>${n.text}</p></li>`).join('')}</ul></div>`,
+      <div class="pad stack"><ul class="notes">${D.notices.map((n, i) => `<li class="st ${n.fresh ? 'fresh' : ''}" ${st(i)}><time>${n.time}</time><h4>${esc(n.title)}${n.org ? '<em class="org-tag">Organização</em>' : ''}</h4><p>${esc(n.text)}</p></li>`).join('')}</ul></div>`,
   });
 
   Screens.materials = () => {
@@ -1041,8 +1197,10 @@
   };
 
   /* ---- campeonatos ---- */
+  /* Na exportação em arquivo único, as imagens vêm embutidas em ASSET_DATA. */
+  const assetUrl = (p) => (window.ASSET_DATA || {})[p] || p;
   /* Banner: se existir assets/banner-mk.jpg ou banner-fifa.jpg, a imagem cobre a arte original. */
-  function gameArt(t) { return `${gameBase(t)}<img class="art art-photo" src="assets/banner-${t.theme}.jpg" alt="" onerror="this.remove()"><span class="art art-scrim"></span>`; }
+  function gameArt(t) { return `${gameBase(t)}<img class="art art-photo" src="${assetUrl(`assets/banner-${t.theme}.jpg`)}" alt="" onerror="this.remove()"><span class="art art-scrim"></span>`; }
   function gameBase(t) { return t.theme === 'mk'
     ? `<svg class="art" viewBox="0 0 300 160" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><radialGradient id="mkg" cx=".75" cy=".2" r=".9"><stop offset="0" stop-color="#8f2412"/><stop offset=".42" stop-color="#3f0b0c"/><stop offset="1" stop-color="#0c0406"/></radialGradient></defs><rect width="300" height="160" fill="url(#mkg)"/><g fill="none" stroke="#ffb199" stroke-opacity=".28"><path d="M-10 150 210 -10M30 170 250 10M70 190 290 30"/></g></svg>`
     : `<svg class="art" viewBox="0 0 300 160" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><linearGradient id="ffg" x1="0" x2="1"><stop offset="0" stop-color="#1f7a35"/><stop offset="1" stop-color="#2f9b45"/></linearGradient></defs><rect width="300" height="160" fill="url(#ffg)"/><g fill="#ffffff" opacity=".06">${[0, 1, 2, 3, 4, 5].map((i) => `<rect x="${i * 50}" width="25" height="160"/>`).join('')}</g><g fill="none" stroke="#e9ffe9" stroke-opacity=".55" stroke-width="2"><rect x="12" y="12" width="276" height="136" rx="2"/><path d="M150 12v136"/><circle cx="150" cy="80" r="26"/><rect x="12" y="46" width="34" height="68"/><rect x="254" y="46" width="34" height="68"/></g><circle cx="150" cy="80" r="3" fill="#e9ffe9"/></svg>`; }
@@ -1287,16 +1445,114 @@
   }
 
   let pushT;
-  function notify(title, text) {
+  function notify(title, text, id) {
     const n = $('#notif');
-    n.innerHTML = `${mark('mark xs')}<span><b>${title}</b><small>${text}</small></span><time>agora</time>`;
+    n.innerHTML = `${mark('mark xs')}<span><b>${esc(title)}</b><small>${esc(text)}</small></span><time>agora</time>`;
+    if (id && S.auth) { n.dataset.go = 'activity'; n.dataset.id = id; } else { delete n.dataset.go; delete n.dataset.id; }
     n.classList.add('show');
     buzz(30);
     clearTimeout(pushT);
     pushT = setTimeout(() => n.classList.remove('show'), 4200);
   }
+  /* ---------------- lembretes ----------------
+     O relógio do evento é o mesmo do "Horário do céu". Dez minutos antes de uma atividade com lembrete,
+     o app avisa com a sala, o andar e o tempo a pé calculado pela rota do mapa. Com permissão,
+     o aviso também sai como notificação do sistema, que abre a atividade. */
+  const toMin = (t) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+  const hhmm = (m) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+  const remFired = new Set();
+  const notifState = () => ('Notification' in window ? Notification.permission : 'unsupported');
+  async function askNotify() {
+    if (notifState() !== 'default') return notifState();
+    try { return await Notification.requestPermission(); } catch (_) { return 'denied'; }
+  }
+  function walkMin(x) {
+    if (x.floor === undefined) return null;
+    try { return Math.max(1, Math.round(window.Campus3D.routeInfo(x.floor, x.zone).cost / 75)); } catch (_) { return null; }
+  }
+  function reminderText(x, test) {
+    const left = toMin(x.time) - Math.round(skyHour * 60); const w = walkMin(x);
+    const title = test || left > LEAD || left < 0 ? `Começa às ${x.time}: ${x.short}` : left ? `Começa em ${left} min: ${x.short}` : `Começando agora: ${x.short}`;
+    return { title, body: [whereOf(x), w ? `${w} min a pé da entrada` : ''].filter(Boolean).join(' · ') };
+  }
+  async function deliver(x, test) {
+    if (!x) return;
+    const { title, body } = reminderText(x, test);
+    notify(title, body, x.id);
+    if (notifState() !== 'granted') return;
+    const opts = { body, icon: 'assets/pwa/icon-192.png', badge: 'assets/pwa/icon-192.png', tag: `lembrete-${x.id}`, data: { id: x.id }, vibrate: [60, 40, 60] };
+    try {
+      const reg = 'serviceWorker' in navigator ? await navigator.serviceWorker.getRegistration() : null;
+      if (reg) await reg.showNotification(title, opts); else new Notification(title, opts);
+    } catch (_) { /* o aviso dentro do app já foi mostrado */ }
+  }
+  function checkReminders() {
+    const now = Math.round(skyHour * 60);
+    S.reminders.forEach((id) => {
+      const x = byId(id);
+      if (!x || x.day !== D.now.day || remFired.has(id)) return;
+      if (now >= toMin(x.time) - LEAD && now < toMin(x.time)) { remFired.add(id); deliver(x); }
+    });
+  }
+  function openActivity(id) {
+    if (!S.auth || !byId(id)) return;
+    if (ov.classList.contains('open')) closeOverlay();
+    if (S.tab !== 'home') { S.tab = 'home'; S.stacks.home = [{ s: 'home' }]; show(build(top()), 'fade'); }
+    push('activity', { id });
+  }
+
+  /* ---------------- app instalável e sem internet ----------------
+     O service worker (sw.js) guarda o app no aparelho. Só funciona em HTTPS ou no próprio computador. */
+  const PWA = { prompt: null, waiting: null, updating: false, ready: false, version: null };
+  const swAllowed = 'serviceWorker' in navigator && (location.protocol === 'https:' || ['localhost', '127.0.0.1'].includes(location.hostname));
+  if (swAllowed) {
+    navigator.serviceWorker.register('sw.js').then((reg) => {
+      const watch = (w) => w && w.addEventListener('statechange', () => { if (w.state === 'installed' && navigator.serviceWorker.controller) { PWA.waiting = w; offerUpdate(); } });
+      if (reg.waiting && navigator.serviceWorker.controller) { PWA.waiting = reg.waiting; offerUpdate(); }
+      reg.addEventListener('updatefound', () => watch(reg.installing));
+      if (reg.active) { PWA.ready = true; netState(); }
+    }).catch(() => { /* sem service worker, o app segue online */ });
+    navigator.serviceWorker.addEventListener('message', (e) => {
+      if (e.data?.type === 'ready') { PWA.ready = true; PWA.version = e.data.version; if (!prefs.get('etal-offline')) { prefs.set('etal-offline', '1'); toast('Pronto para usar sem internet'); } }
+      if (e.data?.type === 'open') openActivity(e.data.id);
+    });
+    navigator.serviceWorker.addEventListener('controllerchange', () => { if (PWA.updating) location.reload(); });
+  }
+  function offerUpdate() {
+    const b = $('#upd'); if (!b) return;
+    b.innerHTML = `<span><b>Nova versão do app</b><small>As mudanças entram ao atualizar.</small></span><button data-act="update">Atualizar</button>`;
+    b.classList.add('show');
+  }
+  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); PWA.prompt = e; if (S.auth && S.tab === 'profile') rerender(); });
+  window.addEventListener('appinstalled', () => { PWA.prompt = null; toast('ETAL Connect instalado'); });
+  const standalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
+  async function installApp() {
+    if (PWA.prompt) { PWA.prompt.prompt(); const r = await PWA.prompt.userChoice.catch(() => null); PWA.prompt = null; if (r?.outcome !== 'accepted') toast('Instalação cancelada'); rerender(); return; }
+    if (isIOS()) { notify('Instalar no iPhone', 'Toque em Compartilhar e depois em "Adicionar à Tela de Início".'); return; }
+    notify('Instalar o app', swAllowed ? 'Abra o menu do navegador e toque em "Instalar app".' : 'A instalação precisa de HTTPS. Pelo Wi-Fi local, o app abre só no navegador.');
+  }
+  /* Sem internet: o app avisa e segue com a cópia guardada. */
+  function netState() {
+    const bar = $('#netbar'); if (!bar) return;
+    if (navigator.onLine) { if (bar.classList.contains('show')) { bar.textContent = 'Conexão de volta'; bar.classList.add('ok'); setTimeout(() => bar.classList.remove('show', 'ok'), 1600); } return; }
+    bar.classList.remove('ok'); bar.textContent = PWA.ready ? 'Sem internet · usando a cópia salva no aparelho' : 'Sem internet'; bar.classList.add('show');
+  }
+  window.addEventListener('online', netState); window.addEventListener('offline', netState);
+
   function setTheme(v) { UI.mode = v === 'dark' ? 'escuro' : 'claro'; applyUI(); }
   function applyProfile(p) { Object.assign(D.person, p); }
+  /* Troca o painel do login sem refazer a ilustração. */
+  function lgSwap(mode) {
+    S.lgMode = mode;
+    const cur = $('.login'); if (!cur) return;
+    const tmp = document.createElement('div'); tmp.innerHTML = Screens.login().html;
+    cur.classList.toggle('guest', mode === 'guest'); cur.classList.remove('intro');
+    const next = $('.lg-sheet', tmp); next.classList.add('swap');
+    $('.lg-sheet', cur).replaceWith(next);
+    if (mode === 'guest') setTimeout(() => $('#gname')?.focus({ preventScroll: true }), 350);
+  }
+  function navReset() { const n = navUndo.length; navUndo.length = 0; if (n) { navSkip += 1; history.go(-n); } }
   function enterApp() { S.auth = true; S.tab = 'home'; show(build(top()), 'fade'); }
 
   /* ---------------- campus ---------------- */
@@ -1482,12 +1738,16 @@
       case 'flip': el.classList.toggle('flipped'); el.classList.remove('hint'); S.flipSeen = true; buzz(8); break;
       case 'demo': Object.assign(D.person, DEMO_PERSON); enterApp(); break;
       case 'remind': {
-        const id = el.dataset.id; const on = !S.reminders.has(id);
-        if (on) S.reminders.add(id); else S.reminders.delete(id);
-        rerender();
-        if (on) { const x = byId(id); toast('Lembrete ativado'); setTimeout(() => notify(`Em 15 minutos: ${x.short}`, `${x.room} · ${x.time}`), 1400); }
+        const id = el.dataset.id; const on = !S.reminders.has(id); const x = byId(id);
+        if (on) S.reminders.add(id); else { S.reminders.delete(id); remFired.delete(id); }
+        prefs.set(REM_KEY, JSON.stringify([...S.reminders]));
+        if (on) askNotify().then(() => { rerender(); toast(`Lembrete às ${hhmm(toMin(x.time) - LEAD)} de ${dayOf(x.day).week.toLowerCase()}, ${x.day}`); checkReminders(); });
+        else { rerender(); toast('Lembrete desligado'); }
         break;
       }
+      case 'remindtest': deliver(byId(el.dataset.id), true); break;
+      case 'install': installApp(); break;
+      case 'update': if (PWA.waiting) { PWA.updating = true; PWA.waiting.postMessage({ type: 'skip' }); } else location.reload(); break;
       case 'vote': { const k = el.dataset.q; if (S.votes.has(k)) S.votes.delete(k); else S.votes.add(k); rerender(); break; }
       case 'ask': openOverlay(Overlays.ask(el.dataset.id), 'ask'); setTimeout(() => $('#qtext')?.focus({ preventScroll: true }), 480); break;
       case 'rate': S.ratings[el.dataset.id] = +el.dataset.n; rerender(); toast('Avaliação enviada'); break;
@@ -1565,6 +1825,9 @@
         break;
       }
       case 'toast': toast(el.dataset.msg); break;
+      case 'guest': lgSwap('guest'); navPush(() => lgSwap(null), 'screen'); break;
+      case 'guestback': navBack(); break;
+      case 'guestresume': { const g = guestSaved(); if (g) { Object.keys(D.person).forEach((k) => delete D.person[k]); applyProfile(g); store.set(SAVE_KEY, g); navReset(); enterApp(); } break; }
       case 'togglepwd': { const i = $('#pwd'); i.type = i.type === 'password' ? 'text' : 'password'; break; }
       case 'logout': { const n = navUndo.length; navUndo.length = 0; if (n) { navSkip += 1; history.go(-n); } } S = fresh(); store.del(SAVE_KEY); Object.keys(D.person).forEach((k) => delete D.person[k]); Object.assign(D.person, DEMO_PERSON); vp.innerHTML = ''; show(build({ s: 'login' }), 'fade'); break;
       default: break;
@@ -1580,6 +1843,45 @@
       const id = ask.dataset.id;
       (S.asked[id] ||= []).unshift({ id: `m${Date.now()}`, who: 'Você', text, votes: 0 });
       closeOverlay(() => { rerender(); toast('Pergunta enviada'); });
+      return;
+    }
+    const on = e.target.closest('[data-form="orgnotice"]');
+    if (on) {
+      e.preventDefault();
+      const title = $('#ontitle').value.trim(); const text = $('#ontext').value.trim();
+      if (!title) { $('#ontitle').focus(); return; }
+      D.notices.unshift({ time: skyClock(), title, text: text || 'Aviso da organização do ETAL.', fresh: true, org: true });
+      rerender(); notify(title, text || 'Aviso da organização do ETAL.'); toast('Aviso enviado para todos');
+      return;
+    }
+    const orf = e.target.closest('[data-form="orgroom"]');
+    if (orf) {
+      e.preventDefault();
+      const x = byId($('#orx').value); const [fl, zone] = $('#ory').value.split('|'); const r = roomsAll().find((q) => q.zone === zone && q.floor === +fl);
+      if (!x || !r) return;
+      if (x.zone === r.zone && x.floor === r.floor) { toast('A atividade já está nessa sala'); return; }
+      const from = x.room;
+      Object.assign(x, { floor: r.floor, zone: r.zone, room: r.name });
+      const msg = `${x.short}: agora em ${r.name}, ${floorOf(r.floor).label}`;
+      D.notices.unshift({ time: skyClock(), title: 'Mudança de sala', text: `${msg}. Antes era ${from}.`, fresh: true, org: true });
+      rerender(); notify('Mudança de sala', msg, x.id); toast('Sala trocada e inscritos avisados');
+      return;
+    }
+    const gf = e.target.closest('[data-form="guest"]');
+    if (gf) {
+      e.preventDefault();
+      const err = $('#lgerr'); const say = (m, el) => { err.textContent = m; err.hidden = false; el?.focus(); };
+      const v = { name: $('#gname').value.trim(), email: $('#gmail').value.trim(), kind: (gf.querySelector('[name=gkind]:checked') || {}).value, inst: $('#ginst').value.trim(), city: $('#gcity').value.trim() };
+      err.hidden = true;
+      if (v.name.split(/\s+/).length < 2) return say('Escreva o nome e o sobrenome, como devem sair no crachá.', $('#gname'));
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email)) return say('Confira o e-mail: é por ele que chega o certificado.', $('#gmail'));
+      if (!v.city) return say('Informe a sua cidade.', $('#gcity'));
+      if (!$('#gok').checked) return say('Para criar a conta, é preciso concordar com o uso dos dados.', $('#gok'));
+      const prof = guestProfile(v);
+      Object.keys(D.person).forEach((k) => delete D.person[k]); applyProfile(prof);
+      store.set(SAVE_KEY, prof); prefs.set('etal-visitante', JSON.stringify(prof));
+      navReset(); S.lgMode = null; enterApp();
+      setTimeout(() => notify(`Boas-vindas, ${prof.first}!`, 'Sua conta de visitante está pronta. Mostre o QR do crachá na recepção.'), 900);
       return;
     }
     const f = e.target.closest('[data-form="login"]');
@@ -1602,7 +1904,7 @@
       store.set(SAVE_KEY, j.perfil);
       enterApp();
     } catch (_) {
-      say('Não foi possível falar com o servidor local. Abra o protótipo por server.py para usar o SUAP.');
+      say(navigator.onLine === false ? 'Sem internet agora. Entre como visitante ou tente de novo quando a conexão voltar.' : 'Não foi possível falar com o servidor local. Abra o protótipo por server.py para usar o SUAP, ou entre como visitante.');
       $('#lgdemo').hidden = false;
     } finally {
       btn.classList.remove('loading');
@@ -1623,6 +1925,9 @@
   });
 
   /* ---------------- início ---------------- */
+  setInterval(checkReminders, 30000); netState();
+  const openParam = new URLSearchParams(location.search).get('abrir');
+  if (openParam) setTimeout(() => openActivity(openParam), 900);
   const clock = $('#clock');
   if (clock) clock.textContent = D.now.time;
   /* Atalhos de demonstração: ?tela=home, agenda, atividade, aula, mapa, credencial, campeonato... */
@@ -1644,6 +1949,7 @@
     return;
   }
   if (q === 'login') { show(build({ s: 'login' }), 'fade'); return; }
+  if (q === 'visitante') { splashDone = true; S.lgMode = 'guest'; show(build({ s: 'login' }), 'fade'); return; }
   S.auth = true;
   const ok = () => { S.credAt = D.now.time; };
   const setups = {
@@ -1670,6 +1976,8 @@
     palestrantes: () => { S.stacks.home.push({ s: 'speakers' }); },
     certificados: () => { ok(); S.present['react-native'] = '14:03'; S.stacks.home.push({ s: 'certificates' }); },
     contatos: () => { S.stacks.home.push({ s: 'network' }); },
+    org: () => { ok(); S.tab = 'profile'; S.stacks.profile.push({ s: 'org' }); },
+    sobre: () => { S.tab = 'profile'; S.stacks.profile.push({ s: 'sobre' }); },
     materiais: () => { S.stacks.home.push({ s: 'materials' }); },
     boasvindas: () => { ok(); setTimeout(() => openOverlay(Overlays.welcome(), 'welcome'), 300); },
     credencial: () => { ok(); S.tab = 'profile'; S.stacks.profile.push({ s: 'credential' }); },

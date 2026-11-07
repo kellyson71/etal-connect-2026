@@ -12,8 +12,12 @@
     "start": "node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js dev --config dist/server/wrangler.json --local --persist-to .wrangler/state --ip 127.0.0.1 --inspector-port 0",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate",
-    "export:html": "node scripts/export-html.mjs",
-    "preview:html": "python3 -m http.server 8080 --bind 127.0.0.1"
+    "export:html": "python3 scripts/export-prototipo.py",
+    "export:html:react": "node scripts/export-html.mjs",
+    "preview:html": "python3 -m http.server 8080 --bind 127.0.0.1",
+    "prototipo": "sh prototipo/rodar.sh",
+    "pwa": "python3 scripts/build-pwa.py",
+    "planta": "python3 scripts/build-principal-plan.py && python3 scripts/check-principal-plan.py && python3 scripts/build-prototype-plan.py"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

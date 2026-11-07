@@ -74,7 +74,7 @@
   const SPR = window.SPRITES || null;
   const IMG = {};
   if (SPR) {
-    const load = (n) => { const i = new Image(); i.onload = () => { IMG[n] = i; schedule(); }; i.src = `assets/sprites/${n}.webp`; };
+    const load = (n) => { const i = new Image(); i.onload = () => { IMG[n] = i; schedule(); }; const src = `assets/sprites/${n}.webp`; i.src = (window.ASSET_DATA || {})[src] || src; };
     ['color-light', 'color-dark', 'mono-light', 'mono-dark'].forEach((m) => ['trees', 'houses', 'roof', 'telha', 'ribs', 'wall', 'cobble'].forEach((k) => load(`${k}-${m}`)));
     ['light', 'dark'].forEach((m) => {
       ['roof', 'ribs', 'wall'].forEach((k) => load(`${k}-event-${m}`));
