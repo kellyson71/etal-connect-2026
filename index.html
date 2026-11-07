@@ -149,10 +149,7 @@ svg.swap{animation:fadeIn .3s ease both}
 .device.no-chrome .toast{bottom:40px}
 
 /* ================= login ================= */
-.login{flex:1;display:flex;flex-direction:column;padding:28px 26px 34px;background:#fff}
-.login-brand{margin:26px 0 30px}
 .suap-logo{height:46px;width:auto;display:block}
-.login h1{margin:0 0 26px;font:600 30px/1.1 var(--display);letter-spacing:-.03em}
 .login-form{display:flex;flex-direction:column;gap:16px}
 .field{display:flex;flex-direction:column;gap:7px}
 .field>span{font-size:13.5px;font-weight:600;color:var(--ink-2)}
@@ -163,7 +160,6 @@ svg.swap{animation:fadeIn .3s ease both}
 .btn .spin{display:none;width:20px;height:20px;border-radius:50%;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin .8s linear infinite}
 .btn.loading span{display:none}.btn.loading .spin{display:block}
 @keyframes spin{to{transform:rotate(360deg)}}
-.login-foot{margin-top:auto;display:flex;justify-content:center;padding-top:24px}
 
 /* ================= crachá (início) ================= */
 .badge{border-radius:calc(26px*var(--rk,1));background:var(--navy);color:#fff;overflow:hidden;position:relative;isolation:isolate;box-shadow:0 18px 30px -22px rgba(34,56,111,.8)}
@@ -493,31 +489,12 @@ svg.swap{animation:fadeIn .3s ease both}
 .wm b{color:var(--accent-ink)}
 .badge-num{position:absolute;top:5px;right:4px;min-width:17px;height:17px;padding:0 4px;border-radius:calc(9px*var(--rk,1));background:var(--red);color:#fff;font:600 10.5px/17px var(--ui);text-decoration:none;text-align:center;border:0}
 
-/* ================= abertura + login =================
-   A abertura e o login são a mesma cena: a fachada do campus sobe, a marca monta e o painel sobe. */
+/* ================= login ================= */
 .login{--card:#fff;--bg:#f4f6fa;--ink:#1f2f57;--ink-2:#3d4b6b;--muted:#6a7896;--line:#e3e8f1;--blue:#3a5a9b;--navy:#22386f;--accent-ink:#22386f;
-  position:relative;flex:1;min-height:100%;padding:0;display:flex;flex-direction:column;overflow:hidden;
-  background:linear-gradient(180deg,var(--sky-1,#2c7bd3) 0%,var(--sky-2,#68afed) 52%,var(--sky-3,#cfe9f8) 100%);color:#fff;transition:background .6s}
-.lg-hero{position:relative;flex:1 1 auto;min-height:250px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;padding:10px 20px 0;overflow:hidden}
-.login.intro .lg-hero{justify-content:center;padding-bottom:40px}
-.lg-brand{position:relative;display:flex;align-items:center;gap:12px;transition:transform .9s var(--ease)}
-.login.intro .lg-brand{transform:scale(1.2)}
-.lg-mark{width:44px;height:78px}
-.lg-mark .hx{transform-box:fill-box;animation:hxIn .6s var(--spring) both}
-.lg-mark .hx1{animation-delay:.1s}.lg-mark .hx2{animation-delay:.26s}.lg-mark .hx3{animation-delay:.42s}
-@keyframes hxIn{from{opacity:0;scale:.3}to{opacity:1;scale:1}}
-.lg-word{display:flex;flex-direction:column;animation:rise .6s var(--ease) .55s both}
-.lg-word b{font:700 46px/.9 var(--display);letter-spacing:-.05em}
-.lg-word span{font:500 18px/1.2 var(--ui);letter-spacing:.02em;color:#c9d7f3;margin-top:3px}
-.lg-event{position:relative;margin:0;font-size:13px;line-height:1.3;color:#d5e0f6;text-align:center;text-wrap:balance;animation:rise .6s var(--ease) .8s both}
-.lg-sheet{flex:none;position:relative;background:#fff;color:var(--ink);border-radius:calc(30px*var(--rk,1)) calc(30px*var(--rk,1)) 0 0;padding:22px 24px 34px;box-shadow:0 -18px 40px -22px rgba(6,12,30,.7);
-  transition:transform .95s var(--ease),opacity .4s}
-.login.intro .lg-sheet{transform:translateY(100%);position:absolute;left:0;right:0;bottom:0;opacity:0}
-.lg-title{display:flex;align-items:flex-start;gap:12px;margin:0 0 18px}
-.lg-title h1{margin:0;padding-top:7px;font:600 25px/1.05 var(--display);letter-spacing:-.03em;white-space:nowrap;color:var(--ink)}
-.suap{display:block;width:124px;height:auto;flex:none}
-.login-form{gap:13px}
-.field input{background:#f5f7fb;border-radius:calc(15px*var(--rk,1));padding:14px 15px;color:#1f2f57}
+  position:relative;flex:1;min-height:100%;padding:0;display:flex;flex-direction:column;overflow:hidden;background:#f2f5fa;color:var(--ink)}
+.suap{display:block;width:96px;height:auto;flex:none}
+.login-form{gap:12px}
+.field input{background:#f5f7fb;border-radius:calc(15px*var(--rk,1));padding:13px 15px;color:#1f2f57}
 .field input::placeholder{color:#97a3ba}
 .login .field>span{color:var(--ink-2)}
 .lg-err{margin:0;font-size:13.5px;line-height:1.35;color:#b4372f;font-weight:500}
@@ -733,7 +710,6 @@ svg.swap{animation:fadeIn .3s ease both}
 .scan-top{z-index:4}
 
 /* ================= tela cheia em celular real ================= */
-@media (max-width:520px){.lg-hero{min-height:180px}}
 
 /* ================= mapa do campus ================= */
 .seg.two{grid-template-columns:1fr 1fr}
@@ -1169,55 +1145,7 @@ button.teacher{width:100%;text-align:left;padding:8px 10px;margin:0 -2px;border-
 .cu-row2 button.on .switch::after{transform:translateX(15px)}
 .mini-seg.wide button{font-size:12px}
 
-/* ---- login: fachada do campus ---- */
-.lg-hero{flex:1 1 auto;min-height:300px;justify-content:flex-start;padding-top:20px;transition:min-height .55s var(--ease)}
-.login.guest .lg-hero{flex:0 0 132px;min-height:132px}
-.lg-brand,.lg-event{z-index:2;text-shadow:0 1px 10px rgba(10,20,50,.3)}
-.login.guest .lg-brand{transform:scale(.62);margin:-22px 0 0}
-.login.guest .lg-event{visibility:hidden}
-.lg-event{transition:opacity .3s}
-.lg-facade{position:absolute;left:0;bottom:-1px;width:100%;height:auto;pointer-events:none;transition:transform .55s var(--ease)}
-.login.guest .lg-facade{transform:translateY(64%)}
-.fa-win{fill:color-mix(in srgb,#ffd98a calc(var(--night,0)*100%),#2b3f6e);transition:fill .6s}
-.fa-l1 .fa-win{opacity:calc(.82 + var(--night,0)*.18)}
-.fa-frame{fill:#f1d9a2}
-.fa-ac{fill:#eef0f2;opacity:.9}
-.fa-globe{fill:color-mix(in srgb,#ffe7a3 calc(var(--night,0)*100%),#f7f7f4)}
-.fa-name{font:800 5.2px/1 var(--ui);fill:#3b404b;letter-spacing:.05em}
-.fa-name.sm{font-size:3.9px;font-weight:600;letter-spacing:.02em}
-.fa-bush circle:first-child{fill:#4f8d3b}
-.fa-bush:nth-child(3n) circle:first-child{fill:#5e9c45}
-.fa-bloom{fill:#d8402f}
-.fa-l1,.fa-l2,.fa-l3{transform-box:view-box}
-.login.intro .fa-layer{animation:faUp .9s var(--ease) both}
-.login.intro .fa-l1{animation-delay:.15s}.login.intro .fa-l2{animation-delay:.32s}.login.intro .fa-l3{animation-delay:.5s}
-.login.intro .fa-bush{animation:faBush .5s var(--spring) both;animation-delay:calc(.75s + var(--i)*22ms);transform-box:fill-box;transform-origin:50% 100%}
-@keyframes faUp{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
-@keyframes faBush{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:none}}
-.lg-sunb{position:absolute;left:calc(62% + var(--sun-x,70%)*.33);top:calc(var(--sun-y,30%)*.35 + 7%);width:40px;height:40px;margin:-20px;border-radius:50%;background:var(--sun-c,#ffe9a8);opacity:var(--sun-o,1);transition:opacity .6s}
-.lg-cloud{position:absolute;height:16px;border-radius:16px;background:rgba(255,255,255,calc(.55 - var(--night,0)*.45));animation:cloud 60s linear infinite}
-.lg-cloud::before{content:"";position:absolute;left:22%;bottom:6px;width:46%;height:20px;border-radius:50%;background:inherit}
-.lg-cloud.c1{width:86px;top:33%;left:-20%}
-.lg-cloud.c2{width:58px;top:46%;left:-30%;animation-duration:85s;animation-delay:-40s}
-@keyframes cloud{to{transform:translateX(560px)}}
-.lg-sheet{padding-top:20px;padding-bottom:26px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
-.login.guest .lg-sheet{max-height:none;flex:1}
-.lg-sheet.swap>*{animation:rise .45s var(--ease) both}
-.lg-or{display:flex;align-items:center;gap:12px;margin:12px 0 10px;color:var(--muted);font-size:12.5px;font-weight:600}
-.lg-or::before,.lg-or::after{content:"";flex:1;height:1px;background:var(--line)}
-.lg-guest{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border:1.5px solid #cdd8ec;border-radius:calc(18px*var(--rk,1));background:#f3f6fc;text-align:left;color:var(--ink)}
-.lg-guest>i{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:#65b32e;color:#fff}
-.lg-guest>i .i{width:21px;height:21px}
-.lg-guest>span{flex:1;display:flex;flex-direction:column;gap:2px}
-.lg-guest b{font:600 15.5px/1.2 var(--display)}
-.lg-guest small{font-size:12.5px;line-height:1.3;color:var(--muted)}
-.lg-guest>.i:last-child{width:18px;height:18px;color:var(--muted)}
-.lg-guest .g-av{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:#65b32e;color:#fff;font:700 14px var(--display)}
-.lg-guest-new{display:block;margin:10px auto 0;font-size:13px;font-weight:600;color:var(--blue)}
-.lg-vhead{display:flex;align-items:center;gap:8px;margin:-6px 0 4px -8px}
-.lg-vhead h1{margin:0;font:600 23px/1.1 var(--display);letter-spacing:-.025em;color:var(--ink)}
-.lg-vhead .iconbtn{color:var(--ink)}
-.lg-vsub{margin:0 0 16px;font-size:13.5px;line-height:1.4;color:var(--muted)}
+/* ---- formulário de visitante ---- */
 .guest-form{gap:12px}
 .guest-form .field input{padding:12px 14px;font-size:15.5px}
 .field em{font-style:normal;font-weight:500;color:var(--muted)}
@@ -1234,8 +1162,6 @@ button.teacher{width:100%;text-align:left;padding:8px 10px;margin:0 -2px;border-
 .g-note{display:flex;gap:8px;align-items:flex-start;margin:2px 0 0;font-size:12.5px;line-height:1.4;color:var(--muted)}
 .g-note .i{flex:none;width:15px;height:15px;margin-top:1px}
 .fromsuap.guest{background:#e6f3dc;color:#2f6f12}
-@media (prefers-reduced-motion:reduce){.lg-cloud{animation:none}}
-.lg-sheet .lg-title{margin-bottom:12px}.lg-sheet .suap{width:108px}.lg-sheet .login-form{gap:10px}.lg-sheet .field input{padding:12px 14px}
 
 /* ---- lembretes, instalação e sem internet ---- */
 .remindrow>span{display:flex;flex-direction:column;gap:2px}
@@ -1303,6 +1229,103 @@ button.teacher{width:100%;text-align:left;padding:8px 10px;margin:0 -2px;border-
 .sb-card li:first-child{border-top:0}
 .sb-card li b{font-size:14px;font-weight:600;color:var(--ink)}
 .sb-card li small{font-size:13px;line-height:1.4;color:var(--muted)}
+
+.org-desk{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:calc(16px*var(--rk,1));background:var(--navy);color:#fff;text-decoration:none}
+.org-desk>.i{width:20px;height:20px;flex:none}
+.org-desk span{flex:1;display:flex;flex-direction:column}
+.org-desk b{font:600 14.5px var(--display)}
+.org-desk small{font-size:12px;opacity:.75}
+
+/* ================= entrada: o crachá =================
+   O crachá no cordão é o login: os dados aparecem nele enquanto a pessoa digita, ele vira ao entrar
+   e, puxado para baixo, leva a tela junto e mostra o app. */
+.lx{--n:#1b2d5c;--g:#65b32e;--sh:46px}
+.lx-cracha{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;background:linear-gradient(180deg,#e7edf8 0%,#f4f6fa 46%)}
+.lx-cracha.filled{--sh:96px}
+.lx-brand{display:flex;align-items:center;gap:6px;padding:14px 22px 0;color:var(--ink)}
+.lx-brand .mark.xs{width:15px;height:27px}
+.lx-brand b{font:700 21px/1 var(--display);letter-spacing:-.04em}
+.lx-brand span{font:500 14px var(--ui);opacity:.7}
+
+.lx-hang{flex:none;position:relative;display:flex;flex-direction:column;align-items:center;padding-bottom:6px;touch-action:none;user-select:none}
+.lx-strap{position:relative;display:block;width:32px;height:var(--sh);margin-top:-6px;background:var(--g);overflow:hidden;border-radius:0 0 4px 4px;transition:height .55s var(--spring)}
+.pulling .lx-strap{transition:none}
+.lx-strap span{position:absolute;left:50%;bottom:0;writing-mode:vertical-rl;transform:translateX(-50%) rotate(180deg);font:700 10px var(--display);letter-spacing:.12em;color:rgba(255,255,255,.85);white-space:nowrap}
+.lx-clip{display:block;width:40px;height:16px;border-radius:5px;background:#b8c0cc;box-shadow:inset 0 -3px 0 rgba(0,0,0,.12)}
+.lx-card{width:262px;margin-top:-2px;perspective:1100px;transform-origin:50% -60px;animation:lxSwing 2.4s cubic-bezier(.3,.7,.3,1) both}
+@keyframes lxSwing{0%{transform:rotate(9deg)}25%{transform:rotate(-6deg)}50%{transform:rotate(3deg)}75%{transform:rotate(-1.2deg)}100%{transform:none}}
+.lx-card.shake{animation:lxShake .45s ease both}
+@keyframes lxShake{20%{transform:translateX(-9px) rotate(-2deg)}40%{transform:translateX(8px) rotate(1.5deg)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}100%{transform:none}}
+.lx-flip{position:relative;transform-style:preserve-3d;transition:transform .85s cubic-bezier(.3,.7,.2,1)}
+.filled .lx-flip{transform:rotateY(180deg)}
+.lx-face{border-radius:20px;background:#fff;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 26px 40px -24px rgba(20,32,70,.45),0 2px 0 #e3e8f1}
+.lx-face.filled{position:absolute;inset:0;transform:rotateY(180deg);display:flex;flex-direction:column}
+.lx-card-top{display:flex;align-items:center;gap:6px;padding:12px 14px;background:var(--n);color:#fff}
+.lx-card-top .mark.xs{width:12px;height:22px}
+.lx-card-top b{flex:1;font:700 16px var(--display);letter-spacing:-.03em}
+.lx-card-top .pins{width:40px;fill:#fff;stroke:#fff;stroke-width:1.6;opacity:.8}
+.lx-card-id{display:flex;align-items:center;gap:14px;padding:18px 16px 12px}
+.lx-photo{flex:none;display:grid;place-items:center;width:62px;height:62px;border-radius:16px;border:2px dashed #c5cfe0;color:#a5b1c7;overflow:hidden}
+.lx-photo .i{width:26px;height:26px}
+.lx-photo.ini{border:0;background:var(--n);color:#fff;font:700 20px var(--display)}
+.lx-photo.has{border:0}.lx-photo img{width:100%;height:100%;object-fit:cover}
+.lx-lines{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.lx-lines i{font-style:normal;font-size:12px;color:#9aa6bd;border-bottom:1.5px dashed #d3dae6;padding-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .2s}
+.lx-lines .w1{font:600 15px var(--display);color:#8a97b0}
+.lx-lines i.typed{color:var(--ink);border-bottom-style:solid;border-bottom-color:#b9c5da}
+.lx-filled{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.lx-filled b{font:600 16px/1.2 var(--display);color:var(--ink)}
+.lx-filled span{font-size:13px;color:var(--ink-2)}
+.lx-filled small{font-size:12px;color:var(--muted)}
+.lx-card-qr{display:flex;align-items:center;gap:12px;margin:2px 16px 14px;padding:11px;border-radius:12px;background:#f3f6fb}
+.lx-card-qr>span{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:10px;background:#fff;color:#b3bdd0}
+.lx-card-qr>span .i{width:24px;height:24px}
+.lx-card-qr small{font-size:11.5px;line-height:1.3;color:var(--muted)}
+.lx-card-qr.ok svg{flex:none;width:56px;height:56px;padding:4px;border-radius:8px;background:#fff}
+.lx-card-qr.ok small{display:flex;flex-direction:column;font-family:var(--ui)}
+.lx-card-qr.ok small b{font-size:13px;color:var(--ink)}
+.lx-face.filled .lx-card-qr{margin-top:auto}
+.asking .lx-card-qr>span{animation:lxPulse 1s ease-in-out infinite}
+@keyframes lxPulse{50%{background:#e3eaf7}}
+.lx-card-foot{padding:9px 14px;border-top:1px solid #edf1f7;font-size:11.5px;font-weight:600;color:var(--ink-2)}
+.lx-pull{display:none;flex-direction:column;align-items:center;gap:0;margin:10px 0 0;font-size:13px;font-weight:600;color:var(--muted)}
+.lx-pull .i{width:20px;height:20px;transform:rotate(90deg);animation:lxNudge 1.6s ease-in-out infinite}
+@keyframes lxNudge{50%{translate:0 5px}}
+.filled .lx-pull{display:flex;animation:rise .5s var(--ease) .6s both}
+.lx-hang.ready .lx-pull span::after{content:" · solte"}
+.filled .lx-hang{cursor:grab}
+.pulling .lx-hang{cursor:grabbing}
+
+.lx-bottom{position:relative;flex:1;padding:16px 20px 24px}
+.lx-seg{display:flex;padding:4px;margin-bottom:14px;border-radius:14px;background:#e3e9f3}
+.lx-seg button{flex:1;padding:10px;border-radius:11px;font:600 14.5px var(--display);color:var(--ink-2)}
+.lx-seg button[aria-selected="true"]{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(20,32,70,.12)}
+.lx-form.swap>*{animation:rise .4s var(--ease) both}
+.lx-resume{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border-radius:16px;background:#fff;border:1.5px solid var(--n);text-align:left;color:var(--ink)}
+.lx-resume>span:nth-child(2){flex:1;display:flex;flex-direction:column}
+.lx-resume b{font:600 15.5px var(--display)}
+.lx-resume small{font-size:12.5px;color:var(--muted)}
+.lx-resume>.i{width:18px;height:18px;color:var(--muted)}
+.lx-ic{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:var(--g);color:#fff;font:700 14px var(--display)}
+.lx-or{margin:12px 0;text-align:center;font-size:12.5px;font-weight:600;color:var(--muted)}
+.lx-done{display:none;flex-direction:column;gap:10px;text-align:center}
+.lx-done p{margin:-4px 0 6px;color:var(--muted);font-size:14px}
+.lx-q{margin:0;font:600 21px/1.2 var(--display);letter-spacing:-.02em;color:var(--ink)}
+.filled .lx-start{display:none}
+.filled .lx-done{display:flex;animation:rise .5s var(--ease) .45s both}
+
+/* a tela de entrada desce e mostra o app por trás */
+.lx-cover{position:absolute;inset:0;z-index:80;display:flex;flex-direction:column;transition:transform .7s cubic-bezier(.6,0,.35,1);box-shadow:0 -20px 40px rgba(10,20,50,.25)}
+.lx-cover>.login{flex:1;min-height:0}
+.lx-cover.go{transform:translateY(104%)}
+@media (prefers-reduced-motion:reduce){.lx-card,.lx-pull .i,.asking .lx-card-qr>span{animation:none}.lx-flip,.lx-cover,.lx-strap{transition:none}}
+.lx-face.filled .lx-card-id{padding:14px 16px 10px}
+.lx-face.filled .lx-card-qr{margin:0 16px 10px;padding:8px 10px}
+.lx-card-qr.ok svg{width:46px;height:46px}
+.lx-face.filled .lx-card-foot{padding:7px 14px}
+.lx-cracha.guest-mode:not(.filled){--sh:18px}
+.lx-cracha.guest-mode:not(.filled) .lx-card{zoom:.74}
+.lx-cracha.guest-mode .lx-bottom{padding-top:8px}
 
 </style>
 </head>
@@ -3918,101 +3941,144 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
     <header class="bar">${back ? `<button class="iconbtn" data-act="back" aria-label="Voltar">${ic('back')}</button>` : '<span class="iconbtn ghost"></span>'}
     <h1 class="bar-title">${title}</h1>${right || '<span class="iconbtn ghost"></span>'}</header>`;
 
-  /* Arte do login: a fachada do campus, como nas fotos. O auditório curvo com a faixa de pastilha azul,
-     o bloco amarelo de três andares, o obelisco com a marca do IF e os arbustos de flores vermelhas.
-     O céu é o mesmo do início e segue o horário; à noite, as janelas e os postes acendem. */
-  function facadeArt() {
-    const win = (x, y, w, h, k) => `<rect class="fa-win" style="--k:${k}" x="${x}" y="${y}" width="${w}" height="${h}" rx="1"/>`;
-    let block = '';
-    [64, 120, 176].forEach((y, f) => { for (let i = 0; i < 9; i++) { const x = 190 + i * 31; block += win(x, y, 19, 25, (i * 7 + f * 3) % 10); if ((i + f) % 3 === 0) block += `<rect class="fa-ac" x="${x + 3}" y="${y + 29}" width="13" height="7" rx="1"/>`; } });
-    const aud = [24, 56, 88, 120, 152].map((x, i) => `<rect class="fa-frame" x="${x - 2}" y="142" width="14" height="70" rx="2"/>${win(x, 144, 10, 66, i * 2)}`).join('');
-    const MARK = [[0, 0, 1], [1, 0], [2, 0], [0, 1], [1, 1], [0, 2], [1, 2], [2, 2], [0, 3], [1, 3]];
-    const logo = MARK.map(([c, r, red]) => (red ? `<circle cx="${309.5 + c * 6.6}" cy="${101.5 + r * 6.6}" r="2.8" fill="#d0231f"/>` : `<rect x="${306.8 + c * 6.6}" y="${98.8 + r * 6.6}" width="5.4" height="5.4" rx=".6" fill="#2f9e44"/>`)).join('');
-    const bush = (x, y, r, i) => `<g class="fa-bush" style="--i:${i}"><circle cx="${x}" cy="${y}" r="${r}"/><circle class="fa-bloom" cx="${x - r * 0.4}" cy="${y - r * 0.35}" r="1.5"/><circle class="fa-bloom" cx="${x + r * 0.35}" cy="${y - r * 0.5}" r="1.4"/><circle class="fa-bloom" cx="${x + r * 0.1}" cy="${y + r * 0.1}" r="1.3"/></g>`;
-    let hedge = ''; let k = 0;
-    for (let x = -4; x < 292; x += 13) hedge += bush(x, 230 + (k % 2) * 2, 9 + (k % 3), k++);
-    for (let x = 344; x < 478; x += 13) hedge += bush(x, 231, 9 + (k % 3), k++);
-    const fronds = [[-44, 22], [-30, 30], [-12, 34], [8, 34], [26, 30], [42, 22], [-50, 6], [52, 8]].map(([dx, up]) => `<path d="M172 147Q${172 + dx * 0.45} ${147 - up} ${172 + dx} ${147 - up * 0.3 + 14}"/>`).join('');
-    return `<svg class="lg-facade" viewBox="0 30 470 222" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
-      <defs>
-        <pattern id="faTile" width="5" height="5" patternUnits="userSpaceOnUse"><rect width="5" height="5" fill="#26388c"/><rect x=".5" y=".5" width="4" height="4" fill="#31469e"/></pattern>
-        <linearGradient id="faCurve" x1="0" x2="1"><stop offset="0" stop-color="#b98a35"/><stop offset=".35" stop-color="#e4b45a"/><stop offset=".8" stop-color="#d9a64c"/><stop offset="1" stop-color="#c39240"/></linearGradient>
-        <linearGradient id="faStone" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#cfc8ba"/><stop offset="1" stop-color="#b9b2a4"/></linearGradient>
-      </defs>
-      <g class="fa-layer fa-l1">
-        <rect x="150" y="46" width="18" height="184" fill="#bf8f3c"/><rect x="150" y="40" width="18" height="12" fill="#1f2f78"/>
-        <rect x="166" y="46" width="320" height="184" fill="#dcab52"/><rect x="166" y="38" width="320" height="14" fill="url(#faTile)"/><rect x="166" y="52" width="320" height="2.5" fill="#a77a2e" opacity=".5"/>
-        ${block}
-      </g>
-      <g class="fa-layer fa-l2">
-        <path d="M-6 104H150Q176 104 178 130V232H-6Z" fill="url(#faCurve)"/>
-        <path d="M-6 98H150Q178 98 180 126V132H-6Z" fill="url(#faTile)"/><path d="M-6 132H180" stroke="#9b7029" stroke-opacity=".45" stroke-width="2"/>
-        ${aud}
-        <g class="fa-lamp"><path d="M34 232V152M22 152h24" stroke="#2a2f3a" stroke-width="2.4" fill="none"/><circle class="fa-globe" cx="22" cy="149" r="5.5"/><circle class="fa-globe" cx="46" cy="149" r="5.5"/></g>
-        <g class="fa-palm"><path d="M172 232q-4-44 0-86" stroke="#7a6a50" stroke-width="5" fill="none" stroke-linecap="round"/><g stroke="#4c8a3a" stroke-width="3.6" fill="none" stroke-linecap="round">${fronds}</g><circle cx="172" cy="147" r="3.5" fill="#3f7a30"/></g>
-      </g>
-      <rect class="fa-ground" x="-10" y="232" width="500" height="20" fill="url(#faStone)"/>
-      <g class="fa-layer fa-l3">
-        <path d="M330 92v140h6V96Z" fill="#b9bdc2"/><rect x="300" y="92" width="30" height="140" fill="#e2e5e8"/>
-        ${logo}
-        <rect x="294" y="150" width="28" height="84" fill="#f6f6f3"/><path d="M322 150v84h3v-82Z" fill="#cfd2d4"/>
-        <text class="fa-name" transform="translate(305 226) rotate(-90)">INSTITUTO FEDERAL</text><text class="fa-name sm" transform="translate(312 226) rotate(-90)">DO RIO GRANDE DO NORTE</text><text class="fa-name sm" transform="translate(318 226) rotate(-90)">Campus Pau dos Ferros</text>
-      </g>
-      <g class="fa-hedge">${hedge}</g>
-    </svg>`;
-  }
+  /* ---------------- entrada: o crachá ----------------
+     Um crachá em branco pendurado no cordão. Enquanto a pessoa digita, os dados aparecem nele; ao entrar,
+     o cartão vira e mostra o crachá preenchido. Para abrir o app, puxa-se o crachá para baixo e a tela desce.
+     Padrão dos apps de evento: o ingresso é um QR no app (Web Summit) e a conta serve ao credenciamento (Doity). */
   const guestSaved = () => { try { return JSON.parse(localStorage.getItem('etal-visitante')); } catch (_) { return null; } };
   const GUEST_KINDS = [['estudante', 'Estudante'], ['professor', 'Professor(a)'], ['profissional', 'Profissional'], ['comunidade', 'Comunidade']];
+  const pins = '<svg class="pins" viewBox="0 0 60 20" aria-hidden="true"><path d="M8 20V9M30 20V9M52 20V9"/><circle cx="8" cy="5.500" r="3.400"/><circle cx="30" cy="5.500" r="3.400"/><circle cx="52" cy="5.500" r="3.400"/></svg>';
+  let lgPending = null;
+
+  function suapFields() {
+    return `<form class="login-form" data-form="login" novalidate>
+        <label class="field" for="mat"><span>Matrícula</span><input id="mat" inputmode="numeric" autocomplete="username" placeholder="Sua matrícula do SUAP" required></label>
+        <label class="field" for="pwd"><span>Senha</span><div class="pwd"><input id="pwd" type="password" autocomplete="current-password" placeholder="A mesma senha do SUAP" required><button type="button" class="iconbtn sm" data-act="togglepwd" aria-label="Mostrar senha">${ic('eye')}</button></div></label>
+        <p class="lg-err" id="lgerr" role="alert" hidden></p>
+        <button class="btn primary big" type="submit"><span>Entrar com o SUAP</span><i class="spin"></i></button>
+        <button class="btn ghost" type="button" id="lgdemo" data-act="demo" hidden>Entrar com dados de exemplo</button>
+      </form>`;
+  }
+  function guestFields() {
+    const saved = guestSaved();
+    return `${saved ? `<button class="lx-resume" type="button" data-act="guestresume"><span class="lx-ic">${esc(saved.initials)}</span><span><b>Continuar como ${esc(saved.first)}</b><small>Conta de visitante neste aparelho</small></span>${ic('chev')}</button><p class="lx-or">ou crie outra conta</p>` : ''}
+      <form class="login-form guest-form" data-form="guest" novalidate>
+        <label class="field" for="gname"><span>Nome completo</span><input id="gname" autocomplete="name" placeholder="Como vai aparecer no crachá" required></label>
+        <label class="field" for="gmail"><span>E-mail</span><input id="gmail" type="email" inputmode="email" autocomplete="email" placeholder="Para receber o certificado" required></label>
+        <fieldset class="g-kind"><legend>Você é</legend>${GUEST_KINDS.map(([v, t], i) => `<label><input type="radio" name="gkind" value="${v}" ${i ? '' : 'checked'}><span>${t}</span></label>`).join('')}</fieldset>
+        <div class="g-two">
+          <label class="field" for="ginst"><span>Instituição</span><input id="ginst" autocomplete="organization" placeholder="Opcional"></label>
+          <label class="field" for="gcity"><span>Cidade</span><input id="gcity" list="gcities" autocomplete="address-level2" placeholder="Sua cidade" required></label>
+        </div>
+        <datalist id="gcities">${['Pau dos Ferros', 'Mossoró', 'São Miguel', 'Alexandria', 'Encanto', 'Rafael Fernandes', 'Portalegre', 'Marcelino Vieira', 'Cajazeiras', 'Natal'].map((c) => `<option value="${c}">`).join('')}</datalist>
+        <label class="g-ok"><input type="checkbox" id="gok" required><span>Concordo que o ETAL use estes dados só para o credenciamento e os certificados.</span></label>
+        <p class="lg-err" id="lgerr" role="alert" hidden></p>
+        <button class="btn primary big" type="submit"><span>Criar conta</span><i class="spin"></i></button>
+      </form>`;
+  }
+  /* Frente preenchida do crachá, igual à do início. */
+  function filledFace(p) {
+    const av = p.photo ? `<span class="lx-photo has"><img src="${p.photo}" alt=""></span>` : `<span class="lx-photo ini">${esc(p.initials)}</span>`;
+    return `<div class="lx-card-top">${mark('mark xs')}<b>etal</b>${pins}</div>
+      <div class="lx-card-id">${av}<span class="lx-filled"><b>${esc(p.name)}</b><span>${esc(p.course)}</span><small>${esc([p.year, p.campus].filter(Boolean).join(' · '))}</small></span></div>
+      <div class="lx-card-qr ok">${qr(7, 25)}<small><b>Seu código</b>${esc(p.id)}</small></div>
+      <div class="lx-card-foot">26 a 28 nov · IFRN Pau dos Ferros</div>`;
+  }
 
   Screens.login = () => {
-    const intro = !splashDone && !reduce;
     splashDone = true;
-    const guest = S.lgMode === 'guest'; const saved = guestSaved();
-    const sheet = guest ? `
-          <div class="lg-vhead"><button type="button" class="iconbtn sm" data-act="guestback" aria-label="Voltar para o login do SUAP">${ic('back')}</button><h1>Conta de visitante</h1></div>
-          <p class="lg-vsub">Para quem vem ao ETAL sem matrícula no IFRN. Leva menos de um minuto.</p>
-          <form class="login-form guest-form" data-form="guest" novalidate>
-            <label class="field" for="gname"><span>Nome completo</span><input id="gname" autocomplete="name" placeholder="Como vai aparecer no crachá" required></label>
-            <label class="field" for="gmail"><span>E-mail</span><input id="gmail" type="email" inputmode="email" autocomplete="email" placeholder="Para receber o certificado" required></label>
-            <fieldset class="g-kind"><legend>Você é</legend>${GUEST_KINDS.map(([v, t], i) => `<label><input type="radio" name="gkind" value="${v}" ${i ? '' : 'checked'}><span>${t}</span></label>`).join('')}</fieldset>
-            <div class="g-two">
-              <label class="field" for="ginst"><span>Instituição</span><input id="ginst" autocomplete="organization" placeholder="Opcional"></label>
-              <label class="field" for="gcity"><span>Cidade</span><input id="gcity" list="gcities" autocomplete="address-level2" placeholder="Sua cidade" required></label>
-            </div>
-            <datalist id="gcities">${['Pau dos Ferros', 'Mossoró', 'São Miguel', 'Alexandria', 'Encanto', 'Rafael Fernandes', 'Portalegre', 'Marcelino Vieira', 'Cajazeiras', 'Natal'].map((c) => `<option value="${c}">`).join('')}</datalist>
-            <label class="g-ok"><input type="checkbox" id="gok" required><span>Concordo que o ETAL use estes dados só para o credenciamento e os certificados.</span></label>
-            <p class="lg-err" id="lgerr" role="alert" hidden></p>
-            <button class="btn primary big" type="submit"><span>Criar conta e entrar</span><i class="spin"></i></button>
-            <p class="g-note">${ic('lock')}A conta fica salva neste aparelho. No evento, mostre o QR do crachá na recepção.</p>
-          </form>` : `
-          <div class="lg-title"><h1>Entrar com</h1><img class="suap" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzNDc2IDE4MDQiIHJvbGU9ImltZyIgYXJpYS1sYWJlbD0iU1VBUCwgc2lzdGVtYSB1bmlmaWNhZG8gZGUgYWRtaW5pc3RyYcOnw6NvIHDDumJsaWNhIj4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJhIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAiIHkxPSIzNTY4IiB4Mj0iMCIgeTI9IjE2MjgiPjxzdG9wIG9mZnNldD0iMC4xIiBzdG9wLWNvbG9yPSIjYWI5ZjlhIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNjI1NjUyIi8+PC9saW5lYXJHcmFkaWVudD4KPGxpbmVhckdyYWRpZW50IGlkPSJiIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAiIHkxPSIzNTY4IiB4Mj0iMCIgeTI9IjEyOCI+PHN0b3Agb2Zmc2V0PSIwLjEiIHN0b3AtY29sb3I9IiNhYjlmOWEiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM2MjU2NTIiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz4KPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMC4wMDAwMDAsMTgwNC4wMDAwMDApIHNjYWxlKDAuNTAwMDAwLC0wLjUwMDAwMCkiIGZpbGw9InVybCgjYSkiPjxwYXRoIGQ9Ik02NDMgMzYwNSBjLTQ0IC0yIC05NyAtMTAgLTE0OSAtMjMgLTEzIC00IC0yNiAtNyAtMjkgLTggLTIwIC02IC0yNiAtOCAtNDAgLTE0IC0xNDggLTU0IC0yNjMgLTE1NCAtMzIzIC0yODEgLTEwIC0yMSAtMTEgLTI0IC0xNiAtMzUgLTI2IC02NSAtMzggLTEzOCAtMzUgLTIxMyAxIC0zMiAyIC00MiA3IC02OCAyOCAtMTQ0IDEzNCAtMjcwIDMwNyAtMzY2IDQxIC0yMyAxMDkgLTU1IDE1OCAtNzQgMjQwIC05MiAzMTggLTE0NSAzNjIgLTI0NSAxNiAtMzggMjUgLTExMyAxNyAtMTUyIC0xIC02IC0zIC0xNiAtNCAtMjIgLTE4IC04OCAtODkgLTE2MiAtMTg4IC0xOTQgLTMwIC05IC00OCAtMTMgLTk3IC0yMCAtMjEgLTMgLTExOSAtMyAtMTQyIDAgLTQxIDUgLTQ5IDcgLTc4IDEyIC00MiA5IC03OSAxOSAtMTI0IDM0IC0xOCA2IC0yMiA3IC00OCAxNyAtMzcgMTUgLTkzIDQxIC0xMjEgNTcgLTE5IDExIC0xOCAxMSAtMjYgLTEyIC0zIC0xMiAtOCAtMjYgLTEwIC0zMiAtMiAtNiAtOCAtMjYgLTE0IC00NCAtNiAtMTggLTE1IC00NiAtMjAgLTYzIC01IC0xNiAtMTIgLTM2IC0xNCAtNDQgLTIgLTggLTcgLTIyIC0xMCAtMzIgLTEwIC0yNyAtMTEgLTI1IDMzIC00NyA1NCAtMjcgMTE4IC01MyAxNzAgLTY3IDM5IC0xMSA1MiAtMTQgODYgLTIxIDE2IC00IDY0IC0xMiA4MiAtMTQgMTAgLTEgMjQgLTMgMzEgLTQgNTAgLTcgMTk4IC03IDI1MiAwIDExMSAxNCAxOTEgMzcgMjcxIDc1IDE2NiA4MCAyNzggMjI2IDMwMyAzOTYgMSA4IDMgMjAgNCAyOCAzIDE4IDMgMTE5IDAgMTM5IC02IDM5IC02IDQxIC0xMyA3MSAtMzMgMTM4IC0xMzAgMjUzIC0yOTMgMzQzIC0yMSAxMiAtODkgNDYgLTkxIDQ2IDAgMCAtNyAzIC0xNCA2IC03IDMgLTE0IDYgLTE0IDYgMCAwIC03IDMgLTEzIDYgLTcgMyAtMTggNyAtMjQgOSAtMjkgMTEgLTc2IDMwIC04OCAzNSAtNiAzIC0xMyA2IC0xMyA2IDAgMCAtNyAzIC0xNCA2IC03IDMgLTEzIDYgLTE0IDYgLTEgMCAtMzAgMTQgLTU2IDI2IC0xMjMgNTkgLTE4MSAxMjAgLTIwMSAyMDkgLTQgMTYgLTQgODAgMCA5NiAyMCA5MSA3MiAxNTEgMTYzIDE4NyAxOSA4IDQyIDE0IDgwIDIwIDE5IDQgMTIwIDQgMTQzIDAgNDMgLTYgNTQgLTggNzQgLTEyIDU0IC0xMiA5NyAtMjYgMTUxIC00OSA5IC01IDY5IC0zNSA3OCAtNDAgNCAtMiA3IC0zIDggLTIgMyAyIDgzIDI0NCA4MiAyNDYgLTIgNCAtMjcgMTggLTU5IDMzIC0yOCAxNCAtMzQgMTYgLTQzIDIwIC0zIDEgLTcgMyAtOSA0IC0xNiA2IC00MiAxNSAtNjAgMjAgLTUgMSAtMTEgMyAtMTQgNCAtMjAgNiAtNjAgMTUgLTg2IDIwIC03IDEgLTE3IDMgLTIyIDQgLTUgMSAtMTcgMyAtMjYgNCAtOSAxIC0yNCAzIC0zMyA0IC0xNiAyIC0xNDIgNCAtMTc0IDN6IE0zOTg5IDM2MDUgYy01MSAtMiAtMTI1IC0xMiAtMTkxIC0yNSAtMzQgLTYgLTgyIC0xOSAtMTE4IC0zMCAtMzggLTExIC05MyAtMzEgLTEyMSAtNDQgLTQgLTIgLTEyIC02IC0xOCAtOCAtMzMgLTE1IC03MyAtMzYgLTk3IC01MSAtNCAtMyAtOCAtNSAtOCAtNiAwIDAgNSAtMTQgMTEgLTMyIDYgLTE4IDIwIC01OSAzMSAtOTEgMzAgLTg5IDM1IC0xMDQgMzcgLTEwNiAxIC0xIDYgMSAxMiA1IDE5IDEzIDk5IDU1IDEwNCA1NSAwIDAgNyAzIDE0IDYgNyAzIDE0IDYgMTYgNiAxIDAgMyAxIDQgMSAyIDMgNjAgMjMgODUgMjkgNjEgMTcgMTAwIDI0IDE3MyAzMiAzMCA0IDE1NCA0IDE3NyAwIDQ0IC02IDU4IC05IDg5IC0xOSAxMDEgLTMwIDE3MyAtOTUgMjE4IC0xOTcgNCAtMTAgMTYgLTQ3IDE5IC01OSAxIC01IDMgLTEzIDQgLTE3IDkgLTM1IDE1IC05NiAxNCAtMTQ0IGwtMSAtMzUgLTI1IDAgYy00NSAtMSAtMTUyIC01IC0xNzkgLTcgLTEwMCAtNiAtMjA1IC0yMSAtMjkxIC00MCAtNCAtMSAtMTEgLTMgLTE3IC00IC01IC0xIC0xNyAtNCAtMjYgLTYgLTkgLTIgLTE5IC01IC0yMyAtNiAtNCAtMSAtMTAgLTMgLTE0IC00IC01IC0xIC0xMSAtMyAtMTQgLTQgLTQyIC0xMSAtMTA2IC0zNCAtMTQwIC00OSAtMjA5IC05NCAtMzMzIC0yMjMgLTM4OCAtNDA2IC03IC0yNSAtMTQgLTYyIC0yMCAtMTA2IC0zIC0yNCAtMyAtMTIzIDAgLTE0NCAxMyAtODMgMjcgLTEzMCA2MCAtMTkzIDQ5IC05NSAxMjggLTE3MyAyMjYgLTIyMiAzOCAtMTkgNzIgLTMyIDEyMCAtNDQgNTkgLTE2IDEzNSAtMjIgMjE3IC0xOCAyNSAxIDUyIDMgNTkgNCA0NSA3IDYwIDEwIDk0IDE5IDE1MCAzOCAyODggMTI3IDM3MSAyMzkgMTEgMTQgMTUgMTggMTggMTggNSAtMSA0IDQgMTcgLTk4IDEgLTkgMyAtMjMgNCAtMzAgMSAtNyAzIC0yMCA0IC0yOSAxIC05IDMgLTIzIDQgLTMyIDEgLTkgMyAtMjMgNCAtMzEgMSAtOCAzIC0xNSA0IC0xNyAzIC0zIDMwMiAtNSAzMDggLTEgMyAyIDIgMjMgLTIgNDkgLTUgMzMgLTEyIDExNyAtMTYgMTg4IC01IDk5IC02IDE5MSAtNiA1NzYgMCAyNjIgLTEgNDE4IC0yIDQzNSAtMyA0MCAtNiA3MiAtOCA4NSAtNiAzOSAtNyA0NyAtMTMgNzggLTUgMjIgLTcgMzEgLTkgMzkgLTEgNCAtMyAxNCAtNiAyMiAtMzYgMTM5IC0xMTYgMjYyIC0yMTggMzM4IC0yNCAxOCAtMzMgMjQgLTU4IDM5IC0zOCAyMiAtOTggNDcgLTE0OCA2MSAtNSAxIC0xMSAzIC0xNCA0IC0zIDEgLTggMiAtMTIgMyAtNCAxIC0xMCAyIC0xNCAzIC0yOSA2IC01NSAxMSAtNzcgMTQgLTkgMSAtMjMgMyAtMzIgNCAtMTUgMiAtMTU5IDQgLTE5MiAzeiBtNDYzIC0xMTQ2IGMwIC0xMTkgMCAtMTc5IC0yIC0xOTQgLTE5IC0xODIgLTE5MCAtMzQ5IC0zODYgLTM3OSAtOCAtMSAtMjIgLTMgLTMwIC00IC0yMCAtMyAtOTkgLTMgLTExOCAwIC0xNTMgMjUgLTIzNyAxMTEgLTI2MiAyNjYgLTIgMTYgLTMgOTggMCAxMTEgMSA2IDMgMTYgNCAyNCAxNSA5MCA2OSAxNjkgMTUyIDIyNCA2MSA0MSAxNDEgNzIgMjI3IDkxIDQgMSAxMiAzIDE3IDQgNSAxIDE0IDMgMjAgNCA2IDEgMTYgMyAyMiA0IDYgMSAxNSAyIDE5IDMgNCAxIDE0IDIgMjEgMyAzNSA1IDcxIDkgMTIzIDEyIDIxIDEgMzggMyAzOSAzIDAgMSAzNSAxIDc3IDEgbDc2IC0xIDEgLTE3MnogTTE0NzYgMzAyMSBjMCAtMjk5IDAgLTU3MiAwIC02MDcgMCAtMzUgMSAtNzMgMiAtODYgNCAtNDYgOCAtODEgMTIgLTEwNSA1IC0yNyA2IC0zNSAxMSAtNTkgMyAtMTQgNiAtMjcgNiAtMzAgMSAtMyAzIC0xMSA1IC0xOSAyIC04IDUgLTE4IDYgLTIyIDc5IC0yODYgMjg2IC00NTcgNTY5IC00NzEgNDMgLTIgMTI0IDAgMTQ3IDQgNiAxIDE4IDMgMjYgNCA4IDEgMTkgMyAyMyA0IDQgMSAxNyA0IDI3IDYgMTc2IDQwIDM0MyAxNTkgNDM3IDMxMiA3IDExIDEzIDIwIDE0IDIwIDMgMCA1IC0xMyA3IC01NiAxIC0xOCAzIC00NyA0IC02NSAxIC0xOCAzIC00NSA0IC02MiAxIC0xNiAzIC00NSA0IC02MyAzIC01NiA0IC02MiA5IC02MyA5IC0yIDMwMCAtMSAzMDMgMiAxIDEgMSAxMSAwIDI3IC0xMSAxNjMgLTE0IDI5MSAtMTQgNzQ2IDAgMTg5IC0xIDUxOSAtMSA3MzUgbC0yIDM5MSAtMTcyIDAgLTE3MiAtMSAtMSAtNjA0IGMtMSAtMzMzIC0yIC02MDcgLTMgLTYxMCAtMSAtMyAtMiAtMTIgLTMgLTIwIC0yMSAtMTcyIC0xNjMgLTM0MSAtMzMxIC0zOTUgLTg1IC0yOCAtMTgzIC0zMSAtMjY2IC0xMCAtMTUxIDM5IC0yNDYgMTU4IC0yODUgMzU5IC01IDI2IC05IDU1IC0xMiA4MSAtMSAxMCAtMyAyOCAtNCAzOSAtMiAxNSAtMyAxNTggLTMgNTg2IC0xIDMxMSAtMSA1NjggLTIgNTcxIGwtMSA0IC0xNzIgMCAtMTcyIDAgMCAtNTQzeiIvPjwvZz4KPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMC4wMDAwMDAsMTgwNC4wMDAwMDApIHNjYWxlKDAuNTAwMDAwLC0wLjUwMDAwMCkiIGZpbGw9InVybCgjYikiPjxwYXRoIGQ9Ik02MDc0IDM2MDUgYy0yNSAtMSAtNjkgLTYgLTk1IC0xMSAtNjggLTEzIC0xMjUgLTI5IC0xNjUgLTQ4IC02IC0yIC0xNCAtNiAtMTkgLTggLTEzIC02IC00MiAtMjAgLTUxIC0yNSAtMTcgLTEwIC0yMiAtMTMgLTMyIC0xOSAtMjAgLTEzIC02MCAtNDIgLTc3IC01NiAtNjMgLTU0IC0xMTMgLTExMyAtMTU5IC0xODcgLTEyIC0yMCAtMTMgLTE3IC0xNiAzMCAtNCA2NCAtMTAgMTcxIC0xNiAyNjEgbC0xIDIxIC0xNTYgMSAtMTU2IDAgMiAtMjUgYzE0IC0yNjQgMTMgLTIzNiAxNCAtMTkxNiBsMCAtMTQ5NiAxNzAgLTEgYzk0IDAgMTcyIDAgMTc1IDEgbDQgMSAwIDg5NSBjMCA1ODIgMSA4OTUgMiA4OTUgMSAwIDggLTkgMTYgLTIxIDc3IC0xMTUgMjA4IC0yMDkgMzQzIC0yNDUgMTQzIC0zOCAyNzUgLTQyIDQxMyAtMTIgMjAgNCAyNSA2IDQwIDEwIDI4MyA3NyA1MDEgMzAyIDU4OCA2MDYgMSA1IDMgMTIgNSAxNiAxIDQgMiA5IDMgMTIgMSAzIDQgMTMgNiAyMyA4IDM0IDExIDQ4IDE0IDY1IDEgNyAzIDE3IDQgMjIgNSAyOSAxMCA2NyAxNiAxMjkgMyAyOCAzIDIwMSAwIDIyNyAtNSA1MCAtOCA3NiAtMTIgMTAxIC00IDIzIC02IDM2IC04IDQ0IC0xIDQgLTMgMTMgLTQgMjAgLTQgMjEgLTE3IDY5IC0yMyA4OSAtNDkgMTU1IC0xMTggMjc2IC0yMTYgMzc2IC02MCA2MSAtMTQwIDEyMCAtMjA1IDE1MCAtMjQgMTIgLTM4IDE4IC0zOSAxOCAtMSAwIC01IDIgLTEwIDQgLTE3IDggLTY3IDI1IC04OSAzMCAtMjAgNSAtMjQgNiAtMzIgOCAtMjAgNCAtMzUgNyAtNzIgMTIgLTE1IDIgLTEyOCA0IC0xNjIgM3ogbS03IC0yNzUgYzE3NSAtMTEgMzA3IC04NyA0MDUgLTIzMyA5IC0xNCAxNiAtMjUgMTYgLTI2IDAgLTEgMiAtNCA0IC03IDQgLTUgMjYgLTQ5IDM0IC02NiAxNiAtMzYgMzMgLTg3IDQzIC0xMjkgMTIgLTQ5IDE3IC03NSAyNSAtMTQzIDExIC04OSAwIC0yNTUgLTIyIC0zNDcgLTEgLTQgLTMgLTEyIC00IC0xNyAtNyAtMzEgLTIxIC03OCAtMzQgLTEwOSAtNDUgLTExMiAtMTA2IC0xOTUgLTE5MSAtMjU5IC01OCAtNDQgLTE0MyAtODAgLTIxOSAtOTIgLTcgLTEgLTE4IC0zIC0yNSAtNCAtMjAgLTMgLTg4IC01IC0xMTcgLTIgLTQ2IDQgLTU4IDYgLTExMSAyMCAtMyAxIC0xMSAzIC0xOCA2IC03IDIgLTE2IDYgLTIxIDcgLTE5IDYgLTc0IDM1IC05NyA1MCAtMTA4IDcyIC0xODQgMTc1IC0yMTkgMjk3IC03IDI1IC0xMSA0MSAtMTQgNjAgLTEgNyAtMyAxOSAtNCAyNyAtMyAyMCAtNSAzODYgLTIgNDI1IDIgMzEgMyAzOCAxMiA4NSAxIDcgMyAxNiA0IDIxIDIgMTQgMTMgNTIgMTggNjMgMSAyIDUgMTIgOCAyMSA1OSAxNTMgMTg3IDI3NyAzMzkgMzI2IDQ0IDE1IDczIDIxIDEyNCAyNSAxNyAxIDMxIDMgMzIgMyAxIDAgMTcgLTEgMzQgLTJ6Ii8+PC9nPgo8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwLjAwMDAwMCwxODA0LjAwMDAwMCkgc2NhbGUoMC41MDAwMDAsLTAuNTAwMDAwKSIgZmlsbD0iIzYyNTY1MiI+PHBhdGggZD0iTTI5NTkgMTE5NyBjLTY3IC0xMCAtMTA3IC01OCAtMTA3IC0xMjkgbDAgLTEyIC0xNyAwIGMtMjQgMCAtMjMgMSAtMjMgLTI0IGwxIC0yMSAxOSAtMSAyMCAwIDAgLTEyNyAxIC0xMjYgMjggMCAyOCAwIDEgMTI3IDAgMTI2IDM3IDAgYzI4IDAgMzcgMSAzNyAzIDEgMTIgMCAzOSAtMSA0MSAtMSAxIC0xNCAyIC0zNyAyIGwtMzcgMCAyIDIxIGMyIDQ4IDI2IDc1IDY3IDc1IDMgMCA2IDEgNiAzIDIgMzkgMSA0NSAtNSA0NSAtMSAwIC0xMCAtMiAtMjAgLTN6IE0zODQzIDExODkgYzAgLTIgLTEgLTQwIC0xIC04NSBsMCAtODIgLTExIDEwIGMtNTIgNTMgLTE1NCAzMSAtMTkwIC00MSAtMjIgLTQzIC0yNiAtODYgLTE0IC0xNDQgNiAtMjUgMzMgLTY0IDU3IC03OSAzNyAtMjQgOTMgLTI0IDEyOSAwIDExIDcgMzEgMjYgMzEgMzAgMCAxIDEgMiAyIDIgMSAwIDIgLTkgMyAtMjAgMCAtMTEgMSAtMjEgMiAtMjIgMiAtMyA0OCAtMyA0OSAxIDEgMSAxIDk5IDAgMjE3IGwtMSAyMTUgLTI3IDEgYy0yNCAwIC0yOCAwIC0yOSAtM3ogbS02MCAtMTc2IGMyMyAtNiA0NSAtMjUgNTMgLTQ3IDYgLTEzIDggLTgzIDQgLTEwMiAtMTYgLTc3IC0xMTUgLTkyIC0xNDggLTIyIC0yMyA0NyAtMTUgMTE3IDE2IDE0OSAyMCAyMSA0NyAyOSA3NSAyMnogTTQ1NTkgMTE5MSBjMCAtMSAtMSAtMzkgLTEgLTg0IDAgLTQ2IC0xIC04MyAtMiAtODMgMCAwIC01IDQgLTEwIDkgLTMxIDMyIC05NSAzNyAtMTQwIDExIC05MiAtNTQgLTk1IC0yMjMgLTQgLTI3OCAzNSAtMjEgOTEgLTIxIDEyMyAtMSAxMSA3IDI0IDE5IDMwIDI3IDggMTEgOSAxMCA5IC0xMCAwIC0yNyAtMSAtMjYgMjggLTI2IDIxIDAgMjQgMCAyNCA0IDEgMSAxIDk5IDAgMjE3IGwtMSAyMTQgLTI3IDEgYy0xNSAwIC0yOCAtMSAtMjkgLTF6IG0tNjIgLTE3OCBjMjUgLTYgNDMgLTIyIDUzIC00NSAxMiAtMjUgMTEgLTEwMiAtMiAtMTI3IC0yOSAtNTggLTExMSAtNTggLTE0MCAtMiAtMjAgMzkgLTE4IDEwMCAzIDEzNiAxOCAzMSA1NCA0NyA4NiAzOHogTTUzOCAxMTcwIGMtNDQgLTEzIC0yNiAtODAgMTggLTY4IDM1IDkgMzUgNTggMCA2OCAtOCAyIC05IDIgLTE4IDB6IE0yNzU0IDExNjkgYy0xMyAtNCAtMTcgLTggLTIyIC0yMCAtMTQgLTM3IDMwIC02NSA1NyAtMzggMjYgMjYgMCA2OSAtMzUgNTh6IE0zMDQzIDExNzAgYy00MSAtMTEgLTI1IC03NyAxNyAtNjggMzYgNyAzOCA1OCAzIDY4IC05IDIgLTkgMiAtMjAgMHogTTg3OCAxMTE2IGMtMTMgLTQgLTIzIC04IC0yMyAtOCAtMSAwIC0xIC0xMiAtMSAtMjYgbDAgLTI2IC0yMSAwIGMtMjYgMCAtMjUgMCAtMjUgLTI1IGwxIC0yMCAyMiAtMSAyMyAwIDEgLTk3IGMwIC0xMTUgMiAtMTIzIDI2IC0xNDQgMTggLTE3IDYwIC0yNCA5MiAtMTUgbDEwIDMgMCAyMCBjLTEgMjQgLTIgMjUgLTE4IDIzIC0yNSAtNCAtNDAgMiAtNDkgMTkgbC01IDEwIC0xIDkxIDAgOTAgMzYgMCBjNDYgMCA0MiAtMiA0MiAyMiAwIDI1IDIgMjQgLTQzIDI0IGwtMzUgMCAwIDM0IGMwIDQwIDMgMzggLTMyIDI2eiBNMzgwIDEwNjAgYy01OCAtOCAtOTUgLTU4IC04MSAtMTA2IDkgLTI5IDMyIC00OCA4NSAtNzAgMzMgLTEzIDQ0IC0yNSA0NCAtNDggMCAtNDIgLTU1IC01NSAtMTE0IC0yNiAtMTIgNiAtMTIgNiAtMjAgLTE4IC03IC0yMyAtOCAtMjMgMTkgLTMyIDI0IC04IDMyIC05IDU5IC05IDcwIDAgMTEyIDMzIDExMiA5MCAwIDQyIC0yMiA2OCAtNzUgODkgLTQzIDE3IC01NyAyOSAtNTcgNTAgMCAzNiA1MSA0OSA5NiAyNiA1IC0yIDEwIC00IDExIC0zIDMgMSAxMyAyOSAxMyAzNiAwIDEzIC01OCAyNiAtOTIgMjF6IE03MDMgMTA2MCBjLTUwIC03IC04MyAtNDEgLTgzIC04NiAwIC0zOCAyNyAtNjcgNzYgLTg1IDQ4IC0xNyA2NSAtNDIgNTEgLTcxIC0xNCAtMjcgLTY1IC0zMSAtMTA5IC05IC0xMyA3IC0xMyA3IC0yMCAtMTQgLTcgLTIyIC03IC0yMyA0IC0yOSAzOSAtMjAgMTAxIC0yMSAxMzkgLTIgMzMgMTcgNTIgNTUgNDUgOTEgLTYgMzYgLTI2IDU1IC04MSA3OCAtMzkgMTYgLTQ5IDI1IC00OSA0NiAwIDM4IDUwIDUxIDk3IDI2IDkgLTUgMTAgLTQgMTcgMTYgOCAyMyA4IDIyIC01IDI4IC0yNCAxMCAtNTcgMTUgLTgyIDExeiBNMTExMyAxMDYxIGMtNzkgLTExIC0xMjkgLTc5IC0xMjQgLTE3MCAzIC03MCA0MSAtMTIwIDEwNCAtMTM2IDMxIC04IDkwIC00IDEyNiA4IDE3IDYgMTcgNiAxMiAyNiAtNiAyMyAtNSAyMiAtMjQgMTYgLTgyIC0yNiAtMTQ3IDEgLTE2MCA2NiAtNiAyNSAtMTcgMjMgMTAwIDIzIDExNyAwIDEwNSAtMyAxMDUgMjUgMCA2MSAtMjggMTEzIC03MCAxMzIgLTE5IDggLTUwIDEyIC02OSAxMHogbTI4IC00NCBjMjcgLTQgNDcgLTI4IDUzIC02MSA0IC0yMiAxMSAtMjAgLTc0IC0yMCAtNDAgMCAtNzQgMSAtNzQgMSAtMiAyIDYgMjkgMTIgNDAgMTIgMjIgMzEgMzcgNTQgNDEgMTEgMiAxNCAxIDI5IC0xeiBNMTQwOCAxMDYwIGMtMjMgLTMgLTQyIC0xNCAtNjEgLTM0IGwtMTIgLTE0IC0yIDIwIGMwIDEzIC0yIDIxIC0zIDIyIC00IDIgLTQyIDIgLTQ1IDAgLTEgMCAtMiAtNTEgLTEgLTE0OSBsMSAtMTQ4IDI4IC0xIDI3IDAgMCA5NSBjMCA4NyAwIDk2IDQgMTA3IDIxIDY4IDk5IDc1IDEyMCAxMSAyIC02IDMgLTMzIDQgLTExMCBsMSAtMTAyIDI4IC0xIDI3IDAgMCA5NCBjMCA3OCAxIDk3IDMgMTA4IDE0IDYwIDg5IDc2IDExNSAyNCA5IC0xOCAxMCAtMjcgMTAgLTEyNiAwIC01MiAxIC05NSAxIC05NyAxIC0zIDYgLTMgMjggLTMgbDI3IDAgMSA3IGM0IDE5IDAgMTk5IC01IDIxNiAtMTEgNDEgLTMxIDY2IC02NCA3NyAtMjMgOSAtNjQgNSAtODQgLTggLTEzIC04IC0yOSAtMjIgLTM2IC0zMSBsLTggLTExIC02IDEwIGMtMjAgMzQgLTU2IDUwIC05OCA0NHogTTE4MzYgMTA2MCBjLTMxIC0zIC03NiAtMTkgLTc2IC0yNyAwIC00IDExIC0zNCAxMyAtMzYgMCAtMSA1IDIgMTEgNSAxOSAxMCAzOCAxNSA2MyAxNSA0MiAwIDYwIC0xNCA2NyAtNDkgMyAtMTggMiAtMjAgLTkgLTIwIC00MyAwIC05NCAtMTMgLTEyMiAtMzAgLTY5IC00MyAtNTYgLTE0NSAyMCAtMTY1IDM1IC05IDc5IDIgMTA2IDI2IDEyIDExIDEyIDExIDE0IC0zIDIgLTIyIDAgLTIwIDI4IC0yMCBsMjUgMCAtMSAxNiBjMCA4IC0yIDU2IC0yIDEwNSAtMSA3OSAtMiA5MiAtNSAxMDYgLTE0IDU3IC02MCA4NCAtMTMyIDc3eiBtODAgLTE4NSBjMCAtMzYgLTQgLTQ3IC0yMCAtNjIgLTQzIC0zOSAtMTAzIC0xOSAtMTAwIDMyIDMgNDAgMzggNjAgMTAzIDYxIGwxNyAwIDAgLTMxeiBNMjU2NCAxMDYxIGMtMzMgLTYgLTQ4IC0xMyAtNjggLTMzIGwtMTYgLTE1IC0xIDE3IGMtMiAyNyAtMSAyNiAtMjcgMjYgLTE1IDAgLTIyIC0xIC0yMyAtMiAtMSAtMiAtMiAtNjggLTEgLTE1MCBsMSAtMTQ3IDI3IC0xIGMyOCAwIDI4IDAgMjkgNCAxIDMgMSA0OCAxIDEwMSBsMSA5NiA1IDExIGMyNiA1NCA5OCA2MiAxMjIgMTMgMTAgLTE5IDEwIC0yMiAxMiAtMTI2IGwxIC05OCAyNyAtMSBjMjAgMCAyNyAxIDI4IDIgMyA0IDIgMTc2IDAgMTk3IC02IDUzIC0zMCA4NyAtNzIgMTAxIC0xMiA0IC0zNiA2IC00NiA1eiBNMzI1MSAxMDYwIGMtODQgLTExIC0xMzUgLTcxIC0xMzYgLTE1NyAwIC03NyAzNiAtMTI4IDEwNSAtMTQ4IDM0IC05IDExMCAtMiAxMjYgMTIgNCAzIDMgMTIgLTQgMzYgLTMgOCAtMiA4IC0yMSAyIC0xOSAtNiAtNTEgLTkgLTcwIC01IC05NSAxOCAtMTA4IDE2OSAtMTYgMjA4IDE4IDggNjUgNyA4NyAtMSA4IC0zIDE1IC01IDE2IC00IDMgMyAxMiAzOCAxMSA0MSAtNCAxMCAtNjYgMjAgLTk4IDE2eiBNMzQ1MiAxMDYwIGMtMjcgLTMgLTc2IC0yMCAtNzYgLTI2IDAgLTQgMTAgLTMzIDEzIC0zNSAxIC0yIDQgLTIgMTIgMyA0MCAyMiA5NyAyMCAxMTcgLTQgNyAtOCAxNSAtMzEgMTQgLTQxIC0xIC04IC0xIC04IC0xMCAtOSAtMTEyIC02IC0xNjcgLTQzIC0xNjYgLTExMiAwIC00NCAyNyAtNzYgNjkgLTg0IDM2IC03IDc1IDQgMTAyIDI4IGwxMSAxMCAxIC0xMSBjMiAtMjMgMSAtMjIgMjggLTIzIDI2IDAgMzEgMiAyNiAxMCAtMSAyIC0yIDQ4IC0zIDEwNCAtMSAxMDAgLTEgMTAxIC02IDExNyAtMTcgNTYgLTYxIDgwIC0xMzIgNzN6IG04MiAtMTg0IGMtMSAtMzYgLTQgLTQ0IC0xOSAtNjAgLTM4IC00MSAtMTAzIC0yNCAtMTAzIDI2IDAgNDAgMzYgNjIgMTA1IDY0IGwxOCAwIC0xIC0zMHogTTQwNjEgMTA2MCBjLTgzIC05IC0xMzggLTg2IC0xMjcgLTE3NiA4IC02OCA0MSAtMTA5IDEwNSAtMTMwIDE0IC01IDYzIC00IDgxIDIgNTUgMTcgODkgNTUgMTAxIDExMyA0IDIwIDMgNjggLTIgODcgLTE5IDcxIC04MiAxMTMgLTE1OCAxMDR6IG01MyAtNTEgYzcwIC0zNSA2OCAtMTcxIC0yIC0yMDcgLTM4IC0yMCAtODYgLTEgLTEwNyA0MSAtMjYgNTQgLTExIDEzNiAzMCAxNjEgMjMgMTQgNTggMTYgNzkgNXogTTQ3NjkgMTA2MCBjLTUxIC03IC05MiAtNDIgLTEwOSAtOTMgLTI2IC03NCAtOCAtMTUxIDQ0IC0xODkgNDAgLTMwIDEwNSAtMzYgMTY5IC0xNyAyNSA4IDI0IDcgMTggMjkgLTUgMjIgLTUgMjIgLTIxIDE2IC0xNyAtNiAtNDMgLTEwIC02NCAtMTAgLTU1IDAgLTg4IDI2IC05OSA3NiAtNiAyNCAtMTYgMjIgMTAwIDIyIDc1IDAgMTAxIDEgMTAzIDIgMSAyIDIgMTAgMiAyMyAwIDk1IC01OCAxNTIgLTE0MyAxNDF6IG00MCAtNDUgYzI1IC03IDUwIC00NSA0NyAtNzIgbC0xIC02IC03NCAtMSBjLTg1IDAgLTc4IC0yIC03MiAxOCAxNSA1MSA1MyA3NCAxMDAgNjF6IE01MjMgMTA1NSBjLTIgLTEgLTMgLTMzIC0zIC0xNTAgbDAgLTE0OSAyOCAwIDI4IDAgMCAxNDkgYzAgMTM0IDAgMTQ5IC0zIDE1MCAtNCAxIC00NyAxIC01MCAweiBNMjEyMyAxMDUzIGMtMyAtMyAtMyAtMTMgLTMgLTg1IDAgLTExMCAzIC0xMzcgMTggLTE2OCAzMSAtNjQgMTI4IC02OCAxNzcgLTcgbDcgNyAxIC0xNyBjMSAtMTAgMSAtMjAgMiAtMjIgMCAtNCAxIC00IDI1IC00IGwyNSAwIC0xIDE0NiBjMCA4OSAtMSAxNDcgLTIgMTQ5IC0yIDQgLTQ4IDYgLTUzIDIgLTIgLTEgLTMgLTI1IC0zIC0xMDAgbC0xIC05OSAtNiAtMTMgYy0yNSAtNTEgLTk1IC02MCAtMTE4IC0xNCAtMTAgMjAgLTExIDI4IC0xMSAxMjggMCA4MyAwIDk0IC0zIDk3IC01IDQgLTQ5IDQgLTU0IDB6IE0yNzM5IDEwNTUgYy0yIC0xIC0zIC0zMyAtMyAtMTUwIGwwIC0xNDkgMjggMCBjMjEgMCAyOCAxIDI4IDMgMCAxIDAgNjcgMCAxNDcgMCA4MCAwIDE0NyAtMSAxNDggLTEgMiAtNDggMyAtNTIgMXogTTMwMjggMTA1MyBjLTEgLTIgLTIgLTQyIC0yIC0xNDkgbDEgLTE0NyAyNyAtMSBjMjQgMCAyNiAwIDI2IDMgMSA4OCAwIDI5NCAtMSAyOTUgLTIgMyAtNDggMiAtNTEgLTF6IE01MzcgNTU5IGMwIC0xIC0xIC0zOSAtMSAtODQgMCAtNDYgLTEgLTgzIC0xIC04MyAtMSAwIC0zIDMgLTYgNiAtMTUgMTggLTQ3IDMwIC03OCAzMCAtODMgMSAtMTM2IC02MiAtMTM2IC0xNTkgMCAtOTMgNTMgLTE1MyAxMzIgLTE1MSAzNSAwIDc3IDIyIDkxIDQ3IGwzIDYgMSAtMTIgYzEgLTcgMiAtMTcgMiAtMjMgbDAgLTEyIDI2IDAgMjUgMCAtMSAyMTMgYzAgMTE4IDAgMjE2IC0xIDIxOSAtMSA0IC0yIDQgLTI4IDQgLTE0IDAgLTI3IC0xIC0yOCAtMXogbS02NSAtMTc3IGMzMCAtNiA1MCAtMjUgNjAgLTU0IDUgLTE2IDYgLTg2IDEgLTEwMiAtMjIgLTc0IC0xMTQgLTg0IC0xNDggLTE1IC00MCA4MyAxMyAxODYgODcgMTcxeiBNMzk5NyA1NTggYzAgLTEgLTEgLTk4IC0xIC0yMTcgbDAgLTIxNiAyNCAtMSAyNCAwIDEgMjEgYzEgMTIgMiAyMSAyIDIxIDEgMCA3IC03IDE1IC0xNSA0MSAtNDMgMTE1IC00NSAxNjQgLTQgNzEgNTkgNzIgMTk5IDEgMjU3IC00NyAzOSAtMTMwIDMxIC0xNjYgLTE1IGwtNyAtMTAgMCA4OCBjMCA0NyAtMSA4OCAtMSA5MCAtMiAzIC01NCA1IC01NiAxeiBtMTUxIC0xNzYgYzQ2IC03IDczIC00OCA3MiAtMTA5IDAgLTI3IC0zIC00MyAtMTIgLTYyIC0zMCAtNjMgLTExOCAtNjIgLTE0OCAxIC02IDEzIC05IDgxIC00IDEwMyA5IDQ0IDUwIDc0IDkyIDY3eiBNNDMxMyA1NTggYy0xIC0yIC0xIC0xMDAgLTEgLTIxOCBsMSAtMjE1IDI3IC0xIGMyMCAwIDI3IDEgMjggMiAyIDMgMyA0MjYgMSA0MzEgLTIgNCAtNTUgNSAtNTYgMXogTTM4NDQgNTQ4IGMtMyAtMyAtMjMgLTM0IC00NyAtNzQgLTkgLTE1IC05IC0xNiAxNCAtMTYgMjAgMCAxNiAtMiA0OSAzNiAxNCAxNiAyOSAzNCAzNSA0MSA4IDkgOSAxMiA3IDEzIC01IDMgLTU1IDIgLTU4IDB6IE0xMTM2IDUzNCBjLTI0IC0xNiAtMjEgLTUzIDQgLTYzIDM4IC0xNSA2NiAzMiAzNiA2MCAtOSA4IC0yOSAxMCAtNDAgM3ogTTE1NTYgNTM1IGMtMjUgLTEzIC0yMiAtNTQgNSAtNjQgMzggLTE1IDY1IDM3IDMyIDYyIC03IDUgLTI3IDYgLTM3IDJ6IE0yODU5IDUzNyBjLTIgLTEgLTMgLTQgLTMgLTYgMCAtOCAtNiAtMTcgLTExIC0xOCAtNCAtMSAtMTEgMSAtMjkgMTAgLTQ2IDI0IC03NCAxMiAtODAgLTMzIC0yIC0yMCAtMSAtMjIgMTQgLTIyIDE2IDAgMTcgMSAxOSAxMSA0IDE5IDEyIDIxIDM4IDcgNDggLTI1IDc1IC0xNCA4MSAzMiAzIDE5IDIgMjAgLTE0IDIwIC03IDAgLTE0IC0xIC0xNSAtMXogTTQ0NDAgNTM3IGMtMjIgLTkgLTI4IC00NiAtOSAtNjEgMzYgLTI4IDc5IDIzIDQ1IDU1IC02IDYgLTI3IDkgLTM2IDZ6IE0xOTA5IDQ4NiBjLTEwIC00IC0yMCAtNyAtMjMgLTggbC02IC0yIDAgLTI3IC0xIC0yNiAtMjEgLTEgYy0yNSAwIC0yNCAwIC0yNCAtMjEgMCAtMjQgLTEgLTIzIDI0IC0yMyBsMjIgMCAwIC04OCBjMCAtMTE1IDIgLTEyOCAyNCAtMTUwIDE5IC0yMCA1OCAtMjcgOTMgLTE4IDEzIDMgMTMgNCAxMiAyNyBsLTIgMTkgLTIzIC0xIGMtMjMgMCAtMjMgMCAtMzEgNiAtMTYgMTIgLTE3IDIxIC0xNyAxMjMgbDEgODEgMzggMSBjMjAgMCAzNyAxIDM3IDIgMSAxMiAxIDM4IDAgNDAgMCAxIC0xMCAyIC0zNyAyIC00MyAwIC0zOSAtNCAtMzkgMzggMCAzNyAyIDM1IC0yNyAyNnogTTE1MSA0MjggYy0yMSAtMiAtNDUgLTcgLTYzIC0xNiAtMTkgLTggLTE5IC05IC0xMyAtMjcgOCAtMjIgNyAtMjIgMjEgLTE1IDMyIDE2IDc2IDIwIDk4IDkgMTkgLTkgMjkgLTI0IDMxIC00OCBsMSAtMTQgLTI5IC0zIGMtNDQgLTMgLTY5IC0xMCAtOTQgLTIzIC03NyAtNDAgLTcwIC0xNDkgMTAgLTE3MCAzOSAtMTAgOTEgNSAxMTIgMzIgNiA3IDYgNyA4IC01IDEgLTYgMiAtMTQgMiAtMTcgbDEgLTcgMjYgMCAyNiAwIC0xIDggYy0xIDQgLTIgNTIgLTMgMTA2IC0xIDU2IC0yIDEwMyAtNCAxMDggLTE0IDYxIC01NSA4NyAtMTI5IDgyeiBtNzcgLTE4NCBjLTEgLTQxIC0xMSAtNjEgLTM2IC03NCAtNDQgLTIzIC04NCAtMyAtODQgNDAgLTEgNDEgMzUgNjMgMTA0IDY0IGwxNiAwIDAgLTMweiBNNzc2IDQyOCBjLTI5IC00IC01NyAtMjAgLTcwIC00MiAtNiAtOCAtOCAtNiAtOCA5IDAgNiAtMSAxNSAtMSAyMCBsLTIgNyAtMjQgMCAtMjQgLTEgMCAtMTMgYzAgLTggMCAtNzUgMSAtMTQ5IGwwIC0xMzUgMjggMCAyOCAwIDAgOTIgYzAgMTA1IDEgMTExIDE0IDEzMiAyOCA0MyA4MyA0NCAxMDQgMyA5IC0xNiA5IC0xOCAxMCAtMTIzIGwxIC0xMDMgMjggLTEgYzI1IDAgMjcgMCAyNyAzIDAgMiAwIDQzIDAgOTAgMCA5MyAxIDEwOSA5IDEyNiAyNCA0NyA4NiA1MiAxMDkgNyA5IC0xOCAxMCAtMjYgMTAgLTEyNiAwIC01MSAxIC05NSAxIC05NyAxIC0zIDYgLTMgMjggLTMgbDI3IDAgMSA1IGMzIDExIDAgMjA0IC00IDIxNSAtNyAyNSAtMTEgMzUgLTIyIDUxIC0yNiAzNSAtODcgNDUgLTEyOCAyMCAtMTMgLTggLTMwIC0yNCAtMzggLTM0IC01IC04IC02IC04IC04IC0zIC0xIDIgLTUgOSAtMTAgMTYgLTE5IDI2IC01MiAzOSAtODcgMzR6IE0xMzcxIDQyOCBjLTI2IC0zIC00NSAtMTIgLTY2IC0zMiAtOCAtOCAtMTYgLTE1IC0xNiAtMTQgLTEgMCAtMSA4IC0xIDE3IDAgMjQgMiAyMyAtMjcgMjMgbC0yNCAwIDAgLTE0NiBjMSAtODEgMiAtMTQ4IDIgLTE1MCAxIC0yIDcgLTIgMjggLTIgbDI4IDEgMSAxMDAgMSAxMDAgNSAxMSBjMjcgNTggMTA3IDYwIDEyNiAzIDYgLTIwIDggLTQ3IDggLTEzMCAwIC00MyAwIC04MCAwIC04MSAwIC00IDMgLTQgMjggLTQgbDI4IDAgMCAxMDEgYzAgMTA4IC0xIDExNiAtMTEgMTQxIC0xOCA0NCAtNTkgNjcgLTExMCA2MnogTTE3MzMgNDI4IGMtNzggLTcgLTExNyAtOTEgLTY0IC0xNDAgMTQgLTEzIDI4IC0yMSA1NCAtMzIgNDAgLTE3IDUxIC0yNiA1NCAtNDUgNyAtNDUgLTQ5IC02MyAtMTA5IC0zNiAtMTQgNyAtMjAgNyAtMjAgMiAwIC0xIC0yIC05IC01IC0xOCAtNiAtMTkgLTYgLTIxIDUgLTI2IDI2IC0xMSA0MiAtMTQgNzQgLTE0IDcwIDAgMTEwIDMzIDExMSA5MCAwIDQyIC0yMSA2NyAtNzggOTAgLTM3IDE1IC00OSAyNCAtNTMgNDAgLTEwIDQwIDQwIDU5IDkzIDM2IDE0IC03IDE0IC02IDIyIDE2IDYgMTkgNiAxOSAtNSAyNSAtMTkgMTAgLTQ5IDE0IC03OSAxMnogTTIxNjAgNDI4IGMtMjUgLTMgLTUzIC0yNCAtNjUgLTQ4IC0zIC02IC01IC0xMCAtNSAtMTAgMCAxIC0xIDExIC0xIDI0IC0xIDEzIC0yIDI0IC0yIDI2IC0xIDIgLTcgMiAtMjUgMiBsLTI1IC0xIDAgLTggYzEgLTYgMyAtMjY3IDMgLTI4NSAwIC00IDMgLTQgMjggLTQgbDI4IDAgMCA4MyBjMCA5MCAxIDEwNSAxMCAxMjQgMTMgMjggMzIgNDEgNjMgNDMgbDE5IDAgMCAyNyBjMCAyNyAwIDI3IC00IDI3IC0zIDAgLTcgMCAtOSAxIC0yIDAgLTkgMCAtMTUgLTF6IE0yMjgyIDQyOCBjLTM1IC0zIC03OCAtMTggLTc4IC0yOSAwIC01IDkgLTMwIDExIC0zMyAyIC0xIDYgMCAxMyA0IDI3IDE0IDc2IDIwIDk2IDExIDIxIC0xMCAzMSAtMjYgMzMgLTUxIGwyIC0xMyAtMzAgLTMgYy0xMDEgLTggLTE1MCAtNDcgLTE0NyAtMTE1IDUgLTc5IDEwNiAtMTEwIDE2OSAtNTMgMTMgMTIgMTMgMTMgMTYgLTYgbDIgLTE1IDI2IC0xIDI2IDAgLTIgMTEgYy0xIDcgLTIgNTUgLTMgMTA4IC0xIDgzIC0yIDk4IC01IDEwOSAtMTYgNTcgLTU3IDgxIC0xMjkgNzZ6IG03OCAtMTg1IGMtMSAtNDMgLTEwIC02MCAtMzggLTc0IC00MiAtMjEgLTgyIC0yIC04MiA0MSAwIDQxIDM1IDYzIDEwNCA2NCBsMTYgMCAwIC0zMXogTTI1OTAgNDI5IGMtODggLTkgLTE0MyAtNzAgLTE0MyAtMTU5IDAgLTc4IDM5IC0xMzEgMTExIC0xNDggMTAgLTMgMTAgLTIgLTIgLTI0IC0xMyAtMjQgLTEzIC0yNSAzIC0yOCAxNyAtMyAyNiAtNyAzMCAtMTQgMTEgLTE5IC0xNSAtMzAgLTQ0IC0yMCAtNiAyIC0xMiA0IC0xMiAzIC0yIC0yIC05IC0yMiAtOSAtMjYgMCAtMTMgNTUgLTE4IDc5IC03IDQwIDE4IDM5IDcwIC0yIDg4IC05IDQgLTkgNCAtNyA4IDExIDE3IDkgMTUgMjYgMTcgMjQgMiA1NiAxMSA2MCAxNyAyIDMgLTYgMzYgLTkgNDAgLTIgMiAtNCAxIC0xMiAtMiAtODIgLTMyIC0xNTMgMTQgLTE1NCA5OSAwIDgyIDY4IDEyOSAxNDggMTAyIDggLTMgMTYgLTUgMTcgLTQgNCA0IDEyIDM5IDEwIDQyIC03IDkgLTYxIDE4IC05MCAxNnogTTI3ODcgNDI4IGMtMzIgLTMgLTc5IC0xOSAtNzkgLTI3IDAgLTQgMTEgLTM0IDEzIC0zNiAwIC0xIDUgMiAxMSA1IDI1IDEzIDcyIDE5IDkzIDEyIDIzIC04IDM2IC0yNyAzOCAtNTQgbDAgLTExIC0yNyAtMiBjLTg0IC04IC0xMzEgLTM0IC0xNDUgLTgwIC0yMCAtNjkgMjkgLTEyNSAxMDEgLTExNyAyNiAzIDU4IDE5IDcwIDMzIDYgOCA3IDYgOSAtNyAyIC0yMiAwIC0yMCAyOCAtMjAgbDI2IDAgLTIgMTcgYy0xIDkgLTIgNTYgLTIgMTA1IC0xIDc5IC0yIDkxIC01IDEwNSAtMTQgNTcgLTU2IDgyIC0xMjkgNzd6IG03NyAtMTg1IGwwIC0zMSAtNiAtMTIgYy0yNiAtNDkgLTk5IC01MyAtMTEyIC02IC0xMyA0OCAyNiA3OCAxMDMgODAgbDE1IDAgMCAtMzF6IE0zNTE0IDQyOCBjLTI5IC0zIC01MiAtMTQgLTcyIC0zNSBsLTE0IC0xNSAtMSA2IGMwIDQgLTEgMTEgLTEgMTYgMCA1IC0xIDEyIC0xIDE2IGwtMiA2IC0yNSAwIC0yNSAtMSAwIC04IGMxIC00IDEgLTk4IDIgLTIwOCBsMiAtMjAxIDI3IDAgMjggMCAwIDc3IGMwIDQyIDAgNzcgMSA3NyAxIDAgNCAtNCA4IC04IDQ2IC01MSAxNDUgLTQwIDE4NyAyMSAyMiAzMyAyOSA1OCAyOSAxMDcgLTEgOTkgLTU3IDE1OCAtMTQzIDE1MHogbTM0IC01MiBjNDYgLTIxIDY2IC05OSA0MSAtMTYwIC0zMSAtNzUgLTEzNiAtNjggLTE1NCAxMCAtNSAyMCAtNCA3MSAxIDkxIDEzIDUxIDY2IDc5IDExMiA1OXogTTQ2NTkgNDI4IGMtODUgLTYgLTE0MyAtNzAgLTE0MyAtMTU4IDAgLTgwIDQ5IC0xNDAgMTI0IC0xNTAgMzcgLTYgMTE2IDggMTExIDE5IDAgMSAtMiAxMCAtNCAyMCAtNCAxOSAtNiAyMSAtMTYgMTYgLTI4IC0xMyAtNzcgLTEyIC0xMDYgMiAtNjcgMzUgLTY3IDE1NyAxIDE5MyAyNCAxMyA2NiAxNSA5NiA1IDE5IC02IDE4IC03IDI1IDE3IDYgMTkgNiAyMSAtNCAyNSAtMjIgOSAtNTIgMTMgLTg0IDExeiBNNDg1NSA0MjggYy0yNSAtMyAtNjEgLTE0IC03NSAtMjQgLTMgLTIgNiAtMzUgMTEgLTM4IDEgLTEgNiAxIDEzIDQgNDAgMjAgODYgMjEgMTA5IDMgOSAtNyAxOCAtMjcgMjAgLTQzIGwxIC0xMyAtMjkgLTMgYy02MiAtNSAtOTcgLTE4IC0xMjIgLTQ0IC00MyAtNDUgLTMyIC0xMTggMjIgLTE0MyA0MCAtMTkgOTkgLTcgMTI3IDI0IDggOSA3IDkgOSAtNSAyIC0yNCAwIC0yMiAyOSAtMjIgbDI1IDEgLTEgNiBjMCAzIC0xIDUxIC0yIDEwNSAtMSA1NCAtMiAxMDEgLTMgMTA0IC0xIDMgLTIgOSAtMyAxNCAtMTMgNTMgLTYzIDgxIC0xMzEgNzR6IG04MSAtMTg0IGMtMiAtNDIgLTEyIC02MiAtMzkgLTc1IC00NCAtMjEgLTgyIC0yIC04MiA0MCAwIDQyIDM1IDY0IDEwNSA2NSBsMTYgMCAwIC0zMHogTTMwNjYgNDI2IGMtMyAtMSAtOSAtMyAtMTQgLTQgLTM2IC0xMSAtNjggLTM5IC04NSAtNzUgLTIwIC00MyAtMjAgLTEwNyAwIC0xNTAgMzMgLTcxIDExOCAtOTkgMTk0IC02NSAxMDcgNDggMTExIDIzMCA2IDI4MiAtMjYgMTIgLTc5IDE5IC0xMDEgMTJ6IG02MSAtNDYgYzUyIC0xOSA3NCAtMTA4IDQyIC0xNzAgLTI1IC01MSAtODYgLTY0IC0xMjYgLTI2IC00MCAzOCAtNDQgMTIyIC03IDE3MSAxOCAyNiA1OSAzNyA5MSAyNXogTTExMjcgNDIwIGMtMSAtMiAtMSAtNjkgLTEgLTE0OSBsMSAtMTQ2IDI4IDAgMjggMCAwIDE0OCAwIDE0OCAtMjggMSBjLTIwIDAgLTI3IC0xIC0yOCAtMnogTTE1NDUgNDE5IGMtMSAtNCAtMSAtMjg4IDAgLTI5MiAxIC0zIDYgLTMgMjkgLTMgbDI4IDAgMCAxNDkgLTEgMTQ4IC0yNyAxIGMtMjQgMCAtMjggMCAtMjkgLTN6IE0zNjg5IDQxOSBjLTIgLTUgLTEgLTE2MCAxIC0xODYgMyAtNDIgMTMgLTY4IDMyIC04NyA0MiAtNDMgMTIxIC0zNyAxNjAgMTMgbDggOSAxIC0xNCBjMCAtOCAxIC0xOCAyIC0yMiBsMCAtNyAyNSAtMSAyNSAwIC0xIDE0NCBjMCA4MCAtMSAxNDcgLTEgMTUwIC0xIDQgLTEgNCAtMjkgNCBsLTI3IC0xIC0xIC05OSBjLTEgLTEwOCAtMSAtMTA0IC0xMyAtMTIzIC0yNyAtNDEgLTg2IC00NCAtMTEwIC03IC0xMiAxOSAtMTMgMjggLTEzIDEzMCAwIDUyIC0xIDk1IC0xIDk3IC0xIDMgLTYgMyAtMjkgMyAtMjMgMCAtMjggMCAtMjkgLTN6IE00NDI3IDQyMSBjMCAtMSAtMSAtNjggLTEgLTE0OSBsMCAtMTQ4IDI5IDAgMjggMSAwIDE0OCAwIDE0OCAtMjcgMSBjLTE1IDAgLTI4IC0xIC0yOSAtMXoiLz48L2c+Cjwvc3ZnPgo=" alt="SUAP, sistema unificado de administração pública" width="124" height="64"></div>
-          <form class="login-form" data-form="login" novalidate>
-            <label class="field" for="mat"><span>Matrícula</span><input id="mat" inputmode="numeric" autocomplete="username" placeholder="Sua matrícula" required></label>
-            <label class="field" for="pwd"><span>Senha</span><div class="pwd"><input id="pwd" type="password" autocomplete="current-password" placeholder="Sua senha" required><button type="button" class="iconbtn sm" data-act="togglepwd" aria-label="Mostrar senha">${ic('eye')}</button></div></label>
-            <p class="lg-err" id="lgerr" role="alert" hidden></p>
-            <button class="btn primary big" type="submit"><span>Entrar</span><i class="spin"></i></button>
-            <button class="btn ghost" type="button" id="lgdemo" data-act="demo" hidden>Entrar com dados de exemplo</button>
-          </form>
-          <div class="lg-or"><span>ou</span></div>
-          ${saved ? `<button class="lg-guest" data-act="guestresume">${meAvOf(saved)}<span><b>Continuar como ${esc(saved.first)}</b><small>Conta de visitante neste aparelho</small></span>${ic('chev')}</button>
-          <button class="lg-guest-new" data-act="guest">Criar outra conta de visitante</button>`
-          : `<button class="lg-guest" data-act="guest"><i>${ic('users')}</i><span><b>Entrar como visitante</b><small>Não é do IFRN? Crie uma conta rápida.</small></span>${ic('chev')}</button>`}`;
+    const guest = S.lgMode === 'guest';
     return {
       chrome: false,
-      navy: true,
-      mount: (el) => { applySky(); const box = $('.login', el); if (box.classList.contains('intro')) setTimeout(() => box.classList.remove('intro'), 1900); },
-      html: `<div class="login${intro ? ' intro' : ''}${guest ? ' guest' : ''}">
-        <div class="lg-hero">
-          <i class="lg-sunb"></i><i class="lg-cloud c1"></i><i class="lg-cloud c2"></i>
-          ${facadeArt()}
-          <div class="lg-brand">${mark('mark lg-mark')}<div class="lg-word"><b>etal</b><span>connect</span></div></div>
-          <p class="lg-event">Encontro de Tecnologia do Alto Oeste Potiguar</p>
+      mount: (el) => mountBadgeLogin(el),
+      html: `<div class="login lx lx-cracha${guest ? ' guest-mode' : ''}">
+        <header class="lx-brand dark">${mark('mark xs')}<b>etal</b><span>connect</span></header>
+        <div class="lx-hang" id="lxhang">
+          <i class="lx-strap"><span>etal · etal · etal · etal · etal · etal · etal · etal · etal · etal</span></i><i class="lx-clip"></i>
+          <div class="lx-card" aria-hidden="true"><div class="lx-flip">
+            <div class="lx-face blank">
+              <div class="lx-card-top">${mark('mark xs')}<b>etal</b>${pins}</div>
+              <div class="lx-card-id"><span class="lx-photo">${ic('user')}</span><span class="lx-lines"><i class="w1" data-live="name">Seu nome</i><i class="w2" data-live="sub">${guest ? 'Visitante' : 'Matrícula do SUAP'}</i></span></div>
+              <div class="lx-card-qr"><span>${ic('qr')}</span><small data-live="state">Seu QR aparece aqui depois de entrar</small></div>
+              <div class="lx-card-foot">26 a 28 nov · IFRN Pau dos Ferros</div>
+            </div>
+            <div class="lx-face filled"></div>
+          </div></div>
+          <p class="lx-pull" aria-hidden="true">${ic('chev')}<span>Puxe o crachá para entrar</span></p>
         </div>
-        <div class="lg-sheet">${sheet}</div>
+        <div class="lx-bottom">
+          <div class="lx-start">
+            <div class="lx-seg" role="tablist" aria-label="Como você vai entrar">
+              <button type="button" role="tab" data-act="lgmode" data-v="suap" aria-selected="${!guest}">Sou do IFRN</button>
+              <button type="button" role="tab" data-act="lgmode" data-v="guest" aria-selected="${guest}">Vim de fora</button>
+            </div>
+            <div class="lx-form">${guest ? guestFields() : suapFields()}</div>
+          </div>
+          <div class="lx-done" role="status">
+            <h2 class="lx-q" data-live="hello">Tudo certo!</h2>
+            <p>Puxe o crachá para baixo para abrir o app.</p>
+            <button class="btn primary big" data-act="lgenter" type="button">Abrir o app</button>
+            <button class="btn ghost" data-act="lgredo" type="button">Não sou eu</button>
+          </div>
+        </div>
       </div>`,
     };
   };
-  const meAvOf = (p) => `<span class="av g-av">${esc(p.initials)}</span>`;
+  /* Dados aparecendo no crachá enquanto a pessoa digita. */
+  function mountBadgeLogin(el) {
+    const live = (k, v) => { const n = $(`[data-live="${k}"]`, el); if (n) { n.textContent = v; n.classList.add('typed'); } };
+    el.addEventListener('input', (e) => {
+      const t = e.target;
+      if (t.id === 'mat') live('sub', t.value.trim() ? `Matrícula ${t.value.trim()}` : 'Matrícula do SUAP');
+      if (t.id === 'gname') live('name', t.value.trim() || 'Seu nome');
+      if (t.id === 'gcity' || t.name === 'gkind') {
+        const kind = (GUEST_KINDS.find(([v]) => v === ($('[name=gkind]:checked', el) || {}).value) || GUEST_KINDS[0])[1];
+        live('sub', ['Visitante', kind, $('#gcity', el)?.value.trim()].filter(Boolean).join(' · '));
+      }
+    });
+    el.addEventListener('change', (e) => { if (e.target.name === 'gkind') e.target.dispatchEvent(new Event('input', { bubbles: true })); });
+    /* Puxar o crachá: o cordão estica; passando do ponto, a tela desce e mostra o app. */
+    const hang = $('#lxhang', el); const strap = $('.lx-strap', el); let y0 = null, dy = 0;
+    hang.addEventListener('pointerdown', (e) => { if (!lgPending) return; y0 = e.clientY; dy = 0; hang.setPointerCapture(e.pointerId); $('.login', el).classList.add('pulling'); });
+    hang.addEventListener('pointermove', (e) => {
+      if (y0 === null) return; dy = Math.max(0, e.clientY - y0);
+      const k = dy < 140 ? dy : 140 + (dy - 140) * 0.35; strap.style.height = `calc(var(--sh) + ${k}px)`;
+      hang.classList.toggle('ready', dy > 110);
+    });
+    const release = () => {
+      if (y0 === null) return; y0 = null; $('.login', el)?.classList.remove('pulling');
+      if (dy > 110) { lgOpenApp(); return; }
+      strap.style.height = ''; hang.classList.remove('ready');
+    };
+    hang.addEventListener('pointerup', release); hang.addEventListener('pointercancel', release);
+  }
+  /* Entrou: o cartão vira e mostra o crachá preenchido. */
+  function lgFilled(prof) {
+    lgPending = prof;
+    const lg = $('.login'); if (!lg) return;
+    $('.lx-face.filled', lg).innerHTML = filledFace(prof);
+    $('[data-live="hello"]', lg).textContent = `Tudo certo, ${prof.first}!`;
+    lg.classList.add('filled'); buzz([14, 40, 14]);
+    setTimeout(() => $('[data-act="lgenter"]', lg)?.focus({ preventScroll: true }), 700);
+  }
+  /* A tela de entrada desce como uma cortina e o app aparece por trás. */
+  function lgOpenApp() {
+    if (!lgPending) return;
+    const prof = lgPending; lgPending = null;
+    const lg = $('.login'); const screen = $('.screen');
+    const cover = document.createElement('div'); cover.className = 'lx-cover';
+    if (lg) cover.appendChild(lg);
+    screen.appendChild(cover);
+    navReset(); S.lgMode = null; enterApp();
+    requestAnimationFrame(() => requestAnimationFrame(() => cover.classList.add('go')));
+    setTimeout(() => cover.remove(), reduce ? 50 : 750);
+    if (prof.source === 'visitante') setTimeout(() => notify(`Boas-vindas, ${prof.first}!`, 'Sua conta de visitante está pronta. Mostre o QR do crachá na recepção.'), 900);
+  }
+  function lgShake(msg) {
+    const c = $('.lx-card'); if (!c) return;
+    c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake'); buzz(40);
+    const s = $('[data-live="state"]'); if (s) s.textContent = msg || 'Confira os dados abaixo';
+  }
   /* Conta de visitante: só o necessário para o crachá e o certificado. */
   function guestProfile(f) {
     const name = f.name.replace(/\s+/g, ' ').trim(); const parts = name.split(' ');
@@ -4735,6 +4801,7 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
     return {
       html: `${header('Painel da organização')}<div class="pad stack org">
         <p class="org-demo st" ${st(0)}>${ic('info')}<span>Visão da equipe do ETAL. Números simulados para a demonstração; os avisos e trocas de sala valem só neste aparelho.</span></p>
+        <a class="org-desk st" ${st(0)} href="admin.html" target="_blank" rel="noopener">${ic('laptop')}<span><b>Painel completo no computador</b><small>Planta ao vivo, participantes e exportação em CSV</small></span>${ic('open')}</a>
         <div class="org-kpis st" ${st(1)}>
           <div><b>${liveCred}</b><small>credenciados</small><em>de ${D.org.inscritos} inscritos</em></div>
           <div><b>${inRooms}</b><small>pessoas em sala</small><em>${now.length} atividades agora</em></div>
@@ -5203,15 +5270,14 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
 
   function setTheme(v) { UI.mode = v === 'dark' ? 'escuro' : 'claro'; applyUI(); }
   function applyProfile(p) { Object.assign(D.person, p); }
-  /* Troca o painel do login sem refazer a ilustração. */
+  /* Troca entre IFRN e visitante sem refazer o crachá. */
   function lgSwap(mode) {
     S.lgMode = mode;
-    const cur = $('.login'); if (!cur) return;
-    const tmp = document.createElement('div'); tmp.innerHTML = Screens.login().html;
-    cur.classList.toggle('guest', mode === 'guest'); cur.classList.remove('intro');
-    const next = $('.lg-sheet', tmp); next.classList.add('swap');
-    $('.lg-sheet', cur).replaceWith(next);
-    if (mode === 'guest') setTimeout(() => $('#gname')?.focus({ preventScroll: true }), 350);
+    const lg = $('.login'); if (!lg) return;
+    lg.classList.toggle('guest-mode', mode === 'guest');
+    lg.querySelectorAll('[data-act="lgmode"]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.v === (mode || 'suap'))));
+    const box = $('.lx-form', lg); box.innerHTML = mode === 'guest' ? guestFields() : suapFields(); box.classList.remove('swap'); void box.offsetWidth; box.classList.add('swap');
+    $('[data-live="name"]', lg).textContent = 'Seu nome'; $('[data-live="sub"]', lg).textContent = mode === 'guest' ? 'Visitante' : 'Matrícula do SUAP';
   }
   function navReset() { const n = navUndo.length; navUndo.length = 0; if (n) { navSkip += 1; history.go(-n); } }
   function enterApp() { S.auth = true; S.tab = 'home'; show(build(top()), 'fade'); }
@@ -5397,7 +5463,7 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
       case 'scanmode': { const r = $('.scanner', ov); if (r.dataset.busy) break; r.dataset.mode = el.dataset.v; $('.scan-seg', ov).style.setProperty('--k', el.dataset.v === 'meu' ? 1 : 0); break; }
       case 'torch': { const r = $('.scanner', ov); const on = r.classList.toggle('torch'); el.setAttribute('aria-pressed', on); break; }
       case 'flip': el.classList.toggle('flipped'); el.classList.remove('hint'); S.flipSeen = true; buzz(8); break;
-      case 'demo': Object.assign(D.person, DEMO_PERSON); enterApp(); break;
+      case 'demo': Object.assign(D.person, DEMO_PERSON); lgFilled({ ...DEMO_PERSON }); break;
       case 'remind': {
         const id = el.dataset.id; const on = !S.reminders.has(id); const x = byId(id);
         if (on) S.reminders.add(id); else { S.reminders.delete(id); remFired.delete(id); }
@@ -5486,9 +5552,10 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
         break;
       }
       case 'toast': toast(el.dataset.msg); break;
-      case 'guest': lgSwap('guest'); navPush(() => lgSwap(null), 'screen'); break;
-      case 'guestback': navBack(); break;
-      case 'guestresume': { const g = guestSaved(); if (g) { Object.keys(D.person).forEach((k) => delete D.person[k]); applyProfile(g); store.set(SAVE_KEY, g); navReset(); enterApp(); } break; }
+      case 'lgmode': if ((el.dataset.v === 'guest') !== (S.lgMode === 'guest')) lgSwap(el.dataset.v === 'guest' ? 'guest' : null); break;
+      case 'lgenter': lgOpenApp(); break;
+      case 'lgredo': { lgPending = null; Object.keys(D.person).forEach((k) => delete D.person[k]); Object.assign(D.person, DEMO_PERSON); store.del(SAVE_KEY); $('.login')?.classList.remove('filled'); lgSwap(S.lgMode); break; }
+      case 'guestresume': { const g = guestSaved(); if (g) { Object.keys(D.person).forEach((k) => delete D.person[k]); applyProfile(g); store.set(SAVE_KEY, g); lgFilled(g); } break; }
       case 'togglepwd': { const i = $('#pwd'); i.type = i.type === 'password' ? 'text' : 'password'; break; }
       case 'logout': { const n = navUndo.length; navUndo.length = 0; if (n) { navSkip += 1; history.go(-n); } } S = fresh(); store.del(SAVE_KEY); Object.keys(D.person).forEach((k) => delete D.person[k]); Object.assign(D.person, DEMO_PERSON); vp.innerHTML = ''; show(build({ s: 'login' }), 'fade'); break;
       default: break;
@@ -5512,6 +5579,7 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
       const title = $('#ontitle').value.trim(); const text = $('#ontext').value.trim();
       if (!title) { $('#ontitle').focus(); return; }
       D.notices.unshift({ time: skyClock(), title, text: text || 'Aviso da organização do ETAL.', fresh: true, org: true });
+      const nid = `n${Date.now()}`; orgSeen.add(nid); orgWrite((o) => o.notices.unshift({ id: nid, time: skyClock(), title, text: text || 'Aviso da organização do ETAL.' }));
       rerender(); notify(title, text || 'Aviso da organização do ETAL.'); toast('Aviso enviado para todos');
       return;
     }
@@ -5525,13 +5593,15 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
       Object.assign(x, { floor: r.floor, zone: r.zone, room: r.name });
       const msg = `${x.short}: agora em ${r.name}, ${floorOf(r.floor).label}`;
       D.notices.unshift({ time: skyClock(), title: 'Mudança de sala', text: `${msg}. Antes era ${from}.`, fresh: true, org: true });
+      const nid = `n${Date.now()}`; orgSeen.add(nid);
+      orgWrite((o) => { o.moves[x.id] = { floor: r.floor, zone: r.zone, room: r.name }; o.notices.unshift({ id: nid, time: skyClock(), title: 'Mudança de sala', text: `${msg}. Antes era ${from}.`, to: `inscritos em ${x.short}` }); });
       rerender(); notify('Mudança de sala', msg, x.id); toast('Sala trocada e inscritos avisados');
       return;
     }
     const gf = e.target.closest('[data-form="guest"]');
     if (gf) {
       e.preventDefault();
-      const err = $('#lgerr'); const say = (m, el) => { err.textContent = m; err.hidden = false; el?.focus(); };
+      const err = $('#lgerr'); const say = (m, el) => { err.textContent = m; err.hidden = false; el?.focus(); lgShake(); };
       const v = { name: $('#gname').value.trim(), email: $('#gmail').value.trim(), kind: (gf.querySelector('[name=gkind]:checked') || {}).value, inst: $('#ginst').value.trim(), city: $('#gcity').value.trim() };
       err.hidden = true;
       if (v.name.split(/\s+/).length < 2) return say('Escreva o nome e o sobrenome, como devem sair no crachá.', $('#gname'));
@@ -5541,8 +5611,7 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
       const prof = guestProfile(v);
       Object.keys(D.person).forEach((k) => delete D.person[k]); applyProfile(prof);
       store.set(SAVE_KEY, prof); prefs.set('etal-visitante', JSON.stringify(prof));
-      navReset(); S.lgMode = null; enterApp();
-      setTimeout(() => notify(`Boas-vindas, ${prof.first}!`, 'Sua conta de visitante está pronta. Mostre o QR do crachá na recepção.'), 900);
+      lgFilled(prof);
       return;
     }
     const f = e.target.closest('[data-form="login"]');
@@ -5550,26 +5619,29 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
     e.preventDefault();
     const btn = $('button[type="submit"]', f);
     const err = $('#lgerr');
-    const say = (m) => { err.textContent = m; err.hidden = false; };
+    const say = (m) => { err.textContent = m; err.hidden = false; lgShake(); };
     const mat = $('#mat').value.trim();
     const pwd = $('#pwd').value;
     err.hidden = true;
     if (!mat || !pwd) { say('Informe a matrícula e a senha.'); return; }
     btn.classList.add('loading');
     btn.disabled = true;
+    const state = $('[data-live="state"]'); if (state) state.textContent = 'Consultando o SUAP…';
+    $('.login')?.classList.add('asking');
     try {
       const r = await fetch('api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ matricula: mat, senha: pwd }) });
       const j = await r.json().catch(() => { throw new TypeError('sem servidor'); });
       if (!r.ok) { say(j.erro || 'Não foi possível entrar.'); if (r.status >= 500) $('#lgdemo').hidden = false; return; }
-      applyProfile(j.perfil);
+      Object.keys(D.person).forEach((k) => delete D.person[k]); applyProfile({ ...DEMO_PERSON, ...j.perfil });
       store.set(SAVE_KEY, j.perfil);
-      enterApp();
+      lgFilled(D.person);
     } catch (_) {
       say(navigator.onLine === false ? 'Sem internet agora. Entre como visitante ou tente de novo quando a conexão voltar.' : 'Não foi possível falar com o servidor local. Abra o protótipo por server.py para usar o SUAP, ou entre como visitante.');
       $('#lgdemo').hidden = false;
     } finally {
       btn.classList.remove('loading');
       btn.disabled = false;
+      $('.login')?.classList.remove('asking');
     }
   });
 
@@ -5584,6 +5656,21 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
   document.addEventListener('keydown', (e) => {
     if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.flip')) { e.preventDefault(); e.target.click(); }
   });
+
+  /* ---------------- painel no computador (admin.html) ----------------
+     Avisos e trocas de sala feitos no painel ficam em etal-org e chegam aqui, mesmo com o app já aberto. */
+  const ORG_KEY = 'etal-org'; const orgSeen = new Set();
+  const orgRead = () => { try { return { notices: [], moves: {}, creds: {}, ...JSON.parse(localStorage.getItem(ORG_KEY)) }; } catch (_) { return { notices: [], moves: {}, creds: {} }; } };
+  function orgWrite(fn) { const o = orgRead(); fn(o); try { localStorage.setItem(ORG_KEY, JSON.stringify(o)); } catch (_) { /* sem armazenamento */ } }
+  function orgSync(first) {
+    const o = orgRead();
+    Object.entries(o.moves).forEach(([id, m]) => { const x = byId(id); if (x) Object.assign(x, m); });
+    const fresh = o.notices.filter((n) => !orgSeen.has(n.id));
+    fresh.slice().reverse().forEach((n) => { orgSeen.add(n.id); D.notices.unshift({ time: n.time, title: n.title, text: n.text, fresh: true, org: true }); });
+    if (!first && fresh.length) { notify(fresh[0].title, fresh[0].text); buzz([20, 40, 20]); if (S.auth && vp.querySelector('.page')) rerender(); }
+  }
+  orgSync(true);
+  window.addEventListener('storage', (e) => { if (e.key === ORG_KEY) orgSync(false); });
 
   /* ---------------- início ---------------- */
   setInterval(checkReminders, 30000); netState();
