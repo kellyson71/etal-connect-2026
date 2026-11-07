@@ -22,8 +22,9 @@ REDE = os.environ.get('REDE', '').strip()
 if REDE:
     HOSTS.add(f'{REDE}:{PORT}')
 TYPES = {'.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
-         '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp'}
-PUBLIC = {'index.html', 'app.js', 'app.css', 'data.js', 'plan-data.js', 'campus-data.js', 'campus-fundo.js', 'campus-limpo.js', 'campus-entorno.js', 'sprites.js', 'campus3d.js'}
+         '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp',
+         '.webmanifest': 'application/manifest+json'}
+PUBLIC = {'index.html', 'app.js', 'app.css', 'data.js', 'plan-data.js', 'campus-data.js', 'campus-fundo.js', 'campus-limpo.js', 'campus-entorno.js', 'sprites.js', 'campus3d.js', 'sw.js', 'manifest.webmanifest'}
 PREFIXES = ('Tecnologia em ', 'Técnico Integrado em ', 'Técnico Subsequente em ', 'Técnico em ', 'Bacharelado em ', 'Licenciatura em ')
 CAMPUS = {'PF': 'Campus Pau dos Ferros'}
 
