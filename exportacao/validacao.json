@@ -1,0 +1,22 @@
+{
+  "date": "2026-11-07",
+  "browser": "Chromium headless",
+  "mode": "file:// com rede offline",
+  "checks_passed": [
+    "Abertura direta do index.html sem servidor.",
+    "Login demonstrativo e estado inicial ainda não participante.",
+    "Agenda → Sala 201 → 2º andar com seleção e zoom automáticos.",
+    "Recepção na faixa inferior de salas, fora do corredor.",
+    "Bebedouro acessível no 1º andar.",
+    "QR inicial confirma a participação.",
+    "QR de minicurso confirma a presença.",
+    "Imagens incorporadas carregam sem internet.",
+    "Tela de 375×667.",
+    "Prancha SVG abre como arquivo local.",
+    "Links locais da documentação válidos.",
+    "TypeScript sem erros."
+  ],
+  "javascript_errors": [],
+  "external_requests": 0,
+  "missing_local_links": 0
+}
