@@ -133,10 +133,7 @@ svg.swap{animation:fadeIn .3s ease both}
 .device.no-chrome .toast{bottom:40px}
 
 /* ================= login ================= */
-.login{flex:1;display:flex;flex-direction:column;padding:28px 26px 34px;background:#fff}
-.login-brand{margin:26px 0 30px}
 .suap-logo{height:46px;width:auto;display:block}
-.login h1{margin:0 0 26px;font:600 30px/1.1 var(--display);letter-spacing:-.03em}
 .login-form{display:flex;flex-direction:column;gap:16px}
 .field{display:flex;flex-direction:column;gap:7px}
 .field>span{font-size:13.5px;font-weight:600;color:var(--ink-2)}
@@ -147,7 +144,6 @@ svg.swap{animation:fadeIn .3s ease both}
 .btn .spin{display:none;width:20px;height:20px;border-radius:50%;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin .8s linear infinite}
 .btn.loading span{display:none}.btn.loading .spin{display:block}
 @keyframes spin{to{transform:rotate(360deg)}}
-.login-foot{margin-top:auto;display:flex;justify-content:center;padding-top:24px}
 
 /* ================= crachá (início) ================= */
 .badge{border-radius:calc(26px*var(--rk,1));background:var(--navy);color:#fff;overflow:hidden;position:relative;isolation:isolate;box-shadow:0 18px 30px -22px rgba(34,56,111,.8)}
@@ -477,31 +473,12 @@ svg.swap{animation:fadeIn .3s ease both}
 .wm b{color:var(--accent-ink)}
 .badge-num{position:absolute;top:5px;right:4px;min-width:17px;height:17px;padding:0 4px;border-radius:calc(9px*var(--rk,1));background:var(--red);color:#fff;font:600 10.5px/17px var(--ui);text-decoration:none;text-align:center;border:0}
 
-/* ================= abertura + login =================
-   A abertura e o login são a mesma cena: a fachada do campus sobe, a marca monta e o painel sobe. */
+/* ================= login ================= */
 .login{--card:#fff;--bg:#f4f6fa;--ink:#1f2f57;--ink-2:#3d4b6b;--muted:#6a7896;--line:#e3e8f1;--blue:#3a5a9b;--navy:#22386f;--accent-ink:#22386f;
-  position:relative;flex:1;min-height:100%;padding:0;display:flex;flex-direction:column;overflow:hidden;
-  background:linear-gradient(180deg,var(--sky-1,#2c7bd3) 0%,var(--sky-2,#68afed) 52%,var(--sky-3,#cfe9f8) 100%);color:#fff;transition:background .6s}
-.lg-hero{position:relative;flex:1 1 auto;min-height:250px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;padding:10px 20px 0;overflow:hidden}
-.login.intro .lg-hero{justify-content:center;padding-bottom:40px}
-.lg-brand{position:relative;display:flex;align-items:center;gap:12px;transition:transform .9s var(--ease)}
-.login.intro .lg-brand{transform:scale(1.2)}
-.lg-mark{width:44px;height:78px}
-.lg-mark .hx{transform-box:fill-box;animation:hxIn .6s var(--spring) both}
-.lg-mark .hx1{animation-delay:.1s}.lg-mark .hx2{animation-delay:.26s}.lg-mark .hx3{animation-delay:.42s}
-@keyframes hxIn{from{opacity:0;scale:.3}to{opacity:1;scale:1}}
-.lg-word{display:flex;flex-direction:column;animation:rise .6s var(--ease) .55s both}
-.lg-word b{font:700 46px/.9 var(--display);letter-spacing:-.05em}
-.lg-word span{font:500 18px/1.2 var(--ui);letter-spacing:.02em;color:#c9d7f3;margin-top:3px}
-.lg-event{position:relative;margin:0;font-size:13px;line-height:1.3;color:#d5e0f6;text-align:center;text-wrap:balance;animation:rise .6s var(--ease) .8s both}
-.lg-sheet{flex:none;position:relative;background:#fff;color:var(--ink);border-radius:calc(30px*var(--rk,1)) calc(30px*var(--rk,1)) 0 0;padding:22px 24px 34px;box-shadow:0 -18px 40px -22px rgba(6,12,30,.7);
-  transition:transform .95s var(--ease),opacity .4s}
-.login.intro .lg-sheet{transform:translateY(100%);position:absolute;left:0;right:0;bottom:0;opacity:0}
-.lg-title{display:flex;align-items:flex-start;gap:12px;margin:0 0 18px}
-.lg-title h1{margin:0;padding-top:7px;font:600 25px/1.05 var(--display);letter-spacing:-.03em;white-space:nowrap;color:var(--ink)}
-.suap{display:block;width:124px;height:auto;flex:none}
-.login-form{gap:13px}
-.field input{background:#f5f7fb;border-radius:calc(15px*var(--rk,1));padding:14px 15px;color:#1f2f57}
+  position:relative;flex:1;min-height:100%;padding:0;display:flex;flex-direction:column;overflow:hidden;background:#f2f5fa;color:var(--ink)}
+.suap{display:block;width:96px;height:auto;flex:none}
+.login-form{gap:12px}
+.field input{background:#f5f7fb;border-radius:calc(15px*var(--rk,1));padding:13px 15px;color:#1f2f57}
 .field input::placeholder{color:#97a3ba}
 .login .field>span{color:var(--ink-2)}
 .lg-err{margin:0;font-size:13.5px;line-height:1.35;color:#b4372f;font-weight:500}
@@ -717,7 +694,6 @@ svg.swap{animation:fadeIn .3s ease both}
 .scan-top{z-index:4}
 
 /* ================= tela cheia em celular real ================= */
-@media (max-width:520px){.lg-hero{min-height:180px}}
 
 /* ================= mapa do campus ================= */
 .seg.two{grid-template-columns:1fr 1fr}
@@ -1153,55 +1129,7 @@ button.teacher{width:100%;text-align:left;padding:8px 10px;margin:0 -2px;border-
 .cu-row2 button.on .switch::after{transform:translateX(15px)}
 .mini-seg.wide button{font-size:12px}
 
-/* ---- login: fachada do campus ---- */
-.lg-hero{flex:1 1 auto;min-height:300px;justify-content:flex-start;padding-top:20px;transition:min-height .55s var(--ease)}
-.login.guest .lg-hero{flex:0 0 132px;min-height:132px}
-.lg-brand,.lg-event{z-index:2;text-shadow:0 1px 10px rgba(10,20,50,.3)}
-.login.guest .lg-brand{transform:scale(.62);margin:-22px 0 0}
-.login.guest .lg-event{visibility:hidden}
-.lg-event{transition:opacity .3s}
-.lg-facade{position:absolute;left:0;bottom:-1px;width:100%;height:auto;pointer-events:none;transition:transform .55s var(--ease)}
-.login.guest .lg-facade{transform:translateY(64%)}
-.fa-win{fill:color-mix(in srgb,#ffd98a calc(var(--night,0)*100%),#2b3f6e);transition:fill .6s}
-.fa-l1 .fa-win{opacity:calc(.82 + var(--night,0)*.18)}
-.fa-frame{fill:#f1d9a2}
-.fa-ac{fill:#eef0f2;opacity:.9}
-.fa-globe{fill:color-mix(in srgb,#ffe7a3 calc(var(--night,0)*100%),#f7f7f4)}
-.fa-name{font:800 5.2px/1 var(--ui);fill:#3b404b;letter-spacing:.05em}
-.fa-name.sm{font-size:3.9px;font-weight:600;letter-spacing:.02em}
-.fa-bush circle:first-child{fill:#4f8d3b}
-.fa-bush:nth-child(3n) circle:first-child{fill:#5e9c45}
-.fa-bloom{fill:#d8402f}
-.fa-l1,.fa-l2,.fa-l3{transform-box:view-box}
-.login.intro .fa-layer{animation:faUp .9s var(--ease) both}
-.login.intro .fa-l1{animation-delay:.15s}.login.intro .fa-l2{animation-delay:.32s}.login.intro .fa-l3{animation-delay:.5s}
-.login.intro .fa-bush{animation:faBush .5s var(--spring) both;animation-delay:calc(.75s + var(--i)*22ms);transform-box:fill-box;transform-origin:50% 100%}
-@keyframes faUp{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
-@keyframes faBush{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:none}}
-.lg-sunb{position:absolute;left:calc(62% + var(--sun-x,70%)*.33);top:calc(var(--sun-y,30%)*.35 + 7%);width:40px;height:40px;margin:-20px;border-radius:50%;background:var(--sun-c,#ffe9a8);opacity:var(--sun-o,1);transition:opacity .6s}
-.lg-cloud{position:absolute;height:16px;border-radius:16px;background:rgba(255,255,255,calc(.55 - var(--night,0)*.45));animation:cloud 60s linear infinite}
-.lg-cloud::before{content:"";position:absolute;left:22%;bottom:6px;width:46%;height:20px;border-radius:50%;background:inherit}
-.lg-cloud.c1{width:86px;top:33%;left:-20%}
-.lg-cloud.c2{width:58px;top:46%;left:-30%;animation-duration:85s;animation-delay:-40s}
-@keyframes cloud{to{transform:translateX(560px)}}
-.lg-sheet{padding-top:20px;padding-bottom:26px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
-.login.guest .lg-sheet{max-height:none;flex:1}
-.lg-sheet.swap>*{animation:rise .45s var(--ease) both}
-.lg-or{display:flex;align-items:center;gap:12px;margin:12px 0 10px;color:var(--muted);font-size:12.5px;font-weight:600}
-.lg-or::before,.lg-or::after{content:"";flex:1;height:1px;background:var(--line)}
-.lg-guest{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border:1.5px solid #cdd8ec;border-radius:calc(18px*var(--rk,1));background:#f3f6fc;text-align:left;color:var(--ink)}
-.lg-guest>i{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:#65b32e;color:#fff}
-.lg-guest>i .i{width:21px;height:21px}
-.lg-guest>span{flex:1;display:flex;flex-direction:column;gap:2px}
-.lg-guest b{font:600 15.5px/1.2 var(--display)}
-.lg-guest small{font-size:12.5px;line-height:1.3;color:var(--muted)}
-.lg-guest>.i:last-child{width:18px;height:18px;color:var(--muted)}
-.lg-guest .g-av{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:#65b32e;color:#fff;font:700 14px var(--display)}
-.lg-guest-new{display:block;margin:10px auto 0;font-size:13px;font-weight:600;color:var(--blue)}
-.lg-vhead{display:flex;align-items:center;gap:8px;margin:-6px 0 4px -8px}
-.lg-vhead h1{margin:0;font:600 23px/1.1 var(--display);letter-spacing:-.025em;color:var(--ink)}
-.lg-vhead .iconbtn{color:var(--ink)}
-.lg-vsub{margin:0 0 16px;font-size:13.5px;line-height:1.4;color:var(--muted)}
+/* ---- formulário de visitante ---- */
 .guest-form{gap:12px}
 .guest-form .field input{padding:12px 14px;font-size:15.5px}
 .field em{font-style:normal;font-weight:500;color:var(--muted)}
@@ -1218,8 +1146,6 @@ button.teacher{width:100%;text-align:left;padding:8px 10px;margin:0 -2px;border-
 .g-note{display:flex;gap:8px;align-items:flex-start;margin:2px 0 0;font-size:12.5px;line-height:1.4;color:var(--muted)}
 .g-note .i{flex:none;width:15px;height:15px;margin-top:1px}
 .fromsuap.guest{background:#e6f3dc;color:#2f6f12}
-@media (prefers-reduced-motion:reduce){.lg-cloud{animation:none}}
-.lg-sheet .lg-title{margin-bottom:12px}.lg-sheet .suap{width:108px}.lg-sheet .login-form{gap:10px}.lg-sheet .field input{padding:12px 14px}
 
 /* ---- lembretes, instalação e sem internet ---- */
 .remindrow>span{display:flex;flex-direction:column;gap:2px}
@@ -1287,3 +1213,100 @@ button.teacher{width:100%;text-align:left;padding:8px 10px;margin:0 -2px;border-
 .sb-card li:first-child{border-top:0}
 .sb-card li b{font-size:14px;font-weight:600;color:var(--ink)}
 .sb-card li small{font-size:13px;line-height:1.4;color:var(--muted)}
+
+.org-desk{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:calc(16px*var(--rk,1));background:var(--navy);color:#fff;text-decoration:none}
+.org-desk>.i{width:20px;height:20px;flex:none}
+.org-desk span{flex:1;display:flex;flex-direction:column}
+.org-desk b{font:600 14.5px var(--display)}
+.org-desk small{font-size:12px;opacity:.75}
+
+/* ================= entrada: o crachá =================
+   O crachá no cordão é o login: os dados aparecem nele enquanto a pessoa digita, ele vira ao entrar
+   e, puxado para baixo, leva a tela junto e mostra o app. */
+.lx{--n:#1b2d5c;--g:#65b32e;--sh:46px}
+.lx-cracha{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;background:linear-gradient(180deg,#e7edf8 0%,#f4f6fa 46%)}
+.lx-cracha.filled{--sh:96px}
+.lx-brand{display:flex;align-items:center;gap:6px;padding:14px 22px 0;color:var(--ink)}
+.lx-brand .mark.xs{width:15px;height:27px}
+.lx-brand b{font:700 21px/1 var(--display);letter-spacing:-.04em}
+.lx-brand span{font:500 14px var(--ui);opacity:.7}
+
+.lx-hang{flex:none;position:relative;display:flex;flex-direction:column;align-items:center;padding-bottom:6px;touch-action:none;user-select:none}
+.lx-strap{position:relative;display:block;width:32px;height:var(--sh);margin-top:-6px;background:var(--g);overflow:hidden;border-radius:0 0 4px 4px;transition:height .55s var(--spring)}
+.pulling .lx-strap{transition:none}
+.lx-strap span{position:absolute;left:50%;bottom:0;writing-mode:vertical-rl;transform:translateX(-50%) rotate(180deg);font:700 10px var(--display);letter-spacing:.12em;color:rgba(255,255,255,.85);white-space:nowrap}
+.lx-clip{display:block;width:40px;height:16px;border-radius:5px;background:#b8c0cc;box-shadow:inset 0 -3px 0 rgba(0,0,0,.12)}
+.lx-card{width:262px;margin-top:-2px;perspective:1100px;transform-origin:50% -60px;animation:lxSwing 2.4s cubic-bezier(.3,.7,.3,1) both}
+@keyframes lxSwing{0%{transform:rotate(9deg)}25%{transform:rotate(-6deg)}50%{transform:rotate(3deg)}75%{transform:rotate(-1.2deg)}100%{transform:none}}
+.lx-card.shake{animation:lxShake .45s ease both}
+@keyframes lxShake{20%{transform:translateX(-9px) rotate(-2deg)}40%{transform:translateX(8px) rotate(1.5deg)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}100%{transform:none}}
+.lx-flip{position:relative;transform-style:preserve-3d;transition:transform .85s cubic-bezier(.3,.7,.2,1)}
+.filled .lx-flip{transform:rotateY(180deg)}
+.lx-face{border-radius:20px;background:#fff;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 26px 40px -24px rgba(20,32,70,.45),0 2px 0 #e3e8f1}
+.lx-face.filled{position:absolute;inset:0;transform:rotateY(180deg);display:flex;flex-direction:column}
+.lx-card-top{display:flex;align-items:center;gap:6px;padding:12px 14px;background:var(--n);color:#fff}
+.lx-card-top .mark.xs{width:12px;height:22px}
+.lx-card-top b{flex:1;font:700 16px var(--display);letter-spacing:-.03em}
+.lx-card-top .pins{width:40px;fill:#fff;stroke:#fff;stroke-width:1.6;opacity:.8}
+.lx-card-id{display:flex;align-items:center;gap:14px;padding:18px 16px 12px}
+.lx-photo{flex:none;display:grid;place-items:center;width:62px;height:62px;border-radius:16px;border:2px dashed #c5cfe0;color:#a5b1c7;overflow:hidden}
+.lx-photo .i{width:26px;height:26px}
+.lx-photo.ini{border:0;background:var(--n);color:#fff;font:700 20px var(--display)}
+.lx-photo.has{border:0}.lx-photo img{width:100%;height:100%;object-fit:cover}
+.lx-lines{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.lx-lines i{font-style:normal;font-size:12px;color:#9aa6bd;border-bottom:1.5px dashed #d3dae6;padding-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .2s}
+.lx-lines .w1{font:600 15px var(--display);color:#8a97b0}
+.lx-lines i.typed{color:var(--ink);border-bottom-style:solid;border-bottom-color:#b9c5da}
+.lx-filled{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.lx-filled b{font:600 16px/1.2 var(--display);color:var(--ink)}
+.lx-filled span{font-size:13px;color:var(--ink-2)}
+.lx-filled small{font-size:12px;color:var(--muted)}
+.lx-card-qr{display:flex;align-items:center;gap:12px;margin:2px 16px 14px;padding:11px;border-radius:12px;background:#f3f6fb}
+.lx-card-qr>span{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:10px;background:#fff;color:#b3bdd0}
+.lx-card-qr>span .i{width:24px;height:24px}
+.lx-card-qr small{font-size:11.5px;line-height:1.3;color:var(--muted)}
+.lx-card-qr.ok svg{flex:none;width:56px;height:56px;padding:4px;border-radius:8px;background:#fff}
+.lx-card-qr.ok small{display:flex;flex-direction:column;font-family:var(--ui)}
+.lx-card-qr.ok small b{font-size:13px;color:var(--ink)}
+.lx-face.filled .lx-card-qr{margin-top:auto}
+.asking .lx-card-qr>span{animation:lxPulse 1s ease-in-out infinite}
+@keyframes lxPulse{50%{background:#e3eaf7}}
+.lx-card-foot{padding:9px 14px;border-top:1px solid #edf1f7;font-size:11.5px;font-weight:600;color:var(--ink-2)}
+.lx-pull{display:none;flex-direction:column;align-items:center;gap:0;margin:10px 0 0;font-size:13px;font-weight:600;color:var(--muted)}
+.lx-pull .i{width:20px;height:20px;transform:rotate(90deg);animation:lxNudge 1.6s ease-in-out infinite}
+@keyframes lxNudge{50%{translate:0 5px}}
+.filled .lx-pull{display:flex;animation:rise .5s var(--ease) .6s both}
+.lx-hang.ready .lx-pull span::after{content:" · solte"}
+.filled .lx-hang{cursor:grab}
+.pulling .lx-hang{cursor:grabbing}
+
+.lx-bottom{position:relative;flex:1;padding:16px 20px 24px}
+.lx-seg{display:flex;padding:4px;margin-bottom:14px;border-radius:14px;background:#e3e9f3}
+.lx-seg button{flex:1;padding:10px;border-radius:11px;font:600 14.5px var(--display);color:var(--ink-2)}
+.lx-seg button[aria-selected="true"]{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(20,32,70,.12)}
+.lx-form.swap>*{animation:rise .4s var(--ease) both}
+.lx-resume{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border-radius:16px;background:#fff;border:1.5px solid var(--n);text-align:left;color:var(--ink)}
+.lx-resume>span:nth-child(2){flex:1;display:flex;flex-direction:column}
+.lx-resume b{font:600 15.5px var(--display)}
+.lx-resume small{font-size:12.5px;color:var(--muted)}
+.lx-resume>.i{width:18px;height:18px;color:var(--muted)}
+.lx-ic{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:var(--g);color:#fff;font:700 14px var(--display)}
+.lx-or{margin:12px 0;text-align:center;font-size:12.5px;font-weight:600;color:var(--muted)}
+.lx-done{display:none;flex-direction:column;gap:10px;text-align:center}
+.lx-done p{margin:-4px 0 6px;color:var(--muted);font-size:14px}
+.lx-q{margin:0;font:600 21px/1.2 var(--display);letter-spacing:-.02em;color:var(--ink)}
+.filled .lx-start{display:none}
+.filled .lx-done{display:flex;animation:rise .5s var(--ease) .45s both}
+
+/* a tela de entrada desce e mostra o app por trás */
+.lx-cover{position:absolute;inset:0;z-index:80;display:flex;flex-direction:column;transition:transform .7s cubic-bezier(.6,0,.35,1);box-shadow:0 -20px 40px rgba(10,20,50,.25)}
+.lx-cover>.login{flex:1;min-height:0}
+.lx-cover.go{transform:translateY(104%)}
+@media (prefers-reduced-motion:reduce){.lx-card,.lx-pull .i,.asking .lx-card-qr>span{animation:none}.lx-flip,.lx-cover,.lx-strap{transition:none}}
+.lx-face.filled .lx-card-id{padding:14px 16px 10px}
+.lx-face.filled .lx-card-qr{margin:0 16px 10px;padding:8px 10px}
+.lx-card-qr.ok svg{width:46px;height:46px}
+.lx-face.filled .lx-card-foot{padding:7px 14px}
+.lx-cracha.guest-mode:not(.filled){--sh:18px}
+.lx-cracha.guest-mode:not(.filled) .lx-card{zoom:.74}
+.lx-cracha.guest-mode .lx-bottom{padding-top:8px}
