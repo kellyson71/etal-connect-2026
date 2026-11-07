@@ -62,6 +62,7 @@
     rotate: '<path d="M4 12a8 8 0 0 1 13.700-5.700L20 8.600M20 4v4.600h-4.600"/><path d="M20 12a8 8 0 0 1-13.700 5.700L4 15.400M4 20v-4.600h4.600"/>',
     expand: '<path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/>',
     building: '<path d="M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16M15 10h4a1 1 0 0 1 1 1v10M2 21h20M8 8h3M8 12h3M8 16h3"/>',
+    info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/>',
     users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"/>',
   };
   const ic = (n, c = 'i') => `<svg class="${c}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]}</svg>`;
@@ -438,7 +439,7 @@
           <div class="duel st" ${st(10)}>${D.tournaments.map((g) => `<button class="tile-game ${g.theme}" data-go="tournament" data-id="${g.id}" aria-label="${g.name}">${gameArt(g)}${g.logo ? `<img class="p-logo" src="${g.logo}" alt="">` : ''}<small>${dayOf(g.day).week} ${g.day} · ${g.time}</small></button>`).join('')}</div>` : ''}
 
           ${UI.home.avisos ? `<div class="sec st" ${st(11)}><h2>Avisos</h2><button data-go="notices">Ver todos</button></div>
-          <button class="notice st" ${st(12)} data-go="notices"><time>${D.notices[0].time}</time><b>${D.notices[0].title}</b><small>${D.notices[0].text}</small>${ic('chev', 'i card-chev')}</button>` : ''}
+          <button class="notice st" ${st(12)} data-go="notices"><time>${D.notices[0].time}</time><b>${esc(D.notices[0].title)}</b><small>${esc(D.notices[0].text)}</small>${ic('chev', 'i card-chev')}</button>` : ''}
 
           <footer class="made st" ${st(13)}>
             <div><small>Desenvolvido por</small><button data-go="nadic" aria-label="Sobre o NADIC"><img src="assets/nadic-logo.svg" alt="NADIC" width="64" height="28"></button></div>
@@ -1036,6 +1037,7 @@
           <li data-go="network">${ic('contact')}<span>Contatos</span><em>${S.contacts.length}</em>${ic('chev', 'i chev')}</li>
         </ul>
         <ul class="menu st" ${st(2)}>
+          <li data-go="org">${ic('building')}<span>Painel da organização</span><em>Equipe</em>${ic('chev', 'i chev')}</li>
           <li data-go="games" class="games-row">${ic('trophy')}<span>Campeonatos</span><em>Qui 27</em>${ic('chev', 'i chev')}</li>
         </ul>
         ${standalone() ? '' : `<button class="install-cta st" ${st(2)} data-act="install">${ic('download')}<span><b>Instalar o ETAL Connect</b><small>Abre como app e funciona sem internet</small></span>${ic('chev')}</button>`}
@@ -1044,12 +1046,96 @@
         </ul>
         <ul class="menu st" ${st(4)}>
           <li data-go="etal">${ic('info')}<span>O que é o ETAL</span>${ic('chev', 'i chev')}</li>
+          <li data-go="sobre">${ic('list')}<span>Sobre este protótipo</span><em>Real e exemplo</em>${ic('chev', 'i chev')}</li>
           <li data-go="nadic">${ic('info')}<span>Sobre o NADIC</span>${ic('chev', 'i chev')}</li>
           <li data-act="link" data-url="${D.ifrnUrl}">${ic('open')}<span>IFRN Pau dos Ferros</span></li>
         </ul>
         <ul class="menu danger st" ${st(5)}><li data-act="logout">${ic('logout')}<span>Sair</span></li></ul>
       </div>`,
   });
+
+  /* ---- painel da organização: números simulados para a demonstração ---- */
+  const roomsAll = () => P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => ({ floor: f.level, zone: z.id, name: z.kind === 'laboratory' ? `Lab ${z.roomNumber}` : `Sala ${z.roomNumber}` })));
+  function hourBars(rows) {
+    const W = 320, H = 132, top = 18, base = 104, max = Math.max(...rows.map((r) => r[1])); const bw = (W - 20) / rows.length; const peak = rows.find((r) => r[1] === max);
+    const bars = rows.map(([h, v], i) => {
+      const x = 10 + i * bw + 3, w = bw - 6, y = base - ((base - top) * v) / max;
+      return `<g class="ob-bar" tabindex="0" aria-label="${h} h: ${v} credenciamentos"><title>${h} h · ${v} credenciamentos</title><rect class="hit" x="${x - 3}" y="${top}" width="${bw}" height="${base - top + 22}"/>
+        <path d="M${x} ${base}V${y + 4}a4 4 0 0 1 4-4h${w - 8}a4 4 0 0 1 4 4V${base}Z"/>${peak && h === peak[0] ? `<text class="ob-val" x="${x + w / 2}" y="${y - 6}">${v}</text>` : ''}<text class="ob-x" x="${x + w / 2}" y="${base + 16}">${h}h</text></g>`;
+    }).join('');
+    return `<svg class="ob-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Credenciamentos por hora hoje: ${rows.map(([h, v]) => `${h} h, ${v}`).join('; ')}"><path class="ob-base" d="M8 ${base + .5}H${W - 8}"/>${bars}</svg>`;
+  }
+  Screens.org = () => {
+    const now = D.sessions.filter((x) => isNow(x) && x.seats);
+    const present = (x) => Math.min(x.seats, Math.round(x.taken * 0.86 + 1));
+    const inRooms = now.reduce((n, x) => n + present(x), 0);
+    const today = D.sessions.filter((x) => x.day === D.now.day && x.floor !== undefined && x.zone && !x.simple);
+    const sent = D.notices.filter((n) => n.org).length;
+    return {
+      html: `${header('Painel da organização')}<div class="pad stack org">
+        <p class="org-demo st" ${st(0)}>${ic('info')}<span>Visão da equipe do ETAL. Números simulados para a demonstração; os avisos e trocas de sala valem só neste aparelho.</span></p>
+        <div class="org-kpis st" ${st(1)}>
+          <div><b>${liveCred}</b><small>credenciados</small><em>de ${D.org.inscritos} inscritos</em></div>
+          <div><b>${inRooms}</b><small>pessoas em sala</small><em>${now.length} atividades agora</em></div>
+          <div><b>${Math.round((liveCred / D.org.inscritos) * 100)}%</b><small>de comparecimento</small><em>até ${skyClock()}</em></div>
+          <div><b>${sent}</b><small>avisos enviados</small><em>pela organização hoje</em></div>
+        </div>
+        <section class="org-card st" ${st(2)}><h2>Credenciamento por hora</h2>${hourBars(D.org.porHora)}</section>
+        <section class="org-card st" ${st(3)}><h2>Lotação agora</h2>
+          ${now.length ? `<ul class="org-rooms">${now.map((x) => { const n = present(x); const pc = Math.round((n / x.seats) * 100); return `<li data-go="activity" data-id="${x.id}"><span><b>${esc(x.short)}</b><small>${esc(whereOf(x))}</small></span><span class="org-meter ${pc >= 90 ? 'full' : ''}"><i style="width:${pc}%"></i></span><em>${n}/${x.seats}</em></li>`; }).join('')}</ul>` : '<p class="org-none">Nenhuma atividade com vagas acontecendo agora.</p>'}
+        </section>
+        <form class="org-card st" ${st(4)} data-form="orgnotice"><h2>Enviar aviso</h2>
+          <label class="sr" for="ontitle">Título do aviso</label><input id="ontitle" maxlength="70" placeholder="Ex.: Palestra de encerramento às 17:00" required>
+          <label class="sr" for="ontext">Texto do aviso</label><textarea id="ontext" rows="2" maxlength="180" placeholder="Detalhes para quem está no evento"></textarea>
+          <button class="btn primary" type="submit">${ic('bell')}Enviar para todos</button>
+        </form>
+        <form class="org-card st" ${st(5)} data-form="orgroom"><h2>Trocar sala</h2>
+          <label class="field" for="orx"><span>Atividade</span><select id="orx">${today.map((x) => `<option value="${x.id}">${esc(x.short)} · ${esc(x.room)}</option>`).join('')}</select></label>
+          <label class="field" for="ory"><span>Nova sala</span><select id="ory">${roomsAll().map((r) => `<option value="${r.floor}|${r.zone}">${r.name} · ${floorOf(r.floor).label}</option>`).join('')}</select></label>
+          <button class="btn soft" type="submit">${ic('route')}Mudar e avisar os inscritos</button>
+        </form>
+      </div>`,
+    };
+  };
+
+  /* ---- o que é real e o que é exemplo neste protótipo ---- */
+  Screens.sobre = () => {
+    const orig = D.sessions.filter((x) => !x.demo).length; const demo = D.sessions.length - orig;
+    const C = window.Campus3D; const q = C.quality();
+    const row = ([t, d]) => `<li><b>${t}</b><small>${d}</small></li>`;
+    return {
+      html: `${header('Sobre este protótipo')}<div class="pad stack sobre">
+        <p class="desc st" ${st(0)}>O ETAL Connect é uma proposta de app para o ETAL. Parte dele já funciona de verdade; o resto é exemplo, para mostrar como o app seria no evento.</p>
+        <section class="sb-card real st" ${st(1)}><h2>${ic('check')}Real</h2><ul>${[
+          ['Login pelo SUAP', 'Nome, foto, curso e matrícula vêm da sua conta, pela biblioteca suapy. A senha não é guardada.'],
+          ['Mapa do campus', 'Contornos do levantamento no Google Earth; cores, alturas e detalhes conferidos nas fotos do campus.'],
+          ['Planta do bloco principal', 'Desenhada a partir das referências da equipe: corredores, escada, rampa, entradas e o auditório.'],
+          ['ETAL, NADIC e IFRN', 'Textos e links dos sites oficiais. O do NADIC vem de uma cópia de abril de 2025, porque o site estava fora do ar.'],
+          ['Conta de visitante, lembretes e uso sem internet', 'Funcionam de verdade, mas ficam só neste aparelho: não há servidor do evento.'],
+          ['Desempenho do mapa', 'Medido no próprio aparelho, que escolhe a versão do 3D.'],
+        ].map(row).join('')}</ul></section>
+        <section class="sb-card demo st" ${st(2)}><h2>${ic('flash')}Exemplo</h2><ul>${[
+          ['Programação', `${orig} atividades seguem o VII ETAL (novembro de 2025). As outras ${demo}, com palestrantes de nomes inventados, são de exemplo.`],
+          ['Salas e vagas', 'A distribuição das atividades pelas salas é demonstrativa.'],
+          ['Credenciamento, presença, certificados e materiais', 'Simulados. Não há integração com o SUAP nem registro oficial de presença.'],
+          ['Campeonatos', 'Chaves, jogadores e horários de exemplo.'],
+          ['Avisos, Campus ao vivo e painel da organização', 'Números e mensagens simulados.'],
+        ].map(row).join('')}</ul></section>
+        <section class="sb-card approx st" ${st(3)}><h2>${ic('pin')}Aproximações</h2><ul>${[
+          ['Alturas', 'Bloco principal com 13,8 m, auditório com 9 m e prédio do NADIC com 13,2 m, estimados pelas fotos.'],
+          ['Obelisco e riacho do pátio', 'Posição e desenho lidos das fotos.'],
+          ['Entorno do campus', 'Ruas e casas ao redor são uma representação simples.'],
+        ].map(row).join('')}</ul></section>
+        <section class="sb-card dev st" ${st(4)}><h2>${ic('laptop')}Este aparelho</h2><ul>
+          ${row(['Uso sem internet', PWA.ready ? 'Pronto: o app abre mesmo sem conexão.' : swAllowed ? 'Preparando a cópia do app.' : 'Indisponível neste endereço: precisa de HTTPS.'])}
+          ${row(['Instalado como app', standalone() ? 'Sim' : 'Não'])}
+          ${row(['Notificações', { granted: 'Permitidas', denied: 'Bloqueadas', default: 'Ainda não pedidas', unsupported: 'Sem suporte neste navegador' }[notifState()]])}
+          ${row(['Mapa', `${TIER_LABEL[q.tier]} · ${q.why}`])}
+          ${row(['Versão', PWA.version || 'desenvolvimento'])}
+        </ul></section>
+      </div>`,
+    };
+  };
 
   /* ---- telas novas ---- */
   Screens.speakers = () => ({
@@ -1096,7 +1182,7 @@
 
   Screens.notices = () => ({
     html: `${header('Avisos')}
-      <div class="pad stack"><ul class="notes">${D.notices.map((n, i) => `<li class="st ${n.fresh ? 'fresh' : ''}" ${st(i)}><time>${n.time}</time><h4>${n.title}</h4><p>${n.text}</p></li>`).join('')}</ul></div>`,
+      <div class="pad stack"><ul class="notes">${D.notices.map((n, i) => `<li class="st ${n.fresh ? 'fresh' : ''}" ${st(i)}><time>${n.time}</time><h4>${esc(n.title)}${n.org ? '<em class="org-tag">Organização</em>' : ''}</h4><p>${esc(n.text)}</p></li>`).join('')}</ul></div>`,
   });
 
   Screens.materials = () => {
@@ -1757,6 +1843,28 @@
       closeOverlay(() => { rerender(); toast('Pergunta enviada'); });
       return;
     }
+    const on = e.target.closest('[data-form="orgnotice"]');
+    if (on) {
+      e.preventDefault();
+      const title = $('#ontitle').value.trim(); const text = $('#ontext').value.trim();
+      if (!title) { $('#ontitle').focus(); return; }
+      D.notices.unshift({ time: skyClock(), title, text: text || 'Aviso da organização do ETAL.', fresh: true, org: true });
+      rerender(); notify(title, text || 'Aviso da organização do ETAL.'); toast('Aviso enviado para todos');
+      return;
+    }
+    const orf = e.target.closest('[data-form="orgroom"]');
+    if (orf) {
+      e.preventDefault();
+      const x = byId($('#orx').value); const [fl, zone] = $('#ory').value.split('|'); const r = roomsAll().find((q) => q.zone === zone && q.floor === +fl);
+      if (!x || !r) return;
+      if (x.zone === r.zone && x.floor === r.floor) { toast('A atividade já está nessa sala'); return; }
+      const from = x.room;
+      Object.assign(x, { floor: r.floor, zone: r.zone, room: r.name });
+      const msg = `${x.short}: agora em ${r.name}, ${floorOf(r.floor).label}`;
+      D.notices.unshift({ time: skyClock(), title: 'Mudança de sala', text: `${msg}. Antes era ${from}.`, fresh: true, org: true });
+      rerender(); notify('Mudança de sala', msg, x.id); toast('Sala trocada e inscritos avisados');
+      return;
+    }
     const gf = e.target.closest('[data-form="guest"]');
     if (gf) {
       e.preventDefault();
@@ -1839,6 +1947,7 @@
     return;
   }
   if (q === 'login') { show(build({ s: 'login' }), 'fade'); return; }
+  if (q === 'visitante') { splashDone = true; S.lgMode = 'guest'; show(build({ s: 'login' }), 'fade'); return; }
   S.auth = true;
   const ok = () => { S.credAt = D.now.time; };
   const setups = {
@@ -1865,6 +1974,8 @@
     palestrantes: () => { S.stacks.home.push({ s: 'speakers' }); },
     certificados: () => { ok(); S.present['react-native'] = '14:03'; S.stacks.home.push({ s: 'certificates' }); },
     contatos: () => { S.stacks.home.push({ s: 'network' }); },
+    org: () => { ok(); S.tab = 'profile'; S.stacks.profile.push({ s: 'org' }); },
+    sobre: () => { S.tab = 'profile'; S.stacks.profile.push({ s: 'sobre' }); },
     materiais: () => { S.stacks.home.push({ s: 'materials' }); },
     boasvindas: () => { ok(); setTimeout(() => openOverlay(Overlays.welcome(), 'welcome'), 300); },
     credencial: () => { ok(); S.tab = 'profile'; S.stacks.profile.push({ s: 'credential' }); },
