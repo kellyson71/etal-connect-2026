@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Modelo 3D do campus</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geologica:wght@500;600&family=Onest:wght@500;600&display=swap">
+<style>
+:root{--bg:#f4f6fa;--card:#fff;--ink:#1f2f57;--muted:#6a7896;--on:#22386f}
+[data-theme="dark"]{--bg:#0e1932;--card:#182648;--ink:#e8eefb;--muted:#94a4c6;--on:#3f64b5}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font:500 14px 'Onest',system-ui,sans-serif}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+.bar{position:fixed;z-index:2;left:12px;right:12px;top:12px;display:flex;flex-wrap:wrap;gap:8px;pointer-events:none}
+.seg{display:flex;gap:2px;padding:3px;border-radius:12px;background:var(--card);box-shadow:0 4px 14px -6px rgba(31,47,87,.35);pointer-events:auto}
+button{font:inherit;color:var(--muted);background:none;border:0;padding:7px 11px;border-radius:9px;cursor:pointer}
+button.on{background:var(--on);color:#fff}
+:focus-visible{outline:3px solid #7cc94a;outline-offset:2px}
+</style>
+</head>
+<body>
+<canvas id="c" tabindex="0" aria-label="Modelo do campus IFRN Pau dos Ferros. Arraste para mover e use a roda ou a pinça para aproximar."></canvas>
+<div class="bar">
+  <div class="seg" data-g="mode"><button data-v="evento" class="on">Evento</button><button data-v="campus">Campus</button></div>
+  <div class="seg" data-g="dim"><button data-v="3d" class="on">3D</button><button data-v="2d">2D</button></div>
+  <div class="seg" data-g="floor"><button data-v="fora" class="on">Fora</button><button data-v="all">Andares</button><button data-v="0">Térreo</button><button data-v="1">1º</button><button data-v="2">2º</button></div>
+  <div class="seg" data-g="act"><button data-v="rot">Girar</button><button data-v="tema">Tema</button></div>
+</div>
+<script src="plan-data.js"></script>
+<script src="campus-data.js"></script>
+<script src="campus-fundo.js"></script>
+<script src="campus-limpo.js"></script>
+<script src="campus-entorno.js"></script>
+<script src="sprites.js"></script>
+<script src="campus3d.js"></script>
+<script>
+const C = window.Campus3D; const cv = document.getElementById('c');
+const pick = (g, v) => document.querySelectorAll(`[data-g="${g}"] button`).forEach((b) => b.classList.toggle('on', b.dataset.v === v));
+C.attach(cv, { top: 64, bottom: 0, onPick: (id) => { C.select(id); if (id) C.focus(id); }, onFloor: (l) => { pick('floor', String(l)); C.goFloor(l); }, onRoom: (l, id) => C.room(l, id) });
+document.querySelector('.bar').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return; const g = b.parentElement.dataset.g, v = b.dataset.v;
+  if (g === 'act') { if (v === 'rot') C.rotate(45); else { const r = document.documentElement; r.dataset.theme = r.dataset.theme === 'dark' ? 'light' : 'dark'; C.redraw(); } return; }
+  pick(g, v);
+  if (g === 'mode') { C.setMode(v); C.fitAll(); }
+  if (g === 'dim') C.setFlat(v === '2d');
+  if (g === 'floor') { if (v === 'fora') C.toCampus(); else if (v === 'all') C.openStack(); else C.goFloor(+v); }
+});
+</script>
+</body>
+</html>
