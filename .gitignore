@@ -50,3 +50,10 @@ yarn-error.log*
 # Protótipo local
 /prototipo/.venv/
 /prototipo/__pycache__/
+/prototipo/server.log
+__pycache__/
+*.pyc
+
+# Estado local de ferramentas e da hospedagem original
+/tmp/
+/.openai/
