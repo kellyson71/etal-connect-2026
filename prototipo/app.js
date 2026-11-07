@@ -101,6 +101,8 @@
   const buzz = (p) => { try { navigator.vibrate?.(p); } catch (_) { /* sem suporte */ } };
   const SAVE_KEY = 'etal-perfil';
   const DEMO_PERSON = { ...D.person };
+  /* Quem explora sem conta vê programação e mapa; o crachá pede para entrar. */
+  const ANON = { name: 'Sem conta', first: 'você', initials: '?', course: 'Explorando sem conta', courseFull: 'Explorando sem conta', year: '', campus: '', id: '', source: 'anon', photo: null };
   const store = {
     get(k) { try { return JSON.parse(sessionStorage.getItem(k)); } catch (_) { return null; } },
     set(k, v) { try { sessionStorage.setItem(k, JSON.stringify(v)); } catch (_) { /* opcional */ } },
@@ -257,101 +259,120 @@
     <header class="bar">${back ? `<button class="iconbtn" data-act="back" aria-label="Voltar">${ic('back')}</button>` : '<span class="iconbtn ghost"></span>'}
     <h1 class="bar-title">${title}</h1>${right || '<span class="iconbtn ghost"></span>'}</header>`;
 
-  /* Arte do login: a fachada do campus, como nas fotos. O auditório curvo com a faixa de pastilha azul,
-     o bloco amarelo de três andares, o obelisco com a marca do IF e os arbustos de flores vermelhas.
-     O céu é o mesmo do início e segue o horário; à noite, as janelas e os postes acendem. */
-  function facadeArt() {
-    const win = (x, y, w, h, k) => `<rect class="fa-win" style="--k:${k}" x="${x}" y="${y}" width="${w}" height="${h}" rx="1"/>`;
-    let block = '';
-    [64, 120, 176].forEach((y, f) => { for (let i = 0; i < 9; i++) { const x = 190 + i * 31; block += win(x, y, 19, 25, (i * 7 + f * 3) % 10); if ((i + f) % 3 === 0) block += `<rect class="fa-ac" x="${x + 3}" y="${y + 29}" width="13" height="7" rx="1"/>`; } });
-    const aud = [24, 56, 88, 120, 152].map((x, i) => `<rect class="fa-frame" x="${x - 2}" y="142" width="14" height="70" rx="2"/>${win(x, 144, 10, 66, i * 2)}`).join('');
-    const MARK = [[0, 0, 1], [1, 0], [2, 0], [0, 1], [1, 1], [0, 2], [1, 2], [2, 2], [0, 3], [1, 3]];
-    const logo = MARK.map(([c, r, red]) => (red ? `<circle cx="${309.5 + c * 6.6}" cy="${101.5 + r * 6.6}" r="2.8" fill="#d0231f"/>` : `<rect x="${306.8 + c * 6.6}" y="${98.8 + r * 6.6}" width="5.4" height="5.4" rx=".6" fill="#2f9e44"/>`)).join('');
-    const bush = (x, y, r, i) => `<g class="fa-bush" style="--i:${i}"><circle cx="${x}" cy="${y}" r="${r}"/><circle class="fa-bloom" cx="${x - r * 0.4}" cy="${y - r * 0.35}" r="1.5"/><circle class="fa-bloom" cx="${x + r * 0.35}" cy="${y - r * 0.5}" r="1.4"/><circle class="fa-bloom" cx="${x + r * 0.1}" cy="${y + r * 0.1}" r="1.3"/></g>`;
-    let hedge = ''; let k = 0;
-    for (let x = -4; x < 292; x += 13) hedge += bush(x, 230 + (k % 2) * 2, 9 + (k % 3), k++);
-    for (let x = 344; x < 478; x += 13) hedge += bush(x, 231, 9 + (k % 3), k++);
-    const fronds = [[-44, 22], [-30, 30], [-12, 34], [8, 34], [26, 30], [42, 22], [-50, 6], [52, 8]].map(([dx, up]) => `<path d="M172 147Q${172 + dx * 0.45} ${147 - up} ${172 + dx} ${147 - up * 0.3 + 14}"/>`).join('');
-    return `<svg class="lg-facade" viewBox="0 30 470 222" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
-      <defs>
-        <pattern id="faTile" width="5" height="5" patternUnits="userSpaceOnUse"><rect width="5" height="5" fill="#26388c"/><rect x=".5" y=".5" width="4" height="4" fill="#31469e"/></pattern>
-        <linearGradient id="faCurve" x1="0" x2="1"><stop offset="0" stop-color="#b98a35"/><stop offset=".35" stop-color="#e4b45a"/><stop offset=".8" stop-color="#d9a64c"/><stop offset="1" stop-color="#c39240"/></linearGradient>
-        <linearGradient id="faStone" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#cfc8ba"/><stop offset="1" stop-color="#b9b2a4"/></linearGradient>
-      </defs>
-      <g class="fa-layer fa-l1">
-        <rect x="150" y="46" width="18" height="184" fill="#bf8f3c"/><rect x="150" y="40" width="18" height="12" fill="#1f2f78"/>
-        <rect x="166" y="46" width="320" height="184" fill="#dcab52"/><rect x="166" y="38" width="320" height="14" fill="url(#faTile)"/><rect x="166" y="52" width="320" height="2.5" fill="#a77a2e" opacity=".5"/>
-        ${block}
-      </g>
-      <g class="fa-layer fa-l2">
-        <path d="M-6 104H150Q176 104 178 130V232H-6Z" fill="url(#faCurve)"/>
-        <path d="M-6 98H150Q178 98 180 126V132H-6Z" fill="url(#faTile)"/><path d="M-6 132H180" stroke="#9b7029" stroke-opacity=".45" stroke-width="2"/>
-        ${aud}
-        <g class="fa-lamp"><path d="M34 232V152M22 152h24" stroke="#2a2f3a" stroke-width="2.4" fill="none"/><circle class="fa-globe" cx="22" cy="149" r="5.5"/><circle class="fa-globe" cx="46" cy="149" r="5.5"/></g>
-        <g class="fa-palm"><path d="M172 232q-4-44 0-86" stroke="#7a6a50" stroke-width="5" fill="none" stroke-linecap="round"/><g stroke="#4c8a3a" stroke-width="3.6" fill="none" stroke-linecap="round">${fronds}</g><circle cx="172" cy="147" r="3.5" fill="#3f7a30"/></g>
-      </g>
-      <rect class="fa-ground" x="-10" y="232" width="500" height="20" fill="url(#faStone)"/>
-      <g class="fa-layer fa-l3">
-        <path d="M330 92v140h6V96Z" fill="#b9bdc2"/><rect x="300" y="92" width="30" height="140" fill="#e2e5e8"/>
-        ${logo}
-        <rect x="294" y="150" width="28" height="84" fill="#f6f6f3"/><path d="M322 150v84h3v-82Z" fill="#cfd2d4"/>
-        <text class="fa-name" transform="translate(305 226) rotate(-90)">INSTITUTO FEDERAL</text><text class="fa-name sm" transform="translate(312 226) rotate(-90)">DO RIO GRANDE DO NORTE</text><text class="fa-name sm" transform="translate(318 226) rotate(-90)">Campus Pau dos Ferros</text>
-      </g>
-      <g class="fa-hedge">${hedge}</g>
-    </svg>`;
-  }
+  /* ---------------- entrada: três propostas ----------------
+     Padrões dos apps de evento (Web Summit, Doity, Whova, Brella): o evento em primeiro plano, a escolha entre
+     quem já tem conta e quem vem de fora, e o crachá como objetivo. O formulário sobe por baixo nas três.
+     ?login=cartaz|cracha|explorar, ou a escolha salva em etal-login. */
+  const LOGIN_VARIANTS = { cartaz: 'Cartaz', cracha: 'Crachá', explorar: 'Explorar' };
+  const loginVariant = () => { const v = new URLSearchParams(location.search).get('login') || prefs.get('etal-login'); return LOGIN_VARIANTS[v] ? v : 'cartaz'; };
   const guestSaved = () => { try { return JSON.parse(localStorage.getItem('etal-visitante')); } catch (_) { return null; } };
   const GUEST_KINDS = [['estudante', 'Estudante'], ['professor', 'Professor(a)'], ['profissional', 'Profissional'], ['comunidade', 'Comunidade']];
+  const evDay = () => D.days.findIndex((d) => d.day === D.now.day) + 1;
+  const suapLogo = (cls = 'suap') => `<img class="${cls}" src="assets/suap-logo.svg" alt="SUAP" width="96" height="50">`;
+
+  function suapForm() {
+    return `<div class="lx-fhead"><button type="button" class="iconbtn sm" data-act="lgclose" aria-label="Voltar">${ic('back')}</button><h2>Entrar com</h2>${suapLogo()}</div>
+      <form class="login-form" data-form="login" novalidate>
+        <label class="field" for="mat"><span>Matrícula</span><input id="mat" inputmode="numeric" autocomplete="username" placeholder="Sua matrícula do SUAP" required></label>
+        <label class="field" for="pwd"><span>Senha</span><div class="pwd"><input id="pwd" type="password" autocomplete="current-password" placeholder="A mesma senha do SUAP" required><button type="button" class="iconbtn sm" data-act="togglepwd" aria-label="Mostrar senha">${ic('eye')}</button></div></label>
+        <p class="lg-err" id="lgerr" role="alert" hidden></p>
+        <button class="btn primary big" type="submit"><span>Entrar</span><i class="spin"></i></button>
+        <button class="btn ghost" type="button" id="lgdemo" data-act="demo" hidden>Entrar com dados de exemplo</button>
+        <p class="g-note">${ic('lock')}A senha vai direto para o SUAP e não fica salva no app.</p>
+      </form>`;
+  }
+  function guestForm() {
+    return `<div class="lx-fhead"><button type="button" class="iconbtn sm" data-act="lgclose" aria-label="Voltar">${ic('back')}</button><h2>Conta de visitante</h2></div>
+      <form class="login-form guest-form" data-form="guest" novalidate>
+        <label class="field" for="gname"><span>Nome completo</span><input id="gname" autocomplete="name" placeholder="Como vai aparecer no crachá" required></label>
+        <label class="field" for="gmail"><span>E-mail</span><input id="gmail" type="email" inputmode="email" autocomplete="email" placeholder="Para receber o certificado" required></label>
+        <fieldset class="g-kind"><legend>Você é</legend>${GUEST_KINDS.map(([v, t], i) => `<label><input type="radio" name="gkind" value="${v}" ${i ? '' : 'checked'}><span>${t}</span></label>`).join('')}</fieldset>
+        <div class="g-two">
+          <label class="field" for="ginst"><span>Instituição</span><input id="ginst" autocomplete="organization" placeholder="Opcional"></label>
+          <label class="field" for="gcity"><span>Cidade</span><input id="gcity" list="gcities" autocomplete="address-level2" placeholder="Sua cidade" required></label>
+        </div>
+        <datalist id="gcities">${['Pau dos Ferros', 'Mossoró', 'São Miguel', 'Alexandria', 'Encanto', 'Rafael Fernandes', 'Portalegre', 'Marcelino Vieira', 'Cajazeiras', 'Natal'].map((c) => `<option value="${c}">`).join('')}</datalist>
+        <label class="g-ok"><input type="checkbox" id="gok" required><span>Concordo que o ETAL use estes dados só para o credenciamento e os certificados.</span></label>
+        <p class="lg-err" id="lgerr" role="alert" hidden></p>
+        <button class="btn primary big" type="submit"><span>Criar conta e entrar</span><i class="spin"></i></button>
+        <p class="g-note">${ic('lock')}A conta fica salva neste aparelho. No evento, mostre o QR do crachá na recepção.</p>
+      </form>`;
+  }
+  const sheetHtml = () => (S.lgMode === 'guest' ? guestForm() : S.lgMode === 'suap' ? suapForm() : '');
+  /* Botões de entrada, iguais nas três propostas. */
+  function entryChoices(style) {
+    const saved = guestSaved();
+    const guest = saved
+      ? `<button class="lx-opt" data-act="guestresume"><span class="lx-ic g">${esc(saved.initials)}</span><span><b>Continuar como ${esc(saved.first)}</b><small>Conta de visitante neste aparelho</small></span>${ic('chev')}</button>`
+      : `<button class="lx-opt" data-act="guest"><span class="lx-ic g">${ic('users')}</span><span><b>Vim de fora</b><small>Crie uma conta de visitante</small></span>${ic('chev')}</button>`;
+    return `<div class="lx-choices ${style || ''}">
+      <button class="lx-opt suap-opt" data-act="lgsuap"><span class="lx-ic s">${ic('id')}</span><span><b>Sou do IFRN</b><small>Entrar com a matrícula do SUAP</small></span>${ic('chev')}</button>
+      ${guest}
+    </div>`;
+  }
+
+  const LoginViews = {
+    /* 1 · Cartaz: o evento como num cartaz. Datas grandes, cortes no ângulo da colmeia do logo. */
+    cartaz: () => {
+      const first = D.days[0].day, last = D.days[D.days.length - 1].day;
+      return `<div class="lx-poster">
+          <i class="lx-cut c1"></i><i class="lx-cut c2"></i><i class="lx-cut c3"></i>
+          <header class="lx-brand">${mark('mark xs')}<b>etal</b><span>connect</span></header>
+          <p class="lx-kicker">Encontro de Tecnologia<br>do Alto Oeste Potiguar</p>
+          <h1 class="lx-dates" aria-label="De ${first} a ${last} de novembro"><span>${first}</span><em>a</em><span>${last}</span></h1>
+          <p class="lx-month">novembro <i></i> IFRN Pau dos Ferros</p>
+          <p class="lx-now"><b>Hoje</b> dia ${evDay()} de ${D.days.length} · ${D.sessions.filter((x) => x.day === D.now.day).length} atividades</p>
+        </div>
+        <div class="lx-bottom"><h2 class="lx-q">Como você vai entrar?</h2>${entryChoices()}</div>`;
+    },
+    /* 2 · Crachá: um crachá em branco no cordão; entrar é preencher o crachá. */
+    cracha: () => `<header class="lx-brand dark">${mark('mark xs')}<b>etal</b><span>connect</span></header>
+        <div class="lx-hang" aria-hidden="true">
+          <i class="lx-strap"><span>etal · etal · etal · etal · etal · etal · etal</span></i><i class="lx-clip"></i>
+          <div class="lx-card">
+            <div class="lx-card-top">${mark('mark xs')}<b>etal</b><svg class="pins" viewBox="0 0 60 20"><path d="M8 20V9M30 20V9M52 20V9"/><circle cx="8" cy="5.500" r="3.400"/><circle cx="30" cy="5.500" r="3.400"/><circle cx="52" cy="5.500" r="3.400"/></svg></div>
+            <div class="lx-card-id"><span class="lx-photo">${ic('user')}</span><span class="lx-lines"><i class="w1">Seu nome</i><i class="w2">Curso ou instituição</i></span></div>
+            <div class="lx-card-qr"><span>${ic('qr')}</span><small>Seu QR aparece aqui depois de entrar</small></div>
+            <div class="lx-card-foot">26 a 28 nov · IFRN Pau dos Ferros</div>
+          </div>
+        </div>
+        <div class="lx-bottom"><h2 class="lx-q">Entre para preencher o seu crachá</h2>${entryChoices()}</div>`,
+    /* 3 · Explorar: o que o app faz, com conteúdo de verdade, e a opção de olhar sem conta. */
+    explorar: () => {
+      const today = D.sessions.filter((x) => x.day === D.now.day && !x.simple).slice(0, 4);
+      const rn = byId('react-native');
+      return `<header class="lx-brand dark">${mark('mark xs')}<b>etal</b><span>connect</span></header>
+        <div class="lx-deck" id="lxdeck">
+          <article class="lx-slide"><div class="lx-art lx-agenda">${today.map((x) => `<p><time>${x.time}</time><span><b>${esc(x.short)}</b><small>${esc(x.room)}</small></span></p>`).join('')}</div>
+            <h2>A programação no bolso</h2><p>Os três dias do ETAL, com o que está acontecendo agora e o que você salvou.</p></article>
+          <article class="lx-slide"><div class="lx-art lx-map"><canvas class="thumb3d" aria-label="Prévia do ${esc(rn.room)} no mapa"></canvas><span class="lx-pin">${esc(rn.room)}</span></div>
+            <h2>A sala certa, sem rodar o campus</h2><p>O mapa mostra o caminho da entrada até a porta, pela escada ou pela rampa.</p></article>
+          <article class="lx-slide"><div class="lx-art lx-pass"><div class="lx-mini">${mark('mark xs')}<span><b>Seu nome</b><small>Crachá do ETAL</small></span>${qr()}</div></div>
+            <h2>Crachá e presença no celular</h2><p>Mostre o QR na recepção e leia o QR da porta para registrar presença.</p></article>
+        </div>
+        <div class="lx-dots" role="tablist">${[0, 1, 2].map((i) => `<button data-act="lxdot" data-i="${i}" aria-label="Cartão ${i + 1} de 3" class="${i ? '' : 'on'}"></button>`).join('')}</div>
+        <div class="lx-bottom">${entryChoices('row')}<button class="lx-skip" data-act="explore">Explorar sem conta</button></div>`;
+    },
+  };
 
   Screens.login = () => {
-    const intro = !splashDone && !reduce;
     splashDone = true;
-    const guest = S.lgMode === 'guest'; const saved = guestSaved();
-    const sheet = guest ? `
-          <div class="lg-vhead"><button type="button" class="iconbtn sm" data-act="guestback" aria-label="Voltar para o login do SUAP">${ic('back')}</button><h1>Conta de visitante</h1></div>
-          <p class="lg-vsub">Para quem vem ao ETAL sem matrícula no IFRN. Leva menos de um minuto.</p>
-          <form class="login-form guest-form" data-form="guest" novalidate>
-            <label class="field" for="gname"><span>Nome completo</span><input id="gname" autocomplete="name" placeholder="Como vai aparecer no crachá" required></label>
-            <label class="field" for="gmail"><span>E-mail</span><input id="gmail" type="email" inputmode="email" autocomplete="email" placeholder="Para receber o certificado" required></label>
-            <fieldset class="g-kind"><legend>Você é</legend>${GUEST_KINDS.map(([v, t], i) => `<label><input type="radio" name="gkind" value="${v}" ${i ? '' : 'checked'}><span>${t}</span></label>`).join('')}</fieldset>
-            <div class="g-two">
-              <label class="field" for="ginst"><span>Instituição</span><input id="ginst" autocomplete="organization" placeholder="Opcional"></label>
-              <label class="field" for="gcity"><span>Cidade</span><input id="gcity" list="gcities" autocomplete="address-level2" placeholder="Sua cidade" required></label>
-            </div>
-            <datalist id="gcities">${['Pau dos Ferros', 'Mossoró', 'São Miguel', 'Alexandria', 'Encanto', 'Rafael Fernandes', 'Portalegre', 'Marcelino Vieira', 'Cajazeiras', 'Natal'].map((c) => `<option value="${c}">`).join('')}</datalist>
-            <label class="g-ok"><input type="checkbox" id="gok" required><span>Concordo que o ETAL use estes dados só para o credenciamento e os certificados.</span></label>
-            <p class="lg-err" id="lgerr" role="alert" hidden></p>
-            <button class="btn primary big" type="submit"><span>Criar conta e entrar</span><i class="spin"></i></button>
-            <p class="g-note">${ic('lock')}A conta fica salva neste aparelho. No evento, mostre o QR do crachá na recepção.</p>
-          </form>` : `
-          <div class="lg-title"><h1>Entrar com</h1><img class="suap" src="assets/suap-logo.svg" alt="SUAP, sistema unificado de administração pública" width="124" height="64"></div>
-          <form class="login-form" data-form="login" novalidate>
-            <label class="field" for="mat"><span>Matrícula</span><input id="mat" inputmode="numeric" autocomplete="username" placeholder="Sua matrícula" required></label>
-            <label class="field" for="pwd"><span>Senha</span><div class="pwd"><input id="pwd" type="password" autocomplete="current-password" placeholder="Sua senha" required><button type="button" class="iconbtn sm" data-act="togglepwd" aria-label="Mostrar senha">${ic('eye')}</button></div></label>
-            <p class="lg-err" id="lgerr" role="alert" hidden></p>
-            <button class="btn primary big" type="submit"><span>Entrar</span><i class="spin"></i></button>
-            <button class="btn ghost" type="button" id="lgdemo" data-act="demo" hidden>Entrar com dados de exemplo</button>
-          </form>
-          <div class="lg-or"><span>ou</span></div>
-          ${saved ? `<button class="lg-guest" data-act="guestresume">${meAvOf(saved)}<span><b>Continuar como ${esc(saved.first)}</b><small>Conta de visitante neste aparelho</small></span>${ic('chev')}</button>
-          <button class="lg-guest-new" data-act="guest">Criar outra conta de visitante</button>`
-          : `<button class="lg-guest" data-act="guest"><i>${ic('users')}</i><span><b>Entrar como visitante</b><small>Não é do IFRN? Crie uma conta rápida.</small></span>${ic('chev')}</button>`}`;
+    const v = loginVariant();
     return {
       chrome: false,
-      navy: true,
-      mount: (el) => { applySky(); const box = $('.login', el); if (box.classList.contains('intro')) setTimeout(() => box.classList.remove('intro'), 1900); },
-      html: `<div class="login${intro ? ' intro' : ''}${guest ? ' guest' : ''}">
-        <div class="lg-hero">
-          <i class="lg-sunb"></i><i class="lg-cloud c1"></i><i class="lg-cloud c2"></i>
-          ${facadeArt()}
-          <div class="lg-brand">${mark('mark lg-mark')}<div class="lg-word"><b>etal</b><span>connect</span></div></div>
-          <p class="lg-event">Encontro de Tecnologia do Alto Oeste Potiguar</p>
-        </div>
-        <div class="lg-sheet">${sheet}</div>
-      </div>`,
+      navy: v === 'cartaz',
+      mount: (el) => {
+        if (v !== 'explorar') return;
+        const deck = $('#lxdeck', el); const dots = [...el.querySelectorAll('.lx-dots button')];
+        deck.addEventListener('scroll', () => { const i = Math.round(deck.scrollLeft / deck.clientWidth); dots.forEach((d, k) => d.classList.toggle('on', k === i)); }, { passive: true });
+        const cv = $('canvas.thumb3d', el); const rn = byId('react-native');
+        const draw = () => { if (!cv.isConnected) return; if (!window.Campus3D.preview(cv, { floor: rn.floor, zone: rn.zone })) setTimeout(draw, 600); };
+        setTimeout(draw, 300);
+      },
+      html: `<div class="login lx lx-${v}${S.lgMode ? ' lx-open' : ''}">${LoginViews[v]()}
+        <div class="lx-scrim" data-act="lgclose"></div><div class="lx-sheet">${sheetHtml()}</div></div>`,
     };
   };
-  const meAvOf = (p) => `<span class="av g-av">${esc(p.initials)}</span>`;
   /* Conta de visitante: só o necessário para o crachá e o certificado. */
   function guestProfile(f) {
     const name = f.name.replace(/\s+/g, ' ').trim(); const parts = name.split(' ');
@@ -365,6 +386,9 @@
   }
 
   function badge() {
+    if (D.person.source === 'anon') return `<section class="badge anon st" ${st(0)}>
+      <div class="an-in"><span class="an-ic">${ic('id')}</span><span><b>Você está explorando sem conta</b><small>Entre para ter o crachá, registrar presença e receber certificados.</small></span></div>
+      <button class="btn primary" data-act="logout">Entrar ou criar conta</button></section>`;
     const ok = !!S.credAt;
     const pinsSvg = '<svg class="pins" viewBox="0 0 60 20" aria-hidden="true"><path d="M8 20V9M30 20V9M52 20V9"/><circle cx="8" cy="5.500" r="3.400"/><circle cx="30" cy="5.500" r="3.400"/><circle cx="52" cy="5.500" r="3.400"/></svg>';
     return `<section class="badge st" ${st(0)}>
@@ -1542,15 +1566,13 @@
 
   function setTheme(v) { UI.mode = v === 'dark' ? 'escuro' : 'claro'; applyUI(); }
   function applyProfile(p) { Object.assign(D.person, p); }
-  /* Troca o painel do login sem refazer a ilustração. */
+  /* Abre ou fecha o formulário do login sem refazer a tela de fundo. */
   function lgSwap(mode) {
     S.lgMode = mode;
     const cur = $('.login'); if (!cur) return;
-    const tmp = document.createElement('div'); tmp.innerHTML = Screens.login().html;
-    cur.classList.toggle('guest', mode === 'guest'); cur.classList.remove('intro');
-    const next = $('.lg-sheet', tmp); next.classList.add('swap');
-    $('.lg-sheet', cur).replaceWith(next);
-    if (mode === 'guest') setTimeout(() => $('#gname')?.focus({ preventScroll: true }), 350);
+    const sh = $('.lx-sheet', cur);
+    if (mode) { sh.innerHTML = sheetHtml(); cur.classList.add('lx-open'); setTimeout(() => $(mode === 'guest' ? '#gname' : '#mat')?.focus({ preventScroll: true }), 380); }
+    else cur.classList.remove('lx-open');
   }
   function navReset() { const n = navUndo.length; navUndo.length = 0; if (n) { navSkip += 1; history.go(-n); } }
   function enterApp() { S.auth = true; S.tab = 'home'; show(build(top()), 'fade'); }
@@ -1825,8 +1847,11 @@
         break;
       }
       case 'toast': toast(el.dataset.msg); break;
-      case 'guest': lgSwap('guest'); navPush(() => lgSwap(null), 'screen'); break;
-      case 'guestback': navBack(); break;
+      case 'guest': if (S.lgMode) { lgSwap('guest'); break; } lgSwap('guest'); navPush(() => lgSwap(null), 'screen'); break;
+      case 'lgsuap': lgSwap('suap'); navPush(() => lgSwap(null), 'screen'); break;
+      case 'lgclose': navBack(); break;
+      case 'lxdot': { const d = $('#lxdeck'); d?.scrollTo({ left: d.clientWidth * +el.dataset.i, behavior: reduce ? 'auto' : 'smooth' }); break; }
+      case 'explore': Object.keys(D.person).forEach((k) => delete D.person[k]); applyProfile({ ...ANON }); navReset(); enterApp(); break;
       case 'guestresume': { const g = guestSaved(); if (g) { Object.keys(D.person).forEach((k) => delete D.person[k]); applyProfile(g); store.set(SAVE_KEY, g); navReset(); enterApp(); } break; }
       case 'togglepwd': { const i = $('#pwd'); i.type = i.type === 'password' ? 'text' : 'password'; break; }
       case 'logout': { const n = navUndo.length; navUndo.length = 0; if (n) { navSkip += 1; history.go(-n); } } S = fresh(); store.del(SAVE_KEY); Object.keys(D.person).forEach((k) => delete D.person[k]); Object.assign(D.person, DEMO_PERSON); vp.innerHTML = ''; show(build({ s: 'login' }), 'fade'); break;
