@@ -478,22 +478,12 @@ svg.swap{animation:fadeIn .3s ease both}
 .badge-num{position:absolute;top:5px;right:4px;min-width:17px;height:17px;padding:0 4px;border-radius:calc(9px*var(--rk,1));background:var(--red);color:#fff;font:600 10.5px/17px var(--ui);text-decoration:none;text-align:center;border:0}
 
 /* ================= abertura + login =================
-   A abertura e o login são a mesma cena: a planta se desenha, a marca monta e o painel sobe. */
+   A abertura e o login são a mesma cena: a fachada do campus sobe, a marca monta e o painel sobe. */
 .login{--card:#fff;--bg:#f4f6fa;--ink:#1f2f57;--ink-2:#3d4b6b;--muted:#6a7896;--line:#e3e8f1;--blue:#3a5a9b;--navy:#22386f;--accent-ink:#22386f;
   position:relative;flex:1;min-height:100%;padding:0;display:flex;flex-direction:column;overflow:hidden;
-  background:linear-gradient(180deg,#1b2d5c 0%,#22386f 55%,#2c4785 100%);color:#fff}
+  background:linear-gradient(180deg,var(--sky-1,#2c7bd3) 0%,var(--sky-2,#68afed) 52%,var(--sky-3,#cfe9f8) 100%);color:#fff;transition:background .6s}
 .lg-hero{position:relative;flex:1 1 auto;min-height:250px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;padding:10px 20px 0;overflow:hidden}
 .login.intro .lg-hero{justify-content:center;padding-bottom:40px}
-.lg-plan{position:absolute;left:10px;width:calc(100% - 20px);bottom:18px;fill:none;pointer-events:none;transition:opacity .6s}
-.login.intro .lg-plan{bottom:auto;top:58%}
-.lg-plan .lg-out{display:none}
-.lg-rooms>*{stroke:rgba(255,255,255,.17);stroke-width:1.500;stroke-dasharray:1;stroke-dashoffset:1;animation:lgDraw 1.100s var(--ease) var(--d,0ms) forwards}
-@keyframes lgDraw{to{stroke-dashoffset:0}}
-.lg-trees circle{fill:#65b32e;opacity:0;transform-box:fill-box;transform-origin:center;animation:lgTree .55s var(--spring) var(--d,1000ms) forwards}
-@keyframes lgTree{from{opacity:0;transform:scale(.2)}to{opacity:.55;transform:none}}
-.lg-route{fill:none;stroke:#8fdc5c;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;animation:lgDraw 1s var(--ease) 1.500s forwards}
-.lg-here{fill:#fff;opacity:0;animation:fadeIn .3s ease 1.300s forwards}
-.lg-goal{fill:#8fdc5c;opacity:0;animation:fadeIn .3s ease 2.400s forwards}
 .lg-brand{position:relative;display:flex;align-items:center;gap:12px;transition:transform .9s var(--ease)}
 .login.intro .lg-brand{transform:scale(1.2)}
 .lg-mark{width:44px;height:78px}
@@ -1162,3 +1152,71 @@ button.teacher{width:100%;text-align:left;padding:8px 10px;margin:0 -2px;border-
 .cu-row2 button.on .switch{background:var(--green)}
 .cu-row2 button.on .switch::after{transform:translateX(15px)}
 .mini-seg.wide button{font-size:12px}
+
+/* ---- login: fachada do campus ---- */
+.lg-hero{flex:1 1 auto;min-height:300px;justify-content:flex-start;padding-top:20px;transition:min-height .55s var(--ease)}
+.login.guest .lg-hero{flex:0 0 132px;min-height:132px}
+.lg-brand,.lg-event{z-index:2;text-shadow:0 1px 10px rgba(10,20,50,.3)}
+.login.guest .lg-brand{transform:scale(.62);margin:-22px 0 0}
+.login.guest .lg-event{visibility:hidden}
+.lg-event{transition:opacity .3s}
+.lg-facade{position:absolute;left:0;bottom:-1px;width:100%;height:auto;pointer-events:none;transition:transform .55s var(--ease)}
+.login.guest .lg-facade{transform:translateY(64%)}
+.fa-win{fill:color-mix(in srgb,#ffd98a calc(var(--night,0)*100%),#2b3f6e);transition:fill .6s}
+.fa-l1 .fa-win{opacity:calc(.82 + var(--night,0)*.18)}
+.fa-frame{fill:#f1d9a2}
+.fa-ac{fill:#eef0f2;opacity:.9}
+.fa-globe{fill:color-mix(in srgb,#ffe7a3 calc(var(--night,0)*100%),#f7f7f4)}
+.fa-name{font:800 5.2px/1 var(--ui);fill:#3b404b;letter-spacing:.05em}
+.fa-name.sm{font-size:3.9px;font-weight:600;letter-spacing:.02em}
+.fa-bush circle:first-child{fill:#4f8d3b}
+.fa-bush:nth-child(3n) circle:first-child{fill:#5e9c45}
+.fa-bloom{fill:#d8402f}
+.fa-l1,.fa-l2,.fa-l3{transform-box:view-box}
+.login.intro .fa-layer{animation:faUp .9s var(--ease) both}
+.login.intro .fa-l1{animation-delay:.15s}.login.intro .fa-l2{animation-delay:.32s}.login.intro .fa-l3{animation-delay:.5s}
+.login.intro .fa-bush{animation:faBush .5s var(--spring) both;animation-delay:calc(.75s + var(--i)*22ms);transform-box:fill-box;transform-origin:50% 100%}
+@keyframes faUp{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+@keyframes faBush{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:none}}
+.lg-sunb{position:absolute;left:calc(62% + var(--sun-x,70%)*.33);top:calc(var(--sun-y,30%)*.35 + 7%);width:40px;height:40px;margin:-20px;border-radius:50%;background:var(--sun-c,#ffe9a8);opacity:var(--sun-o,1);transition:opacity .6s}
+.lg-cloud{position:absolute;height:16px;border-radius:16px;background:rgba(255,255,255,calc(.55 - var(--night,0)*.45));animation:cloud 60s linear infinite}
+.lg-cloud::before{content:"";position:absolute;left:22%;bottom:6px;width:46%;height:20px;border-radius:50%;background:inherit}
+.lg-cloud.c1{width:86px;top:33%;left:-20%}
+.lg-cloud.c2{width:58px;top:46%;left:-30%;animation-duration:85s;animation-delay:-40s}
+@keyframes cloud{to{transform:translateX(560px)}}
+.lg-sheet{padding-top:20px;padding-bottom:26px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+.login.guest .lg-sheet{max-height:none;flex:1}
+.lg-sheet.swap>*{animation:rise .45s var(--ease) both}
+.lg-or{display:flex;align-items:center;gap:12px;margin:12px 0 10px;color:var(--muted);font-size:12.5px;font-weight:600}
+.lg-or::before,.lg-or::after{content:"";flex:1;height:1px;background:var(--line)}
+.lg-guest{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border:1.5px solid #cdd8ec;border-radius:calc(18px*var(--rk,1));background:#f3f6fc;text-align:left;color:var(--ink)}
+.lg-guest>i{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:#65b32e;color:#fff}
+.lg-guest>i .i{width:21px;height:21px}
+.lg-guest>span{flex:1;display:flex;flex-direction:column;gap:2px}
+.lg-guest b{font:600 15.5px/1.2 var(--display)}
+.lg-guest small{font-size:12.5px;line-height:1.3;color:var(--muted)}
+.lg-guest>.i:last-child{width:18px;height:18px;color:var(--muted)}
+.lg-guest .g-av{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:#65b32e;color:#fff;font:700 14px var(--display)}
+.lg-guest-new{display:block;margin:10px auto 0;font-size:13px;font-weight:600;color:var(--blue)}
+.lg-vhead{display:flex;align-items:center;gap:8px;margin:-6px 0 4px -8px}
+.lg-vhead h1{margin:0;font:600 23px/1.1 var(--display);letter-spacing:-.025em;color:var(--ink)}
+.lg-vhead .iconbtn{color:var(--ink)}
+.lg-vsub{margin:0 0 16px;font-size:13.5px;line-height:1.4;color:var(--muted)}
+.guest-form{gap:12px}
+.guest-form .field input{padding:12px 14px;font-size:15.5px}
+.field em{font-style:normal;font-weight:500;color:var(--muted)}
+.g-kind{display:flex;flex-wrap:wrap;gap:7px;margin:0;padding:0;border:0}
+.g-kind legend{width:100%;padding:0;margin-bottom:7px;font-size:13.5px;font-weight:600;color:var(--ink-2)}
+.g-kind label{position:relative}
+.g-kind input{position:absolute;opacity:0;inset:0;margin:0}
+.g-kind span{display:block;padding:8px 13px;border-radius:999px;border:1.5px solid var(--line);font-size:13.5px;font-weight:600;color:var(--ink-2);background:#fff;transition:all .2s}
+.g-kind input:checked+span{background:#22386f;border-color:#22386f;color:#fff}
+.g-kind input:focus-visible+span{outline:2px solid #3a5a9b;outline-offset:2px}
+.g-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.g-ok{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.4;color:var(--ink-2)}
+.g-ok input{flex:none;width:20px;height:20px;margin:0;accent-color:#22386f}
+.g-note{display:flex;gap:8px;align-items:flex-start;margin:2px 0 0;font-size:12.5px;line-height:1.4;color:var(--muted)}
+.g-note .i{flex:none;width:15px;height:15px;margin-top:1px}
+.fromsuap.guest{background:#e6f3dc;color:#2f6f12}
+@media (prefers-reduced-motion:reduce){.lg-cloud{animation:none}}
+.lg-sheet .lg-title{margin-bottom:12px}.lg-sheet .suap{width:108px}.lg-sheet .login-form{gap:10px}.lg-sheet .field input{padding:12px 14px}
