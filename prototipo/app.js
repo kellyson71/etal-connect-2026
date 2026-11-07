@@ -110,6 +110,8 @@
     set(k, v) { try { localStorage.setItem(k, v); } catch (_) { /* opcional */ } },
   };
   let splashDone = false;
+  const REM_KEY = 'etal-lembretes'; const LEAD = 10;
+  const remSaved = () => { try { return JSON.parse(localStorage.getItem(REM_KEY)) || []; } catch (_) { return []; } };
 
   /* ---------------- personalização ---------------- */
   const THEMES = {
@@ -198,7 +200,7 @@
     agendaDay: 26, agendaFilter: 'all',
     mapView: 'evento', campusPlace: null, mapFloor: null, mapZone: null, mapRoute: false, mapVia: null, pending: false, journeying: false,
     tourTab: 'chave',
-    reminders: new Set(), votes: new Set(), ratings: {}, asked: {}, contacts: [],
+    reminders: new Set(remSaved()), votes: new Set(), ratings: {}, asked: {}, contacts: [],
   });
   let S = fresh();
 
@@ -427,7 +429,7 @@
 
           ${UI.home.agenda ? `<div class="sec st" ${st(5)}><h2>Sua agenda</h2><button data-act="mine">Ver tudo</button></div>
           <ul class="next st" ${st(6)}>${next.map((n) => `<li data-go="activity" data-id="${n.id}"><span class="date"><small>${dayOf(n.day).week}</small><b>${n.day}</b></span><span class="next-tx"><b>${n.short}</b><small>${n.time} · ${n.room}</small></span>
-            <button class="remind ${S.reminders.has(n.id) ? 'on' : ''}" data-act="remind" data-id="${n.id}" aria-pressed="${S.reminders.has(n.id)}" aria-label="Lembrar 15 minutos antes">${ic('alarm')}</button></li>`).join('')}</ul>` : ''}
+            <button class="remind ${S.reminders.has(n.id) ? 'on' : ''}" data-act="remind" data-id="${n.id}" aria-pressed="${S.reminders.has(n.id)}" aria-label="Lembrar 10 minutos antes">${ic('alarm')}</button></li>`).join('')}</ul>` : ''}
 
           ${UI.home.palestrantes ? `<div class="sec st" ${st(8)}><h2>Palestrantes</h2><button data-go="speakers">Ver todos</button></div>
           <div class="people st" ${st(9)}>${speakers.map((o) => `<button data-go="speaker" data-id="${o.id}">${spAv(o, true)}<b>${o.speakerShort.split(' ')[0]}</b><small>${o.type}</small></button>`).join('')}</div>` : ''}
@@ -563,7 +565,8 @@
         <ul class="info st" ${st(3)}><li>${ic('cal')}${d.long} · ${s.time} às ${s.end}</li><li>${ic('pin')}${whereOf(s)}</li><li>${ic('users')}<span>${seatLine(s)}</span>${seatBar(s)}</li></ul>
         ${thumb(s, 4)}
         <p class="desc st" ${st(5)}>${s.description}</p>
-        <button class="remindrow st ${S.reminders.has(id) ? 'on' : ''}" ${st(6)} data-act="remind" data-id="${id}" aria-pressed="${S.reminders.has(id)}">${ic('alarm')}<span>${S.reminders.has(id) ? 'Lembrete 15 minutos antes' : 'Lembrar 15 minutos antes'}</span><i class="switch"></i></button>
+        <button class="remindrow st ${S.reminders.has(id) ? 'on' : ''}" ${st(6)} data-act="remind" data-id="${id}" aria-pressed="${S.reminders.has(id)}">${ic('alarm')}<span>${S.reminders.has(id) ? `Lembrete às ${hhmm(toMin(s.time) - LEAD)}` : `Lembrar ${LEAD} minutos antes`}<small>${S.reminders.has(id) ? `Com sala e tempo a pé${notifState() === 'granted' ? '' : ', dentro do app'}` : 'Aviso com a sala e o caminho'}</small></span><i class="switch"></i></button>
+        ${S.reminders.has(id) ? `<button class="remindtest st" ${st(6)} data-act="remindtest" data-id="${id}">${ic('bell')}Ver como o lembrete chega</button>` : ''}
         <div class="locked st" ${st(7)}>${ic('lock')}<span>${s.materials.length} materiais ficam disponíveis quando você registrar presença na sala.</span></div>
       </div>
       <div class="cta-bar"><button class="btn primary big" data-act="scan">${ic('qr')}Registrar presença</button></div>`,
@@ -702,6 +705,7 @@
     const nc = $('#nowclock'); if (nc) nc.textContent = clock;
     const r = $('#skyr'); if (r && document.activeElement !== r) r.value = h;
     const o = $('#skyo'); if (o) o.textContent = clock;
+    if (typeof checkReminders === 'function') checkReminders();
   }
   let skyAnim = 0;
   function skyTo(target) {
@@ -1034,6 +1038,7 @@
         <ul class="menu st" ${st(2)}>
           <li data-go="games" class="games-row">${ic('trophy')}<span>Campeonatos</span><em>Qui 27</em>${ic('chev', 'i chev')}</li>
         </ul>
+        ${standalone() ? '' : `<button class="install-cta st" ${st(2)} data-act="install">${ic('download')}<span><b>Instalar o ETAL Connect</b><small>Abre como app e funciona sem internet</small></span>${ic('chev')}</button>`}
         <ul class="menu st" ${st(3)}>
           <li data-go="personalizar">${ic('moon')}<span>Personalizar</span><em>${(THEMES[UI.theme] || THEMES.etal).name}</em>${ic('chev', 'i chev')}</li>
         </ul>
@@ -1352,14 +1357,101 @@
   }
 
   let pushT;
-  function notify(title, text) {
+  function notify(title, text, id) {
     const n = $('#notif');
-    n.innerHTML = `${mark('mark xs')}<span><b>${title}</b><small>${text}</small></span><time>agora</time>`;
+    n.innerHTML = `${mark('mark xs')}<span><b>${esc(title)}</b><small>${esc(text)}</small></span><time>agora</time>`;
+    if (id && S.auth) { n.dataset.go = 'activity'; n.dataset.id = id; } else { delete n.dataset.go; delete n.dataset.id; }
     n.classList.add('show');
     buzz(30);
     clearTimeout(pushT);
     pushT = setTimeout(() => n.classList.remove('show'), 4200);
   }
+  /* ---------------- lembretes ----------------
+     O relógio do evento é o mesmo do "Horário do céu". Dez minutos antes de uma atividade com lembrete,
+     o app avisa com a sala, o andar e o tempo a pé calculado pela rota do mapa. Com permissão,
+     o aviso também sai como notificação do sistema, que abre a atividade. */
+  const toMin = (t) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+  const hhmm = (m) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+  const remFired = new Set();
+  const notifState = () => ('Notification' in window ? Notification.permission : 'unsupported');
+  async function askNotify() {
+    if (notifState() !== 'default') return notifState();
+    try { return await Notification.requestPermission(); } catch (_) { return 'denied'; }
+  }
+  function walkMin(x) {
+    if (x.floor === undefined) return null;
+    try { return Math.max(1, Math.round(window.Campus3D.routeInfo(x.floor, x.zone).cost / 75)); } catch (_) { return null; }
+  }
+  function reminderText(x, test) {
+    const left = toMin(x.time) - Math.round(skyHour * 60); const w = walkMin(x);
+    const title = test || left > LEAD || left < 0 ? `Começa às ${x.time}: ${x.short}` : left ? `Começa em ${left} min: ${x.short}` : `Começando agora: ${x.short}`;
+    return { title, body: [whereOf(x), w ? `${w} min a pé da entrada` : ''].filter(Boolean).join(' · ') };
+  }
+  async function deliver(x, test) {
+    if (!x) return;
+    const { title, body } = reminderText(x, test);
+    notify(title, body, x.id);
+    if (notifState() !== 'granted') return;
+    const opts = { body, icon: 'assets/pwa/icon-192.png', badge: 'assets/pwa/icon-192.png', tag: `lembrete-${x.id}`, data: { id: x.id }, vibrate: [60, 40, 60] };
+    try {
+      const reg = 'serviceWorker' in navigator ? await navigator.serviceWorker.getRegistration() : null;
+      if (reg) await reg.showNotification(title, opts); else new Notification(title, opts);
+    } catch (_) { /* o aviso dentro do app já foi mostrado */ }
+  }
+  function checkReminders() {
+    const now = Math.round(skyHour * 60);
+    S.reminders.forEach((id) => {
+      const x = byId(id);
+      if (!x || x.day !== D.now.day || remFired.has(id)) return;
+      if (now >= toMin(x.time) - LEAD && now < toMin(x.time)) { remFired.add(id); deliver(x); }
+    });
+  }
+  function openActivity(id) {
+    if (!S.auth || !byId(id)) return;
+    if (ov.classList.contains('open')) closeOverlay();
+    if (S.tab !== 'home') { S.tab = 'home'; S.stacks.home = [{ s: 'home' }]; show(build(top()), 'fade'); }
+    push('activity', { id });
+  }
+
+  /* ---------------- app instalável e sem internet ----------------
+     O service worker (sw.js) guarda o app no aparelho. Só funciona em HTTPS ou no próprio computador. */
+  const PWA = { prompt: null, waiting: null, updating: false, ready: false, version: null };
+  const swAllowed = 'serviceWorker' in navigator && (location.protocol === 'https:' || ['localhost', '127.0.0.1'].includes(location.hostname));
+  if (swAllowed) {
+    navigator.serviceWorker.register('sw.js').then((reg) => {
+      const watch = (w) => w && w.addEventListener('statechange', () => { if (w.state === 'installed' && navigator.serviceWorker.controller) { PWA.waiting = w; offerUpdate(); } });
+      if (reg.waiting && navigator.serviceWorker.controller) { PWA.waiting = reg.waiting; offerUpdate(); }
+      reg.addEventListener('updatefound', () => watch(reg.installing));
+      if (reg.active) { PWA.ready = true; netState(); }
+    }).catch(() => { /* sem service worker, o app segue online */ });
+    navigator.serviceWorker.addEventListener('message', (e) => {
+      if (e.data?.type === 'ready') { PWA.ready = true; PWA.version = e.data.version; if (!prefs.get('etal-offline')) { prefs.set('etal-offline', '1'); toast('Pronto para usar sem internet'); } }
+      if (e.data?.type === 'open') openActivity(e.data.id);
+    });
+    navigator.serviceWorker.addEventListener('controllerchange', () => { if (PWA.updating) location.reload(); });
+  }
+  function offerUpdate() {
+    const b = $('#upd'); if (!b) return;
+    b.innerHTML = `<span><b>Nova versão do app</b><small>As mudanças entram ao atualizar.</small></span><button data-act="update">Atualizar</button>`;
+    b.classList.add('show');
+  }
+  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); PWA.prompt = e; if (S.auth && S.tab === 'profile') rerender(); });
+  window.addEventListener('appinstalled', () => { PWA.prompt = null; toast('ETAL Connect instalado'); });
+  const standalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
+  async function installApp() {
+    if (PWA.prompt) { PWA.prompt.prompt(); const r = await PWA.prompt.userChoice.catch(() => null); PWA.prompt = null; if (r?.outcome !== 'accepted') toast('Instalação cancelada'); rerender(); return; }
+    if (isIOS()) { notify('Instalar no iPhone', 'Toque em Compartilhar e depois em "Adicionar à Tela de Início".'); return; }
+    notify('Instalar o app', swAllowed ? 'Abra o menu do navegador e toque em "Instalar app".' : 'A instalação precisa de HTTPS. Pelo Wi-Fi local, o app abre só no navegador.');
+  }
+  /* Sem internet: o app avisa e segue com a cópia guardada. */
+  function netState() {
+    const bar = $('#netbar'); if (!bar) return;
+    if (navigator.onLine) { if (bar.classList.contains('show')) { bar.textContent = 'Conexão de volta'; bar.classList.add('ok'); setTimeout(() => bar.classList.remove('show', 'ok'), 1600); } return; }
+    bar.classList.remove('ok'); bar.textContent = PWA.ready ? 'Sem internet · usando a cópia salva no aparelho' : 'Sem internet'; bar.classList.add('show');
+  }
+  window.addEventListener('online', netState); window.addEventListener('offline', netState);
+
   function setTheme(v) { UI.mode = v === 'dark' ? 'escuro' : 'claro'; applyUI(); }
   function applyProfile(p) { Object.assign(D.person, p); }
   /* Troca o painel do login sem refazer a ilustração. */
@@ -1558,12 +1650,16 @@
       case 'flip': el.classList.toggle('flipped'); el.classList.remove('hint'); S.flipSeen = true; buzz(8); break;
       case 'demo': Object.assign(D.person, DEMO_PERSON); enterApp(); break;
       case 'remind': {
-        const id = el.dataset.id; const on = !S.reminders.has(id);
-        if (on) S.reminders.add(id); else S.reminders.delete(id);
-        rerender();
-        if (on) { const x = byId(id); toast('Lembrete ativado'); setTimeout(() => notify(`Em 15 minutos: ${x.short}`, `${x.room} · ${x.time}`), 1400); }
+        const id = el.dataset.id; const on = !S.reminders.has(id); const x = byId(id);
+        if (on) S.reminders.add(id); else { S.reminders.delete(id); remFired.delete(id); }
+        prefs.set(REM_KEY, JSON.stringify([...S.reminders]));
+        if (on) askNotify().then(() => { rerender(); toast(`Lembrete às ${hhmm(toMin(x.time) - LEAD)} de ${dayOf(x.day).week.toLowerCase()}, ${x.day}`); checkReminders(); });
+        else { rerender(); toast('Lembrete desligado'); }
         break;
       }
+      case 'remindtest': deliver(byId(el.dataset.id), true); break;
+      case 'install': installApp(); break;
+      case 'update': if (PWA.waiting) { PWA.updating = true; PWA.waiting.postMessage({ type: 'skip' }); } else location.reload(); break;
       case 'vote': { const k = el.dataset.q; if (S.votes.has(k)) S.votes.delete(k); else S.votes.add(k); rerender(); break; }
       case 'ask': openOverlay(Overlays.ask(el.dataset.id), 'ask'); setTimeout(() => $('#qtext')?.focus({ preventScroll: true }), 480); break;
       case 'rate': S.ratings[el.dataset.id] = +el.dataset.n; rerender(); toast('Avaliação enviada'); break;
@@ -1719,6 +1815,9 @@
   });
 
   /* ---------------- início ---------------- */
+  setInterval(checkReminders, 30000); netState();
+  const openParam = new URLSearchParams(location.search).get('abrir');
+  if (openParam) setTimeout(() => openActivity(openParam), 900);
   const clock = $('#clock');
   if (clock) clock.textContent = D.now.time;
   /* Atalhos de demonstração: ?tela=home, agenda, atividade, aula, mapa, credencial, campeonato... */
