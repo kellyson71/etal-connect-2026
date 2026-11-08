@@ -263,8 +263,7 @@
      Padrão dos apps de evento: o ingresso é um QR no app (Web Summit) e a conta serve ao credenciamento (Doity). */
   const guestSaved = () => { try { return JSON.parse(localStorage.getItem('etal-visitante')); } catch (_) { return null; } };
   const GUEST_KINDS = [['estudante', 'Estudante'], ['professor', 'Professor(a)'], ['profissional', 'Profissional'], ['comunidade', 'Comunidade']];
-  const pins = '<svg class="pins" viewBox="0 0 60 20" aria-hidden="true"><path d="M8 20V9M30 20V9M52 20V9"/><circle cx="8" cy="5.500" r="3.400"/><circle cx="30" cy="5.500" r="3.400"/><circle cx="52" cy="5.500" r="3.400"/></svg>';
-  let lgPending = null;
+  let lgPending = null; let lgPhys = null;
 
   function suapFields() {
     return `<form class="login-form" data-form="login" novalidate>
@@ -292,14 +291,25 @@
         <button class="btn primary big" type="submit"><span>Criar conta</span><i class="spin"></i></button>
       </form>`;
   }
-  /* Frente preenchida do crachá, igual à do início. */
-  function filledFace(p) {
-    const av = p.photo ? `<span class="lx-photo has"><img src="${p.photo}" alt=""></span>` : `<span class="lx-photo ini">${esc(p.initials)}</span>`;
-    return `<div class="lx-card-top">${mark('mark xs')}<b>etal</b>${pins}</div>
-      <div class="lx-card-id">${av}<span class="lx-filled"><b>${esc(p.name)}</b><span>${esc(p.course)}</span><small>${esc([p.year, p.campus].filter(Boolean).join(' · '))}</small></span></div>
-      <div class="lx-card-qr ok">${qr(7, 25)}<small><b>Seu código</b>${esc(p.id)}</small></div>
-      <div class="lx-card-foot">26 a 28 nov · IFRN Pau dos Ferros</div>`;
+  /* Frente do crachá. Sem perfil, é o cartão em branco que vai se preenchendo enquanto a pessoa digita. */
+  const bxClip = '<svg class="bx-clip" viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="7" r="5.200" fill="none" stroke="#98a2b3" stroke-width="2.800"/><rect x="13" y="11" width="14" height="15" rx="3.500" fill="#c4cbd7"/><rect x="15.500" y="13" width="3.500" height="11" rx="1.750" fill="#eef1f6"/><rect x="4" y="27" width="32" height="12" rx="3.500" fill="rgba(255,255,255,.6)" stroke="rgba(110,125,150,.55)"/></svg>';
+  function badgeFace(p) {
+    const blank = !p;
+    const av = blank ? `<span class="bx-av ph">${ic('user')}</span>` : p.photo ? `<span class="bx-av"><img src="${p.photo}" alt=""></span>` : `<span class="bx-av ini">${esc(p.initials)}</span>`;
+    const role = blank ? ['ph', 'Credencial'] : p.source === 'visitante' ? ['guest', 'Visitante'] : ['', 'Participante'];
+    return `<i class="bx-slot"></i>
+      <div class="bx-head"><span class="bx-ed">IFRN · Pau dos Ferros</span><span class="bx-brand">${mark('mark')}<b>etal</b></span>${blank ? '' : '<i class="bx-holo"></i>'}</div>
+      <span class="bx-photo">${av}</span>
+      <div class="bx-body">
+        ${blank ? `<b class="bx-name ph" data-live="name">Seu nome</b><span class="bx-sub" data-live="sub">${S.lgMode === 'guest' ? 'Visitante' : 'Matrícula do SUAP'}</span>`
+          : `<b class="bx-name">${esc(p.name)}</b><span class="bx-sub">${esc(p.course || '')}</span><small class="bx-sub2">${esc([p.year, p.campus].filter(Boolean).join(' · '))}</small>`}
+        <div class="bx-row">${blank ? `<span class="bx-qr ph">${ic('qr')}</span><small data-live="state">Seu QR aparece aqui depois de entrar</small>`
+          : `<span class="bx-qr">${qr(7, 25)}</span><small><span>Seu código</span><b>${esc(p.id)}</b></small>`}</div>
+      </div>
+      <div class="bx-role ${role[0]}"><b>${role[1]}</b><span>26 a 28 nov</span></div>
+      <i class="bx-sheen"></i>`;
   }
+  const yardText = 'ETAL · CONNECT · '.repeat(16);
 
   Screens.login = () => {
     splashDone = true;
@@ -310,18 +320,10 @@
       html: `<div class="login lx lx-cracha${guest ? ' guest-mode' : ''}">
         <header class="lx-brand dark">${mark('mark xs')}<b>etal</b><span>connect</span></header>
         <div class="lx-hang" id="lxhang">
-          <i class="lx-strap"><span>etal · etal · etal · etal · etal · etal · etal · etal · etal · etal</span></i><i class="lx-clip"></i>
-          <div class="lx-card" aria-hidden="true"><div class="lx-flip">
-            <div class="lx-face blank">
-              <div class="lx-card-top">${mark('mark xs')}<b>etal</b>${pins}</div>
-              <div class="lx-card-id"><span class="lx-photo">${ic('user')}</span><span class="lx-lines"><i class="w1" data-live="name">Seu nome</i><i class="w2" data-live="sub">${guest ? 'Visitante' : 'Matrícula do SUAP'}</i></span></div>
-              <div class="lx-card-qr"><span>${ic('qr')}</span><small data-live="state">Seu QR aparece aqui depois de entrar</small></div>
-              <div class="lx-card-foot">26 a 28 nov · IFRN Pau dos Ferros</div>
-            </div>
-            <div class="lx-face filled"></div>
-          </div></div>
-          <p class="lx-pull" aria-hidden="true">${ic('chev')}<span>Puxe o crachá para entrar</span></p>
+          <svg class="lx-yard" aria-hidden="true">${['lyA', 'lyB'].map((id) => `<g class="ly"><path class="ly-e"/><path class="ly-m" id="${id}"/><text dy="2.600"><textPath href="#${id}">${yardText}</textPath></text></g>`).join('')}</svg>
+          <div class="lx-card" aria-hidden="true"><div class="bx">${bxClip}<div class="bx-flip"><div class="bx-face blank">${badgeFace(null)}</div><div class="bx-face filled"></div></div></div></div>
         </div>
+        <p class="lx-pull" aria-hidden="true"><span class="lx-arrow">${ic('chev')}</span><span class="t1">Puxe o crachá para baixo</span><span class="t2">Solte para abrir</span></p>
         <div class="lx-bottom">
           <div class="lx-start">
             <div class="lx-seg" role="tablist" aria-label="Como você vai entrar">
@@ -332,7 +334,7 @@
           </div>
           <div class="lx-done" role="status">
             <h2 class="lx-q" data-live="hello">Tudo certo!</h2>
-            <p>Puxe o crachá para baixo para abrir o app.</p>
+            <p>Puxe o crachá para baixo e a tela abre o app.</p>
             <button class="btn primary big" data-act="lgenter" type="button">Abrir o app</button>
             <button class="btn ghost" data-act="lgredo" type="button">Não sou eu</button>
           </div>
@@ -340,9 +342,84 @@
       </div>`,
     };
   };
-  /* Dados aparecendo no crachá enquanto a pessoa digita. */
+
+  /* Física do crachá. O cartão pende do cordão como um pêndulo de mola: segue o dedo com resistência elástica,
+     balança com o movimento e volta quicando. Depois de entrar, o cordão tem uma folga; passou dela, o cordão
+     estica e puxa a própria tela, que desce e mostra o app já montado por baixo. */
   function mountBadgeLogin(el) {
-    const live = (k, v) => { const n = $(`[data-live="${k}"]`, el); if (n) { n.textContent = v; n.classList.add('typed'); } };
+    const lg = $('.login', el); const hang = $('#lxhang', el); const piv = $('.lx-card', el); const bx = $('.bx', el);
+    const yard = [...el.querySelectorAll('.ly')].map((g) => [...g.querySelectorAll('path')]);
+    const P = { x: 0, y: 0, a: reduce ? 0 : 0.32, vx: 0, vy: 0, va: 0, cv: 0, vc: 0, drag: null, app: null, going: false, raf: 0, last: 0, until: 0, touch: 0, filledAt: 0, ready: false };
+    lgPhys = P;
+    const SLACK = 64; const OPEN = 120;
+    const rb = (d, c) => c * (1 - 1 / ((d / c) * 0.55 + 1));
+    const rbs = (d, c) => (d < 0 ? -rb(-d, c) : rb(d, c));
+    const live = (k, v) => { const n = $(`[data-live="${k}"]`, el); if (n) { n.textContent = v; n.classList.toggle('typed', true); } };
+
+    function draw() {
+      const W = hang.clientWidth; const L = parseFloat(getComputedStyle(lg).getPropertyValue('--L')) || 46;
+      piv.style.setProperty('--px', `${P.x.toFixed(2)}px`); piv.style.setProperty('--py', `${P.y.toFixed(2)}px`); piv.style.setProperty('--pa', `${P.a.toFixed(4)}rad`);
+      bx.style.setProperty('--tilt', P.a.toFixed(3));
+      const px = W / 2 + P.x; const py = L + P.y; const tp = -110;
+      const ends = [[W / 2 - 46, px - 3.500], [W / 2 + 46, px + 3.500]];
+      yard.forEach(([e, m], i) => { const d = `M${ends[i][0].toFixed(1)} ${tp}L${ends[i][1].toFixed(1)} ${py.toFixed(1)}`; e.setAttribute('d', d); m.setAttribute('d', d); });
+      if (P.app && !P.going) {
+        const k = Math.min(1, P.cv / Math.max(1, el.clientHeight));
+        el.style.transform = P.cv > 0.3 ? `translate3d(0,${P.cv.toFixed(1)}px,0)` : '';
+        P.app.style.transform = `scale(${(0.92 + 0.08 * k).toFixed(4)})`; P.app.style.filter = `brightness(${(0.7 + 0.3 * k).toFixed(3)})`;
+        el.classList.toggle('lx-moving', P.cv > 0.3);
+      }
+    }
+    function step(t) {
+      P.raf = 0; if (!el.isConnected) return;
+      const dt = Math.min(0.033, Math.max(0.001, (t - (P.last || t - 16)) / 1000)); P.last = t;
+      if (!P.drag) {
+        P.vx += (-240 * P.x - 13 * P.vx) * dt; P.vy += (-240 * P.y - 13 * P.vy) * dt;
+        P.x += P.vx * dt; P.y += P.vy * dt;
+        if (P.app && !P.going) { P.vc += (-280 * P.cv - 26 * P.vc) * dt; P.cv += P.vc * dt; if (P.cv < 0) { P.cv = 0; P.vc = 0; } }
+      }
+      /* O cartão atrasa em relação ao ponto de pendurar: quem anda para a direita faz ele girar para a esquerda. */
+      const aT = Math.max(-0.75, Math.min(0.75, -P.vx * 0.00085));
+      P.va += (-70 * (P.a - aT) - 3.2 * P.va) * dt; P.a += P.va * dt;
+      draw();
+      const motion = Math.abs(P.x) + Math.abs(P.y) + Math.abs(P.vx) * 0.05 + Math.abs(P.vy) * 0.05 + Math.abs(P.a) * 200 + Math.abs(P.va) * 60 + P.cv + Math.abs(P.vc) * 0.05;
+      if (motion > 0.25 || P.drag || P.going || t < P.until) wake(); else { P.last = 0; P.x = P.y = P.a = 0; draw(); }
+    }
+    function wake(ms) { if (ms) P.until = Math.max(P.until, performance.now() + ms); if (!P.raf) P.raf = requestAnimationFrame(step); }
+    P.kick = (vx = 0, vy = 0, va = 0, ms = 0) => { if (reduce) { wake(ms); return; } P.vx += vx; P.vy += vy; P.va += va; wake(ms); };
+
+    /* O app é montado por baixo assim que a pessoa começa a puxar; se ela desistir, ele fica lá esperando. */
+    function arm() {
+      if (P.app || !lgPending) return;
+      navReset(); S.auth = true; S.tab = 'home';
+      el.style.animation = 'none'; el.classList.remove('in-fade', 'in-push', 'in-pop');
+      const app = build(top()); app.classList.add('lx-under'); vp.insertBefore(app, el);
+      if (app._mount) app._mount(app);
+      P.app = app; draw();
+    }
+    P.disarm = () => {
+      if (!P.app) return;
+      P.app.remove(); P.app = null; S.auth = false; P.cv = P.vc = 0;
+      el.style.transform = ''; el.classList.remove('lx-moving');
+    };
+    P.commit = (v = 0) => {
+      if (P.going) return;
+      arm(); if (!P.app) return;
+      const prof = lgPending; lgPending = null; P.going = true; S.lgMode = null;
+      const app = P.app; const H = el.clientHeight + 60;
+      const dur = reduce ? 1 : Math.round(Math.max(260, Math.min(600, (H - P.cv) / Math.max(1.5, v / 1000))));
+      setChrome(app);
+      el.classList.add('lx-moving');
+      el.style.transition = `transform ${dur}ms cubic-bezier(.3,.6,.25,1)`;
+      app.style.transition = `transform ${dur}ms cubic-bezier(.2,.7,.2,1), filter ${dur}ms ease-out`;
+      void el.offsetWidth;
+      el.style.transform = `translate3d(0,${H}px,0)`; app.style.transform = 'none'; app.style.filter = 'none';
+      P.kick(0, 420, 0.9);
+      buzz([10, 30, 18]);
+      setTimeout(() => { el.remove(); app.style.transition = app.style.transform = app.style.filter = ''; app.classList.remove('lx-under'); }, dur + 40);
+      if (prof.source === 'visitante') setTimeout(() => notify(`Boas-vindas, ${prof.first}!`, 'Sua conta de visitante está pronta. Mostre o QR do crachá na recepção.'), dur + 350);
+    };
+
     el.addEventListener('input', (e) => {
       const t = e.target;
       if (t.id === 'mat') live('sub', t.value.trim() ? `Matrícula ${t.value.trim()}` : 'Matrícula do SUAP');
@@ -351,48 +428,70 @@
         const kind = (GUEST_KINDS.find(([v]) => v === ($('[name=gkind]:checked', el) || {}).value) || GUEST_KINDS[0])[1];
         live('sub', ['Visitante', kind, $('#gcity', el)?.value.trim()].filter(Boolean).join(' · '));
       }
+      if (/^(mat|gname|gcity)$/.test(t.id) || t.name === 'gkind') P.kick(0, 0, (Math.random() - 0.5) * 0.7);
     });
     el.addEventListener('change', (e) => { if (e.target.name === 'gkind') e.target.dispatchEvent(new Event('input', { bubbles: true })); });
-    /* Puxar o crachá: o cordão estica; passando do ponto, a tela desce e mostra o app. */
-    const hang = $('#lxhang', el); const strap = $('.lx-strap', el); let y0 = null, dy = 0;
-    hang.addEventListener('pointerdown', (e) => { if (!lgPending) return; y0 = e.clientY; dy = 0; hang.setPointerCapture(e.pointerId); $('.login', el).classList.add('pulling'); });
+
+    let samples = [];
+    hang.addEventListener('pointerdown', (e) => {
+      if (P.going || e.button > 0) return;
+      P.drag = { x0: e.clientX, y0: e.clientY, bx: P.x, by: P.y + P.cv, moved: false };
+      samples = [{ t: e.timeStamp, x: e.clientX, y: e.clientY }];
+      P.vc = 0; P.touch = performance.now();
+      hang.setPointerCapture(e.pointerId); lg.classList.add('pulling'); wake();
+    });
     hang.addEventListener('pointermove', (e) => {
-      if (y0 === null) return; dy = Math.max(0, e.clientY - y0);
-      const k = dy < 140 ? dy : 140 + (dy - 140) * 0.35; strap.style.height = `calc(var(--sh) + ${k}px)`;
-      hang.classList.toggle('ready', dy > 110);
+      const d = P.drag; if (!d) return;
+      const dx = e.clientX - d.x0; const dy = e.clientY - d.y0;
+      if (!d.moved && Math.abs(dx) + Math.abs(dy) > 5) d.moved = true;
+      samples.push({ t: e.timeStamp, x: e.clientX, y: e.clientY });
+      while (samples.length > 2 && e.timeStamp - samples[0].t > 90) samples.shift();
+      const s0 = samples[0]; const sdt = Math.max(10, e.timeStamp - s0.t);
+      P.vx = ((e.clientX - s0.x) / sdt) * 1000; P.vy = ((e.clientY - s0.y) / sdt) * 1000;
+      P.x = d.bx + rbs(dx, 70);
+      const yy = d.by + dy;
+      if (lgPending) {
+        if (yy > SLACK * 0.4) arm();
+        if (yy <= SLACK) { P.y = yy < 0 ? -rb(-yy, 28) : yy; P.cv = 0; } else { const ex = yy - SLACK; const st = rb(ex, 22); P.y = SLACK + st; P.cv = ex - st; }
+        const rdy = P.cv > OPEN;
+        if (rdy !== P.ready) { P.ready = rdy; lg.classList.toggle('ready', rdy); buzz(rdy ? 14 : 6); }
+      } else P.y = rbs(yy, yy > 0 ? 80 : 28);
+      P.touch = performance.now();
     });
     const release = () => {
-      if (y0 === null) return; y0 = null; $('.login', el)?.classList.remove('pulling');
-      if (dy > 110) { lgOpenApp(); return; }
-      strap.style.height = ''; hang.classList.remove('ready');
+      const d = P.drag; if (!d) return; P.drag = null; lg.classList.remove('pulling');
+      if (!d.moved) { P.kick(0, 0, (Math.random() < 0.5 ? -1 : 1) * 1.8); return; }
+      if (lgPending && (P.cv > OPEN || (P.vy > 650 && P.cv > 14))) { P.commit(P.vy); return; }
+      if (P.cv > 0) { P.vc = Math.min(0, P.vy) * 0.4; P.vy = 0; }
+      P.ready = false; lg.classList.remove('ready'); wake();
     };
     hang.addEventListener('pointerup', release); hang.addEventListener('pointercancel', release);
+    hang.addEventListener('keydown', (e) => { if (lgPending && (e.key === 'ArrowDown' || e.key === 'Enter')) P.commit(); });
+
+    /* Até a pessoa mexer, o crachá dá um puxãozinho sozinho para mostrar que dá para puxar. */
+    const nudge = setInterval(() => {
+      if (!el.isConnected) { clearInterval(nudge); return; }
+      const now = performance.now();
+      if (lgPending && !P.drag && !P.going && now - P.touch > 2600 && now - P.filledAt > 1500) P.kick(0, 520, 0, 0);
+    }, 2800);
+    new ResizeObserver(() => wake(50)).observe(hang);
+    wake(reduce ? 50 : 400);
   }
   /* Entrou: o cartão vira e mostra o crachá preenchido. */
   function lgFilled(prof) {
     lgPending = prof;
     const lg = $('.login'); if (!lg) return;
-    $('.lx-face.filled', lg).innerHTML = filledFace(prof);
+    $('.bx-face.filled', lg).innerHTML = badgeFace(prof);
     $('[data-live="hello"]', lg).textContent = `Tudo certo, ${prof.first}!`;
     lg.classList.add('filled'); buzz([14, 40, 14]);
+    if (lgPhys) { lgPhys.filledAt = performance.now(); lgPhys.kick(0, 0, 1.3, 1400); }
     setTimeout(() => $('[data-act="lgenter"]', lg)?.focus({ preventScroll: true }), 700);
   }
-  /* A tela de entrada desce como uma cortina e o app aparece por trás. */
-  function lgOpenApp() {
-    if (!lgPending) return;
-    const prof = lgPending; lgPending = null;
-    const lg = $('.login'); const screen = $('.screen');
-    const cover = document.createElement('div'); cover.className = 'lx-cover';
-    if (lg) cover.appendChild(lg);
-    screen.appendChild(cover);
-    navReset(); S.lgMode = null; enterApp();
-    requestAnimationFrame(() => requestAnimationFrame(() => cover.classList.add('go')));
-    setTimeout(() => cover.remove(), reduce ? 50 : 750);
-    if (prof.source === 'visitante') setTimeout(() => notify(`Boas-vindas, ${prof.first}!`, 'Sua conta de visitante está pronta. Mostre o QR do crachá na recepção.'), 900);
-  }
+  /* A tela de entrada desce e o app aparece por trás. */
+  function lgOpenApp() { if (lgPending && lgPhys) lgPhys.commit(0); }
   function lgShake(msg) {
-    const c = $('.lx-card'); if (!c) return;
-    c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake'); buzz(40);
+    lgPhys?.kick(950, 0, 0.6);
+    buzz(40);
     const s = $('[data-live="state"]'); if (s) s.textContent = msg || 'Confira os dados abaixo';
   }
   /* Conta de visitante: só o necessário para o crachá e o certificado. */
@@ -701,16 +800,40 @@
     };
   };
   let combSeen = null;
-  function checkCombs() {
+  /* Favo recém-ganho. Quem mostrar primeiro (tela de resultado ou aviso) consome, para não repetir. */
+  function takeNewComb() {
     const got = combEarned();
-    if (combSeen === null) { combSeen = got; return; }
+    if (combSeen === null) { combSeen = got; return null; }
     const fresh = got.find((g) => !combSeen.includes(g));
     combSeen = got;
-    if (!fresh) return;
+    if (!fresh) return null;
     S.newComb = fresh;
-    const c = D.combs.find((x) => x.id === fresh);
-    setTimeout(() => { notify('Novo favo na sua colmeia', c.title); buzz([12, 30, 12]); }, 900);
-    setTimeout(() => { S.newComb = null; }, 6000);
+    setTimeout(() => { if (S.newComb === fresh) S.newComb = null; }, 6000);
+    return D.combs.find((x) => x.id === fresh);
+  }
+  function checkCombs() { const c = takeNewComb(); if (c) setTimeout(() => combToast(c), 900); }
+  /* Linha "novo favo" dentro das telas de resultado. */
+  function combRow(c) {
+    const n = combEarned().length;
+    return `<div class="res-comb">${comb('rc')}<span><small>Novo favo na colmeia</small><b>${esc(c.title)}</b></span><em><b>${n}</b>/${D.combs.length}</em></div>`;
+  }
+  /* Aviso de favo novo: cai do topo com a colmeia e o favo acendendo. Tocar abre a colmeia. */
+  let combT;
+  function combToast(c) {
+    let n = $('#combtoast');
+    if (!n) {
+      n = document.createElement('button'); n.type = 'button'; n.id = 'combtoast'; n.className = 'combtoast'; n.dataset.go = 'colmeia';
+      n.addEventListener('click', () => n.classList.remove('show'));
+      $('.screen').appendChild(n);
+    }
+    const got = combEarned();
+    n.innerHTML = `<span class="ct-comb">${comb('ct')}</span>
+      <span class="ct-tx"><small>${ic('star')}Novo favo na sua colmeia</small><b>${esc(c.title)}</b>
+      <span class="ct-bar">${D.combs.map((x) => `<i class="${got.includes(x.id) ? 'on' : ''}${x.id === c.id ? ' new' : ''}"></i>`).join('')}</span></span>
+      <span class="ct-n"><b>${got.length}</b>de ${D.combs.length}</span><i class="ct-shine"></i>`;
+    n.classList.remove('show'); void n.offsetWidth; n.classList.add('show');
+    buzz([12, 30, 12]);
+    clearTimeout(combT); combT = setTimeout(() => n.classList.remove('show'), 4800);
   }
 
   /* ---- céu do Alto Oeste: muda com o horário, sem imagem nenhuma ---- */
@@ -1293,6 +1416,11 @@
   };
 
   /* ---------------- overlays ---------------- */
+  /* Selo de confirmação: hexágono que estoura com favos coloridos. */
+  const HX_COLORS = ['#65b32e', '#d6332c', '#f2b230', '#8fdc5c', '#5d86dc'];
+  const hxBurst = (n = 14) => `<span class="hx-burst" aria-hidden="true">${Array.from({ length: n }, (_, i) => `<i style="--a:${Math.round((i / n) * 360 + (i % 3) * 9)}deg;--d:${62 + ((i * 37) % 46)}px;--c:${HX_COLORS[i % 5]};--s:${(0.55 + ((i * 13) % 7) / 10).toFixed(2)};--t:${(i % 4) * 40}ms"></i>`).join('')}</span>`;
+  const hxBadge = (cls = '', inner = '<path class="hx-ck" d="M-17 1l11 11 23-24"/>') => `<div class="hx-badge ${cls}"><i class="hx-ring"></i><i class="hx-ring r2"></i>${hxBurst()}<svg viewBox="-50 -50 100 100" aria-hidden="true"><path class="hx-bg" d="M0-44 38.100-22V22L0 44-38.100 22V-22Z"/>${inner}</svg></div>`;
+  const floorName = (f) => (f ? `${f}º andar` : 'Térreo');
   const SPOTS = {
     recepcao: { name: 'Recepção', sign: 'Credenciamento', where: 'Térreo', icon: 'id', seed: 21 },
     'react-native': { name: 'Lab 204', sign: 'React Native com Expo', where: '2º andar', icon: 'qr', seed: 34 },
@@ -1318,7 +1446,7 @@
         <p class="scan-hint" aria-live="polite"><span>${scanHint(spot)}</span></p>
       </div>
       <div class="scan-dock">
-        <p>Simular leitura em</p>
+        <p>Simular leitura <em>demonstração</em></p>
         <div class="spots">${Object.entries(SPOTS).map(([k, p]) => `<button class="spot ${k === 'recepcao' && !S.credAt ? 'first' : ''}" data-act="simulate" data-q="${k}"><span>${ic(p.icon)}</span><b>${p.name}</b><small>${p.where}</small></button>`).join('')}</div>
       </div>
       <div class="myqr" aria-hidden="${mode !== 'meu'}">
@@ -1327,13 +1455,54 @@
     </div>`;
   };
 
-  Overlays.welcome = () => `<div class="welcome">
-      <div class="w-burst"><svg viewBox="0 0 120 120" class="w-check" aria-hidden="true"><circle cx="60" cy="60" r="52"/><path d="M38 61l15 15 30-32"/></svg></div>
-      <h1>Participação confirmada</h1>
-      <p>Boas-vindas ao ETAL, ${esc(D.person.first)}.</p>
-      <dl class="facts"><div><dt>Entrada</dt><dd>Qua, 26 nov · ${S.credAt}</dd></div><div><dt>Local</dt><dd>Recepção · térreo</dd></div><div><dt>Atividades salvas</dt><dd>${S.saved.size}</dd></div></dl>
-      <div class="w-actions"><button class="btn primary big" data-act="closeov" data-then="credential">Ver credencial</button><button class="btn ghost" data-act="closeov">Continuar</button></div>
+  Overlays.welcome = (c = null) => `<div class="wl">
+      <div class="w-top">${hxBadge('big')}
+        <p class="w-kick">Credenciamento</p>
+        <h1>Participação confirmada</h1>
+        <p class="w-sub">Boas-vindas ao ETAL, ${esc(D.person.first)}!</p>
+      </div>
+      <div class="w-ticket">
+        <div class="wt-head">${meAv('av')}<span><b>${esc(D.person.name)}</b><small>${esc(D.person.course || '')}</small></span><span class="wt-ok">${ic('check')}Confirmado</span></div>
+        <i class="wt-cut"></i>
+        <dl class="wt-facts"><div><dt>Entrada</dt><dd>${S.credAt}</dd><small>Qua, 26 nov</small></div><div><dt>Local</dt><dd>Recepção</dd><small>Térreo</small></div><div><dt>Na agenda</dt><dd>${S.saved.size}</dd><small>atividades</small></div></dl>
+        ${c ? combRow(c) : ''}
+      </div>
+      <div class="w-actions"><button class="btn big w-main" data-act="closeov" data-then="credential">${ic('id')}Ver credencial</button><button class="btn ghost" data-act="closeov">Continuar</button></div>
     </div>`;
+
+  /* Resultado da leitura: um cartão sobe por cima da câmera. */
+  function scanSheet(html) {
+    const root = $('.scanner', ov); if (!root) return;
+    $('.scan-res', root)?.remove();
+    const d = document.createElement('div'); d.className = 'scan-res'; d.setAttribute('role', 'status');
+    d.innerHTML = `<div class="sr-card"><i class="grab"></i>${html}</div>`;
+    root.appendChild(d); root.classList.add('has-res');
+    requestAnimationFrame(() => requestAnimationFrame(() => d.classList.add('in')));
+  }
+  function scanAgain() {
+    const root = $('.scanner', ov); if (!root) return;
+    const d = $('.scan-res', root); d?.classList.remove('in');
+    root.classList.remove('has-res', 'is-locked'); delete root.dataset.busy;
+    $('.scan-hint span', ov).textContent = 'Aponte para o QR';
+    setTimeout(() => d?.remove(), 400);
+  }
+  function roomResult(q, { again, first, c }) {
+    const s = byId(q);
+    return `<div class="sr-hero">${hxBadge(again ? 'muted' : '')}<div><small class="sr-kick">${again ? 'Presença já registrada' : first ? 'Participação e presença confirmadas' : 'Presença registrada'}</small><h2>${esc(s.short)}</h2><p>${esc(s.room)} · ${floorName(s.floor)} · ${again ? `desde ${S.present[q]}` : `às ${S.present[q]}`}</p></div></div>
+      <ul class="sr-facts"><li>${ic('file')}<span><b>${s.materials.length} materiais</b><small>liberados agora</small></span></li><li>${ic('clock')}<span><b>${s.time} às ${s.end}</b><small>${esc(s.type)}</small></span></li></ul>
+      ${c ? combRow(c) : ''}
+      <div class="sr-actions"><button class="btn primary big" data-act="scanopen" data-q="${q}">Abrir a aula</button><button class="btn soft" data-act="scanagain">${ic('qr')}Ler outro QR</button></div>`;
+  }
+  function peerResult(p, { again, c }) {
+    return `<div class="sr-hero"><span class="sr-peer"><b>${esc(p.initials)}</b><i>${ic('check')}</i></span><div><small class="sr-kick">${again ? 'Vocês já são contatos' : 'Contato adicionado'}</small><h2>${esc(p.name)}</h2><p>${esc(p.course)}</p></div></div>
+      <div class="sr-tags"><span>${ic('star')}Interesse em ${esc(p.interest)}</span><span>${ic('contact')}Contato trocado agora</span></div>
+      ${c ? combRow(c) : ''}
+      <div class="sr-actions"><button class="btn primary big" data-act="scanopen" data-q="colega">Ver meus contatos</button><button class="btn soft" data-act="scanagain">${ic('qr')}Ler outro QR</button></div>`;
+  }
+  function credResult() {
+    return `<div class="sr-hero">${hxBadge('muted')}<div><small class="sr-kick">Tudo certo</small><h2>Você já está credenciado</h2><p>Entrada às ${S.credAt} na recepção</p></div></div>
+      <div class="sr-actions"><button class="btn primary big" data-act="scanopen" data-q="credential">Ver credencial</button><button class="btn soft" data-act="scanagain">${ic('qr')}Ler outro QR</button></div>`;
+  }
 
   Overlays.share = (id) => {
     const s = byId(id);
@@ -1466,13 +1635,13 @@
     requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('open')));
     device.classList.toggle('ov-dark', kind === 'scan');
     device.classList.toggle('ov-retro', kind === 'retro');
-    device.classList.toggle('ov-light', kind === 'welcome');
+    device.classList.toggle('ov-navy', kind === 'welcome');
     device.classList.toggle('ov-dim', kind === 'share' || kind === 'ask' || kind === 'finder');
   }
   function closeOverlay(then, fromHistory = false) {
     if (ovNav) { ovNav = false; if (!fromHistory) navDrop(); }
     ov.classList.remove('open');
-    device.classList.remove('ov-dark', 'ov-light', 'ov-dim', 'ov-retro');
+    device.classList.remove('ov-dark', 'ov-light', 'ov-navy', 'ov-dim', 'ov-retro');
     if (retro) { clearTimeout(retro.t); retro = null; }
     setTimeout(() => { ov.innerHTML = ''; ov.className = 'overlay'; if (then) then(); }, reduce ? 0 : 380);
   }
@@ -1594,6 +1763,8 @@
     lg.querySelectorAll('[data-act="lgmode"]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.v === (mode || 'suap'))));
     const box = $('.lx-form', lg); box.innerHTML = mode === 'guest' ? guestFields() : suapFields(); box.classList.remove('swap'); void box.offsetWidth; box.classList.add('swap');
     $('[data-live="name"]', lg).textContent = 'Seu nome'; $('[data-live="sub"]', lg).textContent = mode === 'guest' ? 'Visitante' : 'Matrícula do SUAP';
+    lg.querySelectorAll('.typed').forEach((n) => n.classList.remove('typed'));
+    lgPhys?.kick(0, 0, 0.5, 900);
   }
   function navReset() { const n = navUndo.length; navUndo.length = 0; if (n) { navSkip += 1; history.go(-n); } }
   function enterApp() { S.auth = true; S.tab = 'home'; show(build(top()), 'fade'); }
@@ -1704,27 +1875,38 @@
     setTimeout(() => {
       if (q === 'colega') {
         const peer = D.peers[S.contacts.length % D.peers.length];
-        if (!S.contacts.includes(peer)) S.contacts.unshift(peer);
-        closeOverlay(() => { if (top().s === 'network') rerender(); else push('network'); toast('Contato adicionado'); });
+        const again = S.contacts.includes(peer);
+        if (!again) S.contacts.unshift(peer);
+        const c = takeNewComb();
+        scanSheet(peerResult(peer, { again, c }));
         return;
       }
       if (q === 'recepcao') {
-        if (S.credAt) { closeOverlay(); toast('Seu credenciamento já está confirmado'); return; }
+        if (S.credAt) { scanSheet(credResult()); return; }
         S.credAt = D.now.time;
-        closeOverlay(() => { rerender(); openOverlay(Overlays.welcome(), 'welcome'); });
+        const c = takeNewComb();
+        rerender();
+        openOverlay(Overlays.welcome(c), 'welcome');
         return;
       }
       const first = !S.credAt;
       if (first) S.credAt = D.now.time;
       const again = !!S.present[q];
       if (!again) S.present[q] = D.now.time;
-      closeOverlay(() => {
-        if (S.tab !== 'home' && S.tab !== 'agenda') { S.tab = 'home'; S.stacks.home = [{ s: 'home' }]; show(build(top()), 'none'); }
-        const t = top();
-        if (t.s === 'activity' && t.p && t.p.id === q) rerender(); else push('activity', { id: q });
-        toast(again ? 'Presença já registrada' : first ? 'Participação e presença confirmadas' : 'Presença registrada');
-      });
-    }, reduce ? 60 : 1750);
+      const c = takeNewComb();
+      rerender();
+      scanSheet(roomResult(q, { again, first, c }));
+    }, reduce ? 60 : 1500);
+  }
+  /* Saída do cartão de resultado para a tela certa. */
+  function scanOpen(q) {
+    closeOverlay(() => {
+      if (q === 'colega') { if (top().s === 'network') rerender(); else push('network'); return; }
+      if (q === 'credential') { push('credential'); return; }
+      if (S.tab !== 'home' && S.tab !== 'agenda') { S.tab = 'home'; S.stacks.home = [{ s: 'home' }]; show(build(top()), 'none'); }
+      const t = top();
+      if (t.s === 'activity' && t.p && t.p.id === q) rerender(); else push('activity', { id: q });
+    });
   }
 
   document.addEventListener('click', (e) => {
@@ -1796,6 +1978,8 @@
       case 'rate': S.ratings[el.dataset.id] = +el.dataset.n; rerender(); toast('Avaliação enviada'); break;
       case 'closeov': closeOverlay(el.dataset.then ? () => push(el.dataset.then) : null); break;
       case 'simulate': scanResult(el.dataset.q); break;
+      case 'scanopen': scanOpen(el.dataset.q); break;
+      case 'scanagain': scanAgain(); break;
       case 'day': S.agendaDay = +el.dataset.day; rerender(); vp.querySelector('.page .agenda-list')?.classList.add('swap'); break;
       case 'filter': S.agendaFilter = el.dataset.f; rerender(); vp.querySelector('.page .agenda-list')?.classList.add('swap'); break;
       case 'save': {
@@ -1870,7 +2054,7 @@
       case 'toast': toast(el.dataset.msg); break;
       case 'lgmode': if ((el.dataset.v === 'guest') !== (S.lgMode === 'guest')) lgSwap(el.dataset.v === 'guest' ? 'guest' : null); break;
       case 'lgenter': lgOpenApp(); break;
-      case 'lgredo': { lgPending = null; Object.keys(D.person).forEach((k) => delete D.person[k]); Object.assign(D.person, DEMO_PERSON); store.del(SAVE_KEY); $('.login')?.classList.remove('filled'); lgSwap(S.lgMode); break; }
+      case 'lgredo': { lgPhys?.disarm?.(); lgPending = null; Object.keys(D.person).forEach((k) => delete D.person[k]); Object.assign(D.person, DEMO_PERSON); store.del(SAVE_KEY); $('.login')?.classList.remove('filled'); lgSwap(S.lgMode); lgPhys?.kick(0, 0, -1.1, 1200); break; }
       case 'guestresume': { const g = guestSaved(); if (g) { Object.keys(D.person).forEach((k) => delete D.person[k]); applyProfile(g); store.set(SAVE_KEY, g); lgFilled(g); } break; }
       case 'togglepwd': { const i = $('#pwd'); i.type = i.type === 'password' ? 'text' : 'password'; break; }
       case 'logout': { const n = navUndo.length; navUndo.length = 0; if (n) { navSkip += 1; history.go(-n); } } S = fresh(); store.del(SAVE_KEY); Object.keys(D.person).forEach((k) => delete D.person[k]); Object.assign(D.person, DEMO_PERSON); vp.innerHTML = ''; show(build({ s: 'login' }), 'fade'); break;
@@ -2043,7 +2227,8 @@
     org: () => { ok(); S.tab = 'profile'; S.stacks.profile.push({ s: 'org' }); },
     sobre: () => { S.tab = 'profile'; S.stacks.profile.push({ s: 'sobre' }); },
     materiais: () => { S.stacks.home.push({ s: 'materials' }); },
-    boasvindas: () => { ok(); setTimeout(() => openOverlay(Overlays.welcome(), 'welcome'), 300); },
+    boasvindas: () => { ok(); S.newComb = 'cred'; setTimeout(() => openOverlay(Overlays.welcome(D.combs[0]), 'welcome'), 300); },
+    favo: () => { ok(); S.present['react-native'] = D.now.time; setTimeout(() => { S.newComb = 'react-native'; combToast(D.combs[1]); }, 900); },
     credencial: () => { ok(); S.tab = 'profile'; S.stacks.profile.push({ s: 'credential' }); },
     avisos: () => { S.stacks.home.push({ s: 'notices' }); },
     perfil: () => { S.tab = 'profile'; },
