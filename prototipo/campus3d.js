@@ -338,6 +338,9 @@
     cantina: [START, [13, 11], [-23, 8], [-27, -8], [-48, -13], [-52.5, -24]],
     biblioteca: [START, [13, 11], [-23, 8], [-27, -8], [-48, -13], [-49.5, -50], [-50.5, -58.5], [-59, -58.5]],
     anexo: [START, [13, 11], [-23, 8], [-27, -8], [-48, -13], [-49.5, -50], [-50, -68], [-41, -74], [-37.5, -80]],
+    /* Bebedouros: o mesmo caminho do lugar onde ficam, até o ponto. */
+    'bebedouro-anexo': [START, [13, 11], [-23, 8], [-27, -8], [-48, -13], [-49.5, -50], [-50, -68], [-41, -74], [-37.5, -80], [-32.5, -81.5]],
+    'bebedouro-cantina': [START, [13, 11], [-23, 8], [-27, -8], [-48, -13], [-49.5, -50], [-50.5, -58.5], [-61.5, -57.8]],
     coliseu: [START, [13, 11], [-23, 8], [-27, -8], [-48, -13], [-49.5, -50], [-50, -68], [-44.6, -66], [-38.5, -62], [-37.8, -65]],
     auxiliar: [START, [13, 11], [-23, 8], [-27, -8], [-48, -13], [-49.5, -50], [-50, -68], [-44.6, -66], [-39, -61.5], [-28, -61.5], [-22.5, -66]],
     'centro-medico': [START, [-20, 41], [-46, 40], [-84, -38], [-82.5, -36.5]],
@@ -1615,6 +1618,32 @@
       ctx.fillStyle = '#5f9a45'; ctx.beginPath(); ctx.arc(t[0], t[1], Math.max(1.2, cam.z * 0.5), 0, 7); ctx.fill();
     });
   }
+  /* Pátio interno: jardim só no térreo. No 1º e no 2º andar é um vão aberto, com varanda e mureta baixa
+     ligando as salas das pontas; a laje tem o furo, e dá para ver o pátio lá embaixo. */
+  const yardOf = (f) => (f.level > 0 ? f.zones.find((z) => z.kind === 'courtyard') : null);
+  function voidCut(f, b0) {
+    const z = yardOf(f); if (!z) return false;
+    const h = hull([...z.poly.map((q) => P(q[0], q[1], b0 + 0.02)), ...z.poly.map((q) => P(q[0], q[1], b0 - 0.72))]);
+    ctx.save(); ctx.beginPath(); ctx.rect(-1e5, -1e5, 2e5, 2e5);
+    h.forEach((u, i) => (i ? ctx.lineTo(u[0], u[1]) : ctx.moveTo(u[0], u[1]))); ctx.closePath(); ctx.clip('evenodd');
+    return true;
+  }
+  const PARAPET = 1.6; // mureta um pouco exagerada para aparecer na escala do mapa
+  function drawParapets(f, b0, c) {
+    const z = yardOf(f); if (!z) return;
+    const [a, b, d, e] = orderYard(z.poly);
+    /* Um véu escuro no furo: lê como vão (vê-se o andar de baixo através dele), não como piso. */
+    poly(z.poly, b0 - 0.7); ctx.fillStyle = 'rgba(20,32,64,0.09)'; ctx.fill();
+    /* As duas bordas compridas do vão, de ponta a ponta; as pontas encostam nas salas. Primeiro a mais distante. */
+    const sides = [[a, b], [d, e]].sort((p, q) => P(...lerp2(p[0], p[1], 0.5), b0)[1] - P(...lerp2(q[0], q[1], 0.5), b0)[1]);
+    sides.forEach(([u, v]) => {
+      wallQuad(u, v, b0 - 0.7, b0 + PARAPET); ctx.fillStyle = c.slab; ctx.fill(); ctx.fillStyle = 'rgba(20,32,64,0.16)'; ctx.fill();
+      ctx.strokeStyle = c.plateEdge; ctx.lineWidth = 1; ctx.stroke();
+      const s0 = P(u[0], u[1], b0 + PARAPET), s1 = P(v[0], v[1], b0 + PARAPET);
+      ctx.strokeStyle = c.plate; ctx.lineWidth = Math.max(1.2, cam.z * 0.22); ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(s0[0], s0[1]); ctx.lineTo(s1[0], s1[1]); ctx.stroke();
+    });
+  }
   const orderYard = (p) => { const [a, b, d] = [p[0], p[1], p[3]]; return Math.hypot(b[0] - a[0], b[1] - a[1]) >= Math.hypot(d[0] - a[0], d[1] - a[1]) ? p : [p[1], p[2], p[3], p[0]]; };
   /* Corredor da esquerda (no térreo, a passagem do Anexo até a saída do auditório) e o canto aberto que pega sol. */
   function drawFloorMarks(f, b0, c) {
@@ -1639,10 +1668,13 @@
     const b0 = baseOf(f.level), a = alphaOf(f.level);
     if (a < 0.01) return;
     ctx.globalAlpha = a;
+    const cut = voidCut(f, b0);
     drawExtruded(f.outline, b0, c, { base: b0 - 0.7, wall: c.slab, roof: c.plate, edge: c.plateEdge, floors: 0 });
+    if (cut) ctx.restore();
+    drawParapets(f, b0, c);
     f.zones.forEach((z) => {
       if (z.kind !== 'courtyard' && z.kind !== 'ramp') return;
-      if (z.kind === 'courtyard') { drawCourtyard(orderYard(z.poly), b0 + 0.05, c, false); return; }
+      if (z.kind === 'courtyard') { if (f.level === 0) drawCourtyard(orderYard(z.poly), b0 + 0.05, c, false); return; }
       poly(z.poly, b0 + 0.05); ctx.fillStyle = c.rampF; ctx.fill();
     });
     drawFloorMarks(f, b0, c);
@@ -1674,11 +1706,14 @@
     const K = c.kinds;
     const detail = sv.focus > 0.5;
     ctx.globalAlpha = a;
+    const cut = voidCut(f, b0);
     drawExtruded(f.outline, b0, c, { base: b0 - 0.7, wall: c.slab, roof: c.plate, edge: c.plateEdge, floors: 0 });
+    if (cut) ctx.restore();
+    drawParapets(f, b0, c);
     /* itens no plano do piso */
     f.zones.filter((z) => z.kind === 'courtyard' || z.kind === 'ramp').forEach((z) => {
       if (z.kind === 'courtyard') {
-        drawCourtyard(orderYard(z.poly), b0 + 0.05, c, true);
+        if (f.level === 0) drawCourtyard(orderYard(z.poly), b0 + 0.05, c, true);
       } else {
         poly(z.poly, b0 + 0.05); ctx.fillStyle = c.rampF; ctx.fill(); ctx.strokeStyle = c.plateEdge; ctx.lineWidth = 1; ctx.stroke();
         /* Mureta entre as duas pistas: a pessoa sobe por uma, dá a volta no alto e segue pela outra. */
@@ -2311,8 +2346,9 @@
     },
     route(id) {
       routeId = id; routeP = 0; routeStart = performance.now();
-      const b = byId(id);
-      anim(view([...(ROUTES[id] || []), ...b.p], cam.t, 44, 60), 700);
+      const b = byId(id); const poi = POIS.find((p) => p.id === id);
+      if (poi) { poiSel = id; selected = null; }
+      anim(view([...(ROUTES[id] || []), ...(b ? b.p : poi ? [poi.at] : [])], cam.t, 44, 60), 700);
     },
     clearRoute() { routeId = null; schedule(); },
     routeOn: (id) => routeId === id,
