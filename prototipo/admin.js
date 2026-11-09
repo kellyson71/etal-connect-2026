@@ -366,7 +366,7 @@
       ORG.notices = (await API.get('/api/avisos')).map((n) => ({ id: `a${n.id}`, time: n.time, title: n.title, text: n.text, to: n.activity ? `inscritos em ${(D.sessions.find((x) => x.id === n.activity) || {}).short || ''}` : '' }));
       render();
     };
-    await sync().catch(() => toast('Sem conexão com o servidor.'));
+    await sync().catch((x) => { console.error(x); toast('Sem conexão com o servidor.'); });
     API.live({ aviso: () => sync(), sala: () => sync(), numeros: () => sync(), lotacao: () => { if (current() === 'planta') sync(); } });
   }
   if (API) apiStart(); else render();
