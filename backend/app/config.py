@@ -24,6 +24,8 @@ class Config(BaseSettings):
     suap_token_url: str = 'https://suap.ifrn.edu.br/o/token/'
     suap_userinfo_url: str = 'https://suap.ifrn.edu.br/api/eu/'
     suap_escopo: str = 'identificacao email'
+    # Entrada direta com matrícula e senha (token JWT da API do SUAP).
+    suap_api_url: str = 'https://suap.ifrn.edu.br'
 
     # Matrículas ou e-mails com acesso ao painel da organização, separados por vírgula.
     organizacao: str = ''
