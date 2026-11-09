@@ -105,3 +105,8 @@ def test_homologacao(app_cliente, monkeypatch):
     qrs = app_cliente.get('/api/homologacao/qrs').json()
     assert qrs[0]['id'] is None and '<svg' in qrs[0]['svg'] and len(qrs) > 5
     assert app_cliente.post('/api/presenca', json={'qr': qrs[1]['url']}).json()['activity'] == qrs[1]['id']
+
+
+def test_atividade_sem_sala_sem_andar(app_cliente):
+    sem = [x for x in app_cliente.get('/api/programacao').json()['sessions'] if x['id'] == 'credenciamento']
+    assert sem and 'floor' not in sem[0]
