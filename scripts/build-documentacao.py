@@ -103,116 +103,119 @@ def full(name, title, extra=''):
 
 # ---------------- 01 · Abertura ----------------
 slide('visao','ETAL Connect','01 / Abertura',f"""
-<div class="hero-content"><div class="hero-text"><h1 class="reveal" style="--i:1">ETAL<br><span class="accent">Connect</span></h1>
-<p class="cover-line reveal" style="--i:2">App do ETAL · IFRN Pau dos Ferros</p></div>
-<div class="hero-scene reveal" style="--i:1"><div class="orbit"></div><img class="scene" data-depth="0.5" src="{{assets}}/cena-evento.webp" alt="Modelo atual do campus"><img class="phone" data-depth="1.4" src="{{assets}}/app-home.png" alt="Tela inicial do app"></div>
-<div class="hero-kicker"><img src="{{root}}prototipo/assets/nadic-logo.svg" alt="NADIC"></div></div>
-""",'','dark','cena-evento.webp')
+<div class="cover-video">{vid('capa')}</div><div class="cover-shade"></div>
+<div class="cover"><h1 class="cover-title reveal" style="--i:1">ETAL Connect</h1>
+<p class="cover-line reveal" style="--i:2">IFRN · Campus Pau dos Ferros</p></div>
+<img class="cover-nadic reveal" style="--i:3" src="{{root}}prototipo/assets/nadic-logo.svg" alt="NADIC">
+""",'','dark cover-slide','videos/capa.webp')
 
 slide('chegada','Chegar ao evento','01 / Abertura',f"""
 <img class="full-photo" src="{{assets}}/fontes/campus-fachada.webp" alt="Fachada do campus"><div class="photo-shade"></div>
 <div class="question-tags big"><span class="reveal" style="--i:1">{icon('clock')}Já começou?</span><span class="reveal" style="--i:2">{icon('pin')}Onde é a sala?</span><span class="reveal" style="--i:3">{icon('qr')}Como confirmo a presença?</span></div>
 """,'','dark','fontes/campus-fachada.webp')
 
-TIMELINE = [
-    ('15 out', 'Campus em KML', 'globe', ''),
-    ('06–07 nov', 'Protótipo', 'spark', 'v0.1.0'),
-    ('09 nov', 'Planta de 2012', 'file', ''),
-    ('09 nov', 'Campus de hoje', 'map', 'v0.2.0'),
-    ('09 nov', 'Servidor e QR', 'layers', 'v0.3.0'),
-    ('09 nov', 'Teste em produção', 'shield', 'v0.4'),
-]
+TIMELINE = [('15 out', 'Campus em KML', 'globe', ''), ('06–07 nov', 'Protótipo', 'spark', 'v0.1.0'), ('09 nov', 'Planta de 2012', 'file', ''),
+            ('09 nov', 'Campus de hoje', 'map', 'v0.2.0'), ('09 nov', 'Servidor e QR', 'layers', 'v0.3.0'), ('09 nov', 'Teste em produção', 'shield', 'v0.4')]
 slide('linha-do-tempo','Linha do tempo','01 / Abertura',f"""
 <div class="timeline">{''.join(f'<article class="tl-item reveal" style="--i:{n+1}"><span class="tl-dot">{icon(ic)}</span><small class="tl-when">{w}</small><b>{t}</b>{f'<span class="tl-tag">{v}</span>' if v else ''}</article>' for n,(w,t,ic,v) in enumerate(TIMELINE))}<i class="tl-line"></i></div>
 <div class="tl-stats"><div class="reveal" style="--i:7"><b data-count="25">25</b><small>dias</small></div><div class="reveal" style="--i:8"><b data-count="6">6</b><small>versões</small></div><div class="reveal" style="--i:9"><b data-count="3">3</b><small>andares traçados</small></div><div class="reveal" style="--i:10"><b data-count="14">14</b><small>testes da API</small></div></div>
 """,'Datas do histórico do repositório','', 'cena-evento.webp', 'Linha do tempo')
 
-# ---------------- 02 · O lugar ----------------
-REGIAO = (ROOT / 'docs/assets/regiao-rn.svg').read_text() if (ROOT / 'docs/assets/regiao-rn.svg').exists() else ''
-slide('regiao','Pau dos Ferros, Alto Oeste','02 / O lugar',f"""
-<div class="region"><div class="region-map">{REGIAO}</div>
-<img class="region-sat" src="{{assets}}/fontes/satelite-campus.webp" alt="Satélite do campus"><img class="region-3d" src="{{assets}}/cena-campus.webp" alt="Campus no modelo 3D">
-<div class="region-labels"><span class="rl rl1">Rio Grande do Norte</span><span class="rl rl2">Alto Oeste · microrregião de Pau dos Ferros</span><span class="rl rl3">Pau dos Ferros · ~400 km de Natal</span><span class="rl rl4">IFRN · Campus Pau dos Ferros · BR-405</span></div>
-<div class="region-legend reveal" style="--i:2"><span><i class="lg-oeste"></i>Oeste Potiguar</span><span><i class="lg-micro"></i>Microrregião de Pau dos Ferros</span><span><i class="lg-pf"></i>Pau dos Ferros</span></div></div>
-""",'Malhas e divisões territoriais: IBGE · satélite: Google Maps / Earth','dark','fontes/satelite-campus.webp', 'Pau dos Ferros, Alto Oeste')
-
-slide('foto-modelo','Foto real e modelo','02 / O lugar',f"""
-<div class="pairs">{''.join(f'<figure class="pair reveal" style="--i:{n+1}"><div class="pair-imgs"><img src="{{assets}}/{a}" alt="Foto: {c}"><span class="pair-arrow">{icon("arrow-right")}</span><img src="{{assets}}/{b}" alt="Modelo: {c}"></div><figcaption>{c}</figcaption></figure>' for n,(a,b,c) in enumerate([('fontes/street-apartamentos.webp','cena-entorno.webp','Entorno da BR-405'),('fontes/satelite-jardim.webp','cena-jardim.webp','Jardim e caminhos'),('fontes/campus-auditorio.webp','cena-evento.webp','Auditório e bloco principal')]))}</div>
-""",'Fotos e prints do Google Maps / Street View usados como referência','', 'cena-entorno.webp', 'Foto real e modelo')
-
-slide('documento','A planta encontrada','02 / O lugar',f"""
-<div class="book-layout"><div class="book-stack reveal"><img class="book-cover" src="{{assets}}/fontes/souza-capa.webp" alt="Capa da dissertação, UFRN, 2012"><img class="book-plan" src="{{assets}}/fontes/planta-2012-0.webp" alt="Planta do térreo na dissertação"></div>
-<div class="doc-facts"><div class="reveal" style="--i:1"><b data-count="2012">2012</b><small>dissertação · UFRN</small></div><div class="reveal" style="--i:2"><b data-count="3">3</b><small>pavimentos em planta</small></div><div class="reveal" style="--i:3"><b>{icon('file')}</b><small>Larissa Leiros de Souza</small></div></div></div>
-""",'Souza, L. L. · Padronização e flexibilidade · UFRN, 2012 · figuras 9–11','dark','fontes/planta-2012-0.webp', 'A planta encontrada')
-
-slide('planta','2012 e hoje','02 / O lugar',f"""
-<div class="wipe reveal"><img src="{{assets}}/fontes/planta-2012-0.webp" alt="Planta do térreo em 2012"><div class="wipe-top"><img src="{{assets}}/fontes/planta-atual-0.svg" alt="Planta atual do app"></div><i class="wipe-line"></i><span class="wipe-tag l">2012</span><span class="wipe-tag r">Hoje, no app</span></div>
-""",'Planta traçada sobre as figuras de 2012, com o uso atual das salas','', 'fontes/planta-2012-0.webp', '2012 e hoje')
-
-slide('levantamento','Do satélite ao 3D','02 / O lugar',f"""
-<div class="strip">{''.join(f'<figure class="strip-step reveal" style="--i:{n+1}"><img src="{{assets}}/{img}" alt="{t}"><figcaption><span>{n+1}</span>{t}</figcaption></figure>' + (f'<i class="strip-arrow reveal" style="--i:{n+1}">{icon("arrow-right")}</i>' if n<2 else '') for n,(img,t) in enumerate([('fontes/satelite-geral.webp','Marcação no satélite (KML)'),('fontes/planta-atual-0.svg','Planta em metros'),('cena-campus.webp','Campus em 3D')]))}</div>
-""",'Levantamento sobre Google Earth · 66 marcações no KML','', 'fontes/satelite-geral.webp', 'Do satélite ao 3D')
-
-# ---------------- 03 · O app ----------------
-slide('app','O app','03 / O app',f"""
+# ---------------- 02 · O app ----------------
+slide('app','O app','02 / O app',f"""
 <div class="app-show"><div class="phone-frame reveal">{vid('app-tour')}</div>
 <ul class="app-points">{''.join(f'<li class="reveal" style="--i:{n+2}"><span>{icon(ic)}</span>{t}</li>' for n,(ic,t) in enumerate([('calendar','Programação e agenda'),('map','Mapa do campus e dos andares'),('route','Rota até a sala'),('qr','Presença por QR'),('bell','Avisos ao vivo')]))}</ul></div>
 """,'Gravação do app atual com dados de exemplo','', 'app-home.png', 'O app')
 
-slide('campus3d','O campus em 3D','03 / O app', full('campus-voo','O campus em 3D'), '', 'dark video', 'videos/campus-voo.webp')
-slide('andares','Os três andares','03 / O app', full('andares','Os três andares'), '', 'dark video', 'videos/andares.webp')
-
-slide('rotas','Como a rota é calculada','03 / O app',f"""
-<div class="algo"><div class="algo-stage reveal"><img src="{{assets}}/fontes/planta-atual-0.svg" alt="Planta do térreo"><canvas class="algo-canvas" width="1920" height="1320" data-algo="{{assets}}/rota-dijkstra.json"></canvas>
-<div class="algo-result"><b>72 m</b><small>≈ 1 min a pé</small></div></div>
-<ol class="algo-steps">{''.join(f'<li class="reveal" style="--i:{n+2}"><span>{icon(ic)}</span><b>{t}</b></li>' for n,(ic,t) in enumerate([('grid','Grade de 33 cm só nos corredores'),('route','Dijkstra: o caminho de menor custo'),('walk','Parede e curva custam mais'),('compare' if False else 'layers','3 entradas × escada ou rampa'),('clock','metros ÷ 75 = minutos')]))}</ol></div>
-""",'Mesma regra do app (campus3d.js, gridPath e planFor) · entrada principal → sala 001','', 'fontes/planta-atual-0.svg', 'Como a rota é calculada')
-
-slide('rota-video','Rota até a sala','03 / O app', full('rota','Rota até a sala'), '', 'dark video', 'videos/rota.webp')
-slide('dia','Segue a hora do dia','03 / O app', full('dia-24h','Segue a hora do dia'), '', 'dark video', 'videos/dia-24h.webp')
+slide('jornada','Do login à presença','02 / O app',f"""
+<div class="journey">{''.join(f'<figure class="journey-step reveal" style="--i:{n+1}"><img src="{{assets}}/{img}" alt="{t}"><figcaption><span>{n+1}</span>{t}</figcaption></figure>' for n,(img,t) in enumerate([('app-login.png','Entra com o SUAP'),('app-agenda.png','Escolhe as atividades'),('app-qr.png','Lê o QR da sala'),('app-credencial.png','Presença confirmada')]))}</div>
+""",'Telas atuais do app','', 'app-qr.png', 'Do login à presença')
 
 PWA_ROWS = [('Abre por um link', True, False), ('Instala sem loja de apps', True, False), ('Usa o mesmo mapa web', True, False), ('Funciona sem internet', True, True), ('Câmera para o QR', True, True)]
-slide('pwa','Por que PWA','03 / O app',f"""
+slide('pwa','Por que PWA','02 / O app',f"""
 <div class="pwa-cmp reveal"><div class="pwa-head"><span></span><b class="pwa-us">{icon('browser')}PWA</b><b>{icon('react')}React Native</b></div>
 {''.join(f'<div class="pwa-row reveal" style="--i:{n+2}"><span>{t}</span><i class="{"yes" if a else "no"}">{icon("check" if a else "close")}</i><i class="{"yes" if b else "no"}">{icon("check" if b else "close")}</i></div>' for n,(t,a,b) in enumerate(PWA_ROWS))}</div>
 """,'React Native exige publicar nas lojas e reescrever o mapa em componentes nativos','', 'app-home.png', 'Por que PWA')
 
-slide('jornada','Do login à presença','03 / O app',f"""
-<div class="journey">{''.join(f'<figure class="journey-step reveal" style="--i:{n+1}"><img src="{{assets}}/{img}" alt="{t}"><figcaption><span>{n+1}</span>{t}</figcaption></figure>' for n,(img,t) in enumerate([('app-login.png','Entra com o SUAP'),('app-agenda.png','Escolhe as atividades'),('app-qr.png','Lê o QR da sala'),('app-credencial.png','Presença confirmada')]))}</div>
-<div class="journey-note reveal" style="--i:6">{icon('shield')}QR assinado pelo servidor · só vale no horário da atividade</div>
-""",'Telas atuais do app','', 'app-qr.png', 'Do login à presença')
+slide('offline','Sem internet','02 / O app',f"""
+<div class="off" data-steps="4" data-interval="2600">
+<div class="off-cloud" data-step="0"><span>{icon('cloud')}</span><b>Servidor</b></div>
+<div class="off-wire"><i class="off-packets"></i><em class="off-cut">{icon('wifi-off')}</em></div>
+<div class="off-phone"><img src="{{assets}}/app-home.png" alt="App aberto"><div class="off-cache" data-step="2"><span>{icon('database')}</span>Guardado no aparelho</div></div>
+<ul class="off-list"><li data-step="0">{icon('wifi')}Com internet: tudo do servidor</li><li data-step="1">{icon('wifi-off')}A rede cai</li><li data-step="2">{icon('check')}O app abre do cache</li><li data-step="3">{icon('map')}Programação, mapa e planta continuam</li></ul>
+</div>
+""",'Service worker (sw.js) guarda os arquivos do app e do mapa no aparelho','', 'app-home.png', 'Sem internet')
 
-# ---------------- 04 · O que já funciona ----------------
-slide('arquitetura','Como as peças se ligam','04 / O que já funciona',f"""
+# ---------------- 03 · O mapa ----------------
+slide('documento','A planta encontrada','03 / O mapa',f"""
+<div class="book-layout"><div class="book-stack reveal"><img class="book-cover" src="{{assets}}/fontes/souza-capa.webp" alt="Capa da dissertação, UFRN, 2012"><img class="book-plan" src="{{assets}}/fontes/planta-2012-0.webp" alt="Planta do térreo na dissertação"></div>
+<div class="doc-facts"><div class="reveal" style="--i:1"><b data-count="2012">2012</b><small>dissertação · UFRN</small></div><div class="reveal" style="--i:2"><b data-count="3">3</b><small>pavimentos em planta</small></div><div class="reveal" style="--i:3"><b>{icon('file')}</b><small>Larissa Leiros de Souza</small></div></div></div>
+""",'Souza, L. L. · Padronização e flexibilidade · UFRN, 2012 · figuras 9–11','dark','fontes/planta-2012-0.webp', 'A planta encontrada')
+
+def wipe(base, top, l, r):
+    return f'<div class="wipe reveal"><img src="{{assets}}/{base}" alt="{l}"><div class="wipe-top"><img src="{{assets}}/{top}" alt="{r}"></div><i class="wipe-line"></i><span class="wipe-tag l">{l}</span><span class="wipe-tag r">{r}</span></div>'
+
+slide('planta','2012 e hoje','03 / O mapa', wipe('fontes/planta-2012-0.webp','fontes/planta-atual-0.svg','2012','Hoje, no app'),
+      'Planta traçada sobre as figuras de 2012, com o uso atual das salas','', 'fontes/planta-2012-0.webp', '2012 e hoje')
+
+slide('google-3d','Do Google Maps ao 3D','03 / O mapa', wipe('campus-satelite.webp','campus-3d.webp','Google Maps','Modelo 3D').replace('class="wipe ','class="wipe cover-fit ',1),
+      'Imagem de satélite: Google · alinhada ao modelo pela mesma conversão do levantamento (KML → metros)','', 'campus-satelite.webp', 'Do Google Maps ao 3D')
+
+slide('evento','O evento em destaque','03 / O mapa', full('evento','O evento em destaque'), '', 'dark video', 'videos/evento.webp')
+slide('andares','Os três andares','03 / O mapa', full('andares','Os três andares'), '', 'dark video', 'videos/andares.webp')
+
+slide('rotas','Como a rota é calculada','03 / O mapa',f"""
+<div class="algo"><div class="algo-stage reveal"><img src="{{assets}}/fontes/planta-atual-0.svg" alt="Planta do térreo"><canvas class="algo-canvas" width="1920" height="1320" data-algo="{{assets}}/rota-dijkstra.json"></canvas>
+<div class="algo-result"><b>72 m</b><small>≈ 1 min a pé</small></div></div>
+<ol class="algo-steps">{''.join(f'<li class="reveal" style="--i:{n+2}"><span>{icon(ic)}</span><b>{t}</b></li>' for n,(ic,t) in enumerate([('grid','Grade de 33 cm só nos corredores'),('route','Dijkstra: o caminho de menor custo'),('walk','Parede e curva custam mais'),('clock','metros ÷ 75 = minutos')]))}</ol></div>
+""",'Mesma regra do app (campus3d.js, gridPath) · entrada principal → sala 001','', 'fontes/planta-atual-0.svg', 'Como a rota é calculada')
+
+slide('escada-rampa','Escada ou rampa?','03 / O mapa',f"""
+<div class="race"><canvas class="race-canvas" width="1500" height="1150" data-race="{{assets}}/rota-escada-rampa.json"></canvas>
+<div class="race-board"><div class="race-row escada"><i></i><b>Escada</b><small>entrada do auditório</small><em data-race-cost="escada">0</em></div>
+<div class="race-row rampa"><i></i><b>Rampa</b><small>entrada principal</small><em data-race-cost="rampa">0</em></div>
+<p class="race-note">{icon('walk')}Subir escada pesa 1,6 × · rampa 1 ×</p><div class="race-win">{icon('check')}<span>Escada, por pouco</span></div></div></div>
+""",'Destino: Lab 210, 2º andar · custos calculados pelo app (campus3d.js, planFor)','', 'videos/rota.webp', 'Escada ou rampa?')
+
+slide('dia','Segue a hora do dia','03 / O mapa', full('dia-24h','Segue a hora do dia'), '', 'dark video', 'videos/dia-24h.webp')
+
+# ---------------- 04 · Bastidores ----------------
+slide('arquitetura','Como as peças se ligam','04 / Bastidores',f"""
 <div class="arch"><div class="arch-node reveal" style="--i:1"><span>{icon('phone')}</span><b>Celular</b><small>PWA</small></div><i class="arch-wire"><em></em></i>
 <div class="arch-node reveal" style="--i:2"><span>{icon('cloud')}</span><b>Site + API</b><small>FastAPI · Vercel (teste) · IFRN (produção)</small></div><i class="arch-wire"><em></em></i>
 <div class="arch-node reveal" style="--i:3"><span>{icon('database')}</span><b>Banco</b><small>PostgreSQL</small></div>
 <div class="arch-side reveal" style="--i:4"><span>{icon('user')}</span><b>SUAP</b><small>login do IFRN</small></div></div>
 """,'','', 'cena-campus.webp', 'Como as peças se ligam')
 
-DB = [('pessoas','user','Pessoa','participante, visitante ou organização'),('atividades','calendar','Atividade','horário, sala e vagas'),
-      ('agenda','bookmark' if False else 'check','Agenda','quem salvou o quê'),('presencas','qr','Presença','quem leu o QR e quando'),
-      ('avisos','bell','Aviso','mensagem da organização'),('numeros_sala','pin','Número de sala','como cada sala é chamada'),('links_acesso','mail','Link de acesso','entrada do visitante por e-mail')]
-slide('banco','O banco de dados','04 / O que já funciona',f"""
+slide('banco','O banco de dados','04 / Bastidores',f"""
 <div class="er"><div class="er-main">
-<div class="er-card big reveal" style="--i:1" data-er="pessoas"><span>{icon('user')}</span><b>Pessoa</b><small>participante, visitante ou organização</small></div>
+<div class="er-card big reveal" style="--i:1"><span>{icon('user')}</span><b>Pessoa</b><small>participante, visitante ou organização</small></div>
 <div class="er-links"><div class="er-rel reveal" style="--i:3"><i class="er-line"></i><div class="er-card"><span>{icon('check')}</span><b>Agenda</b><small>salvou a atividade</small></div><i class="er-line"></i></div>
 <div class="er-rel reveal" style="--i:4"><i class="er-line"></i><div class="er-card"><span>{icon('qr')}</span><b>Presença</b><small>leu o QR na sala</small></div><i class="er-line"></i></div></div>
-<div class="er-card big reveal" style="--i:2" data-er="atividades"><span>{icon('calendar')}</span><b>Atividade</b><small>horário, sala e vagas</small></div></div>
+<div class="er-card big reveal" style="--i:2"><span>{icon('calendar')}</span><b>Atividade</b><small>horário, sala e vagas</small></div></div>
 <div class="er-extra">{''.join(f'<div class="er-card small reveal" style="--i:{n+5}"><span>{icon(ic)}</span><b>{t}</b><small>{d}</small></div>' for n,(ic,t,d) in enumerate([('bell','Aviso','da organização para todos'),('pin','Número de sala','nome de cada sala'),('mail','Link de acesso','entrada do visitante')]))}</div>
 <div class="er-count reveal" style="--i:9"><b data-count="7">7</b><small>tabelas</small></div></div>
 """,'backend/app/modelos.py · SQLite para desenvolver, PostgreSQL em produção','', 'cena-campus.webp', 'O banco de dados')
 
-slide('organizacao','Painel da organização','04 / O que já funciona',f"""
+slide('qr','O QR é assinado','04 / Bastidores',f"""
+<div class="qrf" data-steps="9" data-interval="1500">
+<div class="qrf-code"><img class="qrf-ok" src="{{assets}}/qr-exemplo.svg" alt="QR da sala"><img class="qrf-bad" src="{{assets}}/qr-falso.svg" alt="QR alterado"></div>
+<div class="qrf-token"><span class="qrf-a" data-step="1">atividade · react-native</span><span class="qrf-sig" data-step="1">assinatura · -vsAoqlqItw…</span></div>
+<div class="qrf-server" data-step="2"><span>{icon('server')}</span><b>API</b></div>
+<ul class="qrf-checks"><li data-step="3">{icon('shield')}Assinatura confere</li><li data-step="4">{icon('clock')}Dentro do horário · 14:00–18:00</li><li data-step="5" class="qrf-done">{icon('check')}Presença gravada · 14:22</li><li data-step="7" class="qrf-fail">{icon('close')}QR alterado: assinatura não confere</li></ul>
+</div>
+""",'Token assinado com o segredo do servidor (itsdangerous) · vale de 20 min antes até o fim da atividade','', 'qr-exemplo.svg', 'O QR é assinado')
+
+slide('organizacao','Painel da organização','04 / Bastidores',f"""
 <div class="shot-big reveal">{image('painel.png','Painel da organização')}</div>
 """,'','', 'painel.png', 'Painel da organização')
 
-slide('api','API documentada','04 / O que já funciona',f"""
+slide('api','API documentada','04 / Bastidores',f"""
 <div class="shot-big reveal">{image('swagger-visao-geral.png','Documentação interativa da API (Swagger)')}</div>
 """,'FastAPI gera o Swagger automaticamente em /api/docs','', 'swagger-visao-geral.png', 'API documentada')
 
 CHECK = [(True,'App publicado em teste'),(True,'Login pelo SUAP'),(True,'Presença por QR e avisos'),(False,'Servidor do IFRN (NADIC)'),(False,'Programação real do ETAL 2026'),(False,'Teste com pessoas no campus')]
-slide('continuidade','Para pôr no ar','04 / O que já funciona',f"""
+slide('continuidade','Para pôr no ar','04 / Bastidores',f"""
 <div class="golive"><ul class="golive-list">{''.join(f'<li class="reveal {"ok" if ok else "todo"}" style="--i:{n+1}"><span>{icon("check" if ok else "clock")}</span>{t}</li>' for n,(ok,t) in enumerate(CHECK))}</ul>
 <figure class="golive-qr reveal" style="--i:7"><img src="{{assets}}/qr-app.svg" alt="QR para abrir o app"><figcaption>etal-connect.vercel.app</figcaption></figure></div>
 """,'','dark', 'qr-app.svg', 'Para pôr no ar')
@@ -246,7 +249,7 @@ def source_gallery():
 
 
 CHAPTER_ART = {
-    '02': ('fontes/campus-auditorio.webp', ''),
+    '02': ('fontes/campus-patio.webp', ''),
     '03': ('cena-evento.webp', ''),
     '04': ('cena-jardim.webp', ''),
 }
