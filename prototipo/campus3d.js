@@ -110,6 +110,10 @@
       soil: '#d3c49c', soil2: '#c9ba90', trail: '#efebda', grove: '#b1c28a', roofRgb: [255, 255, 255], water: '#5cc0e6', waterDeep: '#3aa6d6', rim: '#f6fafc', deck: '#f1f0ea', fence: 'rgba(110,125,150,.55)',
       sand: '#ecd9a6', courtLine: '#ffffff', field: '#cfd3a0', fieldLine: 'rgba(255,255,255,.9)', tank: [120, 134, 176], tankTop: '#a3b0d2', panel: '#2f4a86', panelLine: 'rgba(255,255,255,.28)',
       tile: '#e09a5e', tileWall: [236, 214, 190], hexBase: [214, 208, 196], hexDeck: '#f0ece2', hexRoof: [252, 247, 234], rail: 'rgba(95,105,130,.75)', neighbor: '#dfe2e8', neighborWall: [200, 205, 216], glass: 'rgba(205,232,216,.78)', glassWall: [186, 216, 200], glassRib: 'rgba(255,255,255,.75)',
+      aptoWall: [240, 238, 232], aptoSlab: '#eeeeea', aptoBand: 'rgb(233,170,58)', aptoGap: 'rgba(70,74,84,.42)', aptoShop: 'rgb(150,154,160)', aptoDoor: 'rgb(222,224,226)', aptoSign: 'rgb(44,92,164)',
+      laneMid: '#e7b93a', curbYellow: '#e2b33a', pole: '#d4d1c9', poleLamp: '#f4f4ef', wire: 'rgba(40,44,52,.5)', cone: '#e8742c', shade: [248, 248, 246], shadeEdge: 'rgba(150,156,168,.6)',
+      gateRgb: [200, 58, 50], gateRoof: '#f4f3ef', gateGrade: 'rgba(200,58,50,.16)', lojaWall: [226, 228, 230], lojaBand: [232, 92, 44], lojaGlass: 'rgba(62,92,126,.85)',
+      metal: '#d6dadf', metalEdge: 'rgba(140,148,160,.7)', barWall: [236, 234, 228], barOpen: 'rgba(48,50,48,.78)', barCounter: 'rgb(64,150,88)', truss2: 'rgb(246,246,244)', barInk: '#2b2f36', barSign: 'rgba(214,226,206,.95)',
       plate: '#e6ebf4', plateEdge: '#cbd3e2', slab: [176, 188, 212], roomEdge: '#d2d9e8', rampF: '#f3f6fb', door: '#9aa8c4',
       kinds: { classroom: ['#ffffff', [205, 214, 232]], laboratory: ['#dce7fb', [176, 196, 232]], staff: ['#eef1f7', [204, 210, 224]], auditorium: ['#2c4785', [34, 56, 111], true], stairs: ['#f6f8fc', [205, 214, 232]], restroom: ['#dce7fb', [176, 196, 232]], accessible: ['#dce7fb', [176, 196, 232]], reception: ['#4f9e22', [58, 122, 24], true] },
     },
@@ -126,6 +130,10 @@
       soil: '#152238', soil2: '#18263e', trail: '#22314e', grove: '#173427', roofRgb: [50, 70, 122], water: '#2f8fc4', waterDeep: '#1f74a8', rim: '#46608f', deck: '#22304f', fence: 'rgba(150,170,210,.45)',
       sand: '#6b5c38', courtLine: 'rgba(255,255,255,.8)', field: '#26422f', fieldLine: 'rgba(255,255,255,.55)', tank: [70, 86, 130], tankTop: '#7b8fc0', panel: '#16264e', panelLine: 'rgba(160,190,255,.3)',
       tile: '#a4663a', tileWall: [84, 66, 62], hexBase: [60, 72, 104], hexDeck: '#3a4b78', hexRoof: [120, 135, 175], rail: 'rgba(190,205,235,.65)', neighbor: '#27324e', neighborWall: [34, 44, 70], glass: 'rgba(90,150,130,.55)', glassWall: [50, 96, 86], glassRib: 'rgba(200,235,220,.45)',
+      aptoWall: [70, 80, 110], aptoSlab: '#3a4a74', aptoBand: 'rgb(176,120,42)', aptoGap: 'rgba(8,12,24,.55)', aptoShop: 'rgb(54,62,84)', aptoDoor: 'rgb(96,108,140)', aptoSign: 'rgb(48,86,160)',
+      laneMid: '#b08a2c', curbYellow: '#a8862e', pole: '#56658c', poleLamp: '#ffe6a8', wire: 'rgba(160,175,210,.4)', cone: '#c8642a', shade: [120, 134, 170], shadeEdge: 'rgba(170,185,220,.5)',
+      gateRgb: [200, 80, 72], gateRoof: '#3a4a74', gateGrade: 'rgba(255,122,112,.16)', lojaWall: [60, 70, 98], lojaBand: [196, 84, 44], lojaGlass: 'rgba(250,210,140,.55)',
+      metal: '#46557c', metalEdge: 'rgba(120,138,180,.55)', barWall: [62, 72, 100], barOpen: 'rgba(250,200,120,.55)', barCounter: 'rgb(46,112,70)', truss2: 'rgb(200,210,232)', barInk: '#14224a', barSign: 'rgba(250,220,150,.9)',
       plate: '#16244a', plateEdge: '#2a3c6c', slab: [18, 28, 58], roomEdge: '#3a4f85', rampF: '#1c2c56', door: '#6d82b5',
       kinds: { classroom: ['#2a3f73', [26, 40, 78], true], laboratory: ['#37548f', [32, 50, 92], true], staff: ['#2a3f73', [26, 40, 78], true], auditorium: ['#e8eefb', [150, 165, 200]], stairs: ['#2a3f73', [26, 40, 78], true], restroom: ['#37548f', [32, 50, 92], true], accessible: ['#37548f', [32, 50, 92], true], reception: ['#7dd14a', [70, 128, 40]] },
     },
@@ -178,6 +186,11 @@
   const palBase = () => (document.documentElement.dataset.theme === 'dark' ? PAL.dark : PAL.light);
   const pal = () => (isEv() ? palBase().mono : palBase());
 
+  /* A pista segue a marcação sem nome do levantamento (y 68,4–75, o traçado da BR-405), com acostamento;
+     antes dela fica a ilha do meio-fio com as árvores (marcação "meio fio"). */
+  const ROAD_Y0 = 66.2, ROAD_Y1 = 76.6, ROAD_MID = 71.4;
+  /* Planta do prédio de apartamentos: frente para a rodovia (lado -y), lateral para a rua de terra (lado -x). */
+  const APTO = [[14.2, 95.6], [34.6, 95.6], [34.6, 120.6], [14.2, 120.6]];
   /* Alturas adotadas: 4,5 m por pavimento + 0,3 m de cobertura. */
   const BUILDINGS = geom([
     { id: 'principal', el: 0, h: 13.8, floors: 3, label: 'Bloco principal', at: [4, -34], court: [[-23, -37], [14, -37], [14.500, -33], [-23, -33]] },
@@ -186,7 +199,10 @@
     { id: 'cantina', el: 4, h: 4.8, floors: 1, label: 'Cantina', at: [-61, -36], solar: 0.88 },
     { id: 'diretoria', el: 6, h: 4.8, floors: 1, label: 'Diretoria', at: [26, 3] },
     { id: 'biblioteca', el: 7, h: 4.8, floors: 1, label: 'Biblioteca', at: [-78, -69] },
-    { id: 'portaria', el: 8, h: 2.9, floors: 0, label: 'Portaria', at: [15, 48] },
+    /* Duas entradas na frente, como na foto da rua: pedestres pela portaria (pórtico vermelho com cobertura)
+       e, à esquerda de quem chega pela rodovia, o portão de veículos para o estacionamento. */
+    { id: 'portaria', el: 8, h: 3.35, floors: 0, kind: 'gate', label: 'Portaria', at: [15, 48] },
+    { id: 'portao-veiculos', pontos: [[1.5, 47.9], [8.5, 47.9], [8.5, 48.8], [1.5, 48.8]], h: 2.6, kind: 'gate', vehicles: true, noLabel: true },
     /* Resto do campus: fora da programação do evento. */
     { id: 'auxiliar', pontos: F('predio auxiliar'), h: 9.3, floors: 2, label: 'Prédio auxiliar', at: [-12.7, -62.8], rear: true, viewT: 3.64 },
     { id: 'coliseu', pontos: F('colisel'), h: 3.2, kind: 'hex', label: 'Coliseu', at: [-31.7, -69], rear: true, viewT: 3.64 },
@@ -200,6 +216,12 @@
     { id: 'estufa', pontos: F('jardim (estufa simples)'), h: 2.8, kind: 'greenhouse', label: 'Estufa', at: [-112, -212], rear: true },
     { id: 'casa-mel', pontos: F('casa do mel'), h: 4.8, floors: 1, tile: true, label: 'Casa do Mel', at: [-148, -269], rear: true },
     { id: 'seu-assis', pontos: F('seu assis (restaurante famioliar ao lado)'), h: 4.8, floors: 1, tile: true, solarHalf: true, label: 'Seu Assis', at: [-124, -22], rear: true },
+    /* Vizinhos do outro lado da rodovia, pelo satélite e pelas fotos da rua.
+       O prédio de apartamentos (térreo de lojas e três andares) vai além da marcação do levantamento, que cobre só o telhado de telha;
+       a Elétrica é o bar coberto de telha metálica colado nos fundos dele, aberto para a rua lateral. */
+    { id: 'apartamentos', pontos: APTO, tileRoof: [[21.4, 95.6], [34.6, 95.6], [34.6, 120.6], [21.4, 120.6]], h: 13.4, floors: 4, kind: 'apto', label: 'Apartamentos', at: [24, 108], rear: true },
+    { id: 'brisanet', pontos: [[-128, 120], [-66, 120], [-66, 152], [-128, 152]], h: 8, kind: 'loja', label: 'Brisanet', at: [-97, 136], rear: true },
+    { id: 'eletrica', pontos: [[15.5, 121.2], [30.5, 121.2], [30.5, 141], [15.5, 141]], h: 4, kind: 'bar', label: 'Elétrica', at: [23, 131], rear: true },
   ]);
   const COVERS = geom([
     { id: 'patio', el: 5, h: 7.2, label: 'Pátio', at: [0, -2], wood: false },
@@ -263,6 +285,8 @@
     'casa-mel': [START, [-20, 41], [-46, 40], [-98.5, -65], [-132, -122], [-122, -129], [-96, -142.500], [-74, -160], [-100, -198], [-98, -216], [-125, -245], [-143, -262]],
     'seu-assis': [START, [-20, 52], [-56, 53], [-78.5, 8.4], [-110, -53], [-118.4, -42.4], [-122, -37.5]],
     obelisco: [START, [13, 30], [12.6, 16]],
+    apartamentos: [START, [15, 58], [11.5, 92], [11.5, 100], [14, 100]],
+    eletrica: [START, [15, 58], [11.5, 92], [11.5, 128], [15.3, 128]],
     portaria: [START],
   };
 
@@ -387,10 +411,13 @@
     ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     const lane = (L, w) => { smooth(L); ctx.strokeStyle = c.dirtEdge; ctx.lineWidth = Math.max(1.4, (w + 0.9) * cam.z); ctx.stroke(); smooth(L); ctx.strokeStyle = c.dirt; ctx.lineWidth = Math.max(0.8, w * cam.z); ctx.stroke(); };
     if (Q.ground > 0 || cam.z < 2.5) ENT.streets.forEach((L) => lane(L, 4.5));
+    /* Rua de terra ao lado do prédio dos apartamentos, para onde a Elétrica abre (satélite). */
+    if (Q.ground > 0 || cam.z < 2.5) lane([[7.5, 77], [9.5, 100], [12.5, 174], [13, 205]], 6);
     ENT.roads.forEach((r) => lane(r.pts, r.w));
     if (ENT.parking) {
       poly(ENT.parking); ctx.fillStyle = c.parkLot; ctx.fill();
-      if (cam.z > 0.9) { ctx.strokeStyle = c.parkStall; ctx.lineWidth = 0.7; ctx.beginPath(); for (let x = -130; x < -77; x += 3.5) { const s = P(x, 103); const e = P(x, 108); const s2 = P(x, 114); const e2 = P(x, 119); ctx.moveTo(s[0], s[1]); ctx.lineTo(e[0], e[1]); ctx.moveTo(s2[0], s2[1]); ctx.lineTo(e2[0], e2[1]); } ctx.stroke(); }
+      /* Vagas de carro na metade norte; a metade sul fica com as coberturas das motos. */
+      if (cam.z > 0.9) { ctx.strokeStyle = c.parkStall; ctx.lineWidth = 0.7; ctx.beginPath(); for (let x = -128; x <= -95; x += 3) { const s = P(x, 101); const e = P(x, 106); const s2 = P(x, 113); const e2 = P(x, 118); ctx.moveTo(s[0], s[1]); ctx.lineTo(e[0], e[1]); ctx.moveTo(s2[0], s2[1]); ctx.lineTo(e2[0], e2[1]); } ctx.stroke(); }
     }
   }
   const rotRect = (cx, cy, w, d, deg) => { const r = (deg * Math.PI) / 180, co = Math.cos(r), si = Math.sin(r); return [[-w / 2, -d / 2], [w / 2, -d / 2], [w / 2, d / 2], [-w / 2, d / 2]].map(([u, v]) => [cx + u * co - v * si, cy + u * si + v * co]); };
@@ -398,7 +425,7 @@
   const HOUSES = (() => {
     const out = ENT.small.map((h, i) => ({ p: rotRect(h.c[0], h.c[1], h.w, h.d, h.a), h: h.h, m: h.c, tone: i }));
     const r = rng(61);
-    const blocked = (x, y) => y < 104 || ENT.big.some((b) => inPoly(x, y, shrink(b.pts, 1.3))) || (ENT.parking && inPoly(x, y, shrink(ENT.parking, 1.2))) || inPoly(x, y, pts(23));
+    const blocked = (x, y) => y < 104 || ENT.big.some((b) => inPoly(x, y, shrink(b.pts, 1.3))) || (ENT.parking && inPoly(x, y, shrink(ENT.parking, 1.2))) || inPoly(x, y, pts(23)) || (x > 8 && x < 40 && y > 76 && y < 148) || (x > -136 && x < -58 && y > 70 && y < 160);
     ENT.streets.forEach((L) => {
       for (let i = 0; i < L.length - 1; i++) {
         const a = L[i], b = L[i + 1]; const len = Math.hypot(b[0] - a[0], b[1] - a[1]); const ang = (Math.atan2(b[1] - a[1], b[0] - a[0]) * 180) / Math.PI;
@@ -447,13 +474,18 @@
   function drawGround(c) {
     ctx.fillStyle = c.sky; ctx.fillRect(0, 0, W, H);
     drawSurroundings(c);
-    ctx.fillStyle = c.road; poly(rect(-900, 62, 900, 96)); ctx.fill();
-    ctx.fillStyle = c.walk; poly(rect(-900, 49, 900, 62)); ctx.fill();
+    /* BR-405: duas faixas com eixo em y≈70, como no satélite. Do outro lado, o acostamento é de terra. */
+    ctx.fillStyle = c.road; poly(rect(-900, ROAD_Y0, 900, ROAD_Y1)); ctx.fill();
+    ctx.fillStyle = c.walk; poly(rect(-900, 49, 900, ROAD_Y0)); ctx.fill();
     if (!isEv() && Q.roofTex) fillWorldTex('cobble', 0, false);
-    ctx.strokeStyle = c.lane; ctx.lineWidth = Math.max(1, 0.5 * cam.z); ctx.setLineDash([8 * cam.z, 8 * cam.z]);
-    ctx.beginPath(); let a = P(-900, 84); ctx.moveTo(a[0], a[1]); a = P(900, 84); ctx.lineTo(a[0], a[1]); ctx.stroke(); ctx.setLineDash([]);
+    const hline = (y) => { const a = P(-900, y), e = P(900, y); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(e[0], e[1]); ctx.stroke(); };
+    ctx.strokeStyle = c.lane; ctx.lineWidth = Math.max(0.6, 0.14 * cam.z); hline(ROAD_Y0 + 0.4); hline(ROAD_Y1 - 0.4);
+    ctx.strokeStyle = c.laneMid; ctx.lineWidth = Math.max(0.8, 0.16 * cam.z); hline(ROAD_MID - 0.18); hline(ROAD_MID + 0.18);
+    /* Calçada de concreto na frente do prédio dos apartamentos. */
+    ctx.fillStyle = c.paved; poly([[13.5, ROAD_Y1], [34.6, ROAD_Y1], [34.6, 95.6], [13.5, 95.6]]); ctx.fill();
     ctx.fillStyle = c.grass; poly(pts(25)); ctx.fill();
-    ctx.fillStyle = c.walk; poly(pts(24)); ctx.fill(); poly(pts(23)); ctx.fill();
+    /* A ilha do meio-fio abre na entrada de veículos. */
+    ctx.fillStyle = c.walk; poly(rect(1.5, 61, 8.5, ROAD_Y0)); ctx.fill();
 
     ctx.save(); poly(pts(22)); ctx.clip();
     ctx.fillStyle = c.soil; poly(rect(-900, -900, 900, 900)); ctx.fill();
@@ -501,6 +533,9 @@
     ctx.beginPath(); pts(20).forEach((q, k) => { const s = P(q[0], q[1]); if (k) ctx.lineTo(s[0], s[1]); else ctx.moveTo(s[0], s[1]); }); ctx.stroke();
     /* Piso dos prédios e do pátio. */
     ctx.fillStyle = c.path; poly(pts(5)); ctx.fill();
+    /* Entrada de veículos: meio-fio amarelo no meio, da rodovia até o estacionamento. */
+    ctx.strokeStyle = c.curbYellow; ctx.lineWidth = Math.max(0.8, 0.3 * cam.z); ctx.lineCap = 'butt';
+    ctx.beginPath(); let ya = P(5, ROAD_Y0 - 0.4); ctx.moveTo(ya[0], ya[1]); ya = P(5, 40); ctx.lineTo(ya[0], ya[1]); ctx.stroke();
     if (isEv()) { ctx.fillStyle = c.evGround; poly(pts(5)); ctx.fill(); poly(pts(9)); ctx.fill(); }
   }
 
@@ -559,7 +594,7 @@
   function drawShadows(c) {
     ctx.fillStyle = c.shadow;
     ctx.beginPath();
-    const list = [...BUILDINGS, ...COVERS].filter((b) => b.kind !== 'hex');
+    const list = [...BUILDINGS, ...COVERS].filter((b) => b.kind !== 'hex' && b.kind !== 'gate');
     list.forEach((b) => {
       const p = b.p; const g = growOf(...centroid(p));
       const off = [-LIGHT[0] * b.h * 0.72 * g, -LIGHT[1] * b.h * 0.72 * g];
@@ -634,7 +669,7 @@
         }
       }
     });
-    if (opts.band && cam.hv > 0.02) edges.forEach(({ a, b }) => { wallQuad(a, b, h - 1.25, h); ctx.fillStyle = mix(opts.band, shadeOf(a, b, ws)); ctx.fill(); });
+    if (opts.band && cam.hv > 0.02) edges.forEach(({ a, b }) => { wallQuad(a, b, h - (opts.bandH || 1.25), h); ctx.fillStyle = mix(opts.band, shadeOf(a, b, ws)); ctx.fill(); });
     poly(p, h); ctx.fillStyle = opts.roof; ctx.fill();
     if (opts.roofTex) fillWorldTex(opts.roofTex, h, opts.ev);
     ctx.strokeStyle = opts.edge; ctx.lineWidth = Math.max(0.7, 0.16 * cam.z); ctx.lineJoin = 'round'; ctx.stroke();
@@ -833,6 +868,154 @@
     ctx.fill();
   }
 
+  /* Trechos de uma linha reta sem os vãos [x0, x1] (muro da frente, que corre em x). */
+  function gapsOut(a, b, holes) {
+    const lo = Math.min(a[0], b[0]), hi = Math.max(a[0], b[0]), y = a[1]; const out = []; let x = lo;
+    holes.slice().sort((p, q) => p[0] - q[0]).forEach(([h0, h1]) => { if (h0 > x) out.push([[x, y], [h0, y]]); x = Math.max(x, h1); });
+    if (x < hi) out.push([[x, y], [hi, y]]);
+    return out;
+  }
+  /* Postes de concreto com luminária na calçada do campus, a cada 32 m, com a fiação entre eles. */
+  const POLE_Y = ROAD_Y0 - 0.5;
+  const POLES = []; for (let x = -326; x <= 230; x += 32) if (Math.abs(x - 10) > 12) POLES.push(x);
+  function drawPole(x, next, c) {
+    const H = 9 * growOf(x, POLE_Y); if (H < 0.3) return;
+    const b = P(x, POLE_Y), t = P(x, POLE_Y, H), arm = P(x, POLE_Y + 2, H - 0.6);
+    ctx.lineCap = 'round'; ctx.strokeStyle = c.pole; ctx.lineWidth = Math.max(0.8, 0.26 * cam.z);
+    ctx.beginPath(); ctx.moveTo(b[0], b[1]); ctx.lineTo(t[0], t[1]); ctx.stroke();
+    ctx.lineWidth = Math.max(0.6, 0.12 * cam.z); const k = P(x, POLE_Y, H - 1.2);
+    ctx.beginPath(); ctx.moveTo(k[0], k[1]); ctx.quadraticCurveTo(arm[0], k[1], arm[0], arm[1]); ctx.stroke();
+    ctx.fillStyle = c.poleLamp; ctx.beginPath(); ctx.ellipse(arm[0], arm[1], Math.max(1, 0.4 * cam.z), Math.max(0.6, 0.18 * cam.z), 0, 0, 7); ctx.fill();
+    if (next == null || cam.z < 0.6) return;
+    /* Fiação até o próximo poste, com barriga. */
+    ctx.strokeStyle = c.wire; ctx.lineWidth = Math.max(0.5, 0.05 * cam.z);
+    [0, -0.5].forEach((dh) => { const a = P(x, POLE_Y, H + dh), e = P(next, POLE_Y, H + dh), mm = P((x + next) / 2, POLE_Y, H + dh - 1.1); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.quadraticCurveTo(2 * mm[0] - (a[0] + e[0]) / 2, 2 * mm[1] - (a[1] + e[1]) / 2, e[0], e[1]); ctx.stroke(); });
+  }
+  /* Cones no meio da entrada de veículos. */
+  const CONES = [[5, 58.5], [5, 56], [5, 53.5], [5, 51]];
+  function drawCone([x, y], c) {
+    const s = 0.28, a = P(x - s, y), e = P(x + s, y), t = P(x, y, 0.75), m0 = P(x - s * 0.55, y, 0.33), m1 = P(x + s * 0.55, y, 0.33), n0 = P(x - s * 0.35, y, 0.5), n1 = P(x + s * 0.35, y, 0.5);
+    ctx.fillStyle = c.cone; ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(e[0], e[1]); ctx.lineTo(t[0], t[1]); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.moveTo(m0[0], m0[1]); ctx.lineTo(m1[0], m1[1]); ctx.lineTo(n1[0], n1[1]); ctx.lineTo(n0[0], n0[1]); ctx.closePath(); ctx.fill();
+  }
+  /* Coberturas de lona branca das motos, na metade sul do estacionamento da Brisanet, e carros nas vagas. */
+  const SHADES = []; [-88.5, -81.5, -74.5].forEach((x) => [103.5, 110, 116.5].forEach((y) => SHADES.push([x, y])));
+  function drawShade([x, y], c) {
+    const g = growOf(x, y); if (g < 0.2) return;
+    const r = 3, H = 3.4 * g, Hc = 2.6 * g; const q = [[x - r, y - r], [x + r, y - r], [x + r, y + r], [x - r, y + r]];
+    const s = P(x, y), top = P(x, y, H);
+    ctx.strokeStyle = c.pole; ctx.lineWidth = Math.max(0.6, 0.12 * cam.z); ctx.beginPath(); ctx.moveTo(s[0], s[1]); ctx.lineTo(top[0], top[1]); ctx.stroke();
+    const faces = q.map((a, i) => [a, q[(i + 1) % 4]]).sort((u, v) => depth(...lerp2(...u, 0.5)) - depth(...lerp2(...v, 0.5)));
+    faces.forEach(([a, e]) => {
+      const A = P(a[0], a[1], Hc), E = P(e[0], e[1], Hc);
+      ctx.beginPath(); ctx.moveTo(A[0], A[1]); ctx.lineTo(E[0], E[1]); ctx.lineTo(top[0], top[1]); ctx.closePath();
+      ctx.fillStyle = mix(c.shade, shadeOf(a, e, 1)); ctx.fill(); ctx.strokeStyle = c.shadeEdge; ctx.lineWidth = 0.6; ctx.stroke();
+    });
+  }
+  const PARKED = [[-126.5, 115.5, 0], [-120.5, 115.5, 2], [-114.5, 115.5, 3], [-105.5, 115.5, 1], [-99.5, 115.5, 0], [-123.5, 103.5, 4], [-111.5, 103.5, 0], [-102.5, 103.5, 3]].map(([x, y, k]) => ({ x, y, axis: 'y', k })); // cor resolvida no desenho: CAR_COLORS vem depois
+  /* Portões da frente: pilares e grades vermelhas abertas para dentro; a portaria tem cobertura branca no alto. */
+  function drawGate(b, c, h, sel) {
+    const p = b.p, red = sel ? c.accentWall : c.gateRgb; const WY = 48.335;
+    const x0 = Math.min(...p.map((q) => q[0])), x1 = Math.max(...p.map((q) => q[0]));
+    const post = (x, y, hh) => [() => depth(x, y), () => drawExtruded([[x - 0.22, y - 0.22], [x + 0.22, y - 0.22], [x + 0.22, y + 0.22], [x - 0.22, y + 0.22]], hh, c, { wall: red, roof: mix(red, 1.1), edge: mix(red, 0.8), floors: 0 })];
+    const leaf = (x, dir, len) => [() => depth(x, WY - len / 2), () => {
+      const L = cam.z > 1.6 ? Math.round(len / 0.25) : 0; const a = [x, WY], e = [x + dir * len * 0.2, WY - len * 0.98];
+      wallQuad(a, e, 0.15, 2); ctx.fillStyle = c.gateGrade; ctx.fill();
+      ctx.strokeStyle = mix(red, 0.9); ctx.lineWidth = Math.max(0.5, 0.06 * cam.z); ctx.stroke();
+      ctx.beginPath(); for (let k = 1; k < L; k++) { const q = lerp2(a, e, k / L), s0 = P(q[0], q[1], 0.15), s1 = P(q[0], q[1], 2); ctx.moveTo(s0[0], s0[1]); ctx.lineTo(s1[0], s1[1]); } ctx.stroke();
+    }];
+    const parts = [];
+    const half = (x1 - x0) / 2 - 0.4;
+    parts.push(leaf(x0 + 0.4, 1, half), leaf(x1 - 0.4, -1, half));
+    if (b.vehicles) parts.push(post(x0, WY, h), post(x1, WY, h));
+    else {
+      const y0 = Math.min(...p.map((q) => q[1])), y1 = Math.max(...p.map((q) => q[1]));
+      [[x0, y0], [x1, y0], [x0, y1], [x1, y1]].forEach(([x, y]) => parts.push(post(x + (x === x0 ? 0.25 : -0.25), y + (y === y0 ? 0.25 : -0.25), h - 0.35)));
+    }
+    parts.sort((u, v) => u[0]() - v[0]()).forEach((q) => q[1]());
+    if (!b.vehicles) drawExtruded(p, h, c, { base: h - 0.35, wall: red, roof: sel ? c.accent : c.gateRoof, edge: mix(red, 0.85), floors: 0 });
+  }
+  /* Loja da Brisanet: galpão branco com a platibanda laranja e a vitrine de vidro de frente para o estacionamento. */
+  function drawLoja(b, c, h, sel) {
+    const p = b.p, k = h / b.h, m = centroid(p);
+    drawExtruded(p, h, c, { wall: sel ? c.accentWall : c.lojaWall, roof: sel ? c.accent : c.bigRoof, edge: sel ? c.accent : c.roofEdge, floors: 0, band: sel ? null : c.lojaBand, bandH: 3.2 * k });
+    const F = [p[0], p[1]];
+    if (sel || k < 0.85 || !faceSeen(F[0], F[1], m) || cam.z < 0.8) return;
+    const u = (x) => (x - p[0][0]) / (p[1][0] - p[0][0]);
+    facePanel(F[0], F[1], u(-125.5), u(-110.5), 0, 3.6 * k, 0.05); ctx.fillStyle = c.lojaGlass; ctx.fill();
+    if (cam.z > 1.3) faceText(lerp2(F[0], F[1], u(-118)), lerp2(F[0], F[1], u(-90)), h - 3, h - 0.3, 'brisanet', '#ffffff', 0.06);
+  }
+  /* Face vertical vista de frente? Maior profundidade = mais perto de quem olha. */
+  const faceSeen = (a, e, inner) => cam.hv > 0.02 && depth(...lerp2(a, e, 0.5)) > depth(...inner);
+  /* Painel na fachada, entre u0 e u1 ao longo de a→e, um pouco para fora dela. */
+  const facePanel = (a, e, u0, u1, h0, h1, out) => { const L = Math.hypot(e[0] - a[0], e[1] - a[1]); const n = [(e[1] - a[1]) / L * out, -(e[0] - a[0]) / L * out]; const s = lerp2(a, e, u0), t = lerp2(a, e, u1); wallQuad([s[0] + n[0], s[1] + n[1]], [t[0] + n[0], t[1] + n[1]], h0, h1); };
+  /* Texto pintado na fachada, sempre da esquerda para a direita de quem olha. */
+  function faceText(a, e, h0, h1, text, color, out) {
+    const L = Math.hypot(e[0] - a[0], e[1] - a[1]); const n = [(e[1] - a[1]) / L * out, -(e[0] - a[0]) / L * out];
+    let A = [a[0] + n[0], a[1] + n[1]], B = [e[0] + n[0], e[1] + n[1]];
+    if (P(B[0], B[1], h1)[0] < P(A[0], A[1], h1)[0]) [A, B] = [B, A];
+    const tl = P(A[0], A[1], h1), tr = P(B[0], B[1], h1), bl = P(A[0], A[1], h0);
+    ctx.save(); ctx.transform((tr[0] - tl[0]) / 100, (tr[1] - tl[1]) / 100, (bl[0] - tl[0]) / 20, (bl[1] - tl[1]) / 20, tl[0], tl[1]);
+    ctx.fillStyle = color; ctx.font = '700 15px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(text, 50, 10.5, 96); ctx.restore();
+  }
+  /* Prédio de apartamentos em frente ao campus, como na foto da rua: térreo com duas portas de enrolar,
+     três andares com varandas de faixa laranja na metade sul da frente e painel azul de propaganda na quina. */
+  function drawApto(b, c, h, sel) {
+    const p = b.p, k = h / b.h, m = centroid(p);
+    drawExtruded(p, h, c, { wall: sel ? c.accentWall : c.aptoWall, roof: sel ? c.accent : c.aptoSlab, edge: sel ? c.accent : c.roofEdge, floors: 4, window: c.window });
+    if (k < 0.85) return;
+    /* Telhado de telha sobre a parte marcada no levantamento; o resto é laje com caixas d'água. */
+    if (!sel) {
+      drawExtruded(b.tileRoof, h + 0.9, c, { base: h, wall: c.tileWall, roof: c.tile, edge: c.tile, floors: 0, roofTex: 'telha' });
+      [[16.2, 99], [16.2, 102.5]].forEach(([x, y]) => drawExtruded([[x, y], [x + 1.6, y], [x + 1.6, y + 1.6], [x, y + 1.6]], h + 1.4, c, { base: h, wall: c.tank, roof: c.tankTop, edge: c.tankTop, floors: 0 }));
+    }
+    if (!sel) drawAptoSide(b, c, h);
+    const F = [p[0], p[1]]; // frente, para a rodovia
+    if (!faceSeen(F[0], F[1], m) || cam.z < 0.9 || sel) return;
+    const lv = [0, 4.2, 7.3, 10.4, 13.4].map((v) => v * k); const u = (x) => (x - p[0][0]) / (p[1][0] - p[0][0]);
+    /* Varandas: vão escuro e guarda-corpo laranja por andar, da quina da rua de terra até a faixa branca do lado sul. */
+    for (let f = 1; f <= 3; f++) {
+      facePanel(F[0], F[1], u(14.6), u(28.2), lv[f] + 1.1 * k, lv[f + 1] - 0.25 * k, 0.05); ctx.fillStyle = c.aptoGap; ctx.fill();
+      facePanel(F[0], F[1], u(14.2), u(28.6), lv[f], lv[f] + 1.1 * k, 0.35); ctx.fillStyle = c.aptoBand; ctx.fill();
+    }
+    facePanel(F[0], F[1], u(14.2), u(28.6), lv[4] - 1.5 * k, lv[4], 0.35); ctx.fillStyle = c.aptoBand; ctx.fill();
+    /* Térreo: duas portas de enrolar e, na quina, o portão de grade da entrada dos apartamentos. */
+    [[25.1, 33.5], [16.7, 24.1]].forEach(([x0, x1]) => { facePanel(F[0], F[1], u(x0), u(x1), 0, 3.3 * k, 0.05); ctx.fillStyle = c.aptoShop; ctx.fill(); });
+    facePanel(F[0], F[1], u(14.6), u(16.4), 0, 2.4 * k, 0.05); ctx.fillStyle = c.aptoDoor; ctx.fill();
+  }
+  /* Painel azul de propaganda na lateral da rua de terra, junto da frente. */
+  function drawAptoSide(b, c, h) {
+    const p = b.p, k = h / b.h; const S = [p[3], p[0]];
+    if (k < 0.85 || cam.z < 0.9 || !faceSeen(S[0], S[1], centroid(p))) return;
+    const u = (y) => (y - S[0][1]) / (S[1][1] - S[0][1]);
+    facePanel(S[0], S[1], u(101.5), u(96.2), 4.6 * k, 12.6 * k, 0.2); ctx.fillStyle = c.aptoSign; ctx.fill();
+  }
+  /* Elétrica: bar térreo de telha metálica, frente aberta para a rua lateral, balcão verde e arco de treliça com o letreiro. */
+  function drawBar(b, c, h, sel) {
+    const p = b.p, k = h / b.h, m = centroid(p);
+    const R = [p[3], p[0]]; // frente, para a rua de terra (lado -x)
+    const open = faceSeen(R[0], R[1], m) && cam.z >= 0.9 && !sel && k > 0.85;
+    drawExtruded(p, h, c, { wall: sel ? c.accentWall : c.barWall, roof: sel ? c.accent : c.metal, edge: sel ? c.accent : c.metalEdge, floors: 0 });
+    if (!sel && k > 0.85 && cam.z > 1.4) {
+      /* Ondas da telha metálica. */
+      ctx.strokeStyle = c.metalEdge; ctx.lineWidth = Math.max(0.5, 0.08 * cam.z); ctx.beginPath();
+      for (let y = p[0][1] + 1; y < p[2][1]; y += 1.1) { const s = P(p[0][0], y, h), t = P(p[1][0], y, h); ctx.moveTo(s[0], s[1]); ctx.lineTo(t[0], t[1]); }
+      ctx.stroke();
+    }
+    if (!open) return;
+    const u = (y) => (y - R[0][1]) / (R[1][1] - R[0][1]);
+    facePanel(R[0], R[1], u(139.4), u(123.4), 0.3 * k, 3.3 * k, 0.04); ctx.fillStyle = c.barOpen; ctx.fill();
+    facePanel(R[0], R[1], u(134), u(127), 0, 1.15 * k, 0.6); ctx.fillStyle = c.barCounter; ctx.fill();
+    /* Arco de treliça branco com o letreiro. */
+    const ux = u; const mast = (y) => { facePanel(R[0], R[1], ux(y + 0.2), ux(y - 0.2), 0, 3.6 * k, 1.6); ctx.fillStyle = c.truss2; ctx.fill(); };
+    mast(132.4); mast(128.6);
+    facePanel(R[0], R[1], ux(133.4), ux(127.6), 3.6 * k, 4.6 * k, 1.6); ctx.fillStyle = c.truss2; ctx.fill();
+    if (cam.z > 2.4) {
+      const a = lerp2(R[0], R[1], ux(133.4)), e = lerp2(R[0], R[1], ux(127.6));
+      faceText(a, e, 3.6 * k, 4.6 * k, 'ELÉTRICA', c.barInk, 1.65);
+    }
+  }
   function drawBuildingBody(b, c) {
     const p = b.p; const g = growOf(...centroid(p)); const h = Math.max(0.2, b.h * g);
     const sel = selected === b.id;
@@ -855,14 +1038,14 @@
     if (b.kind === 'gym') { drawGym(b, c, g, sel); return; }
     if (b.kind === 'hex') { drawHex(b, c, g, sel); return; }
     if (b.kind === 'greenhouse') { drawGreenhouse(b, c, g, sel); return; }
+    if (b.kind === 'apto') { drawApto(b, c, h, sel); return; }
+    if (b.kind === 'gate') { drawGate(b, c, h, sel); return; }
+    if (b.kind === 'loja') { drawLoja(b, c, h, sel); return; }
+    if (b.kind === 'bar') { drawBar(b, c, h, sel); return; }
     if (b.neighbor) { drawExtruded(p, h, c, { wall: sel ? c.accentWall : c.neighborWall, roof: sel ? c.accent : c.neighbor, edge: c.roofEdge, floors: 0 }); return; }
     if (b.tile) {
       drawExtruded(p, h, c, { wall: c.tileWall, roof: c.tile, edge: sel ? c.accent : c.tile, floors: b.floors, window: c.window, roofTex: 'telha' });
       if (b.solarHalf && g > 0.85) drawPanels([quadAt(p, 0.14, 0.52), quadAt(p, 0.86, 0.52), quadAt(p, 0.86, 0.9), quadAt(p, 0.14, 0.9)], h + 0.02, c);
-      return;
-    }
-    if (b.id === 'portaria') {
-      drawExtruded(p, h, c, { wall: sel ? c.accentWall : isEv() ? c.wall : [205, 70, 60], roof: sel ? c.accent : c.gate, edge: c.roofEdge, floors: 0, window: c.window });
       return;
     }
     const opts = { wall: sel ? c.accentWall : c.wall, roof: sel ? c.accent : c.roof, edge: sel ? c.accent : mix(c.band || [120, 130, 160], 1), floors: b.floors, window: sel ? 'rgba(255,255,255,.28)' : c.window, tex: !sel, roofTex: sel ? null : 'roof', band: sel ? null : c.band };
@@ -960,7 +1143,7 @@
   /* ---------- carros: duas caixas cada, sem malha nem imagem ---------- */
   const CAR_COLORS = [[232, 236, 244], [196, 58, 50], [60, 92, 170], [96, 106, 124], [226, 184, 70]];
   const movers = [];
-  [[79, 1, 8.5], [89, -1, 7.5]].forEach(([y, dir, v], lane) => {
+  [[ROAD_MID - 2.6, 1, 8.5], [ROAD_MID + 2.6, -1, 7.5]].forEach(([y, dir, v], lane) => {
     [0, 118, 236, 344].forEach((o, i) => movers.push({ x: -240 + o + lane * 47, y, dir, v: v + i * 0.6, axis: 'x', color: CAR_COLORS[(i + lane * 2) % CAR_COLORS.length] }));
   });
   function drawCar(t, c) {
@@ -975,11 +1158,21 @@
   }
   const roadInFront = () => cosT > 0.25;
   function roadVisible() {
-    for (let x = -260; x <= 200; x += 40) { const a = P(x, 84); if (a[0] > -40 && a[0] < W + 40 && a[1] > -40 && a[1] < H + 40) return true; }
+    for (let x = -260; x <= 200; x += 40) { const a = P(x, ROAD_MID); if (a[0] > -40 && a[0] < W + 40 && a[1] > -40 && a[1] < H + 40) return true; }
     return false;
   }
   function moveCars(dt) {
     movers.forEach((t) => { t.x += t.v * t.dir * dt; if (t.x > 210) t.x = -260; else if (t.x < -260) t.x = 210; });
+  }
+  const ACROSS = BUILDINGS.filter((b) => b.kind === 'apto' || b.kind === 'bar' || b.kind === 'loja');
+  /* Envoltória convexa (cadeia monótona), para a silhueta de um prisma na tela. */
+  function hull(pts) {
+    const p = pts.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+    const cr = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+    const lo = [], up = [];
+    p.forEach((q) => { while (lo.length > 1 && cr(lo[lo.length - 2], lo[lo.length - 1], q) <= 0) lo.pop(); lo.push(q); });
+    for (let i = p.length - 1; i >= 0; i--) { const q = p[i]; while (up.length > 1 && cr(up[up.length - 2], up[up.length - 1], q) <= 0) up.pop(); up.push(q); }
+    return lo.slice(0, -1).concat(up.slice(0, -1));
   }
   /* A cena fica pronta numa camada; a cada passo só os carros são redesenhados sobre ela. */
   const fadeCanvas = document.createElement('canvas');
@@ -992,7 +1185,15 @@
     if (Q.cars && sv.mix < 0.01 && roadInFront()) {
       out.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx = out;
+      /* Com a rodovia na frente, os carros vão numa camada por cima da cena; só os vizinhos do outro lado ficam à frente deles. */
+      out.save(); out.beginPath(); out.rect(-1e4, -1e4, 2e4, 2e4);
+      ACROSS.forEach((b) => {
+        const s = []; b.p.forEach((q) => { s.push(P(q[0], q[1], 0), P(q[0], q[1], b.h + 1.5)); });
+        hull(s).forEach((v, i) => (i ? out.lineTo(v[0], v[1]) : out.moveTo(v[0], v[1]))); out.closePath();
+      });
+      out.clip('evenodd');
       movers.slice().sort((u, v) => u.y - v.y).forEach((t) => drawCar(t, c));
+      out.restore();
       ctx = scene;
     }
     if (floorRoute && sv.mix > 0.5) {
@@ -1561,8 +1762,12 @@
     if (cam.z > 0.7 && Q.bushes) bushes.forEach((t) => { if (onScreen(t.x, t.y, 12)) items.push({ d: depth(t.x, t.y), f: () => drawBush(t, c) }); });
     const muro = pts(22); const ms = worldSign(muro);
     if (Q.lean) { poly(muro); ctx.strokeStyle = mix(c.muro, 0.8); ctx.lineWidth = Math.max(1, 0.5 * cam.z); ctx.stroke(); }
-    else muro.forEach((a, i) => {
-      const b = muro[(i + 1) % muro.length];
+    else muro.forEach((a0, i) => {
+      const b0 = muro[(i + 1) % muro.length];
+      /* Na frente, o muro abre nas duas entradas. */
+      const front = Math.abs(a0[1] - 48.335) < 0.01 && Math.abs(b0[1] - 48.335) < 0.01;
+      const pieces = front ? gapsOut(a0, b0, [[1.5, 8.5], [11.8, 18.3]]) : [[a0, b0]];
+      pieces.forEach(([a, b]) => {
       /* corta em trechos para a ordem de pintura funcionar em muros longos */
       const n = Math.max(1, Math.round(Math.hypot(b[0] - a[0], b[1] - a[1]) / 14));
       for (let k = 0; k < n; k++) {
@@ -1571,7 +1776,17 @@
         if (!onScreen((u[0] + v[0]) / 2, my, 40 + 7 * cam.z)) continue;
         items.push({ d: depth((u[0] + v[0]) / 2, my), f: () => drawWallSeg({ a: u, b: v, sign: ms, front: my > 40 }, c) });
       }
+      });
     });
+    /* Postes da rodovia, cones da entrada e coberturas do estacionamento da Brisanet. */
+    if (!Q.lean) {
+      POLES.forEach((x, i) => { if (onScreen(x, POLE_Y, 60)) items.push({ d: depth(x, POLE_Y), f: () => drawPole(x, POLES[i + 1], c) }); });
+      if (cam.z > 1.1) CONES.forEach((q) => { if (onScreen(q[0], q[1], 10)) items.push({ d: depth(q[0], q[1]), f: () => drawCone(q, c) }); });
+      if (Q.ground > 0) {
+        SHADES.forEach((q) => { if (onScreen(q[0], q[1], 20)) items.push({ d: depth(q[0], q[1]), f: () => drawShade(q, c) }); });
+        PARKED.forEach((t) => { if (onScreen(t.x, t.y, 10)) items.push({ d: depth(t.x, t.y), f: () => drawCar({ ...t, color: CAR_COLORS[t.k] }, c) }); });
+      }
+    }
     if (Q.cars && !roadInFront() && sv.mix < 0.01) movers.forEach((t) => items.push({ d: depth(t.x, t.y), f: () => drawCar(t, c) }));
     items.sort((p, q) => p.d - q.d);
     items.forEach((o) => o.f());
@@ -2006,7 +2221,7 @@
     routeHits() {
       const out = [];
       Object.entries(ROUTES).forEach(([id, R]) => {
-        const walls = BUILDINGS.filter((b) => b.id !== id && b.id !== 'portaria' && b.kind !== 'hex');
+        const walls = BUILDINGS.filter((b) => b.id !== id && b.kind !== 'gate' && b.kind !== 'hex');
         for (let i = 0; i < R.length - 1; i++) for (let t = 0; t <= 1; t += 0.05) {
           const q = lerp2(R[i], R[i + 1], t);
           const hit = walls.find((b) => inPoly(q[0], q[1], b.p));
