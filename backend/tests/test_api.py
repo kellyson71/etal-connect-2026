@@ -110,3 +110,41 @@ def test_homologacao(app_cliente, monkeypatch):
 def test_atividade_sem_sala_sem_andar(app_cliente):
     sem = [x for x in app_cliente.get('/api/programacao').json()['sessions'] if x['id'] == 'encerramento']
     assert sem and 'floor' not in sem[0]
+
+
+def test_login_suap_com_senha(app_cliente, monkeypatch):
+    import httpx
+
+    class Resp:
+        def __init__(self, status, dados):
+            self.status_code, self._d = status, dados
+
+        def json(self):
+            return self._d
+
+        def raise_for_status(self):
+            if self.status_code >= 400:
+                raise httpx.HTTPStatusError('erro', request=None, response=None)
+
+    class Falso:
+        def __init__(self, **_):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_):
+            return False
+
+        def post(self, url, json):
+            return Resp(200, {'access': 'a', 'refresh': 'r'}) if json['password'] == 'certa' else Resp(401, {})
+
+        def get(self, url, headers):
+            assert url.endswith('/api/rh/eu/') and headers['Authorization'] == 'Bearer a'
+            return Resp(200, {'identificacao': '20241014', 'nome_usual': 'Ana Souza', 'email': 'ana@escolar.ifrn.edu.br', 'foto': '/media/f.jpg'})
+
+    monkeypatch.setattr(httpx, 'Client', Falso)
+    assert app_cliente.post('/api/auth/suap/senha', json={'matricula': '20241014', 'senha': 'errada'}).status_code == 401
+    assert app_cliente.post('/api/auth/suap/senha', json={'matricula': '20241014', 'senha': 'certa'}).status_code == 200
+    eu = app_cliente.get('/api/eu').json()['person']
+    assert eu['name'] == 'Ana Souza' and eu['photo'] == 'https://suap.ifrn.edu.br/media/f.jpg'
