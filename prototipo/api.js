@@ -2,6 +2,8 @@
 window.ETAL_API = (() => {
   const cfg = window.ETAL_CONFIG || {};
   if (cfg.api == null) return null;
+  /* Com servidor é o app de verdade: sem moldura de celular nem enfeites de demonstração (ver app.css, html.prod). */
+  document.documentElement.classList.add('prod');
   const base = String(cfg.api).replace(/\/$/, '');
   const url = (p) => base + p;
   async function req(path, opts = {}) {
