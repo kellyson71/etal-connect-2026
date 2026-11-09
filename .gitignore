@@ -68,3 +68,6 @@ deploy/.env
 # Vercel
 /publico/
 .vercel
+
+# PDF da apresentação: gerado com npm run docs:pdf (grande demais para versionar)
+/docs/ETAL-Connect-documentacao.pdf

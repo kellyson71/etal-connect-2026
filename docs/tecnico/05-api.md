@@ -27,6 +27,7 @@ A lista exata de métodos e caminhos está na tabela gerada do OpenAPI, nas refe
 | Publicar aviso | POST /api/org/avisos | Aviso criado, HTTP 201 |
 | Trocar sala | PATCH /api/org/atividades/{atividade_id}/sala | Atividade atualizada; aviso por padrão |
 | Numerar ambientes | PUT /api/org/salas | Mapa completo de andar:zona para número |
+| Entrar com matrícula e senha do SUAP | POST /api/auth/suap/senha com {matricula, senha} | {ok: true} e cookie de sessão; 401 "Matrícula ou senha incorreta."; 503 se o SUAP não responder; 502 se não vier matrícula; 429 acima de 8 por minuto |
 
 As respostas seguem o formato do app, com campos como title, time e room. A validação dos corpos usa Pydantic. Os esquemas de resposta só aparecem onde declarados pela implementação; o Swagger não deve ser interpretado como um modelo de resposta mais detalhado do que o código fornece.
 
@@ -34,7 +35,7 @@ As respostas seguem o formato do app, com campos como title, time e room. A vali
 
 Cookie etal_sessao assinado, HttpOnly, SameSite=Lax, com duração de 30 dias. Secure depende da configuração do ambiente. A lista ETAL_ORGANIZACAO define os papéis ao identificar pessoas.
 
-OAuth2 usa state e redirecionamento ao SUAP: a senha é digitada lá. A rota separada POST /api/auth/suap/senha recebe matrícula e senha, solicita token ao SUAP e lê o perfil; senha e tokens não são persistidos. O servidor local SuaPy é outro caminho, em prototipo/server.py. Não confundir essas três implementações.
+OAuth2 usa state e redirecionamento ao SUAP: a senha é digitada lá. Se /api/eu/ do SUAP responder 404, o retorno OAuth2 tenta /api/rh/eu/. A rota separada POST /api/auth/suap/senha (limite de 8 por minuto) recebe matrícula e senha, pede o token JWT em {ETAL_SUAP_API_URL}/api/token/pair, lê /api/rh/eu/ com Bearer, cria ou atualiza a pessoa e abre a sessão; senha e tokens não são persistidos. Os dois caminhos usam a função _pessoa_suap, e foto relativa do SUAP vira URL completa. O servidor local SuaPy é outro caminho, em prototipo/server.py. Não confundir essas três implementações.
 
 Visitantes recebem link válido por 30 minutos e de uso único; o banco guarda SHA-256 do token. Envio real depende de SMTP. O modo de teste pode devolver um link na resposta quando SMTP não está configurado.
 

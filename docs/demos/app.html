@@ -1,0 +1,60 @@
+<!-- Gerado a partir de prototipo/index.html; não editar. API desabilitada; usar em iframe isolado. -->
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<script src="isolar.js"></script><base href="../../prototipo/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>App real · demonstração isolada</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/pwa/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ETAL">
+<meta name="description" content="Programação, crachá e mapa do Encontro de Tecnologia do Alto Oeste Potiguar.">
+<meta name="theme-color" content="#22386f">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geologica:wght@400;500;600;700&family=Onest:wght@400;500;600;700&family=Anton&family=Source+Sans+3:wght@400&display=swap">
+<link rel="stylesheet" href="app.css">
+<script>window.ETAL_CONFIG={api:null};try{Object.defineProperty(navigator,'serviceWorker',{value:{register:()=>Promise.reject(new Error('Demonstração isolada')),getRegistration:async()=>null,addEventListener(){},controller:null}});}catch(_){}
+window.addEventListener('load',()=>parent.postMessage({type:'etal-demo',ready:true},'*'));</script>
+</head>
+<body>
+<main class="stage">
+  <div class="device" id="device">
+    <span class="hw hw-action"></span><span class="hw hw-vol1"></span><span class="hw hw-vol2"></span><span class="hw hw-power"></span>
+    <div class="screen">
+      <div class="statusbar"><b id="clock">14:02</b><span class="island" aria-hidden="true"></span>
+        <span class="sb-icons" aria-hidden="true">
+          <svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+          <svg viewBox="0 0 16 12"><path d="M8 11.5 5.6 9a3.4 3.4 0 0 1 4.8 0Z"/><path d="M3.4 6.8a6.5 6.5 0 0 1 9.2 0l-1.4 1.4a4.5 4.5 0 0 0-6.4 0Z"/><path d="M1.1 4.5a9.8 9.8 0 0 1 13.8 0l-1.4 1.4a7.8 7.8 0 0 0-11 0Z"/></svg>
+          <svg viewBox="0 0 27 12"><rect x=".5" y=".5" width="23" height="11" rx="3.2" fill="none" stroke="currentColor" opacity=".45"/><rect x="2.5" y="2.5" width="16" height="7" rx="1.6"/><path d="M25 4v4a2 2 0 0 0 0-4Z" opacity=".5"/></svg>
+        </span>
+      </div>
+      <div class="viewport" id="viewport"></div>
+      <nav class="tabbar" id="tabbar" aria-label="Navegação principal"></nav>
+      <div class="overlay" id="overlay"></div>
+      <div class="notif" id="notif" role="status"></div>
+      <div class="netbar" id="netbar" role="status" aria-live="polite"></div>
+      <div class="upd" id="upd" role="status"></div>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      <span class="home-ind" aria-hidden="true"></span>
+    </div>
+  </div>
+  <label class="stage-sky" for="skyr">Horário do céu<input id="skyr" type="range" min="5" max="22" step="0.0834" value="14.03"><output id="skyo">14:02</output></label>
+  <p class="stage-note">ETAL Connect · protótipo · login pelo SUAP, programação demonstrativa</p>
+</main>
+<script src="api.js"></script>
+<script src="plan-data.js"></script>
+<script src="campus-data.js"></script>
+<script src="campus-fundo.js"></script>
+<script src="campus-limpo.js"></script>
+<script src="campus-entorno.js"></script>
+<script src="sprites.js"></script>
+<script src="campus3d.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
