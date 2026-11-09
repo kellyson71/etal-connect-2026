@@ -9,7 +9,8 @@ class Config(BaseSettings):
 
     banco: str = 'sqlite:///./etal.db'
     segredo: str = 'troque-este-segredo'
-    url_publica: str = 'http://127.0.0.1:8770'
+    # Vazio: usa o endereço pelo qual o pedido chegou (mesma origem, como na Vercel e atrás do Caddy).
+    url_publica: str = ''
     origens: str = 'http://127.0.0.1:8770,http://localhost:8770'
     cookie_seguro: bool = False
     login_dev: bool = False
