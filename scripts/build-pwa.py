@@ -10,9 +10,9 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1] / 'prototipo'
-PAGES = ['./', 'index.html', 'manifest.webmanifest', 'app.js', 'app.css', 'data.js', 'plan-data.js', 'campus-data.js',
+PAGES = ['./', 'index.html', 'manifest.webmanifest', 'config.js', 'api.js', 'app.js', 'app.css', 'data.js', 'plan-data.js', 'campus-data.js',
          'campus-fundo.js', 'campus-limpo.js', 'campus-entorno.js', 'sprites.js', 'campus3d.js']
-ASSETS = sorted(str(p.relative_to(ROOT)) for p in (ROOT / 'assets').rglob('*') if p.suffix in ('.svg', '.png', '.jpg', '.webp'))
+ASSETS = sorted(str(p.relative_to(ROOT)) for p in (ROOT / 'assets').rglob('*') if p.suffix in ('.svg', '.png', '.jpg', '.webp') and 'ref2012' not in p.parts)  # plantas de 2012: só o painel
 files = PAGES[1:] + ASSETS
 digest = hashlib.sha256()
 for f in files:

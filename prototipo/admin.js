@@ -268,7 +268,13 @@
   /* ---------- ações ---------- */
   const toast = (m) => { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), 2400); };
   const stamp = () => D.now.time;
-  function sendNotice(title, text, to) {
+  const API = window.ETAL_API; // null: painel de demonstração, tudo neste navegador
+  function sendNotice(title, text, to, activity) {
+    if (API) {
+      API.post('/api/org/avisos', { titulo: title, texto: text || 'Aviso da organização do ETAL.', atividade: activity || null })
+        .then(() => toast('Aviso enviado para todos')).catch((x) => toast(x.message));
+      return;
+    }
     ORG.notices.unshift({ id: `n${Date.now()}`, time: stamp(), title, text: text || 'Aviso da organização do ETAL.', to: to || '' });
     save(); render(); toast('Aviso enviado');
   }
@@ -295,7 +301,7 @@
     if (a === 'compose') { location.hash = '#avisos'; setTimeout(() => $('[name=title]')?.focus(), 60); }
     if (a === 'floor') { state.floor = +el.dataset.v; state.room = null; render(); }
     if (a === 'ref') { state.ref = el.dataset.v; render(); }
-    if (a === 'roomreset') { delete ORG.rooms[el.dataset.k]; save(); applyRooms(); render(); toast('Número restaurado'); }
+    if (a === 'roomreset') { if (API) { API.put('/api/org/salas', { [el.dataset.k]: '' }).catch((x) => toast(x.message)); return; } delete ORG.rooms[el.dataset.k]; save(); applyRooms(); render(); toast('Número restaurado'); }
     if (a === 'room') { state.room = el.dataset.zone; render(); }
     if (a === 'day') { state.day = +el.dataset.v; render(); }
     if (a === 'ptype' || a === 'pstat') { state[a] = el.dataset.v; state.limit = 40; render(); }
@@ -310,12 +316,19 @@
     const f = e.target;
     if (f.dataset.form === 'notice') {
       e.preventDefault(); const d = new FormData(f); const to = D.sessions.find((x) => x.id === d.get('to'));
-      sendNotice(d.get('title').trim(), d.get('text').trim(), to ? `inscritos em ${to.short}` : '');
+      sendNotice(d.get('title').trim(), d.get('text').trim(), to ? `inscritos em ${to.short}` : '', to ? to.id : null);
     }
     if (f.dataset.form === 'move') {
       e.preventDefault(); const x = D.sessions.find((s) => s.id === f.dataset.id); const d = new FormData(f);
       const [fl, zone] = String(d.get('room')).split('|'); const r = roomsAll().find((q) => q.zone === zone && q.floor === +fl);
-      const from = where(x); ORG.moves[x.id] = { floor: r.floor, zone: r.zone, room: r.name }; Object.assign(x, ORG.moves[x.id]);
+      const from = where(x);
+      if (API) {
+        $('#dlg').close();
+        API.patch(`/api/org/atividades/${encodeURIComponent(x.id)}/sala`, { andar: r.floor, zona: r.zone, sala: r.name, avisar: !!d.get('warn') })
+          .then(() => toast(d.get('warn') ? 'Sala trocada e inscritos avisados' : 'Sala trocada')).catch((x2) => toast(x2.message));
+        return;
+      }
+      ORG.moves[x.id] = { floor: r.floor, zone: r.zone, room: r.name }; Object.assign(x, ORG.moves[x.id]);
       $('#dlg').close();
       if (d.get('warn')) sendNotice('Mudança de sala', `${x.short}: agora em ${r.name}, ${floorLabel(r.floor)}. Antes era ${from}.`, `inscritos em ${x.short}`);
       else { save(); render(); toast('Sala trocada'); }
@@ -329,6 +342,7 @@
     const el = e.target; if (!el.matches('[data-room-num]')) return;
     const k = el.dataset.roomNum; const v = el.value.trim().slice(0, 12);
     const z = P.floors[+k.split(':')[0]].zones.find((q) => q.id === k.split(':')[1]);
+    if (API) { API.put('/api/org/salas', { [k]: v && v !== z.num0 ? v : '' }).then(() => toast(v && v !== z.num0 ? `Agora é ${v}` : 'Número restaurado')).catch((x) => toast(x.message)); return; }
     if (!v || v === z.num0) delete ORG.rooms[k]; else ORG.rooms[k] = v;
     save(); applyRooms(); render(); toast(v && v !== z.num0 ? `Agora é ${roomName(z)}` : 'Número restaurado');
   });
@@ -336,5 +350,24 @@
 
   function render() { nav(); view.innerHTML = Views[current()](); }
   window.addEventListener('hashchange', () => { render(); view.focus({ preventScroll: true }); window.scrollTo(0, 0); });
-  render();
+  /* Com o servidor ligado: só a organização entra; programação, numeração e avisos vêm da API e se atualizam ao vivo. */
+  async function apiStart() {
+    let me = null;
+    try { me = await API.get('/api/eu'); } catch (_) { /* não entrou */ }
+    if (!me || !me.person.org) {
+      $('#nav').innerHTML = ''; $('#title').textContent = 'Painel da organização';
+      view.innerHTML = `<section class="card"><h2>Só para a organização do ETAL</h2><p class="sub">${me ? `Você entrou como ${esc(me.person.name)}, que não está na lista da organização.` : 'Entre pelo app com a sua conta do SUAP e volte para esta página.'}</p><a class="btn primary" href="./">Abrir o app</a></section>`;
+      return;
+    }
+    const sync = async () => {
+      const prog = await API.get('/api/programacao');
+      D.sessions.length = 0; prog.sessions.forEach((x) => D.sessions.push(x));
+      ORG.rooms = prog.rooms || {}; applyRooms();
+      ORG.notices = (await API.get('/api/avisos')).map((n) => ({ id: `a${n.id}`, time: n.time, title: n.title, text: n.text, to: n.activity ? `inscritos em ${(D.sessions.find((x) => x.id === n.activity) || {}).short || ''}` : '' }));
+      render();
+    };
+    await sync().catch(() => toast('Sem conexão com o servidor.'));
+    API.live({ aviso: () => sync(), sala: () => sync(), numeros: () => sync(), lotacao: () => { if (current() === 'planta') sync(); } });
+  }
+  if (API) apiStart(); else render();
 })();
