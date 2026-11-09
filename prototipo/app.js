@@ -59,6 +59,10 @@
     mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
     contact: '<circle cx="9" cy="8" r="3.500"/><path d="M3 20a6 6 0 0 1 12 0M18 8v6M15 11h6"/>',
     alarm: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.300 21a1.900 1.900 0 0 0 3.400 0"/>',
+    drop: '<path d="M12 3c4 5 6.500 8.200 6.500 11.500a6.500 6.500 0 0 1-13 0C5.500 11.200 8 8 12 3Z"/>',
+    wc: '<circle cx="7.500" cy="5" r="2"/><path d="M5 22v-7H4l1.500-7h4L11 15h-1v7"/><circle cx="16.500" cy="5" r="2"/><path d="M15 22V9h3v13"/>',
+    sofa: '<path d="M5 11V8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3"/><path d="M3 13a2 2 0 0 1 4 0v2h10v-2a2 2 0 0 1 4 0v5H3Z"/><path d="M6 18v2M18 18v2"/>',
+    sliders: '<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',
     rotate: '<path d="M4 12a8 8 0 0 1 13.700-5.700L20 8.600M20 4v4.600h-4.600"/><path d="M20 12a8 8 0 0 1-13.700 5.700L4 15.400M4 20v-4.600h4.600"/>',
     expand: '<path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/>',
     building: '<path d="M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16M15 10h4a1 1 0 0 1 1 1v10M2 21h20M8 8h3M8 12h3M8 16h3"/>',
@@ -123,10 +127,10 @@
     entardecer: { name: 'Entardecer', desc: 'Céu do fim de tarde', accent: '#55368f', hue: 265 },
   };
   const ACCENTS = ['#22386f', '#1f6fb2', '#0f766e', '#2f7d32', '#8a5300', '#b4372f', '#b0307a', '#55368f'];
-  const UI_DEFAULT = { theme: 'etal', accent: null, mode: 'claro', badge: 'solido', corners: 'suaves', font: 'padrao', text: 'normal', motion: 'completas', sky: true, view: '3d',
+  const UI_DEFAULT = { theme: 'etal', accent: null, mode: 'claro', badge: 'solido', corners: 'suaves', font: 'padrao', text: 'normal', motion: 'completas', sky: true, mapHour: true, layers: { labels: true, shadows: true, trees: true, cars: true }, view: '3d',
     home: { atalhos: true, live: true, colmeia: true, agenda: true, palestrantes: true, campeonatos: true, avisos: true } };
   const HOME_PARTS = [['atalhos', 'Atalhos'], ['live', 'Campus ao vivo'], ['colmeia', 'Sua colmeia'], ['agenda', 'Sua agenda'], ['palestrantes', 'Palestrantes'], ['campeonatos', 'Campeonatos'], ['avisos', 'Avisos']];
-  const uiLoad = () => { try { const v = JSON.parse(localStorage.getItem('etal-ui')); return v ? { ...UI_DEFAULT, ...v, home: { ...UI_DEFAULT.home, ...(v.home || {}) } } : null; } catch (_) { return null; } };
+  const uiLoad = () => { try { const v = JSON.parse(localStorage.getItem('etal-ui')); return v ? { ...UI_DEFAULT, ...v, home: { ...UI_DEFAULT.home, ...(v.home || {}) }, layers: { ...UI_DEFAULT.layers, ...(v.layers || {}) } } : null; } catch (_) { return null; } };
   let UI = uiLoad() || JSON.parse(JSON.stringify(UI_DEFAULT));
   const uiSave = () => { try { localStorage.setItem('etal-ui', JSON.stringify(UI)); } catch (_) { /* opcional */ } };
   /* Cores: tudo é derivado do destaque, garantindo contraste. */
@@ -204,6 +208,19 @@
     reminders: new Set(remSaved()), votes: new Set(), ratings: {}, asked: {}, contacts: [],
   });
   let S = fresh();
+  /* Mapa: na primeira visita, uma entrada de longe que termina no evento; nas próximas, uma aproximação curta
+     até a vista, o modo (Evento ou Campus) e o 3D/2D em que a pessoa estava. Guardado em etal-mapa. */
+  const MAP_KEY = 'etal-mapa';
+  const mapSaved = (() => { try { return JSON.parse(localStorage.getItem(MAP_KEY)) || null; } catch (_) { return null; } })();
+  let mapIntro = mapSaved && mapSaved.seen ? 'short' : 'full';
+  if (mapIntro === 'full') S.mapView = 'campus';
+  else if (['evento', 'campus'].includes(mapSaved.mode)) S.mapView = mapSaved.mode;
+  function saveMap() {
+    const C = window.Campus3D; if (!C || S.mapView === 'bloco' || S.journeying || C.inStack?.()) return;
+    try { localStorage.setItem(MAP_KEY, JSON.stringify({ seen: true, mode: S.mapView, flat: C.isFlat(), cam: C.getView() })); } catch (_) { /* opcional */ }
+  }
+  setInterval(() => { if (S.tab === 'map' && !mapIntro) saveMap(); }, 2500);
+  window.addEventListener('pagehide', () => { if (S.tab === 'map' && !mapIntro) saveMap(); });
 
   /* ---------------- QR fictício ---------------- */
   function qr(seed = 11, n = 25) {
@@ -242,12 +259,12 @@
   }
   function focusBox(lvl, id, width = 420, ratio = 0.78) {
     const z = zoneOf(lvl, id);
-    if (!z) return { x: 0, y: 0, w: 900, h: 430 };
+    if (!z) { const [, , w, h] = (P.viewBox || '0 0 900 430').split(' ').map(Number); return { x: 0, y: 0, w, h }; }
     const b = bbox(z);
     const w = Math.max(width, b.w + 80), h = w * ratio;
     return { x: b.x + b.w / 2 - w / 2, y: b.y + b.h / 2 - h / 2, w, h };
   }
-  const zoneName = (z) => z.roomNumber ? `${z.kind === 'laboratory' ? 'Lab' : z.kind === 'staff' ? 'Sala dos professores' : 'Sala'} ${z.kind === 'staff' ? '' : z.roomNumber}`.trim() : z.label;
+  const zoneName = (z) => z.name ? z.name : z.roomNumber ? `${z.kind === 'laboratory' ? 'Lab' : z.kind === 'staff' ? 'Sala dos professores' : 'Sala'} ${z.kind === 'staff' ? '' : z.roomNumber}`.trim() : z.label;
 
   /* ---------------- telas ---------------- */
   const Screens = {};
@@ -731,18 +748,22 @@
         <ul class="ev-grid">${EVENT_PLACES.map((k) => `<li><button data-act="place" data-id="${k}"><i class="ev-dot" style="background:${EVENT_DOT[k]}"></i><span><b>${D.places[k].name}</b><small>${D.places[k].kind}</small></span></button></li>`).join('')}</ul>
       </div>`;
     }
-    if (!id) {
-      return `<div class="sheet-card campus-sheet"><i class="grab"></i>
-        <div class="sh-top"><div><strong>IFRN Pau dos Ferros</strong><small>Toque num prédio para ver como chegar</small></div></div>
-        <div class="place-chips">${D.placeOrder.map((k) => `<button data-act="place" data-id="${k}">${D.places[k].name}</button>`).join('')}</div>
-      </div>`;
-    }
+    if (!id) return '';
     const p = D.places[id];
-    const sq = Math.round(window.Campus3D.areaOf(id)).toLocaleString('pt-BR');
+    /* Sol nas fachadas (cartas solares da dissertação de 2012) e, com a luz do horário ligada, o sol de agora. */
+    const sunLine = () => {
+      const FAC = { norte: 'do auditório', oeste: 'da frente', leste: 'dos fundos', sul: 'da rampa' };
+      const s = window.Campus3D.sunInfo?.(skyHour);
+      if (!s || !s.up) return '';
+      const lados = Object.keys(s.facades).filter((k) => s.facades[k]).map((k) => FAC[k]);
+      return lados.length ? `<p class="sh-src">☀ Sol agora no lado ${lados.join(' e no lado ')}.</p>` : '';
+    };
     const on = window.Campus3D.routeOn(id);
     return `<div class="sheet-card campus-sheet"><i class="grab"></i>
-      <div class="sh-top"><div><strong>${p.name}</strong><small>${p.noArea ? p.kind : `${p.kind} · cerca de ${sq} m²`}</small></div><button class="iconbtn sm" data-act="placeclose" aria-label="Fechar">${ic('x')}</button></div>
+      <div class="sh-top"><div><strong>${p.name}</strong></div><button class="iconbtn sm" data-act="placeclose" aria-label="Fechar">${ic('x')}</button></div>
       <p class="sh-text">${p.text}</p>
+      ${p.sun ? sunLine() : ''}
+      ${p.projeto ? `<p class="sh-src">${p.projeto}</p>` : ''}
       <div class="sh-btns">
         ${!window.Campus3D.hasRoute(id) ? '' : `<button class="btn ${p.floors || p.link || p.plan ? 'soft' : 'primary'}" data-act="placeroute" data-id="${id}">${ic('route')}${on ? 'Rota no mapa' : 'Como chegar'}</button>`}
         ${p.floors ? `<button class="btn primary" data-act="enterbloco">${ic('building')}Ver os andares</button>` : ''}
@@ -847,8 +868,11 @@
   const css = (c) => `rgb(${c.join(',')})`;
   let skyHour = 14 + 2 / 60;
   const skyClock = () => { const m = Math.round(skyHour * 60); return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`; };
+  /* O mapa 3D acompanha o horário do céu (noite, pôr do sol), a menos que a pessoa desligue em Personalizar. */
+  const syncMapHour = () => window.Campus3D?.setHour?.(UI.mapHour ? skyHour : null);
   function applySky() {
     const h = skyHour;
+    syncMapHour();
     let a = SKY_KEYS[0], b = SKY_KEYS[SKY_KEYS.length - 1];
     for (let i = 0; i < SKY_KEYS.length - 1; i++) if (h >= SKY_KEYS[i][0] && h <= SKY_KEYS[i + 1][0]) { a = SKY_KEYS[i]; b = SKY_KEYS[i + 1]; break; }
     const t = b === a ? 0 : Math.max(0, Math.min(1, (h - a[0]) / (b[0] - a[0])));
@@ -900,7 +924,7 @@
       ${clouds}
       <path class="sl-far" d="M-110 50V37C-92 31-76 34-60 36S-28 28-6 32 34 38 70 30V50Z"/>
       ${box(7, 4.8, 'sl-mid')}${box(4, 4.8, 'sl-mid')}${box(1, 4.8, 'sl-mid')}
-      ${box(0, 13.8, 'sl-mid')}<g class="sl-win">${wins(0, 13.8, 3)}</g>
+      ${box(0, 11.7, 'sl-mid')}<g class="sl-win">${wins(0, 11.7, 3)}</g>
       ${box(3, 9.3, 'sl-near')}<g class="sl-win">${wins(3, 9.3, 2)}</g>
       <rect class="sl-near" x="${px0.toFixed(1)}" y="${G - 7.2 * Y}" width="${(px1 - px0).toFixed(1)}" height="1.300"/>${[0, 0.33, 0.66, 1].map((t) => `<rect class="sl-near" x="${(px0 + (px1 - px0) * t - 0.3).toFixed(1)}" y="${G - 7.2 * Y}" width=".6" height="${7.2 * Y + 3}"/>`).join('')}
       ${box(6, 4.8, 'sl-near')}
@@ -953,8 +977,15 @@
     }, 3800);
   }
 
-  const FLOOR_DESC = ['Entrada, recepção e auditório', 'Salas de aula e bebedouro', 'Laboratórios e sala dos professores'];
-  const camCtrl = (cls = '') => `${dimToggle().replace('class="dim"', `class="dim ${cls}"`)}${fpsHud()}<div class="map-ctrl cam-ctrl ${cls}"><button class="iconbtn" data-act="cam" data-v="in" aria-label="Aproximar">${ic('plus')}</button><button class="iconbtn" data-act="cam" data-v="out" aria-label="Afastar">${ic('minus')}</button>${window.Campus3D.isFlat() ? '' : `<button class="iconbtn" data-act="cam" data-v="rot" aria-label="Girar a vista">${ic('rotate')}</button>`}<button class="iconbtn" data-act="cam" data-v="fit" aria-label="Enquadrar">${ic('expand')}</button></div>`;
+  const FLOOR_DESC = ['Auditório, administração e recepção', 'Salas de aula e laboratórios', 'Laboratórios, professores e coordenação de ADS'];
+  const camCtrl = (cls = '') => `${dimToggle().replace('class="dim"', `class="dim ${cls}"`)}${fpsHud()}<div class="map-ctrl cam-ctrl ${cls}"><button class="iconbtn" data-act="cam" data-v="in" aria-label="Aproximar">${ic('plus')}</button><button class="iconbtn" data-act="cam" data-v="out" aria-label="Afastar">${ic('minus')}</button>${window.Campus3D.isFlat() ? '' : `<button class="iconbtn" data-act="cam" data-v="rot" aria-label="Girar a vista">${ic('rotate')}</button>`}<button class="iconbtn" data-act="cam" data-v="fit" aria-label="Enquadrar">${ic('expand')}</button><button class="iconbtn" data-act="mapcfg" aria-label="Ajustes do mapa" aria-expanded="false">${ic('sliders')}</button></div>${mapCfg(cls)}`;
+  /* Ajustes do mapa, para brincar: hora do dia, nomes, sombras, árvores e carros. */
+  const LAYER_NAMES = [['labels', 'Nomes dos lugares'], ['shadows', 'Sombras'], ['trees', 'Árvores'], ['cars', 'Carros']];
+  const mapCfg = (cls = '') => `<div class="map-cfg ${cls}" role="dialog" aria-label="Ajustes do mapa">
+      <label class="mc-hour"><span>Hora</span><input type="range" id="mapsky" min="5" max="22.5" step="0.25" value="${skyHour}"><b id="mapskyo">${skyClock()}</b></label>
+      <button data-act="uimaphour" aria-pressed="${UI.mapHour}" class="${UI.mapHour ? 'on' : ''}"><span>Luz do horário</span><i class="switch"></i></button>
+      ${LAYER_NAMES.map(([k, t]) => `<button data-act="maplayer" data-k="${k}" aria-pressed="${UI.layers[k]}" class="${UI.layers[k] ? 'on' : ''}"><span>${t}</span><i class="switch"></i></button>`).join('')}
+    </div>`;
 
   function routeSteps(lvl, z) {
     const r = window.Campus3D.routeInfo(lvl, z.id, S.mapVia);
@@ -962,7 +993,9 @@
     const label = floorOf(lvl).label;
     const enter = `${lead}${lead ? 'entre' : 'Entre'} pela ${r.entrance}`;
     if (!r.via) return `${enter} e siga pelo corredor até a porta.`;
-    return `${enter}, suba pela ${r.via} ${r.viaWhere} até o ${label} e siga pelo corredor até a porta.`;
+    /* Rampa em duas pistas de cerca de 22 m: uma volta sobe um andar (3,45 m), perto de 8% de inclinação. */
+    const ramp = r.via === 'rampa' ? ` São ${lvl === 1 ? 'cerca de 45 m de rampa, numa volta' : `cerca de ${lvl * 45} m de rampa, em ${lvl} voltas`}, com inclinação suave, perto de 8%.` : '';
+    return `${enter}, suba pela ${r.via} ${r.viaWhere} até o ${label} e siga pelo corredor até a porta.${ramp}`;
   }
 
   function blocoSheet() {
@@ -976,7 +1009,9 @@
     const acts = D.sessions.filter((x) => x.floor === lvl && x.zone === z.id);
     const walkable = !['stairs', 'ramp', 'courtyard'].includes(z.kind);
     return `<div class="sheet-card campus-sheet"><i class="grab"></i>
-      <div class="sh-top"><div><strong>${zoneName(z)}</strong><small>${z.roomNumber && z.kind !== 'classroom' ? `${z.useLabel} · ` : ''}${floorOf(lvl).label}</small></div><button class="iconbtn sm" data-act="zoneclose" aria-label="Fechar">${ic('x')}</button></div>
+      <div class="sh-top">${z.icon && window.Campus3D?.useIcons?.[z.icon] ? `<span class="sh-ic" aria-hidden="true"><svg viewBox="-12 -12 24 24"><path d="${window.Campus3D.useIcons[z.icon]}"/></svg></span>` : ''}<div><strong>${zoneName(z)}</strong><small>${z.name ? `Sala ${z.roomNumber} · ` : z.roomNumber && z.kind !== 'classroom' ? `${z.useLabel} · ` : ''}${floorOf(lvl).label}</small></div><button class="iconbtn sm" data-act="zoneclose" aria-label="Fechar">${ic('x')}</button></div>
+      ${z.info ? `<p class="sh-text">${esc(z.info)}</p>` : ''}
+
       ${acts.length && !S.mapRoute ? `<ul class="sh-acts">${acts.slice(0, 2).map((x) => `<li data-go="activity" data-id="${x.id}"><span><b>${x.short}</b><small>${dayOf(x.day).week} ${x.day} · ${x.time}</small></span>${ic('chev')}</li>`).join('')}</ul>` : ''}
       ${walkable && lvl > 0 && S.mapRoute ? (() => { const v = S.mapVia || window.Campus3D.routeInfo(lvl, z.id, null).via; return `<div class="via" style="--k:${v === 'rampa' ? 1 : 0}"><i></i><button class="${v === 'escada' ? 'on' : ''}" data-act="via" data-v="escada">${ic('stairs')}Escada</button><button class="${v === 'rampa' ? 'on' : ''}" data-act="via" data-v="rampa">${ic('nav')}Rampa</button></div>`; })() : ''}
       ${S.mapRoute && walkable ? `<p class="sh-text steps">${routeSteps(lvl, z)}</p>` : walkable ? `<button class="btn primary" data-act="roomroute">${ic('route')}Como chegar</button>` : ''}
@@ -1016,7 +1051,7 @@
         <ul class="ab-list st" ${st(5)}>${n.projects.map(([a, b]) => `<li><b>${a}</b><small>${b}</small></li>`).join('')}</ul>
         <h2 class="h st" ${st(6)}>Contato</h2>
         <ul class="ab-list st" ${st(7)}>
-          <li data-act="nadicmap" class="tap"><b>Prédio do NADIC</b><small>Ver no mapa do campus</small>${ic('chev')}</li>
+          <li data-act="openmap" data-floor="1" data-zone="sala-nadic" class="tap"><b>Sala dos bolsistas</b><small>Bloco principal, 1º andar · ver no mapa</small>${ic('chev')}</li>
           <li><b>Coordenação</b><small>${n.lead}</small></li>
           <li><b>E-mail</b><small class="sel">${n.email}</small></li>
           <li><b>Endereço</b><small>${n.address}</small></li>
@@ -1127,6 +1162,7 @@
         <ul class="cu-opts">
           ${C.canUse3D() ? `<li><span>Vista inicial</span>${uiSeg('view', [['3d', '3D'], ['2d', '2D']])}</li>` : ''}
           <li><span>Qualidade</span><div class="mini-seg wide" role="radiogroup">${[['auto', 'Auto'], ['alta', 'Completo'], ['media', 'Médio'], ['leve', 'Leve'], ['simples', '2D']].map(([v, t]) => `<button class="${q.setting === v ? 'on' : ''}" role="radio" aria-checked="${q.setting === v}" data-act="quality" data-v="${v}">${t}</button>`).join('')}</div><small class="cu-note">Em uso: ${LABEL[q.tier]}${q.setting === 'auto' ? ` · ${q.why}` : ''}. </small></li>
+          <li class="cu-row2"><button data-act="uimaphour" aria-pressed="${UI.mapHour}" class="${UI.mapHour ? 'on' : ''}"><span>Luz do mapa segue o horário</span><i class="switch"></i></button></li>
           <li class="cu-row2"><button data-act="uifps" aria-pressed="${!!UI.fps}" class="${UI.fps ? 'on' : ''}"><span>Mostrar FPS no mapa</span><i class="switch"></i></button></li>
           <li class="cu-row2"><button data-go="perf"><span>Testar desempenho neste aparelho</span>${ic('chev', 'i card-chev')}</button></li>
         </ul>
@@ -1795,7 +1831,7 @@
     C.attach(cv, {
       onQuality: (t) => { rerender(); if (t === 'simples') toast('Mapa em 2D para ficar mais fluido'); },
       top: $('.map-top', page).offsetHeight + 6,
-      bottom: $('.sheet-card', page).offsetHeight - 10,
+      bottom: ($('.sheet-card', page)?.offsetHeight || 10) - 10,
       skipGrow: S.pending,
       onPick: (id) => {
         if (id === S.campusPlace) return;
@@ -1808,6 +1844,16 @@
       onFloor: (l) => { navMark('floor'); S.mapFloor = l; S.mapZone = null; S.mapRoute = false; rerender(); C.goFloor(l); },
       onRoom: (l, id) => { if (id) navMark('room'); S.mapZone = id; S.mapRoute = false; rerender(); C.room(l, id); },
     });
+    if (S.mapView !== 'bloco' && mapIntro) {
+      const kind = mapIntro; mapIntro = null;
+      C.setMode(S.mapView === 'campus' ? 'campus' : 'evento');
+      if (kind === 'short' && mapSaved.cam) C.setView(mapSaved.cam);
+      C.intro(kind).then(() => {
+        if (kind === 'full' && S.tab === 'map' && S.mapView === 'campus' && !S.campusPlace) { S.mapView = 'evento'; rerender(); }
+        saveMap();
+      });
+      return;
+    }
     if (S.mapView !== 'bloco') {
       const changed = C.setMode(S.mapView === 'campus' ? 'campus' : 'evento');
       const sync = S.mapSync; S.mapSync = false;
@@ -1830,22 +1876,59 @@
 
   /* ---------------- busca ---------------- */
   const fold = (t) => String(t).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-  function finderItems(q) {
-    const items = [];
-    D.sessions.filter((x) => x.floor !== undefined).forEach((x) => items.push({ t: x.short, d: whereOf(x), k: `${x.title} ${x.speaker || ''} ${x.room}`, a: `data-k="room" data-floor="${x.floor}" data-zone="${x.zone}"`, i: 'cal', me: D.enrolled.includes(x.id) }));
-    P.floors.forEach((f) => f.zones.filter((z) => !['courtyard', 'water'].includes(z.kind)).forEach((z) => items.push({ t: zoneName(z), d: f.label, k: `${zoneName(z)} ${z.useLabel} ${z.roomNumber}`, a: `data-k="room" data-floor="${f.level}" data-zone="${z.id}"`, i: 'pin' })));
-    D.placeOrder.forEach((id) => items.push({ t: D.places[id].name, d: D.places[id].kind, k: D.places[id].name, a: `data-k="place" data-id="${id}"`, i: 'building', place: true }));
+  /* Comodidades: a busca mostra as mais perto da entrada do campus primeiro. */
+  const AMENITIES = [
+    { k: 'banheiro', t: 'Banheiro', icon: 'wc', tone: 'b', syn: ['banheiro', 'banheiros', 'wc', 'sanitario', 'toalete'] },
+    { k: 'bebedouro', t: 'Bebedouro', icon: 'drop', tone: 'w', syn: ['bebedouro', 'bebedouros', 'agua', 'beber'] },
+    { k: 'descanso', t: 'Descanso', icon: 'sofa', tone: 'g', syn: ['descanso', 'descansar', 'sofa', 'puff', 'sentar', 'relaxar'] },
+    { k: 'recepcao', t: 'Recepção', icon: 'check', tone: 'y', syn: ['recepcao', 'credenciamento', 'credencial'] },
+    { k: 'escada', t: 'Escada', icon: 'stairs', tone: 'n', syn: ['escada', 'escadas', 'subir'] },
+    { k: 'rampa', t: 'Rampa', icon: 'nav', tone: 'n', syn: ['rampa', 'acessivel', 'acessibilidade', 'cadeira'] },
+  ];
+  const minTo = (lvl, zone) => { try { return Math.max(1, Math.round(window.Campus3D.routeInfo(lvl, zone).cost / 75)); } catch (_) { return null; } };
+  function amenityItems(a) {
+    const out = [];
+    const room = (f, z, t, d) => out.push({ t, d, i: a.icon, tone: a.tone, min: minTo(f.level, z.id), a: `data-k="room" data-floor="${f.level}" data-zone="${z.id}"` });
+    P.floors.forEach((f) => f.zones.forEach((z) => {
+      if (a.k === 'banheiro' && z.kind === 'restroom') room(f, z, z.name || 'Banheiros', `Bloco principal · ${f.label}`);
+      if (a.k === 'descanso' && z.kind === 'lounge') room(f, z, z.name, `Bloco principal · ${f.label}`);
+      if (a.k === 'recepcao' && z.kind === 'reception') room(f, z, 'Recepção', `Entrada principal do bloco · ${f.label}`);
+      if (a.k === 'escada' && z.kind === 'stairs' && f.level === 0) room(f, z, 'Escada', 'Bloco principal · ala oeste');
+      if (a.k === 'rampa' && z.kind === 'ramp' && f.level === 0) room(f, z, 'Rampa', 'Bloco principal · lado da entrada');
+    }));
+    if (a.k === 'bebedouro') (window.Campus3D.pois?.() || []).filter((q) => q.kind === 'agua').forEach((q) => out.push({ t: 'Bebedouro', d: q.where, i: a.icon, tone: a.tone, min: q.min, a: `data-k="poi" data-id="${q.id}"` }));
+    return out.sort((x, y) => (x.min ?? 99) - (y.min ?? 99));
+  }
+  function finderGroups(q) {
     const n = fold(q.trim());
-    const list = n ? items.filter((x) => fold(x.k).includes(n)) : items.filter((x) => x.me || x.place);
-    return list.slice(0, 7);
+    const groups = [];
+    const hits = n ? AMENITIES.filter((a) => a.syn.some((w) => w.startsWith(n) || n.startsWith(w))) : [];
+    if (hits.length) groups.push(['Mais perto da entrada', hits.flatMap(amenityItems).slice(0, 6)]);
+    const acts = D.sessions.filter((x) => x.floor !== undefined && (!n || fold(`${x.title} ${x.speaker || ''} ${x.room} ${x.type}`).includes(n)))
+      .filter((x) => n || D.enrolled.includes(x.id))
+      .map((x) => ({ t: x.short, d: `${dayOf(x.day).week} ${x.day} · ${x.time} · ${x.room}`, i: 'cal', tone: 'n', live: isNow(x), a: `data-k="room" data-floor="${x.floor}" data-zone="${x.zone}"` }));
+    if (acts.length) groups.push([n ? 'Atividades' : 'Suas atividades', acts.slice(0, 5)]);
+    if (n) {
+      const rooms = [];
+      P.floors.forEach((f) => f.zones.filter((z) => !['courtyard', 'water', 'wall', 'ramp', 'stairs'].includes(z.kind)).forEach((z) => {
+        if (fold(`${zoneName(z)} ${z.useLabel} ${z.roomNumber} ${z.name || ''}`).includes(n)) rooms.push({ t: zoneName(z), d: `${z.name && z.roomNumber ? `Sala ${z.roomNumber} · ` : ''}${f.label}`, i: 'pin', tone: 'n', a: `data-k="room" data-floor="${f.level}" data-zone="${z.id}"` });
+      }));
+      if (rooms.length) groups.push(['Salas', rooms.slice(0, 6)]);
+    }
+    const places = D.placeOrder.filter((id) => !n || fold(D.places[id].name).includes(n)).map((id) => ({ t: D.places[id].name, d: D.places[id].kind, i: 'building', tone: 'n', a: `data-k="place" data-id="${id}"` }));
+    if (places.length) groups.push([n ? 'Lugares' : 'Lugares do campus', places.slice(0, n ? 5 : 8)]);
+    return groups;
   }
   const finderList = (q) => {
-    const list = finderItems(q);
-    return list.length ? list.map((x) => `<li data-act="findergo" ${x.a}><span>${ic(x.i)}</span><div><b>${x.t}</b><small>${x.d}</small></div></li>`).join('') : '<li class="none">Nada encontrado. Tente o número da sala ou o nome da atividade.</li>';
+    const g = finderGroups(q);
+    const chips = !q.trim() ? `<li class="fd-chips">${AMENITIES.slice(0, 4).map((a) => `<button data-act="finderq" data-q="${a.k}"><span class="fd-ic ${a.tone}">${ic(a.icon)}</span>${a.t}</button>`).join('')}</li>` : '';
+    if (!g.length) return `${chips}<li class="none">Nada encontrado. Tente o número da sala, uma atividade ou “banheiro”.</li>`;
+    return chips + g.map(([h, list]) => `<li class="fd-h">${h}</li>${list.map((x) => `<li data-act="findergo" ${x.a}><span class="fd-ic ${x.tone}">${ic(x.i)}</span><div><b>${x.t}</b><small>${x.d}</small></div>${x.live ? '<em class="live">Agora</em>' : x.min ? `<em>${x.min} min</em>` : ''}</li>`).join('')}`).join('');
   };
   Overlays.finder = () => `<div class="sheet finder" role="dialog" aria-label="Buscar"><i class="grab"></i>
-      <label class="finder-in" for="fq">${ic('search')}<input id="fq" placeholder="Sala, atividade ou prédio" autocomplete="off"></label>
+      <label class="finder-in" for="fq">${ic('search')}<input id="fq" placeholder="Sala, atividade, banheiro…" autocomplete="off"></label>
       <ul class="finder-res" id="fres">${finderList('')}</ul></div>`;
+  document.addEventListener('input', (e) => { if (e.target.id === 'mapsky') { cancelAnimationFrame(skyAnim); skyHour = +e.target.value; applySky(); const o = $('#mapskyo'); if (o) o.textContent = skyClock(); } });
   document.addEventListener('input', (e) => { if (e.target.id === 'accentpick') { UI.accent = e.target.value; uiSave(); applyUI(); } });
   document.addEventListener('change', (e) => { if (e.target.id === 'accentpick') rerender(); });
   document.addEventListener('input', (e) => { if (e.target.id === 'fq') $('#fres').innerHTML = finderList(e.target.value); });
@@ -1940,6 +2023,9 @@
       case 'theme': UI.theme = el.dataset.v; UI.accent = null; uiSave(); applyUI(); rerender(); break;
       case 'accent': UI.accent = el.dataset.v; uiSave(); applyUI(); rerender(); break;
       case 'uifps': UI.fps = !UI.fps; uiSave(); rerender(); break;
+      case 'uimaphour': UI.mapHour = !UI.mapHour; uiSave(); syncMapHour(); if (el.closest('.map-cfg')) { el.classList.toggle('on', UI.mapHour); el.setAttribute('aria-pressed', UI.mapHour); } else rerender(); break;
+      case 'mapcfg': { const p = el.closest('.map-screen, .page, body').querySelector('.map-cfg'); const open = !p.classList.contains('open'); p.classList.toggle('open', open); el.setAttribute('aria-expanded', open); break; }
+      case 'maplayer': { const k = el.dataset.k; UI.layers[k] = !UI.layers[k]; uiSave(); window.Campus3D.setLayers(UI.layers); el.classList.toggle('on', UI.layers[k]); el.setAttribute('aria-pressed', UI.layers[k]); break; }
       case 'perfrun': perfRun(); break;
       case 'perfuse': window.Campus3D.setQuality(el.dataset.v); rerender(); toast(`Em uso: ${TIER_LABEL[el.dataset.v]}`); break;
       case 'hudcycle': {
@@ -2034,9 +2120,11 @@
       case 'roomroute': navMark('route'); S.mapRoute = true; S.journeying = true; rerender(); runJourney(); break;
       case 'via': S.mapVia = el.dataset.v; S.mapRoute = true; S.journeying = true; rerender(); runJourney(); break;
       case 'finder': openOverlay(Overlays.finder(), 'finder'); setTimeout(() => $('#fq')?.focus({ preventScroll: true }), 480); break;
+      case 'finderq': { const i = $('#fq'); if (i) { i.value = el.dataset.q; $('#fres').innerHTML = finderList(i.value); } break; }
       case 'findergo': {
         const d = el.dataset;
         closeOverlay(() => {
+          if (d.k === 'poi') { S.mapView = 'campus'; S.campusPlace = null; window.Campus3D.setMode('campus'); window.Campus3D.select(null); switchTab('map', true); setTimeout(() => window.Campus3D.focusPoi(d.id), reduce ? 0 : 700); return; }
           if (d.k === 'place') { S.mapView = EVENT_PLACES.includes(d.id) ? 'evento' : 'campus'; window.Campus3D.setMode(S.mapView); S.campusPlace = d.id; window.Campus3D.select(d.id); switchTab('map', true); setTimeout(() => window.Campus3D.focus(d.id), reduce ? 0 : 950); return; }
           S.mapView = 'bloco'; S.mapFloor = +d.floor; S.mapZone = d.zone; S.mapRoute = true; S.pending = true; S.journeying = true; switchTab('map', true);
         });
@@ -2162,9 +2250,25 @@
   const ORG_KEY = 'etal-org'; const orgSeen = new Set();
   const orgRead = () => { try { return { notices: [], moves: {}, creds: {}, ...JSON.parse(localStorage.getItem(ORG_KEY)) }; } catch (_) { return { notices: [], moves: {}, creds: {} }; } };
   function orgWrite(fn) { const o = orgRead(); fn(o); try { localStorage.setItem(ORG_KEY, JSON.stringify(o)); } catch (_) { /* sem armazenamento */ } }
+  /* Números de sala definidos no painel (etal-org.rooms, chave "andar:zona"). Troca na planta, nas atividades e no 3D. */
+  function applyRoomNumbers(rooms) {
+    P.floors.forEach((f) => f.zones.forEach((z) => {
+      if (!z.roomNumber) return;
+      if (z.num0 === undefined) z.num0 = z.roomNumber;
+      const v = (rooms[`${f.level}:${z.id}`] || '').trim(); const n = v || z.num0;
+      z.orgNumber = !!v && v !== z.num0;
+      if (n === z.roomNumber) return;
+      z.roomNumber = n; if (!z.name) z.label = zoneName(z);
+      const re = new RegExp(`(data-num="${f.level}:${z.id}"[^>]*>)[^<]*<`, 'g');
+      f.svg = f.svg.replace(re, `$1${esc(n)}<`); f.svgDark = f.svgDark.replace(re, `$1${esc(n)}<`);
+    }));
+    D.sessions.forEach((x) => { if (x.floor === undefined) return; const z = zoneOf(x.floor, x.zone); if (z && z.roomNumber) x.room = zoneName(z); });
+    window.Campus3D?.syncRooms?.();
+  }
   function orgSync(first) {
     const o = orgRead();
     Object.entries(o.moves).forEach(([id, m]) => { const x = byId(id); if (x) Object.assign(x, m); });
+    applyRoomNumbers(o.rooms || {});
     const fresh = o.notices.filter((n) => !orgSeen.has(n.id));
     fresh.slice().reverse().forEach((n) => { orgSeen.add(n.id); D.notices.unshift({ time: n.time, title: n.title, text: n.text, fresh: true, org: true }); });
     if (!first && fresh.length) { notify(fresh[0].title, fresh[0].text); buzz([20, 40, 20]); if (S.auth && vp.querySelector('.page')) rerender(); }
@@ -2187,8 +2291,10 @@
   if (qs.get('tema')) UI.mode = qs.get('tema') === 'dark' ? 'escuro' : 'claro';
   if (qs.get('paleta')) UI.theme = qs.get('paleta');
   applyUI();
+  syncMapHour();
+  window.Campus3D.setLayers?.(UI.layers);
   matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => { if (UI.mode === 'auto') { applyUI(); rerender(); } });
-  if (UI.view === '2d') window.Campus3D.setFlat(true);
+  if (mapSaved && mapSaved.seen ? mapSaved.flat : UI.view === '2d') window.Campus3D.setFlat(true);
   if (q === 'login') splashDone = true;
   if (!q) {
     const saved = store.get(SAVE_KEY);
