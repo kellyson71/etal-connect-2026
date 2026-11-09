@@ -1423,7 +1423,7 @@
   const floorName = (f) => (f ? `${f}º andar` : 'Térreo');
   const SPOTS = {
     recepcao: { name: 'Recepção', sign: 'Credenciamento', where: 'Térreo', icon: 'id', seed: 21 },
-    'react-native': { name: 'Lab 204', sign: 'React Native com Expo', where: '2º andar', icon: 'qr', seed: 34 },
+    'react-native': { name: 'Lab 203', sign: 'React Native com Expo', where: '2º andar', icon: 'qr', seed: 34 },
     'saude-mental': { name: 'Auditório', sign: 'Saúde mental na era da IA', where: 'Térreo', icon: 'mic', seed: 47 },
     colega: { name: 'Colega', sign: 'Crachá de participante', where: 'Trocar contato', icon: 'contact', seed: 58 },
   };
