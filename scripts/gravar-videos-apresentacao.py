@@ -51,6 +51,55 @@ def main(base):
         def evento(pg):
             pg.wait_for_timeout(1800); pg.evaluate('window.Campus3D.eventReveal()'); pg.wait_for_timeout(4200)
         if quer('evento'): gravar(p, 'evento', demo + '&mode=campus&hour=14', evento)
+
+        # Telas do participante: vídeos curtos em pé, como o celular
+        app = base + '/prototipo/index.html'
+        F = dict(tam=(430, 932), corte=1.4)
+        def clicar(pg, sel, ms=900):
+            el = pg.locator(sel).first
+            if el.count(): el.click()
+            pg.wait_for_timeout(ms)
+        def cracha(pg):
+            pg.wait_for_timeout(900)
+            for sel, txt in (('#gname', 'Ana Beatriz Souza'), ('#gmail', 'ana.souza@email.com'), ('#ginst', 'UERN'), ('#gcity', 'Pau dos Ferros')):
+                pg.click(sel); pg.keyboard.type(txt, delay=45); pg.wait_for_timeout(250)
+            pg.check('#gok'); pg.wait_for_timeout(400)
+            clicar(pg, '[data-form=guest] button[type=submit]', 6500)
+        if quer('t-cracha'): gravar(p, 't-cracha', app + '?tela=visitante', cracha, **F)
+        def salvar(pg):
+            pg.wait_for_timeout(1200)
+            clicar(pg, '.page [data-act=save]:not(.on)', 1600)
+            clicar(pg, '.page [data-act=save]:not(.on)', 1600)
+            clicar(pg, '[data-act=filter][data-f=saved]', 2600)
+        if quer('t-salvar'): gravar(p, 't-salvar', app + '?tela=agenda', salvar, **F)
+        def materiais(pg):
+            pg.wait_for_timeout(1500)
+            clicar(pg, '.page [data-act=scan]', 1800)
+            clicar(pg, '[data-act=simulate][data-q="react-native"]', 3200)
+            clicar(pg, '[data-act=scanopen]', 2200)
+            pg.mouse.move(215, 600); pg.mouse.wheel(0, 520); pg.wait_for_timeout(2600)
+        if quer('t-materiais'): gravar(p, 't-materiais', app + '?tela=atividade&demo=1', materiais, **F)
+        def aviso(pg):
+            pg.wait_for_timeout(1300)
+            pg.mouse.move(215, 600); pg.mouse.wheel(0, 380); pg.wait_for_timeout(900)
+            clicar(pg, '.page [data-act=remind]', 1300)
+            clicar(pg, '.page [data-act=remindtest]', 5200)
+        if quer('t-aviso'): gravar(p, 't-aviso', app + '?tela=atividade', aviso, **F)
+        def conquista(pg):
+            pg.wait_for_timeout(4200)
+            pg.evaluate("document.getElementById('combtoast')?.click()"); pg.wait_for_timeout(600)
+            clicar(pg, '[data-act=tab][data-tab=profile]', 400); pg.goto(app + '?tela=colmeia'); pg.wait_for_timeout(3800)
+        if quer('t-conquista'): gravar(p, 't-conquista', app + '?tela=favo', conquista, **F)
+        def contato(pg):
+            pg.wait_for_timeout(1500)
+            clicar(pg, '[data-act=simulate][data-q=colega]', 3200)
+            clicar(pg, '[data-act=scanopen]', 3500)
+        if quer('t-contato'): gravar(p, 't-contato', app + '?tela=qr&demo=1', contato, **F)
+        def sala(pg):
+            pg.wait_for_timeout(2200)
+            clicar(pg, '[data-act=finder]', 900)
+            pg.keyboard.type('lab 210', delay=90); pg.wait_for_timeout(1300); pg.keyboard.press('Enter'); pg.wait_for_timeout(9000)
+        if quer('t-sala'): gravar(p, 't-sala', app + '?tela=mapa', sala, **F)
         if so and not so & {'campus-voo', 'andares', 'rota', 'dia-24h', 'app-tour'}: return
         def voo(pg):
             pg.evaluate('window.Campus3D.zoom(1.45)'); pg.wait_for_timeout(900)
