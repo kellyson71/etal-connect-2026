@@ -104,6 +104,7 @@
   }
   const buzz = (p) => { try { navigator.vibrate?.(p); } catch (_) { /* sem suporte */ } };
   const SAVE_KEY = 'etal-perfil';
+  const API = window.ETAL_API; // null: só dados de exemplo
   const DEMO_PERSON = { ...D.person };
   const store = {
     get(k) { try { return JSON.parse(sessionStorage.getItem(k)); } catch (_) { return null; } },
@@ -283,6 +284,11 @@
   let lgPending = null; let lgPhys = null;
 
   function suapFields() {
+    if (API) return `<form class="login-form" data-form="login" novalidate>
+        <p class="lg-note">Você vai para a página do SUAP, entra lá e volta para cá. A sua senha não passa pelo app.</p>
+        <p class="lg-err" id="lgerr" role="alert" hidden></p>
+        <button class="btn primary big" type="submit"><span>Entrar com o SUAP</span><i class="spin"></i></button>
+      </form>`;
     return `<form class="login-form" data-form="login" novalidate>
         <label class="field" for="mat"><span>Matrícula</span><input id="mat" inputmode="numeric" autocomplete="username" placeholder="Sua matrícula do SUAP" required></label>
         <label class="field" for="pwd"><span>Senha</span><div class="pwd"><input id="pwd" type="password" autocomplete="current-password" placeholder="A mesma senha do SUAP" required><button type="button" class="iconbtn sm" data-act="togglepwd" aria-label="Mostrar senha">${ic('eye')}</button></div></label>
@@ -2122,6 +2128,7 @@
       case 'filter': S.agendaFilter = el.dataset.f; rerender(); vp.querySelector('.page .agenda-list')?.classList.add('swap'); break;
       case 'save': {
         const id = el.dataset.id;
+        if (API && S.auth) API[S.saved.has(id) ? 'del' : 'post'](`/api/eu/agenda/${encodeURIComponent(id)}`).catch((x) => { toast(x.message); if (S.saved.has(id)) S.saved.delete(id); else S.saved.add(id); rerender(); });
         if (S.saved.has(id)) { S.saved.delete(id); toast('Removida dos salvos'); } else {
           S.saved.add(id);
           const x = byId(id);
@@ -2198,7 +2205,7 @@
       case 'lgredo': { lgPhys?.disarm?.(); lgPending = null; Object.keys(D.person).forEach((k) => delete D.person[k]); Object.assign(D.person, DEMO_PERSON); store.del(SAVE_KEY); $('.login')?.classList.remove('filled'); lgSwap(S.lgMode); lgPhys?.kick(0, 0, -1.1, 1200); break; }
       case 'guestresume': { const g = guestSaved(); if (g) { Object.keys(D.person).forEach((k) => delete D.person[k]); applyProfile(g); store.set(SAVE_KEY, g); lgFilled(g); } break; }
       case 'togglepwd': { const i = $('#pwd'); i.type = i.type === 'password' ? 'text' : 'password'; break; }
-      case 'logout': { const n = navUndo.length; navUndo.length = 0; if (n) { navSkip += 1; history.go(-n); } } S = fresh(); store.del(SAVE_KEY); Object.keys(D.person).forEach((k) => delete D.person[k]); Object.assign(D.person, DEMO_PERSON); vp.innerHTML = ''; show(build({ s: 'login' }), 'fade'); break;
+      case 'logout': { if (API) API.post('/api/auth/sair').catch(() => {}); const n = navUndo.length; navUndo.length = 0; if (n) { navSkip += 1; history.go(-n); } } S = fresh(); store.del(SAVE_KEY); Object.keys(D.person).forEach((k) => delete D.person[k]); Object.assign(D.person, DEMO_PERSON); vp.innerHTML = ''; show(build({ s: 'login' }), 'fade'); break;
       default: break;
     }
   });
@@ -2244,11 +2251,21 @@
       e.preventDefault();
       const err = $('#lgerr'); const say = (m, el) => { err.textContent = m; err.hidden = false; el?.focus(); lgShake(); };
       const v = { name: $('#gname').value.trim(), email: $('#gmail').value.trim(), kind: (gf.querySelector('[name=gkind]:checked') || {}).value, inst: $('#ginst').value.trim(), city: $('#gcity').value.trim() };
-      err.hidden = true;
+      err.hidden = true; err.classList.remove('ok');
       if (v.name.split(/\s+/).length < 2) return say('Escreva o nome e o sobrenome, como devem sair no crachá.', $('#gname'));
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email)) return say('Confira o e-mail: é por ele que chega o certificado.', $('#gmail'));
       if (!v.city) return say('Informe a sua cidade.', $('#gcity'));
       if (!$('#gok').checked) return say('Para criar a conta, é preciso concordar com o uso dos dados.', $('#gok'));
+      if (API) {
+        /* Visitante de verdade: o servidor manda um link de entrada para o e-mail. */
+        const btn = $('button[type="submit"]', gf); btn?.classList.add('loading');
+        try {
+          const j = await API.post('/api/auth/visitante', { nome: v.name, email: v.email, instituicao: v.inst || null, cidade: v.city });
+          err.classList.add('ok'); err.hidden = false;
+          err.innerHTML = j.link ? `Link de teste (sem e-mail configurado): <a href="${esc(j.link)}">entrar</a>` : `Pronto! Enviamos um link de entrada para <b>${esc(v.email)}</b>. Abra o e-mail neste aparelho.`;
+        } catch (x) { say(x.message); } finally { btn?.classList.remove('loading'); }
+        return;
+      }
       const prof = guestProfile(v);
       Object.keys(D.person).forEach((k) => delete D.person[k]); applyProfile(prof);
       store.set(SAVE_KEY, prof); prefs.set('etal-visitante', JSON.stringify(prof));
@@ -2258,6 +2275,7 @@
     const f = e.target.closest('[data-form="login"]');
     if (!f) return;
     e.preventDefault();
+    if (API) { $('button[type="submit"]', f).classList.add('loading'); location.href = API.url('/api/auth/suap'); return; }
     const btn = $('button[type="submit"]', f);
     const err = $('#lgerr');
     const say = (m) => { err.textContent = m; err.hidden = false; lgShake(); };
@@ -2329,6 +2347,56 @@
   orgSync(true);
   window.addEventListener('storage', (e) => { if (e.key === ORG_KEY) orgSync(false); });
 
+  /* ---------------- servidor (config.js → api) ----------------
+     Com a API ligada, programação, perfil, agenda, presenças e avisos vêm do servidor; sem ela, tudo segue de exemplo. */
+  const isoHM = (iso) => (iso ? iso.slice(11, 16) : null);
+  function apiPerson(p) {
+    return { ...DEMO_PERSON, name: p.name, first: p.first, initials: p.initials, course: p.course || (p.source === 'visitante' ? 'Visitante' : ''), courseFull: p.course || '',
+      campus: p.campus || p.city || '', id: p.matricula || p.email || String(p.id), photo: p.photo || null, source: p.source === 'visitante' ? 'guest' : 'suap', org: p.org };
+  }
+  function apiState(me) {
+    Object.keys(D.person).forEach((k) => delete D.person[k]); applyProfile(apiPerson(me.person));
+    S.saved = new Set(me.saved); D.enrolled.length = 0; D.enrolled.push(...me.saved);
+    S.present = { ...me.present }; S.credAt = isoHM(me.person.credentialedAt);
+  }
+  async function apiQr(token) {
+    try {
+      const r = await API.post('/api/presenca', { qr: token });
+      if (r.activity) { S.present[r.activity] = r.time; }
+      if (!S.credAt) S.credAt = r.time;
+      const x = r.activity && byId(r.activity);
+      toast(r.alreadyPresent ? 'Presença já estava registrada' : x ? `Presença registrada: ${x.short}` : 'Credenciamento confirmado');
+      rerender();
+    } catch (x) { toast(x.message); }
+  }
+  async function apiStart() {
+    const qs0 = new URLSearchParams(location.search);
+    const qr = qs0.get('qr'); const login = qs0.get('login');
+    if (qr || login) history.replaceState(history.state, '', location.pathname);
+    if (qr) sessionStorage.setItem('etal-qr', qr);
+    try {
+      const prog = await API.get('/api/programacao');
+      const extra = Object.fromEntries(D.sessions.map((x) => [x.id, x]));
+      D.sessions.length = 0; prog.sessions.forEach((x) => D.sessions.push({ ...(extra[x.id] || {}), ...x }));
+      applyRoomNumbers(prog.rooms || {});
+      const av = await API.get('/api/avisos');
+      if (av.length) { D.notices.length = 0; av.forEach((n) => D.notices.push({ time: n.time, title: n.title, text: n.text, org: true })); }
+    } catch (_) { toast('Sem conexão com o servidor: mostrando a programação salva.'); }
+    let me = null;
+    try { me = await API.get('/api/eu'); } catch (_) { /* não entrou */ }
+    API.live({
+      aviso: (n) => { D.notices.unshift({ time: n.time, title: n.title, text: n.text, fresh: true, org: true }); notify(n.title, n.text, n.activity); buzz([20, 40, 20]); if (S.auth && vp.querySelector('.page')) rerender(); },
+      sala: (m) => { const x = byId(m.activity); if (x) { Object.assign(x, { floor: m.floor, zone: m.zone, room: m.room }); if (S.auth) rerender(); } },
+      numeros: (rooms) => { applyRoomNumbers(rooms); if (S.auth) rerender(); },
+    });
+    if (login && login !== 'ok') toast({ erro: 'Não foi possível entrar. Tente de novo.', 'suap-indisponivel': 'O SUAP não respondeu. Tente de novo.', 'link-expirado': 'Esse link expirou. Peça outro.' }[login] || 'Não foi possível entrar.');
+    if (!me) { show(build({ s: 'login' }), 'fade'); return; }
+    apiState(me); splashDone = true; S.auth = true;
+    show(build(top()), 'fade');
+    const pend = sessionStorage.getItem('etal-qr');
+    if (pend) { sessionStorage.removeItem('etal-qr'); setTimeout(() => apiQr(pend), 600); }
+  }
+
   /* ---------------- início ---------------- */
   setInterval(checkReminders, 30000); netState();
   const openParam = new URLSearchParams(location.search).get('abrir');
@@ -2349,6 +2417,7 @@
   matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => { if (UI.mode === 'auto') { applyUI(); rerender(); } });
   if (mapSaved && mapSaved.seen ? mapSaved.flat : UI.view === '2d') window.Campus3D.setFlat(true);
   if (q === 'login') splashDone = true;
+  if (!q && API) { apiStart(); return; }
   if (!q) {
     const saved = store.get(SAVE_KEY);
     if (saved) { applyProfile(saved); splashDone = true; S.auth = true; show(build(top()), 'fade'); return; }
