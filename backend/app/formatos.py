@@ -3,9 +3,11 @@ from .modelos import Atividade, Aviso, Pessoa
 
 
 def atividade(a: Atividade, inscritos: int = 0) -> dict:
-    return {**(a.extra or {}), 'id': a.id, 'type': a.tipo, 'title': a.titulo, 'short': a.curto, 'description': a.descricao,
+    d = {**(a.extra or {}), 'id': a.id, 'type': a.tipo, 'title': a.titulo, 'short': a.curto, 'description': a.descricao,
             'speaker': a.palestrante, 'role': a.papel_palestrante, 'date': a.data.isoformat(), 'day': a.data.day,
             'time': a.inicio, 'end': a.fim, 'floor': a.andar, 'zone': a.zona, 'room': a.sala, 'seats': a.vagas, 'taken': inscritos}
+    # O app trata "sem sala" como campo ausente (credenciamento, abertura no pátio).
+    return {k: v for k, v in d.items() if v is not None or k not in ('floor', 'zone', 'seats')}
 
 
 def aviso(v: Aviso) -> dict:
