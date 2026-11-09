@@ -212,7 +212,11 @@
   const isEv = () => mode === 'evento';
   /* Luz do horário: NIGHT vai de 0 (dia) a 1 (noite); DUSK é o tom quente do nascer e do pôr do sol.
      A paleta da noite é a escura com as janelas acesas; as intermediárias são misturas guardadas em cache. */
-  const NIGHT_PAL = () => ({ ...PAL.dark, window: 'rgba(255,208,130,.8)', aptoGap: 'rgba(255,190,110,.38)', zebra: 'rgba(200,210,230,.55)' });
+  /* À noite o campus fica vazio: janelas apagadas, com poucas acesas (ver LIT); o Anexo, com aula à noite, fica aceso. */
+  const NIGHT_PAL = () => ({ ...PAL.dark, window: 'rgba(90,110,150,.3)', aptoGap: 'rgba(255,190,110,.38)', zebra: 'rgba(200,210,230,.55)' });
+  const WARM = 'rgba(255,208,130,.85)';
+  /* Quantas janelas ficam acesas por prédio à noite (o resto apagado). */
+  const LIT = { principal: 3, laboratorios: 2, diretoria: 1 };
   const parseCol = (v) => {
     if (typeof v !== 'string') return null;
     let m = v.match(/^#([0-9a-f]{6})$/i); if (m) return [0, 2, 4].map((i) => parseInt(m[1].slice(i, i + 2), 16)).concat(1);
@@ -370,8 +374,17 @@
   /* ---------- objetos fixos ---------- */
   const trees = [];
   const addTree = (x, y, r, tone = 0) => trees.push({ x, y, r, tone, kind: Math.abs(Math.round(x * 3 + y * 7)) % 3 });
+  /* Jardim à direita da entrada: contorno, ponto de encontro dos caminhos, pontas dos caminhos, copas e o poste. */
+  const GARDEN = {
+    edge: [[18.4, 13.2], [33.6, 11.6], [51.2, 44.4], [17.7, 42.9]],
+    hub: [29.5, 27.3],
+    spokes: [[22.1, 13.2], [19.3, 26.7], [36.6, 19.0], [20.8, 43.1], [46.1, 44.2]],
+    trees: [[21.1, 19.0], [29.6, 17.0], [33.9, 22.5], [42.5, 37.5], [22.6, 29.7], [27.0, 37.7], [36.5, 31.4], [24.2, 23.2], [39.0, 27.5]],
+    lamp: [25.9, 24.8],
+  };
   [14, 26, 28, 29, 31, 32, 33, 34].forEach((i) => addTree(pts(i)[0][0], pts(i)[0][1], 2.6, i % 3));
   [16, 17, 30].forEach((i) => addTree(pts(i)[0][0], pts(i)[0][1], 4.2, 1));
+  GARDEN.trees.forEach((q, i) => addTree(q[0], q[1], 3 + (i % 3) * 0.5, i % 4));
   function fillTrees(i, n, seed) {
     const p = pts(i); const r = rng(seed);
     const xs = p.map((q) => q[0]); const ys = p.map((q) => q[1]);
@@ -418,7 +431,7 @@
   const sv = { mix: 0, focus: 0, floor: 1, dim: 0, rise: 0 }; // mix 1 = prédio aberto em andares; focus 1 = um andar só
   const baseCanvas = document.createElement('canvas');
   let out = null;
-  let canvas = null, ctx = null, W = 0, H = 0, dpr = 1, insetT = 0, insetB = 0;
+  let canvas = null, ctx = null, W = 0, H = 0, dpr = 1, insetT = 0, insetB = 0, insetAnim = null;
   let selected = null, routeId = null, routeP = 0, onPick = null;
   let raf = 0, tween = null, growStart = null, grown = false, routeStart = 0;
   let cosT = 1, sinT = 0;
@@ -440,15 +453,29 @@
     p.forEach((q, i) => { const a = P(q[0], q[1]); const n = p[(i + 1) % p.length]; const b = P(n[0], n[1]); s += a[0] * b[1] - b[0] * a[1]; });
     return s;
   };
-  /* Revelação do evento: cada parte do evento sobe do chão, com um pequeno salto, uma depois da outra. */
-  let popStart = 0;
-  const POP_ORDER = { patio: 0, principal: 160, auditorio: 160, cantina: 330, obelisco: 480 };
-  const popOf = (id) => {
-    if (!popStart || !(id in POP_ORDER)) return 1;
-    const t = Math.max(0, Math.min(1, (performance.now() - popStart - POP_ORDER[id]) / 820));
-    const c1 = 1.7, c3 = c1 + 1; const e = 1 + c3 * (t - 1) ** 3 + c1 * (t - 1) ** 2; // easeOutBack
-    return 0.12 + 0.88 * e;
-  };
+  /* Revelação do evento na entrada: as partes do evento vão sendo pintadas com a cor delas, numa varredura,
+     uma depois da outra, com o resto do campus ainda nas cores normais. */
+  let paintStart = 0;
+  const PAINT_ORDER = { patio: 0, principal: 260, cantina: 560 };
+  const paintOf = (id) => (paintStart && id in PAINT_ORDER ? Math.max(0, Math.min(1, (performance.now() - paintStart - PAINT_ORDER[id]) / 760)) : 0);
+  function paintOver(b, c, draw) {
+    const p = paintOf(b.id); if (p <= 0) return;
+    const e = 1 - (1 - p) ** 3;
+    const hh = b.id === 'principal' ? Math.max(b.h, AUD_H) : b.h;
+    const sp = []; b.p.forEach((q) => { sp.push(P(q[0], q[1], 0), P(q[0], q[1], hh)); });
+    const xs = sp.map((q) => q[0]), ys = sp.map((q) => q[1]);
+    const x0 = Math.min(...xs) - 2, x1 = Math.max(...xs) + 2, y0 = Math.min(...ys) - 2, y1 = Math.max(...ys) + 2;
+    const xe = x0 + (x1 - x0) * e;
+    const keep = mode; mode = 'evento';
+    ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, xe - x0, y1 - y0); ctx.clip();
+    draw(palBase().mono);
+    ctx.restore(); mode = keep;
+    if (p < 1) {
+      /* Borda da tinta: um brilho fino que anda junto. */
+      const g = ctx.createLinearGradient(xe - 10, 0, xe + 2, 0); g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(1, 'rgba(255,255,255,.55)');
+      ctx.fillStyle = g; ctx.fillRect(xe - 10, y0, 12, y1 - y0);
+    }
+  }
   let introRunning = false;
   const growOf = (x, y) => {
     if (grown || growStart === null) return 1;
@@ -568,7 +595,10 @@
         ctx.fillStyle = g; poly(Array.from({ length: 18 }, (_, i) => [x + Math.cos((i / 18) * 6.283) * r, y + Math.sin((i / 18) * 6.283) * r])); ctx.fill();
       };
       POLES.forEach((x) => pool(x, POLE_Y + 2, 9, 0.34));
-      pool(15, 47, 6, 0.3); pool(15.3, 131, 7, 0.28); pool(-98, 98, 16, 0.22); pool(24, 92, 6, 0.2);
+      pool(15, 47, 8, 0.42); pool(15.3, 131, 7, 0.28); pool(-98, 98, 16, 0.22); pool(24, 92, 6, 0.2);
+      /* Pátio coberto bem iluminado, a portaria acesa e o poste do jardim. */
+      [[-12, -9], [0, -9], [12, -9], [-12, 4], [0, 4], [12, 4]].forEach(([x, y]) => pool(x, y, 10, 0.3));
+      pool(GARDEN.lamp[0], GARDEN.lamp[1], 6, 0.3);
       ctx.globalCompositeOperation = prev;
     }
     /* Calçada de concreto na frente do prédio dos apartamentos. */
@@ -603,9 +633,12 @@
     /* Trilhas de terra no fundo. */
     ctx.strokeStyle = c.trail; ctx.lineWidth = Math.max(1, 1.3 * cam.z); ctx.lineCap = 'round';
     [[[-74, -160], [-100, -198], [-131, -195]], [[-100, -198], [-98, -216], [-125, -245], [-143, -262]], [[-100, -198], [-106, -204]]].forEach((L) => { ctx.beginPath(); L.forEach((q, i) => { const s = P(q[0], q[1]); if (i) ctx.lineTo(s[0], s[1]); else ctx.moveTo(s[0], s[1]); }); ctx.stroke(); });
-    /* Jardim à direita da passarela, com caminhos diagonais. */
-    ctx.strokeStyle = c.pathEdge; ctx.lineWidth = Math.max(1, 1.5 * cam.z); ctx.lineCap = 'round';
-    [[[15, 26], [46, 11]], [[15, 26], [48, 44]], [[32, 11], [32, 44]]].forEach(([u, v]) => { const s = P(u[0], u[1]); const e = P(v[0], v[1]); ctx.beginPath(); ctx.moveTo(s[0], s[1]); ctx.lineTo(e[0], e[1]); ctx.stroke(); });
+    /* Jardim à direita da passarela: canteiro com caminhos de terra que se encontram num ponto, como na imagem
+       do usuário (encaixada no mapa pelas árvores do levantamento). */
+    ctx.strokeStyle = c.trail; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.lineWidth = Math.max(1, 1.3 * cam.z); poly(GARDEN.edge); ctx.stroke();
+    ctx.lineWidth = Math.max(0.8, 1.1 * cam.z);
+    GARDEN.spokes.forEach((q) => { const s = P(GARDEN.hub[0], GARDEN.hub[1]); const e = P(q[0], q[1]); ctx.beginPath(); ctx.moveTo(s[0], s[1]); ctx.lineTo(e[0], e[1]); ctx.stroke(); });
     ctx.restore();
     FLATS.forEach((b) => drawFlat(b, c));
 
@@ -623,9 +656,9 @@
     ctx.beginPath(); pts(20).forEach((q, k) => { const s = P(q[0], q[1]); if (k) ctx.lineTo(s[0], s[1]); else ctx.moveTo(s[0], s[1]); }); ctx.stroke();
     /* Piso dos prédios e do pátio. */
     ctx.fillStyle = c.path; poly(pts(5)); ctx.fill();
-    /* Entrada de veículos: meio-fio amarelo no meio, da rodovia até o estacionamento. */
+    /* Entrada de veículos: meio-fio amarelo no meio, do portão até o fim dos cones. */
     ctx.strokeStyle = c.curbYellow; ctx.lineWidth = Math.max(0.8, 0.3 * cam.z); ctx.lineCap = 'butt';
-    ctx.beginPath(); let ya = P(5, ROAD_Y0 - 0.4); ctx.moveTo(ya[0], ya[1]); ya = P(5, 40); ctx.lineTo(ya[0], ya[1]); ctx.stroke();
+    ctx.beginPath(); let ya = P(5, 49.4); ctx.moveTo(ya[0], ya[1]); ya = P(5, 59.4); ctx.lineTo(ya[0], ya[1]); ctx.stroke();
     if (isEv()) { ctx.fillStyle = c.evGround; poly(pts(5)); ctx.fill(); poly(pts(9)); ctx.fill(); }
   }
 
@@ -769,6 +802,7 @@
     if (b.id === 'principal' && sv.mix >= 0.999) return;
     ctx.globalAlpha = b.id === 'principal' ? 1 - sv.mix : 1;
     drawBuildingBody(b, c);
+    if (paintStart && !isEv()) paintOver(b, c, (ec) => drawBuildingBody(b, ec));
     ctx.globalAlpha = 1;
   }
   /* Obelisco da entrada: placa alta cinza, com a marca em grade no topo. */
@@ -987,6 +1021,18 @@
     ctx.strokeStyle = c.wire; ctx.lineWidth = Math.max(0.5, 0.05 * cam.z);
     [0, -0.5].forEach((dh) => { const a = P(x, POLE_Y, H + dh), e = P(next, POLE_Y, H + dh), mm = P((x + next) / 2, POLE_Y, H + dh - 1.1); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.quadraticCurveTo(2 * mm[0] - (a[0] + e[0]) / 2, 2 * mm[1] - (a[1] + e[1]) / 2, e[0], e[1]); ctx.stroke(); });
   }
+  /* Poste de jardim: haste fina com luminária; à noite acende. */
+  function drawLamp([x, y], c) {
+    const b = P(x, y), t = P(x, y, 4.2);
+    ctx.strokeStyle = c.pole; ctx.lineCap = 'round'; ctx.lineWidth = Math.max(0.8, 0.18 * cam.z);
+    ctx.beginPath(); ctx.moveTo(b[0], b[1]); ctx.lineTo(t[0], t[1]); ctx.stroke();
+    ctx.fillStyle = NIGHT > 0.2 ? '#ffe2a8' : c.poleLamp; ctx.beginPath(); ctx.arc(t[0], t[1], Math.max(1.2, 0.35 * cam.z), 0, 7); ctx.fill();
+    if (NIGHT > 0.05) {
+      const r = Math.max(4, 1.8 * cam.z); const g = ctx.createRadialGradient(t[0], t[1], 0, t[0], t[1], r);
+      g.addColorStop(0, `rgba(255,214,140,${(0.7 * NIGHT).toFixed(3)})`); g.addColorStop(1, 'rgba(255,214,140,0)');
+      const prev = ctx.globalCompositeOperation; ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(t[0], t[1], r, 0, 7); ctx.fill(); ctx.globalCompositeOperation = prev;
+    }
+  }
   /* Cones no meio da entrada de veículos. */
   const CONES = [[5, 58.5], [5, 56], [5, 53.5], [5, 51]];
   function drawCone([x, y], c) {
@@ -1041,7 +1087,27 @@
     facePanel(F[0], F[1], u(-125.5), u(-110.5), 0, 3.6 * k, 0.05); ctx.fillStyle = c.lojaGlass; ctx.fill();
     if (cam.z > 1.3) faceText(lerp2(F[0], F[1], u(-118)), lerp2(F[0], F[1], u(-90)), h - 3, h - 0.3, 'brisanet', '#ffffff', 0.06);
   }
-  /* Prédio em obras: lajes de concreto, pilares e uma grua amarela. */
+  /* Algumas janelas acesas à noite, sempre as mesmas (escolhidas por sorteio fixo), nas faces à vista. */
+  function litWindows(p, h, floors, count, seed) {
+    if (cam.z < 0.9 || cam.hv < 0.3) return;
+    const scr = signedScreen(p) > 0 ? 1 : -1; const per = h / Math.max(1, floors);
+    let hsh = 0; for (const ch of seed) hsh = (hsh * 31 + ch.charCodeAt(0)) >>> 0;
+    const slots = [];
+    p.forEach((a, i) => {
+      const b = p[(i + 1) % p.length]; const A = P(a[0], a[1]), B = P(b[0], b[1]);
+      if ((B[0] - A[0]) * scr >= 0) return;
+      const n = Math.max(1, Math.floor(Math.hypot(b[0] - a[0], b[1] - a[1]) / 3.2));
+      for (let f = 0; f < floors; f++) for (let w = 0; w < n; w++) slots.push({ a, b, f, w, n, k: ((i * 97 + f * 13 + w * 7 + hsh) * 2654435761 >>> 0) % 1000 });
+    });
+    slots.sort((u, v) => u.k - v.k).slice(0, count).forEach(({ a, b, f, w, n }) => {
+      const u = lerp2(a, b, (w + 0.18) / n), v = lerp2(a, b, (w + 0.82) / n);
+      wallQuad(u, v, per * f + per * 0.34, per * f + per * 0.72); ctx.fillStyle = WARM; ctx.fill();
+      const m = P(...lerp2(u, v, 0.5), per * f + per * 0.53); const r = Math.max(3, 1.6 * cam.z);
+      const g = ctx.createRadialGradient(m[0], m[1], 0, m[0], m[1], r); g.addColorStop(0, `rgba(255,214,140,${(0.45 * NIGHT).toFixed(3)})`); g.addColorStop(1, 'rgba(255,214,140,0)');
+      const prev = ctx.globalCompositeOperation; ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(m[0], m[1], r, 0, 7); ctx.fill(); ctx.globalCompositeOperation = prev;
+    });
+  }
+  /* Prédio em obras: lajes de concreto e pilares. */
   function drawObra(b, c, h, sel) {
     const p = b.p, k = h / b.h, m = centroid(p);
     const conc = sel ? c.accentWall : c.obra, slab = sel ? c.accent : c.obraTop;
@@ -1054,14 +1120,6 @@
       cols.forEach((q) => drawExtruded([[q[0] - 0.25, q[1] - 0.25], [q[0] + 0.25, q[1] - 0.25], [q[0] + 0.25, q[1] + 0.25], [q[0] - 0.25, q[1] + 0.25]], lev[i + 1], c, { base: lev[i], wall: conc, roof: slab, edge: c.roofEdge, floors: 0 }));
       drawExtruded(inner, lev[i + 1] + 0.3 * k, c, { base: lev[i + 1], wall: conc, roof: slab, edge: c.roofEdge, floors: 0 });
     }
-    if (k < 0.85 || cam.z < 0.7 || sel) return;
-    /* Grua: torre num canto e lança por cima do prédio. */
-    const base = lerp2(p[0], m, -0.12), top = P(base[0], base[1], h + 9), jibEnd = lerp2(base, m, 2.1), jib = P(jibEnd[0], jibEnd[1], h + 9), cw = lerp2(base, m, -0.5), cwp = P(cw[0], cw[1], h + 9);
-    const b0 = P(base[0], base[1], 0);
-    ctx.strokeStyle = c.crane; ctx.lineCap = 'round'; ctx.lineWidth = Math.max(1, 0.32 * cam.z);
-    ctx.beginPath(); ctx.moveTo(b0[0], b0[1]); ctx.lineTo(top[0], top[1]); ctx.moveTo(cwp[0], cwp[1]); ctx.lineTo(jib[0], jib[1]); ctx.stroke();
-    ctx.lineWidth = Math.max(0.6, 0.1 * cam.z); const hook = P(jibEnd[0], jibEnd[1], h + 3);
-    ctx.beginPath(); ctx.moveTo(jib[0], jib[1]); ctx.lineTo(hook[0], hook[1]); ctx.stroke();
   }
   /* Face vertical vista de frente? Maior profundidade = mais perto de quem olha. */
   const faceSeen = (a, e, inner) => cam.hv > 0.02 && depth(...lerp2(a, e, 0.5)) > depth(...inner);
@@ -1081,7 +1139,7 @@
      três andares com varandas de faixa laranja na metade sul da frente e painel azul de propaganda na quina. */
   function drawApto(b, c, h, sel) {
     const p = b.p, k = h / b.h, m = centroid(p);
-    drawExtruded(p, h, c, { wall: sel ? c.accentWall : c.aptoWall, roof: sel ? c.accent : c.aptoSlab, edge: sel ? c.accent : c.roofEdge, floors: 4, window: c.window });
+    drawExtruded(p, h, c, { wall: sel ? c.accentWall : c.aptoWall, roof: sel ? c.accent : c.aptoSlab, edge: sel ? c.accent : c.roofEdge, floors: 4, window: NIGHT > 0.3 ? WARM : c.window });
     if (k < 0.85) return;
     /* Telhado de telha sobre a parte marcada no levantamento; o resto é laje com caixas d'água. */
     if (!sel) {
@@ -1135,7 +1193,7 @@
     }
   }
   function drawBuildingBody(b, c) {
-    const p = b.p; const g = growOf(...centroid(p)) * (isEv() ? popOf(b.id) : 1); const h = Math.max(0.2, b.h * g);
+    const p = b.p; const g = growOf(...centroid(p)); const h = Math.max(0.2, b.h * g);
     const sel = selected === b.id;
     if (isEv() && EVENT_IDS.has(b.id)) {
       const piece = (id, poly0, hh = h, base = 0, aud = false) => {
@@ -1167,7 +1225,7 @@
       if (b.solarHalf && g > 0.85) drawPanels([quadAt(p, 0.14, 0.52), quadAt(p, 0.86, 0.52), quadAt(p, 0.86, 0.9), quadAt(p, 0.14, 0.9)], h + 0.02, c);
       return;
     }
-    const opts = { wall: sel ? c.accentWall : c.wall, roof: sel ? c.accent : c.roof, edge: sel ? c.accent : mix(c.band || [120, 130, 160], 1), floors: b.floors, window: sel ? 'rgba(255,255,255,.28)' : c.window, tex: !sel, roofTex: sel ? null : 'roof', band: sel ? null : c.band };
+    const opts = { wall: sel ? c.accentWall : c.wall, roof: sel ? c.accent : c.roof, edge: sel ? c.accent : mix(c.band || [120, 130, 160], 1), floors: b.floors, window: sel ? 'rgba(255,255,255,.28)' : NIGHT > 0.3 && b.id === 'anexo' ? WARM : c.window, tex: !sel && !(NIGHT > 0.3 && b.id === 'anexo'), roofTex: sel ? null : 'roof', band: sel ? null : c.band };
     if (b.id === 'principal') principalParts(g, h, (id, q, hh, base, aud) => {
       drawExtruded(q, hh, c, aud ? { ...opts, floors: 0, tex: false, band: sel ? null : c.band && c.band.map((v) => Math.round(v * 1.05)) } : { ...opts, base });
       if (aud) drawAudWindows(q, hh, opts.window);
@@ -1179,6 +1237,7 @@
     poly(inset, h); ctx.strokeStyle = sel ? 'rgba(255,255,255,.24)' : c.roofEdge; ctx.lineWidth = Math.max(0.5, 0.1 * cam.z); ctx.stroke();
     if (b.solar && !sel && g > 0.85) drawPanels(Array.isArray(b.solar) ? b.solar : shrink(p, b.solar), h + 0.02, c);
     if (b.skylight && g > 0.85) drawSkylight(b.skylight, h, c);
+    if (NIGHT > 0.3 && LIT[b.id] && !sel && g > 0.85) litWindows(b.id === 'principal' ? PIECES.principal : p, h, b.floors, LIT[b.id], b.id);
     if (b.court && g > 0.85) {
       poly(b.court, h); ctx.fillStyle = c.courtWall; ctx.fill();
       ctx.save(); poly(b.court, h); ctx.clip();
@@ -1215,7 +1274,7 @@
     ctx.stroke();
   }
   function drawCover(b, c) {
-    const p = b.p; const g = growOf(...centroid(p)) * (isEv() ? popOf(b.id) : 1); const h = Math.max(0.2, b.h * g);
+    const p = b.p; const g = growOf(...centroid(p)); const h = Math.max(0.2, b.h * g);
     const sel = selected === b.id;
     /* pilares nos cantos e no meio dos lados maiores */
     const evc = isEv() && EVENT_IDS.has(b.id);
@@ -1972,7 +2031,7 @@
     if (Q.shadows && LAYERS.shadows) drawShadows(c);
     const items = [];
     BUILDINGS.forEach((b) => { if (!near(b.p, 70 * cam.z + 60)) return; const m = centroid(b.p); items.push({ d: depth(m[0], m[1]), f: () => drawBuilding(b, c) }); });
-    COVERS.forEach((b) => { const m = centroid(b.p); items.push({ d: depth(m[0], m[1]), f: () => drawCover(b, c) }); });
+    COVERS.forEach((b) => { const m = centroid(b.p); items.push({ d: depth(m[0], m[1]), f: () => { drawCover(b, c); if (paintStart && !isEv()) paintOver(b, c, (ec) => drawCover(b, ec)); } }); });
     if (!Q.lean || cam.z > 2) tanks.forEach((t) => { if (onScreen(t[0], t[1], 20)) items.push({ d: depth(t[0], t[1]), f: () => drawTank(t, c) }); });
     const net = FLATS.find((b) => b.id === 'volei');
     if (net && !Q.lean) items.push({ d: depth(...centroid(net.p)), f: () => drawNet(net, c) });
@@ -2009,6 +2068,7 @@
     /* Postes da rodovia, cones da entrada e coberturas do estacionamento da Brisanet. */
     if (!Q.lean) {
       POLES.forEach((x, i) => { if (onScreen(x, POLE_Y, 60)) items.push({ d: depth(x, POLE_Y), f: () => drawPole(x, POLES[i + 1], c) }); });
+      if (onScreen(GARDEN.lamp[0], GARDEN.lamp[1], 40)) items.push({ d: depth(...GARDEN.lamp), f: () => drawLamp(GARDEN.lamp, c) });
       if (cam.z > 1.1) CONES.forEach((q) => { if (onScreen(q[0], q[1], 10)) items.push({ d: depth(q[0], q[1]), f: () => drawCone(q, c) }); });
       if (Q.ground > 0) {
         SHADES.forEach((q) => { if (onScreen(q[0], q[1], 20)) items.push({ d: depth(q[0], q[1]), f: () => drawShade(q, c) }); });
@@ -2037,7 +2097,12 @@
       if (k >= 1) { const done = tween.done; tween = null; done(true); } else again = true;
     }
     if (!grown && growStart !== null) { dirty = true; if (now - growStart > 1200) grown = true; else again = true; }
-    if (popStart) { dirty = true; if (now - popStart > 1500) popStart = 0; else again = true; }
+    if (paintStart) { dirty = true; again = true; }
+    if (insetAnim) {
+      const k = Math.min(1, (now - insetAnim.t0) / 520); const e = 1 - (1 - k) ** 3;
+      insetB = insetAnim.from + (insetAnim.to - insetAnim.from) * e; dirty = true;
+      if (k >= 1) insetAnim = null; else again = true;
+    }
     if (floorRouteMs) {
       const k = Math.min(1, (now - floorRouteStart) / floorRouteMs); const e = k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;
       floorRouteP = floorRouteFrom + (floorRouteTo - floorRouteFrom) * e;
@@ -2222,7 +2287,9 @@
     attach(cv, opts) {
       canvas = cv; out = cv.getContext('2d', { alpha: false }); ctx = baseCanvas.getContext('2d', { alpha: false }); onPick = opts.onPick;
       hooks.onRoom = opts.onRoom; hooks.onFloor = opts.onFloor; hooks.onQuality = opts.onQuality;
-      insetT = opts.top || 0; insetB = opts.bottom || 0;
+      /* Quando a folha de baixo muda de altura, o centro do mapa desliza em vez de pular. */
+      insetT = opts.top || 0; const nb = opts.bottom || 0;
+      if (firstView || reduce || Math.abs(nb - insetB) < 4) { insetB = nb; insetAnim = null; } else insetAnim = { from: insetB, to: nb, t0: performance.now() };
       size(); if (!cv.__bound) { cv.__bound = true; bind(cv); } syncAngle();
       if (firstView) {
         firstView = false;
@@ -2399,7 +2466,7 @@
       const end = { ...view(corePts(), 0.5, 24, 30, 0.64), hv: 1 };
       const far = { ...view(regionPts(), -0.4, 10, 10, 0.99), hv: 0.06 };
       const mid = { ...view([[-150, -150], [90, -150], [90, 130], [-150, 130]], -0.2, 20, 20, 0.93), hv: 0.22 };
-      const pass = { ...view([[2, 72], [40, 72], [40, 146], [2, 146]], 0.22, 60, 70, 0.72), hv: 0.82 };
+      const pass = { ...view([[-75, -60], [60, -60], [60, 150], [-75, 150]], 0.24, 20, 30, 0.72), hv: 0.8 };
       const K = [far, far, mid, pass, end, end]; const T = [0, 0.43, 0.72, 1];
       const ch = ['x', 'y', 'lz', 't', 'k', 'hv'];
       K.forEach((q) => { q.lz = Math.log(q.z); });
@@ -2423,10 +2490,12 @@
        e a câmera se ajusta ao enquadramento do evento. */
     async eventReveal() {
       if (reduce) { this.setMode('evento'); return; }
-      FADE = 620; this.setMode('evento'); popStart = performance.now();
-      await new Promise((r) => setTimeout(r, 640));
-      await anim(homeView(), 1400);
-      FADE = 380;
+      const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+      introRunning = true; paintStart = performance.now(); schedule();
+      await wait(1450);
+      FADE = 700; this.setMode('evento'); paintStart = 0;
+      await wait(700);
+      FADE = 380; introRunning = false; schedule();
     },
     layers: () => ({ ...LAYERS }),
     /* Sol agora e fachadas do bloco principal que recebem sol (a frente olha para o oeste). */
