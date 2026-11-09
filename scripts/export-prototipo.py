@@ -21,7 +21,7 @@ def data_uri(path):
     return f'data:{MIME[path.suffix]};base64,{base64.b64encode(path.read_bytes()).decode()}'
 
 
-assets = {str(p.relative_to(SRC)): data_uri(p) for p in sorted((SRC / 'assets').rglob('*')) if p.suffix in MIME}
+assets = {str(p.relative_to(SRC)): data_uri(p) for p in sorted((SRC / 'assets').rglob('*')) if p.suffix in MIME and 'ref2012' not in p.parts}  # plantas de 2012: só o painel usa
 html = (SRC / 'index.html').read_text()
 # Recursos que não funcionam em arquivo local.
 html = re.sub(r'<link rel="(manifest|apple-touch-icon)"[^>]*>\n?', '', html)

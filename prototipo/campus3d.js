@@ -13,7 +13,22 @@
   const E = window.CAMPUS.elementos;
   let reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const HV = 0.92; // quanto a altura sobe na tela
+  /* Direção (no chão) de onde vem a luz e comprimento das sombras por metro de altura.
+     Com a luz do horário ligada, segue o sol de Pau dos Ferros nos dias do evento (ver setHour). */
   const LIGHT = [0.52, 0.85];
+  let SHADOW_K = 0.72;
+  /* Norte e leste no mapa (levantamento: a frente do campus, +y, olha para o oeste). */
+  const NORTH = [-0.9984, 0.0573], EAST = [-0.0573, -0.9984];
+  const SITE = { lat: -6.146, lon: -38.205, tz: -3, doy: 330 }; // 26 de novembro
+  function sunAt(h) {
+    const r = Math.PI / 180, dec = 23.44 * Math.sin((360 / 365) * (284 + SITE.doy) * r);
+    const B = (360 / 365) * (SITE.doy - 81) * r, eot = 9.87 * Math.sin(2 * B) - 7.53 * Math.cos(B) - 1.5 * Math.sin(B); // minutos
+    const solar = h + (SITE.lon - SITE.tz * 15) / 15 + eot / 60;
+    const H = 15 * (solar - 12) * r, la = SITE.lat * r, d = dec * r;
+    const el = Math.asin(Math.sin(la) * Math.sin(d) + Math.cos(la) * Math.cos(d) * Math.cos(H));
+    const az = Math.atan2(Math.sin(H), Math.cos(H) * Math.sin(la) - Math.tan(d) * Math.cos(la)) + Math.PI; // a partir do norte, sentido horário
+    return { el: el / r, az: (az / r + 360) % 360 };
+  }
   const ENT = window.CAMPUS_ENTORNO || { roads: [], streets: [], green: [], trees: [], lots: [], fences: [], small: [], big: [] };
   const LIMPO = window.CAMPUS_LIMPO || { survey: {}, fundo: {}, extras: {} };
   const pts = (i) => LIMPO.survey[i] || E[i].pontos;
@@ -81,7 +96,9 @@
       ['roof', 'wall'].forEach((k) => ['blue', 'honey'].forEach((v) => load(`${k}-event-${v}-${m}`)));
     });
   }
-  const themeKey = () => (document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light');
+  /* Luz do horário (ver setHour): à noite, árvores, casas e texturas usam as versões escuras. */
+  let NIGHT = 0, DUSK = 0, hourOn = null;
+  const themeKey = () => (document.documentElement.dataset.theme === 'dark' || NIGHT >= 0.5 ? 'dark' : 'light');
   const tintKey = () => `${isEv() ? 'mono' : 'color'}-${themeKey()}`;
   const PATS = {};
   function patternOf(name, ev) {
@@ -111,11 +128,11 @@
       sand: '#ecd9a6', courtLine: '#ffffff', field: '#cfd3a0', fieldLine: 'rgba(255,255,255,.9)', tank: [120, 134, 176], tankTop: '#a3b0d2', panel: '#2f4a86', panelLine: 'rgba(255,255,255,.28)',
       tile: '#e09a5e', tileWall: [236, 214, 190], hexBase: [214, 208, 196], hexDeck: '#f0ece2', hexRoof: [252, 247, 234], rail: 'rgba(95,105,130,.75)', neighbor: '#dfe2e8', neighborWall: [200, 205, 216], glass: 'rgba(205,232,216,.78)', glassWall: [186, 216, 200], glassRib: 'rgba(255,255,255,.75)',
       aptoWall: [240, 238, 232], aptoSlab: '#eeeeea', aptoBand: 'rgb(233,170,58)', aptoGap: 'rgba(70,74,84,.42)', aptoShop: 'rgb(150,154,160)', aptoDoor: 'rgb(222,224,226)', aptoSign: 'rgb(44,92,164)',
-      laneMid: '#e7b93a', curbYellow: '#e2b33a', pole: '#d4d1c9', poleLamp: '#f4f4ef', wire: 'rgba(40,44,52,.5)', cone: '#e8742c', shade: [248, 248, 246], shadeEdge: 'rgba(150,156,168,.6)',
+      zebra: 'rgba(255,255,255,.92)', laneMid: '#e7b93a', curbYellow: '#e2b33a', pole: '#d4d1c9', poleLamp: '#f4f4ef', wire: 'rgba(40,44,52,.5)', cone: '#e8742c', shade: [248, 248, 246], shadeEdge: 'rgba(150,156,168,.6)',
       gateRgb: [200, 58, 50], gateRoof: '#f4f3ef', gateGrade: 'rgba(200,58,50,.16)', lojaWall: [226, 228, 230], lojaBand: [232, 92, 44], lojaGlass: 'rgba(62,92,126,.85)',
       metal: '#d6dadf', metalEdge: 'rgba(140,148,160,.7)', barWall: [236, 234, 228], barOpen: 'rgba(48,50,48,.78)', barCounter: 'rgb(64,150,88)', truss2: 'rgb(246,246,244)', barInk: '#2b2f36', barSign: 'rgba(214,226,206,.95)',
       plate: '#e6ebf4', plateEdge: '#cbd3e2', slab: [176, 188, 212], roomEdge: '#d2d9e8', rampF: '#f3f6fb', door: '#9aa8c4',
-      kinds: { classroom: ['#ffffff', [205, 214, 232]], laboratory: ['#dce7fb', [176, 196, 232]], staff: ['#eef1f7', [204, 210, 224]], auditorium: ['#2c4785', [34, 56, 111], true], stairs: ['#f6f8fc', [205, 214, 232]], restroom: ['#dce7fb', [176, 196, 232]], accessible: ['#dce7fb', [176, 196, 232]], reception: ['#4f9e22', [58, 122, 24], true] },
+      kinds: { classroom: ['#ffffff', [205, 214, 232]], laboratory: ['#dce7fb', [176, 196, 232]], staff: ['#eef1f7', [204, 210, 224]], office: ['#fbf1df', [226, 206, 168]], lounge: ['#e6f2dc', [190, 214, 176]], wall: ['#dfe4ee', [196, 204, 222]], auditorium: ['#2c4785', [34, 56, 111], true], stairs: ['#f6f8fc', [205, 214, 232]], restroom: ['#dce7fb', [176, 196, 232]], accessible: ['#dce7fb', [176, 196, 232]], reception: ['#4f9e22', [58, 122, 24], true] },
     },
     dark: {
       sky: '#0c1529', outside: '#101a31', road: '#1c2740', lane: '#3b4a6c', walk: '#1a2540',
@@ -131,14 +148,14 @@
       sand: '#6b5c38', courtLine: 'rgba(255,255,255,.8)', field: '#26422f', fieldLine: 'rgba(255,255,255,.55)', tank: [70, 86, 130], tankTop: '#7b8fc0', panel: '#16264e', panelLine: 'rgba(160,190,255,.3)',
       tile: '#a4663a', tileWall: [84, 66, 62], hexBase: [60, 72, 104], hexDeck: '#3a4b78', hexRoof: [120, 135, 175], rail: 'rgba(190,205,235,.65)', neighbor: '#27324e', neighborWall: [34, 44, 70], glass: 'rgba(90,150,130,.55)', glassWall: [50, 96, 86], glassRib: 'rgba(200,235,220,.45)',
       aptoWall: [70, 80, 110], aptoSlab: '#3a4a74', aptoBand: 'rgb(176,120,42)', aptoGap: 'rgba(8,12,24,.55)', aptoShop: 'rgb(54,62,84)', aptoDoor: 'rgb(96,108,140)', aptoSign: 'rgb(48,86,160)',
-      laneMid: '#b08a2c', curbYellow: '#a8862e', pole: '#56658c', poleLamp: '#ffe6a8', wire: 'rgba(160,175,210,.4)', cone: '#c8642a', shade: [120, 134, 170], shadeEdge: 'rgba(170,185,220,.5)',
+      zebra: 'rgba(200,210,230,.55)', laneMid: '#b08a2c', curbYellow: '#a8862e', pole: '#56658c', poleLamp: '#ffe6a8', wire: 'rgba(160,175,210,.4)', cone: '#c8642a', shade: [120, 134, 170], shadeEdge: 'rgba(170,185,220,.5)',
       gateRgb: [200, 80, 72], gateRoof: '#3a4a74', gateGrade: 'rgba(255,122,112,.16)', lojaWall: [60, 70, 98], lojaBand: [196, 84, 44], lojaGlass: 'rgba(250,210,140,.55)',
       metal: '#46557c', metalEdge: 'rgba(120,138,180,.55)', barWall: [62, 72, 100], barOpen: 'rgba(250,200,120,.55)', barCounter: 'rgb(46,112,70)', truss2: 'rgb(200,210,232)', barInk: '#14224a', barSign: 'rgba(250,220,150,.9)',
       plate: '#16244a', plateEdge: '#2a3c6c', slab: [18, 28, 58], roomEdge: '#3a4f85', rampF: '#1c2c56', door: '#6d82b5',
-      kinds: { classroom: ['#2a3f73', [26, 40, 78], true], laboratory: ['#37548f', [32, 50, 92], true], staff: ['#2a3f73', [26, 40, 78], true], auditorium: ['#e8eefb', [150, 165, 200]], stairs: ['#2a3f73', [26, 40, 78], true], restroom: ['#37548f', [32, 50, 92], true], accessible: ['#37548f', [32, 50, 92], true], reception: ['#7dd14a', [70, 128, 40]] },
+      kinds: { classroom: ['#2a3f73', [26, 40, 78], true], laboratory: ['#37548f', [32, 50, 92], true], staff: ['#2a3f73', [26, 40, 78], true], office: ['#4a456f', [44, 40, 74], true], lounge: ['#2c5244', [34, 64, 52], true], wall: ['#3a4a74', [40, 52, 86]], auditorium: ['#e8eefb', [150, 165, 200]], stairs: ['#2a3f73', [26, 40, 78], true], restroom: ['#37548f', [32, 50, 92], true], accessible: ['#37548f', [32, 50, 92], true], reception: ['#7dd14a', [70, 128, 40]] },
     },
   };
-  const roomName = (z) => (z.kind === 'laboratory' ? `Lab ${z.roomNumber}` : z.kind === 'staff' ? 'Professores' : z.roomNumber ? `Sala ${z.roomNumber}` : z.useLabel);
+  const roomName = (z) => z.name || (z.kind === 'laboratory' ? `Lab ${z.roomNumber}` : z.kind === 'staff' ? 'Professores' : z.roomNumber ? `Sala ${z.roomNumber}` : z.useLabel);
   PAL.light.roomName = roomName; PAL.dark.roomName = roomName;
   /* Modo evento: o mapa inteiro vira um único tom neutro, gerado da paleta normal. Só o evento tem cor. */
   const EV = {
@@ -183,17 +200,51 @@
   /* O obelisco não é parte do evento, mas aparece no modo Evento como ponto de referência. */
   const EVENT_LABELS = new Set([...EVENT_IDS, 'obelisco']);
   const isEv = () => mode === 'evento';
-  const palBase = () => (document.documentElement.dataset.theme === 'dark' ? PAL.dark : PAL.light);
+  /* Luz do horário: NIGHT vai de 0 (dia) a 1 (noite); DUSK é o tom quente do nascer e do pôr do sol.
+     A paleta da noite é a escura com as janelas acesas; as intermediárias são misturas guardadas em cache. */
+  const NIGHT_PAL = () => ({ ...PAL.dark, window: 'rgba(255,208,130,.8)', aptoGap: 'rgba(255,190,110,.38)', zebra: 'rgba(200,210,230,.55)' });
+  const parseCol = (v) => {
+    if (typeof v !== 'string') return null;
+    let m = v.match(/^#([0-9a-f]{6})$/i); if (m) return [0, 2, 4].map((i) => parseInt(m[1].slice(i, i + 2), 16)).concat(1);
+    m = v.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/); if (m) return [+m[1], +m[2], +m[3], m[4] === undefined ? 1 : +m[4]];
+    return null;
+  };
+  function mixAny(a, b, t) {
+    if (typeof a === 'number' && typeof b === 'number') return Math.round(a + (b - a) * t);
+    const ca = parseCol(a), cb = parseCol(b);
+    if (ca && cb) { const q = ca.map((v, i) => v + (cb[i] - v) * t); return `rgba(${Math.round(q[0])},${Math.round(q[1])},${Math.round(q[2])},${q[3].toFixed(3)})`; }
+    if (Array.isArray(a) && Array.isArray(b) && a.length === b.length) return a.map((v, i) => mixAny(v, b[i], t));
+    if (a && b && typeof a === 'object' && typeof b === 'object' && !Array.isArray(a)) { const o = {}; Object.keys(a).forEach((k) => { o[k] = k in b ? mixAny(a[k], b[k], t) : a[k]; }); return o; }
+    return t < 0.5 ? a : b;
+  }
+  const nightCache = new Map();
+  function nightPal(dark, step) {
+    const key = `${dark ? 'd' : 'l'}${step}`; if (nightCache.has(key)) return nightCache.get(key);
+    const base = { ...(dark ? PAL.dark : PAL.light) }; delete base.mono;
+    const night = NIGHT_PAL(); delete night.mono;
+    const out = mixAny(base, night, step / 10); out.roomName = roomName;
+    out.mono = monoize(out, dark || step >= 5);
+    nightCache.set(key, out); return out;
+  }
+  const palBase = () => {
+    const dark = document.documentElement.dataset.theme === 'dark';
+    const step = Math.round(NIGHT * 10);
+    return step ? nightPal(dark, step) : dark ? PAL.dark : PAL.light;
+  };
   const pal = () => (isEv() ? palBase().mono : palBase());
 
   /* A pista segue a marcação sem nome do levantamento (y 68,4–75, o traçado da BR-405), com acostamento;
      antes dela fica a ilha do meio-fio com as árvores (marcação "meio fio"). */
   const ROAD_Y0 = 66.2, ROAD_Y1 = 76.6, ROAD_MID = 71.4;
+  /* Faixa de pedestres na BR, em frente à portaria (satélite). */
+  const CROSS_X = 14, CROSS_W = 4;
   /* Planta do prédio de apartamentos: frente para a rodovia (lado -y), lateral para a rua de terra (lado -x). */
   const APTO = [[14.2, 95.6], [34.6, 95.6], [34.6, 120.6], [14.2, 120.6]];
   /* Alturas adotadas: 4,5 m por pavimento + 0,3 m de cobertura. */
   const BUILDINGS = geom([
-    { id: 'principal', el: 0, h: 13.8, floors: 3, label: 'Bloco principal', at: [4, -34], court: [[-23, -37], [14, -37], [14.500, -33], [-23, -33]] },
+    /* Pé-direito de 3,00 m (dissertação de 2012): 3 pavimentos de cerca de 3,45 m + platibanda que esconde o telhado.
+       O pátio interno aberto é o da planta de 2012. */
+    { id: 'principal', el: 0, h: 11.7, floors: 3, label: 'Bloco principal', at: [4, -34], court: [[-16.53, -36.61], [4.88, -36.61], [7.4, -30.8], [-16.53, -30.8]], ridges: true },
     { id: 'anexo', el: 1, h: 4.8, floors: 1, label: 'Anexo', at: [-44, -96], skylight: XT.skylight },
     { id: 'laboratorios', el: 3, h: 9.3, floors: 2, label: 'Laboratórios', at: [-47, 9], solar: 0.86 },
     { id: 'cantina', el: 4, h: 4.8, floors: 1, label: 'Cantina', at: [-61, -36], solar: 0.88 },
@@ -243,7 +294,8 @@
     });
     return out;
   };
-  const AUD_X = -26;
+  /* Divisa leste do auditório: a parede dele na planta de 2012 (x 216 da figura), levada para o mapa. */
+  const AUD_X = window.PLAN && window.PLAN.world ? +(window.PLAN.world.x0 + 216 * window.PLAN.world.sx).toFixed(2) : -26;
   /* O auditório é um pavimento só, bem alto, mas mais baixo que o bloco: dos andares de cima se vê o telhado dele.
      O canto chanfrado do levantamento vira a fachada curva da foto. */
   const AUD_H = 9;
@@ -285,8 +337,9 @@
     'casa-mel': [START, [-20, 41], [-46, 40], [-98.5, -65], [-132, -122], [-122, -129], [-96, -142.500], [-74, -160], [-100, -198], [-98, -216], [-125, -245], [-143, -262]],
     'seu-assis': [START, [-20, 52], [-56, 53], [-78.5, 8.4], [-110, -53], [-118.4, -42.4], [-122, -37.5]],
     obelisco: [START, [13, 30], [12.6, 16]],
-    apartamentos: [START, [15, 58], [11.5, 92], [11.5, 100], [14, 100]],
-    eletrica: [START, [15, 58], [11.5, 92], [11.5, 128], [15.3, 128]],
+    apartamentos: [START, [CROSS_X, 60], [CROSS_X, 78], [15.5, 95]],
+    eletrica: [START, [CROSS_X, 60], [CROSS_X, 78], [11, 84], [11, 128], [15.3, 128]],
+    brisanet: [START, [CROSS_X, 60], [CROSS_X, 78], [-20, 78.5], [-74, 78.5], [-112, 79], [-118, 119]],
     portaria: [START],
   };
 
@@ -481,6 +534,22 @@
     const hline = (y) => { const a = P(-900, y), e = P(900, y); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(e[0], e[1]); ctx.stroke(); };
     ctx.strokeStyle = c.lane; ctx.lineWidth = Math.max(0.6, 0.14 * cam.z); hline(ROAD_Y0 + 0.4); hline(ROAD_Y1 - 0.4);
     ctx.strokeStyle = c.laneMid; ctx.lineWidth = Math.max(0.8, 0.16 * cam.z); hline(ROAD_MID - 0.18); hline(ROAD_MID + 0.18);
+    /* Faixa de pedestres: listras brancas no sentido da pista. */
+    ctx.fillStyle = c.zebra;
+    for (let y = ROAD_Y0 + 0.5; y < ROAD_Y1 - 0.6; y += 1) { poly(rect(CROSS_X - CROSS_W / 2, y, CROSS_X + CROSS_W / 2, y + 0.5)); ctx.fill(); }
+    /* Poças de luz dos postes à noite. */
+    if (NIGHT > 0.05 && !Q.lean) {
+      const prev = ctx.globalCompositeOperation; ctx.globalCompositeOperation = 'lighter';
+      const pool = (x, y, r, a) => {
+        const m = P(x, y); if (m[0] < -200 || m[0] > W + 200 || m[1] < -200 || m[1] > H + 200) return;
+        const g = ctx.createRadialGradient(m[0], m[1], 0, m[0], m[1], r * cam.z);
+        g.addColorStop(0, `rgba(255,196,110,${(a * NIGHT).toFixed(3)})`); g.addColorStop(1, 'rgba(255,196,110,0)');
+        ctx.fillStyle = g; poly(Array.from({ length: 18 }, (_, i) => [x + Math.cos((i / 18) * 6.283) * r, y + Math.sin((i / 18) * 6.283) * r])); ctx.fill();
+      };
+      POLES.forEach((x) => pool(x, POLE_Y + 2, 9, 0.34));
+      pool(15, 47, 6, 0.3); pool(15.3, 131, 7, 0.28); pool(-98, 98, 16, 0.22); pool(24, 92, 6, 0.2);
+      ctx.globalCompositeOperation = prev;
+    }
     /* Calçada de concreto na frente do prédio dos apartamentos. */
     ctx.fillStyle = c.paved; poly([[13.5, ROAD_Y1], [34.6, ROAD_Y1], [34.6, 95.6], [13.5, 95.6]]); ctx.fill();
     ctx.fillStyle = c.grass; poly(pts(25)); ctx.fill();
@@ -597,7 +666,7 @@
     const list = [...BUILDINGS, ...COVERS].filter((b) => b.kind !== 'hex' && b.kind !== 'gate');
     list.forEach((b) => {
       const p = b.p; const g = growOf(...centroid(p));
-      const off = [-LIGHT[0] * b.h * 0.72 * g, -LIGHT[1] * b.h * 0.72 * g];
+      const off = [-LIGHT[0] * b.h * SHADOW_K * g, -LIGHT[1] * b.h * SHADOW_K * g];
       const add = (quad) => {
         const s = signedScreen(quad);
         const q = s < 0 ? quad.slice().reverse() : quad;
@@ -885,7 +954,13 @@
     ctx.beginPath(); ctx.moveTo(b[0], b[1]); ctx.lineTo(t[0], t[1]); ctx.stroke();
     ctx.lineWidth = Math.max(0.6, 0.12 * cam.z); const k = P(x, POLE_Y, H - 1.2);
     ctx.beginPath(); ctx.moveTo(k[0], k[1]); ctx.quadraticCurveTo(arm[0], k[1], arm[0], arm[1]); ctx.stroke();
-    ctx.fillStyle = c.poleLamp; ctx.beginPath(); ctx.ellipse(arm[0], arm[1], Math.max(1, 0.4 * cam.z), Math.max(0.6, 0.18 * cam.z), 0, 0, 7); ctx.fill();
+    ctx.fillStyle = NIGHT > 0.2 ? '#ffe2a8' : c.poleLamp; ctx.beginPath(); ctx.ellipse(arm[0], arm[1], Math.max(1, 0.4 * cam.z), Math.max(0.6, 0.18 * cam.z), 0, 0, 7); ctx.fill();
+    if (NIGHT > 0.05) {
+      const g = ctx.createRadialGradient(arm[0], arm[1], 0, arm[0], arm[1], Math.max(4, 2.2 * cam.z));
+      g.addColorStop(0, `rgba(255,214,140,${(0.7 * NIGHT).toFixed(3)})`); g.addColorStop(1, 'rgba(255,214,140,0)');
+      const prev = ctx.globalCompositeOperation; ctx.globalCompositeOperation = 'lighter';
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(arm[0], arm[1], Math.max(4, 2.2 * cam.z), 0, 7); ctx.fill(); ctx.globalCompositeOperation = prev;
+    }
     if (next == null || cam.z < 0.6) return;
     /* Fiação até o próximo poste, com barriga. */
     ctx.strokeStyle = c.wire; ctx.lineWidth = Math.max(0.5, 0.05 * cam.z);
@@ -1052,6 +1127,7 @@
     if (b.id === 'principal') principalParts(g, h, (id, q, hh, base, aud) => {
       drawExtruded(q, hh, c, aud ? { ...opts, floors: 0, tex: false, band: sel ? null : c.band && c.band.map((v) => Math.round(v * 1.05)) } : { ...opts, base });
       if (aud) drawAudWindows(q, hh, opts.window);
+      else if (id === 'principal' && b.ridges && !sel && g > 0.85 && cam.z > 1.1) drawRidges(q, hh, c);
     });
     else drawExtruded(p, h, c, opts);
     /* Parapeito: dá leitura de cobertura sem aumentar a complexidade. */
@@ -1067,6 +1143,20 @@
     }
   }
 
+  /* Telhado do bloco principal: fibrocimento em duas águas com cumeeira no meio de cada ala (norte e sul),
+     escondido pela platibanda; calhas de concreto nas bordas do pátio interno. */
+  function drawRidges(q, h, c) {
+    const xs = q.map((v) => v[0]); const x0 = Math.min(...xs) + 0.9;
+    const east = (y) => 8.568 + (y + 51.8) * 0.3938 - 0.9;
+    ctx.save(); poly(q, h); ctx.clip();
+    ctx.lineCap = 'round';
+    [[-43.6, -50.5, -36.9], [-23.8, -30.5, -17.2]].forEach(([yr, ya, yb]) => {
+      const seg = (y, w, col) => { const a = P(x0, y, h - 0.25), e = P(east(y), y, h - 0.25); ctx.strokeStyle = col; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(e[0], e[1]); ctx.stroke(); };
+      seg(yr, Math.max(1, 0.35 * cam.z), c.roofEdge);
+      if (cam.z > 2) [ya, yb].forEach((y) => seg(y, Math.max(0.6, 0.12 * cam.z), c.roofEdge));
+    });
+    ctx.restore();
+  }
   /* Treliça branca da cobertura do pátio, como na foto da entrada. */
   function drawTruss(b, h, c) {
     const p = b.p; let best = 0, bd = -Infinity;
@@ -1152,7 +1242,15 @@
     const L = t.axis === 'x' ? 2.7 : 1.15, D = t.axis === 'x' ? 1.15 : 2.7;
     const box = (l, d) => [[t.x - l, t.y - d], [t.x + l, t.y - d], [t.x + l, t.y + d], [t.x - l, t.y + d]];
     poly(box(L, D).map((q) => [q[0] - 0.7, q[1] - 0.7])); ctx.fillStyle = c.shadow; ctx.fill();
-    const col = isEv() ? c.bigWall : t.color;
+    const col = isEv() ? c.bigWall : NIGHT ? t.color.map((v) => Math.round(v * (1 - 0.45 * NIGHT))) : t.color;
+    if (NIGHT > 0.3 && t.v && !isEv()) {
+      /* Faróis: facho no chão à frente do carro. */
+      const fx = t.x + t.dir * (L + 3.2), f0 = P(fx, t.y); const r = 3.4 * cam.z;
+      const g = ctx.createRadialGradient(f0[0], f0[1], 0, f0[0], f0[1], r);
+      g.addColorStop(0, `rgba(255,236,190,${(0.42 * NIGHT).toFixed(3)})`); g.addColorStop(1, 'rgba(255,236,190,0)');
+      const prev = ctx.globalCompositeOperation; ctx.globalCompositeOperation = 'lighter';
+      ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(f0[0], f0[1], r, r * 0.6, 0, 0, 7); ctx.fill(); ctx.globalCompositeOperation = prev;
+    }
     drawExtruded(box(L, D), 1, c, { wall: col, roof: mix(col, 1.04), edge: mix(col, 0.82), floors: 0 });
     drawExtruded(box(L * 0.56, D * 0.86), 1.85, c, { base: 1, wall: isEv() ? mix(col, 0.8).match(/\d+/g).map(Number) : [58, 72, 98], roof: mix(col, 1.08), edge: mix(col, 0.82), floors: 0 });
   }
@@ -1308,9 +1406,11 @@
   }
 
   /* ---------- andares em volume ---------- */
-  /* A planta é esquemática: mapeada sobre o prédio só para o desenho, sem alterar sua geometria. */
-  const SCALE = 0.0744, X0 = -42 - 20 * SCALE, Y0 = -47.75 - 20 * SCALE;
-  const wp = ([x, y]) => [X0 + x * SCALE, Y0 + y * SCALE];
+  /* A planta segue as figuras de 2012 (px da figura do térreo); WORLD leva ao mapa, ajustada ao contorno do levantamento. */
+  const WORLD = window.PLAN.world || { sx: 0.0744, sy: 0.0744, x0: -43.488, y0: -49.238 };
+  const SX = WORLD.sx, SY = WORLD.sy, X0 = WORLD.x0, Y0 = WORLD.y0, SCALE = (SX + SY) / 2;
+  const [VB_W, VB_H] = (window.PLAN.viewBox || '0 0 900 430').split(' ').slice(2).map(Number);
+  const wp = ([x, y]) => [X0 + x * SX, Y0 + y * SY];
   const parseOutline = (d) => {
     const out = []; let x = 0, y = 0;
     d.replace(/([MHVZ])\s*(-?[\d.]*)\s*(-?[\d.]*)/g, (_, o, a, b) => {
@@ -1319,9 +1419,24 @@
     });
     return out;
   };
+  /* Recuo de cada sala para dentro (unidades da planta): entre duas salas sobra um vão, e as paredes não brigam na tela. */
+  const ROOM_GAP = 2.2;
+  function insetPoly(p, d) {
+    const n = p.length; let area = 0;
+    for (let i = 0; i < n; i++) { const a = p[i], b = p[(i + 1) % n]; area += a[0] * b[1] - b[0] * a[1]; }
+    const s = area > 0 ? 1 : -1;
+    const lines = p.map((a, i) => { const b = p[(i + 1) % n]; const L = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1; const nx = (-(b[1] - a[1]) / L) * s, ny = ((b[0] - a[0]) / L) * s; return [[a[0] + nx * d, a[1] + ny * d], [b[0] + nx * d, b[1] + ny * d]]; });
+    return lines.map((l, i) => {
+      const m = lines[(i - 1 + n) % n]; const [p1, p2] = m, [p3, p4] = l;
+      const den = (p1[0] - p2[0]) * (p3[1] - p4[1]) - (p1[1] - p2[1]) * (p3[0] - p4[0]);
+      if (Math.abs(den) < 1e-9) return p3;
+      const t = ((p1[0] - p3[0]) * (p3[1] - p4[1]) - (p1[1] - p3[1]) * (p3[0] - p4[0])) / den;
+      return [p1[0] + t * (p2[0] - p1[0]), p1[1] + t * (p2[1] - p1[1])];
+    });
+  }
   const FLOORS = window.PLAN.floors.map((f) => ({
-    level: f.level, label: f.label, raw: f, outline: parseOutline(f.outline).map(wp),
-    zones: f.zones.map((z) => ({ ...z, poly: (z.points ? z.points.split(' ').map((q) => q.split(',').map(Number)) : [[z.x + 1.5, z.y + 1.5], [z.x + z.w - 1.5, z.y + 1.5], [z.x + z.w - 1.5, z.y + z.h - 1.5], [z.x + 1.5, z.y + z.h - 1.5]]).map(wp) })),
+    level: f.level, label: f.label, raw: f, outline: (f.outlinePts || parseOutline(f.outline)).map(wp),
+    zones: f.zones.map((z) => ({ ...z, poly: insetPoly(z.points ? z.points.split(' ').map((q) => q.split(',').map(Number)) : [[z.x, z.y], [z.x + z.w, z.y], [z.x + z.w, z.y + z.h], [z.x, z.y + z.h]], z.kind === 'wall' ? 0 : ROOM_GAP).map(wp) })),
   }));
   const zoneOf = (lvl, id) => FLOORS[lvl].zones.find((z) => z.id === id);
   const ICON = {
@@ -1332,6 +1447,23 @@
     reception: new Path2D('M-8 4H8M-6 4A6 6 0 0 1 6 4M0-4V-2'),
   };
   const FILLED = { restroom: 1, water: 1 };
+  /* Ícones de uso das salas (traço), no topo de cada sala com número. */
+  const USE_D = {
+    aula: 'M-9-7H9V4H-9ZM-5 8L-2 4M5 8L2 4',
+    lab: 'M-3-9H3M-2-9V-3L-8 7H8L2-3V-9M-5 2H5',
+    pc: 'M-9-7H9V4H-9ZM-4 8H4M0 4V8',
+    livro: 'M0-6C-3-8-6-8-9-7V7C-6 6-3 6 0 8C3 6 6 6 9 7V-7C6-8 3-8 0-6ZM0-6V8',
+    setor: 'M-9-4H9V7H-9ZM-3-4V-7H3V-4M-9 1H9',
+    copa: 'M-7-4H5V2A6 6 0 0 1-7 2ZM5-2H8A2 2 0 0 1 8 2H5M-3-9V-6M1-9V-6',
+    atos: 'M-3-9H3V1H-3ZM-6-2A6 6 0 0 0 6-2M0 4V8M-4 8H4',
+    video: 'M-9-5H4V5H-9ZM4-1L9-4V4L4 1',
+    loja: 'M-7-3H7L6 8H-6ZM-3-3V-5A3 3 0 0 1 3-5V-3',
+    caixa: 'M-8-4L0-8 8-4V5L0 9-8 5ZM-8-4L0 0 8-4M0 0V9',
+    doc: 'M-6-9H3L7-5V9H-6ZM3-9V-5H7M-3-1H4M-3 3H4',
+    pessoas: 'M-1-5A3 3 0 1 1-7-5A3 3 0 1 1-1-5M-9 7A5 5 0 0 1 1 7M7-5A3 3 0 1 1 1-5M3 2A5 5 0 0 1 9 7',
+    sofa: 'M-9 0V6H9V0M-9 0A2 2 0 0 1-5 0V3H5V0A2 2 0 0 1 9 0M-6 3V-4H6V3M-8 6V8M8 6V8',
+  };
+  const USE_ICON = Object.fromEntries(Object.entries(USE_D).map(([k, d]) => [k, new Path2D(d)]));
   const clamp01 = (v) => Math.max(0, Math.min(1, v));
   const GAP_OPEN = 17, GAP_FOCUS = 44;
   const gapNow = () => (GAP_OPEN + (GAP_FOCUS - GAP_OPEN) * sv.focus) * sv.mix;
@@ -1364,12 +1496,20 @@
   const orderYard = (p) => { const [a, b, d] = [p[0], p[1], p[3]]; return Math.hypot(b[0] - a[0], b[1] - a[1]) >= Math.hypot(d[0] - a[0], d[1] - a[1]) ? p : [p[1], p[2], p[3], p[0]]; };
   /* Corredor da esquerda (no térreo, a passagem do Anexo até a saída do auditório) e o canto aberto que pega sol. */
   function drawFloorMarks(f, b0, c) {
-    const raw = f.raw; const lane = raw.passage && raw.passage.length ? { x: 230, y: raw.passage[0][1], w: 30, h: raw.passage[1][1] - raw.passage[0][1] } : raw.corridors.find((k) => k.id === 'corredor-lateral');
+    const raw = f.raw; const lane = raw.corridors.find((k) => k.id === 'passagem-anexo');
     const rect = (k, m) => [[k.x + m, k.y + m], [k.x + k.w - m, k.y + m], [k.x + k.w - m, k.y + k.h - m], [k.x + m, k.y + k.h - m]].map(wp);
     const a = ctx.globalAlpha;
     if (lane) { poly(rect(lane, 3), b0 + 0.03); ctx.globalAlpha = a * 0.3; ctx.fillStyle = c.plateEdge; ctx.fill(); ctx.globalAlpha = a; }
     const sun = raw.corridors.find((k) => k.id === 'area-sol');
     if (sun) { poly(rect(sun, 2), b0 + 0.03); ctx.fillStyle = '#f0d27a'; ctx.fill(); }
+  }
+  /* Áreas de descanso: só o piso marcado (sem móveis inventados). */
+  function drawLounges(f, b0, c) {
+    const K = c.kinds.lounge || ['#e6f2dc', [190, 214, 176]];
+    f.zones.filter((z) => z.kind === 'lounge').forEach((z) => {
+      const sel = room && room.level === f.level && room.id === z.id;
+      poly(z.poly, b0 + 0.04); ctx.fillStyle = sel ? c.accent : K[0]; ctx.fill();
+    });
   }
   /* No térreo, com os andares abertos, o auditório sobe mais que as salas: é um pavimento só, bem alto. */
   const zoneTop = (z) => (z.kind === 'auditorium' ? WALL + 7 * sv.mix * (1 - sv.focus) : WALL);
@@ -1426,6 +1566,7 @@
       }
     });
     drawFloorMarks(f, b0, c);
+    drawLounges(f, b0, c);
     if (detail && cam.z > 5) {
       ctx.strokeStyle = c.door; ctx.lineWidth = Math.max(1.4, cam.z * 0.18); ctx.lineCap = 'round';
       f.raw.doors.forEach((d) => {
@@ -1434,14 +1575,29 @@
         ctx.beginPath(); ctx.moveTo(s[0], s[1]); ctx.lineTo(e[0], e[1]); ctx.stroke();
       });
     }
-    /* salas, de trás para a frente */
-    const solids = f.zones.filter((z) => !['courtyard', 'ramp', 'water'].includes(z.kind))
-      .map((z) => { const m = centroid(z.poly); return { z, d: depth(m[0], m[1]) }; }).sort((p, q) => p.d - q.d);
-    solids.forEach(({ z }) => {
-      const sel = room && room.level === f.level && room.id === z.id;
-      const h = b0 + zoneTop(z) + (sel ? sv.rise : 0);
-      const k = K[z.kind] || K.classroom;
-      drawExtruded(z.poly, h, c, { base: b0, wall: sel ? c.accentWall : k[1], roof: sel ? c.accent : k[0], edge: sel ? c.accent : c.roomEdge, floors: 0 });
+    /* Salas: todas da mesma altura, então primeiro todas as paredes (de trás para a frente) e depois todos os tetos.
+       Assim nenhuma sala grande cobre a vizinha, e a ordem não troca ao girar. A sala escolhida e o auditório,
+       mais altos, entram depois, e as salas à frente deles são redesenhadas por cima. */
+    const solids = f.zones.filter((z) => !['courtyard', 'ramp', 'water', 'lounge'].includes(z.kind))
+      .map((z) => { const m = centroid(z.poly); return { z, d: depth(m[0], m[1]), sel: room && room.level === f.level && room.id === z.id }; });
+    const tall = solids.filter((o) => o.sel || zoneTop(o.z) > WALL + 0.01).sort((p, q) => p.d - q.d);
+    const low = solids.filter((o) => !tall.includes(o));
+    const boxes = (list) => {
+      const walls = [];
+      list.forEach(({ z }) => {
+        const p = z.poly; const scr = signedScreen(p) > 0 ? 1 : -1; const ws = worldSign(p);
+        p.forEach((a, i) => { const b = p[(i + 1) % p.length]; const A = P(a[0], a[1]), B = P(b[0], b[1]); if ((B[0] - A[0]) * scr < 0) walls.push({ a, b, z, ws, d: depth((a[0] + b[0]) / 2, (a[1] + b[1]) / 2) }); });
+      });
+      if (cam.hv > 0.02) walls.sort((u, v) => u.d - v.d).forEach(({ a, b, z, ws }) => { const k = K[z.kind] || K.classroom; wallQuad(a, b, b0, b0 + WALL); ctx.fillStyle = mix(k[1], shadeOf(a, b, ws)); ctx.fill(); });
+      ctx.lineWidth = Math.max(0.7, 0.16 * cam.z); ctx.lineJoin = 'round';
+      list.forEach(({ z }) => { const k = K[z.kind] || K.classroom; poly(z.poly, b0 + WALL); ctx.fillStyle = k[0]; ctx.fill(); ctx.strokeStyle = c.roomEdge; ctx.stroke(); });
+    };
+    boxes(low);
+    tall.forEach((t) => {
+      const h = b0 + zoneTop(t.z) + (t.sel ? sv.rise : 0); const k = K[t.z.kind] || K.classroom;
+      drawExtruded(t.z.poly, h, c, { base: b0, wall: t.sel ? c.accentWall : k[1], roof: t.sel ? c.accent : k[0], edge: t.sel ? c.accent : c.roomEdge, floors: 0 });
+      const front = low.filter((o) => o.d > t.d);
+      if (front.length) boxes(front);
     });
     ctx.globalAlpha = 1;
   }
@@ -1507,7 +1663,7 @@
     const b0 = baseOf(f.level);
     const list = f.zones.slice().sort((a, b) => (room && a.id === room.id ? -1 : room && b.id === room.id ? 1 : 0));
     list.forEach((z) => {
-      if (['courtyard', 'ramp'].includes(z.kind)) return;
+      if (['courtyard', 'ramp', 'wall'].includes(z.kind)) return;
       const m = z.points ? wp([z.labelX, z.labelY]) : centroid(z.poly);
       const sel = room && room.level === f.level && room.id === z.id;
       const s = P(m[0], m[1], b0 + (z.kind === 'water' ? 0.8 : zoneTop(z) + (sel ? sv.rise : 0)));
@@ -1522,15 +1678,23 @@
         ctx.restore();
         return;
       }
-      const text = z.roomNumber || (z.kind === 'auditorium' ? 'Auditório' : z.kind === 'reception' ? 'Recepção' : '');
+      const text = z.roomNumber || (z.kind === 'auditorium' ? 'Auditório' : z.kind === 'reception' ? 'Recepção' : z.kind === 'lounge' ? 'Descanso' : '');
       if (!text) return;
       const size = z.roomNumber ? Math.min(14, Math.max(9.500, cam.z * 1.15)) : Math.min(14, Math.max(9.500, cam.z * 1.05));
       ctx.font = `${z.roomNumber ? 700 : 600} ${size}px Geologica, Onest, system-ui, sans-serif`;
       const w = ctx.measureText(text).width;
-      const bx = s[0] - w / 2, by = s[1] - size / 2;
-      if (boxes.some((o) => bx < o[0] + o[2] + 1 && bx + w + 1 > o[0] && by < o[1] + o[3] && by + size > o[1])) return;
-      boxes.push([bx, by, w, size]);
-      ctx.fillStyle = ink; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, s[0], s[1]);
+      const useIcon = z.icon && USE_ICON[z.icon] && cam.z > 1.6;
+      const ih = useIcon ? size + 2 : 0;
+      const bx = s[0] - w / 2, by = s[1] - size / 2 - ih;
+      if (boxes.some((o) => bx < o[0] + o[2] + 1 && bx + w + 1 > o[0] && by < o[1] + o[3] && by + size + ih > o[1])) return;
+      boxes.push([bx, by, w, size + ih]);
+      if (useIcon) {
+        const sc = Math.min(0.75, Math.max(0.5, size / 18));
+        ctx.save(); ctx.translate(s[0], s[1] - size * 0.95); ctx.scale(sc, sc);
+        ctx.strokeStyle = ink; ctx.globalAlpha *= 0.8; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke(USE_ICON[z.icon]);
+        ctx.restore();
+      }
+      ctx.fillStyle = ink; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, s[0], s[1] + (useIcon ? 2 : 0));
       const ev = (window.DATA?.sessions || []).some((x) => x.floor === f.level && x.zone === z.id);
       if (ev) { ctx.fillStyle = c.gate; ctx.beginPath(); ctx.arc(s[0] + w / 2 + 6, s[1] - 2, 3, 0, 7); ctx.fill(); }
     });
@@ -1547,7 +1711,7 @@
     }
     const f = FLOORS[Math.round(sv.floor)];
     const b0 = baseOf(f.level);
-    const cands = f.zones.filter((z) => !['courtyard', 'ramp', 'water'].includes(z.kind))
+    const cands = f.zones.filter((z) => !['courtyard', 'ramp', 'water', 'wall'].includes(z.kind))
       .map((z) => { const m = centroid(z.poly); return { z, d: depth(m[0], m[1]) }; }).sort((p, q) => q.d - p.d);
     const hit = cands.find(({ z }) => inPoly(x, y, z.poly.map((q) => P(q[0], q[1], b0 + WALL))) || inPoly(x, y, z.poly.map((q) => P(q[0], q[1], b0))));
     hooks.onRoom?.(f.level, hit ? hit.z.id : null);
@@ -1559,12 +1723,13 @@
     const cacheKey = `${level}|${start}|${goal}`;
     if (PATHS.has(cacheKey)) return PATHS.get(cacheKey);
     const f = FLOORS[level].raw; const STEP = 5;
-    const inC = (x, y) => f.corridors.some((c) => x >= c.x && x <= c.x + c.w && y >= c.y && y <= c.y + c.h);
+    const inC = (x, y) => f.corridors.some((c) => (c.poly ? inPoly(x, y, c.poly) : x >= c.x && x <= c.x + c.w && y >= c.y && y <= c.y + c.h));
+    f.corridors.forEach((c) => { if (c.points && !c.poly) c.poly = c.points.split(' ').map((q) => q.split(',').map(Number)); });
     const key = (x, y) => `${x},${y}`;
     const snap = (p) => [Math.round(p[0] / STEP) * STEP, Math.round(p[1] / STEP) * STEP];
     const nearest = (p) => {
       let best = null, bd = Infinity;
-      for (let x = 0; x <= 900; x += STEP) for (let y = 0; y <= 430; y += STEP) if (inC(x, y)) { const d = Math.hypot(x - p[0], y - p[1]); if (d < bd) { bd = d; best = [x, y]; } }
+      for (let x = 0; x <= VB_W; x += STEP) for (let y = 0; y <= VB_H; y += STEP) if (inC(x, y)) { const d = Math.hypot(x - p[0], y - p[1]); if (d < bd) { bd = d; best = [x, y]; } }
       return best;
     };
     const s = inC(...snap(start)) ? snap(start) : nearest(start); const g = inC(...snap(goal)) ? snap(goal) : nearest(goal);
@@ -1591,7 +1756,7 @@
   }
   function doorOf(level, id) {
     const f = FLOORS[level].raw; const z = zoneOf(level, id);
-    const xs = z.poly.map((q) => (q[0] - X0) / SCALE), ys = z.poly.map((q) => (q[1] - Y0) / SCALE);
+    const xs = z.poly.map((q) => (q[0] - X0) / SX), ys = z.poly.map((q) => (q[1] - Y0) / SY);
     const bb = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
     const dist = (d) => Math.hypot(Math.max(bb[0] - d.x, 0, d.x - bb[2]), Math.max(bb[1] - d.y, 0, d.y - bb[3]));
     const door = f.doors.slice().sort((a, b) => dist(a) - dist(b))[0];
@@ -1599,9 +1764,9 @@
   }
   /* As três entradas do bloco principal, com o caminho externo desde a portaria. */
   const ENTRANCES = {
-    principal: { name: 'entrada principal', plan: [820, 385], campus: [START, [13, 11], [15, -4], [17, -17]] },
-    auditorio: { name: 'entrada do auditório', plan: [172, 335], campus: [START, [13, 11], [-23, 8], [-27, -8], [-31, -17]] },
-    anexo: { name: 'entrada do Anexo', plan: [245, 25], campus: [START, [13, 11], [-23, 8], [-27, -8], [-48, -13], [-49.5, -50], [-50, -68], [-44.6, -66], [-39, -61.5], [-27, -60], [-25.3, -53]] },
+    principal: { name: 'entrada principal', plan: (window.PLAN.entrances || {}).principal || [820, 385], campus: [START, [13, 11], [15, -4], [17, -17]] },
+    auditorio: { name: 'entrada do auditório', plan: (window.PLAN.entrances || {}).auditorio || [172, 335], campus: [START, [13, 11], [-23, 8], [-27, -8], [-31, -17]] },
+    anexo: { name: 'entrada do Anexo', plan: (window.PLAN.entrances || {}).anexo || [245, 25], campus: [START, [13, 11], [-23, 8], [-27, -8], [-48, -13], [-49.5, -50], [-50, -68], [-44.6, -66], [-39, -61.5], [-27, -60], [-25.3, -53]] },
   };
   const uTurn = (xA, xB, yLow, yTop) => {
     const cx = (xA + xB) / 2, R = (xB - xA) / 2; const out = [[xA, yLow], [xA, yTop + R]];
@@ -1611,12 +1776,12 @@
   };
   const VERTS = (() => {
     const f = FLOORS[1].raw; const st = f.zones.find((q) => q.kind === 'stairs'); const rp = f.zones.find((q) => q.kind === 'ramp');
-    const footS = [st.x + st.w, st.y + st.h / 2], footR = [rp.x + rp.w * 0.48, rp.y + rp.h + 24];
+    const footS = [st.x + st.w, st.y + st.h / 2], footR = window.PLAN.rampFoot || [rp.x + rp.w * 0.48, rp.y + rp.h + 24];
     /* Escada: uma volta quadrada por andar, sempre subindo. */
     const i = 6, x0 = st.x + i, x1 = st.x + st.w - i, y0 = st.y + i, y1 = st.y + st.h - i, ym = st.y + st.h / 2;
     return {
       escada: { where: 'da ala oeste', foot: footS, enter: [footS, [x1, ym]], loop: [[x1, ym], [x1, y1], [x0, y1], [x0, y0], [x1, y0], [x1, ym]], exit: [footS], weight: 1.6, turns: 3, box: [[st.x, st.y], [st.x + st.w, st.y], [st.x + st.w, st.y + st.h], [st.x, st.y + st.h]] },
-      rampa: { where: 'do lado leste', foot: footR, enter: [footR], loop: [footR, ...uTurn(rp.x + rp.w * 0.26, rp.x + rp.w * 0.74, rp.y + rp.h, rp.y + 7), footR], exit: [], weight: 1 },
+      rampa: { where: 'do lado leste', foot: footR, enter: [footR], loop: window.PLAN.rampLoop || [footR, ...uTurn(rp.x + rp.w * 0.26, rp.x + rp.w * 0.74, rp.y + rp.h, rp.y + 7), footR], exit: [], weight: 1 },
     };
   })();
   const polyLen = (L) => L.slice(1).reduce((n, q, i) => n + Math.hypot(q[0] - L[i][0], q[1] - L[i][1]), 0);
@@ -1791,6 +1956,7 @@
     items.sort((p, q) => p.d - q.d);
     items.forEach((o) => o.f());
     if (Q.soften && !isEv()) softenRear(c);
+    if (DUSK > 0.02 && !isEv()) { ctx.fillStyle = `rgba(255,140,60,${(0.13 * DUSK).toFixed(3)})`; ctx.fillRect(0, 0, W, H); }
     if (sv.mix < 0.25) drawLabels(c); else labelHits = [];
     }
     if (sv.dim > 0.001) { ctx.globalAlpha = sv.dim; ctx.fillStyle = palBase().sky; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
@@ -1860,7 +2026,7 @@
   const homeView = (t = 0.5) => {
     if (!isEv()) return view(corePts(), t, 24, 30, 0.64);
     /* Conta a altura do bloco principal, para o telhado não ficar sob as abas. */
-    const rise = (13.8 * HV) / 0.64; const si = Math.sin(t), co = Math.cos(t);
+    const rise = (BUILDINGS.find((b) => b.id === 'principal').h * HV) / 0.64; const si = Math.sin(t), co = Math.cos(t);
     return view([...eventPts(), ...pts(0).map((q) => [q[0] - si * rise, q[1] - co * rise])], t, 30, 54, 0.64);
   };
   const regionPts = () => [[-340, -300], [300, -300], [300, 320], [-340, 320]];
@@ -2120,6 +2286,40 @@
     setAccent(hex) {
       const rgb = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
       [PAL.light, PAL.dark].forEach((pl) => { pl.accent = hex; pl.accentWall = rgb.map((v) => Math.round(v * 0.8)); });
+      nightCache.clear();
+      schedule();
+    },
+    /* Hora do dia (0–24) para a luz do mapa, ou null para dia sempre. */
+    setHour(h) {
+      hourOn = h;
+      const ramp = (a, b, x) => Math.max(0, Math.min(1, (x - a) / (b - a)));
+      const n = h == null ? 0 : Math.max(1 - ramp(5.2, 6.4, h), ramp(17.6, 18.8, h));
+      const d = h == null ? 0 : Math.max(Math.exp(-(((h - 17.6) / 0.7) ** 2)), Math.exp(-(((h - 5.9) / 0.6) ** 2))) * (1 - n * 0.7);
+      const n2 = Math.round(n * 20) / 20, d2 = Math.round(d * 20) / 20;
+      /* Sol de verdade: direção e comprimento das sombras. Sem horário, a luz fixa de sempre. */
+      let lx = 0.52, ly = 0.85, k = 0.72;
+      if (h != null) {
+        const s = sunAt(h);
+        if (s.el > 2) {
+          const a = (s.az * Math.PI) / 180; const dx = NORTH[0] * Math.cos(a) + EAST[0] * Math.sin(a), dy = NORTH[1] * Math.cos(a) + EAST[1] * Math.sin(a);
+          const L = Math.hypot(dx, dy) || 1; lx = dx / L; ly = dy / L; k = Math.min(2.6, 1 / Math.tan((s.el * Math.PI) / 180));
+        } else k = 0;
+      }
+      lx = Math.round(lx * 50) / 50; ly = Math.round(ly * 50) / 50; k = Math.round(k * 20) / 20;
+      if (n2 === NIGHT && d2 === DUSK && lx === LIGHT[0] && ly === LIGHT[1] && k === SHADOW_K) return;
+      NIGHT = n2; DUSK = d2; LIGHT[0] = lx; LIGHT[1] = ly; SHADOW_K = k; schedule();
+    },
+    hour: () => ({ hour: hourOn, night: NIGHT, dusk: DUSK }),
+    /* Sol agora e fachadas do bloco principal que recebem sol (a frente olha para o oeste). */
+    sunInfo(h = hourOn) {
+      if (h == null) return null;
+      const s = sunAt(h); const a = (s.az * Math.PI) / 180;
+      const lit = (az0) => s.el > 2 && Math.cos(a - (az0 * Math.PI) / 180) > 0.12;
+      return { el: Math.round(s.el), az: Math.round(s.az), up: s.el > 0, facades: { norte: lit(0), leste: lit(90), sul: lit(180), oeste: lit(270) } };
+    },
+    /* Copia da planta (window.PLAN) os números e nomes das salas, depois de o app aplicar a numeração da organização. */
+    syncRooms() {
+      FLOORS.forEach((F) => F.zones.forEach((z) => { const r = F.raw.zones.find((q) => q.id === z.id); if (r) Object.assign(z, { roomNumber: r.roomNumber, name: r.name, label: r.label }); }));
       schedule();
     },
     setFlat(v) {
@@ -2213,6 +2413,7 @@
     inStack: () => sv.mix > 0.5,
     state: () => ({ mix: sv.mix, focus: sv.focus, floor: sv.floor, room, hasRoute: !!floorRoute, route: floorRoute && { p: +floorRouteP.toFixed(2), entrance: floorRoute.entrance, via: floorRoute.via } }),
     redraw: schedule,
+    useIcons: USE_D,
     areaOf: (id) => area(byId(id).p),
     hasRoute: (id) => (ROUTES[id] || []).length > 1,
     places: () => ALL.filter((b) => !b.noLabel).map((b) => b.id),

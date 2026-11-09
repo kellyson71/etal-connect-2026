@@ -179,3 +179,16 @@ dialog .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
   .g-3{grid-template-columns:1fr}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* Planta de 2012 e numeração das salas */
+.ref-bar{margin-top:-4px}
+.ref-bar .lbl{font-size:13px;font-weight:600;color:var(--muted)}
+.ref-op{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.ref-note{color:var(--muted)}
+.ref-side{margin:12px 0 0;border-radius:14px;background:#fff;border:1px solid var(--line, #e3e8f1);padding:10px}
+.ref-side img{display:block;width:100%;height:auto}
+.ref-side figcaption,.ref-cap{margin:8px 0 0;font-size:12px;color:var(--muted)}
+table.rooms tr.grp th{background:#f1f4f9;font-size:12.5px;text-transform:none;padding-top:10px}
+table.rooms td.src{max-width:420px;font-size:12.5px;color:var(--muted);line-height:1.4}
+table.rooms td.src a{font-weight:600}
+.num-in{width:84px;padding:6px 8px;border:1px solid var(--line, #d6deea);border-radius:8px;font:600 14px/1.2 Geologica,system-ui,sans-serif;color:inherit;background:#fff}
+.num-in:focus{outline:2px solid #3b63b8;outline-offset:1px}
