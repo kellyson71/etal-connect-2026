@@ -104,6 +104,9 @@
   }
   const buzz = (p) => { try { navigator.vibrate?.(p); } catch (_) { /* sem suporte */ } };
   const SAVE_KEY = 'etal-perfil';
+  const API = window.ETAL_API; // null: só dados de exemplo
+  /* /demo (ou ?demo=1): ferramentas de teste, como os botões que simulam a leitura dos QRs. */
+  const DEMO = /^\/(demo|homologacao)(\/|$)/.test(location.pathname) || new URLSearchParams(location.search).has('demo');
   const DEMO_PERSON = { ...D.person };
   const store = {
     get(k) { try { return JSON.parse(sessionStorage.getItem(k)); } catch (_) { return null; } },
@@ -283,6 +286,11 @@
   let lgPending = null; let lgPhys = null;
 
   function suapFields() {
+    if (API) return `<form class="login-form" data-form="login" novalidate>
+        <p class="lg-note">Você vai para a página do SUAP, entra lá e volta para cá. A sua senha não passa pelo app.</p>
+        <p class="lg-err" id="lgerr" role="alert" hidden></p>
+        <button class="btn primary big" type="submit"><span>Entrar com o SUAP</span><i class="spin"></i></button>
+      </form>`;
     return `<form class="login-form" data-form="login" novalidate>
         <label class="field" for="mat"><span>Matrícula</span><input id="mat" inputmode="numeric" autocomplete="username" placeholder="Sua matrícula do SUAP" required></label>
         <label class="field" for="pwd"><span>Senha</span><div class="pwd"><input id="pwd" type="password" autocomplete="current-password" placeholder="A mesma senha do SUAP" required><button type="button" class="iconbtn sm" data-act="togglepwd" aria-label="Mostrar senha">${ic('eye')}</button></div></label>
@@ -1470,6 +1478,7 @@
       <div class="scan-view">
         <div class="scene"><svg class="scene-bg" viewBox="0 0 400 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><linearGradient id="wl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9dfe6"/><stop offset=".62" stop-color="#b9c1ca"/><stop offset=".62" stop-color="#7b8590"/><stop offset="1" stop-color="#59626d"/></linearGradient></defs><rect width="400" height="700" fill="url(#wl)"/><path d="M0 0 150 190V470L0 700Z" fill="#a6afb9"/><path d="M400 0 250 190V470L400 700Z" fill="#98a2ad"/><rect x="150" y="190" width="100" height="280" fill="#eef1f4"/><path d="M12 70 22 80V530L12 590Z M60 130 70 140V490L60 530Z" fill="#3a5a9b"/><path d="M388 70 378 80V530L388 590Z M340 130 330 140V490L340 530Z" fill="#4f6270"/><path d="M165 60h70l-8 40h-54Z M120 0h160l-20 30H140Z" fill="#fff"/></svg></div>
         <div class="placard-wrap">${placard(spot)}</div>
+        <video class="scan-cam" playsinline muted aria-label="Imagem da câmera"></video>
         <div class="scan-mask"></div>
         <div class="frame"><i></i><i></i><i></i><i></i><span class="scanline"></span></div>
         <div class="torch-glow"></div>
@@ -1480,7 +1489,8 @@
         </div>
         <p class="scan-hint" aria-live="polite"><span>${scanHint(spot)}</span></p>
       </div>
-      <div class="scan-dock">
+      <div class="scan-dock cam-dock ${DEMO ? 'with-demo' : ''}"><p id="camst">Aponte a câmera para o QR da sala ou da recepção.</p><button class="btn soft" data-act="camstart" hidden>Abrir a câmera</button></div>
+      <div class="scan-dock" ${DEMO ? '' : 'hidden'}>
         <p>Simular leitura <em>demonstração</em></p>
         <div class="spots">${Object.entries(SPOTS).map(([k, p]) => `<button class="spot ${k === 'recepcao' && !S.credAt ? 'first' : ''}" data-act="simulate" data-q="${k}"><span>${ic(p.icon)}</span><b>${p.name}</b><small>${p.where}</small></button>`).join('')}</div>
       </div>
@@ -1690,6 +1700,7 @@
     device.classList.toggle('ov-dim', kind === 'share' || kind === 'ask' || kind === 'finder');
   }
   function closeOverlay(then, fromHistory = false) {
+    camStop();
     if (ovNav) { ovNav = false; if (!fromHistory) navDrop(); }
     ov.classList.remove('open');
     device.classList.remove('ov-dark', 'ov-light', 'ov-navy', 'ov-dim', 'ov-retro');
@@ -2095,7 +2106,8 @@
         skyTo(n === undefined ? seq[0] : n);
         break;
       }
-      case 'scan': openOverlay(Overlays.scan(el.dataset.mode || 'ler'), 'scan'); break;
+      case 'scan': openOverlay(Overlays.scan(el.dataset.mode || 'ler'), 'scan'); if ((el.dataset.mode || 'ler') === 'ler') setTimeout(camStart, 350); break;
+      case 'camstart': camStart(); break;
       case 'scanmode': { const r = $('.scanner', ov); if (r.dataset.busy) break; r.dataset.mode = el.dataset.v; $('.scan-seg', ov).style.setProperty('--k', el.dataset.v === 'meu' ? 1 : 0); break; }
       case 'torch': { const r = $('.scanner', ov); const on = r.classList.toggle('torch'); el.setAttribute('aria-pressed', on); break; }
       case 'flip': el.classList.toggle('flipped'); el.classList.remove('hint'); S.flipSeen = true; buzz(8); break;
@@ -2115,13 +2127,14 @@
       case 'ask': openOverlay(Overlays.ask(el.dataset.id), 'ask'); setTimeout(() => $('#qtext')?.focus({ preventScroll: true }), 480); break;
       case 'rate': S.ratings[el.dataset.id] = +el.dataset.n; rerender(); toast('Avaliação enviada'); break;
       case 'closeov': closeOverlay(el.dataset.then ? () => push(el.dataset.then) : null); break;
-      case 'simulate': scanResult(el.dataset.q); break;
+      case 'simulate': if (API && el.dataset.q !== 'colega') demoQr(el.dataset.q); else scanResult(el.dataset.q); break;
       case 'scanopen': scanOpen(el.dataset.q); break;
       case 'scanagain': scanAgain(); break;
       case 'day': S.agendaDay = +el.dataset.day; rerender(); vp.querySelector('.page .agenda-list')?.classList.add('swap'); break;
       case 'filter': S.agendaFilter = el.dataset.f; rerender(); vp.querySelector('.page .agenda-list')?.classList.add('swap'); break;
       case 'save': {
         const id = el.dataset.id;
+        if (API && S.auth) API[S.saved.has(id) ? 'del' : 'post'](`/api/eu/agenda/${encodeURIComponent(id)}`).catch((x) => { toast(x.message); if (S.saved.has(id)) S.saved.delete(id); else S.saved.add(id); rerender(); });
         if (S.saved.has(id)) { S.saved.delete(id); toast('Removida dos salvos'); } else {
           S.saved.add(id);
           const x = byId(id);
@@ -2198,7 +2211,7 @@
       case 'lgredo': { lgPhys?.disarm?.(); lgPending = null; Object.keys(D.person).forEach((k) => delete D.person[k]); Object.assign(D.person, DEMO_PERSON); store.del(SAVE_KEY); $('.login')?.classList.remove('filled'); lgSwap(S.lgMode); lgPhys?.kick(0, 0, -1.1, 1200); break; }
       case 'guestresume': { const g = guestSaved(); if (g) { Object.keys(D.person).forEach((k) => delete D.person[k]); applyProfile(g); store.set(SAVE_KEY, g); lgFilled(g); } break; }
       case 'togglepwd': { const i = $('#pwd'); i.type = i.type === 'password' ? 'text' : 'password'; break; }
-      case 'logout': { const n = navUndo.length; navUndo.length = 0; if (n) { navSkip += 1; history.go(-n); } } S = fresh(); store.del(SAVE_KEY); Object.keys(D.person).forEach((k) => delete D.person[k]); Object.assign(D.person, DEMO_PERSON); vp.innerHTML = ''; show(build({ s: 'login' }), 'fade'); break;
+      case 'logout': { if (API) API.post('/api/auth/sair').catch(() => {}); const n = navUndo.length; navUndo.length = 0; if (n) { navSkip += 1; history.go(-n); } } S = fresh(); store.del(SAVE_KEY); Object.keys(D.person).forEach((k) => delete D.person[k]); Object.assign(D.person, DEMO_PERSON); vp.innerHTML = ''; show(build({ s: 'login' }), 'fade'); break;
       default: break;
     }
   });
@@ -2244,11 +2257,21 @@
       e.preventDefault();
       const err = $('#lgerr'); const say = (m, el) => { err.textContent = m; err.hidden = false; el?.focus(); lgShake(); };
       const v = { name: $('#gname').value.trim(), email: $('#gmail').value.trim(), kind: (gf.querySelector('[name=gkind]:checked') || {}).value, inst: $('#ginst').value.trim(), city: $('#gcity').value.trim() };
-      err.hidden = true;
+      err.hidden = true; err.classList.remove('ok');
       if (v.name.split(/\s+/).length < 2) return say('Escreva o nome e o sobrenome, como devem sair no crachá.', $('#gname'));
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email)) return say('Confira o e-mail: é por ele que chega o certificado.', $('#gmail'));
       if (!v.city) return say('Informe a sua cidade.', $('#gcity'));
       if (!$('#gok').checked) return say('Para criar a conta, é preciso concordar com o uso dos dados.', $('#gok'));
+      if (API) {
+        /* Visitante de verdade: o servidor manda um link de entrada para o e-mail. */
+        const btn = $('button[type="submit"]', gf); btn?.classList.add('loading');
+        try {
+          const j = await API.post('/api/auth/visitante', { nome: v.name, email: v.email, instituicao: v.inst || null, cidade: v.city });
+          err.classList.add('ok'); err.hidden = false;
+          err.innerHTML = j.link ? `Link de teste (sem e-mail configurado): <a href="${esc(j.link)}">entrar</a>` : `Pronto! Enviamos um link de entrada para <b>${esc(v.email)}</b>. Abra o e-mail neste aparelho.`;
+        } catch (x) { say(x.message); } finally { btn?.classList.remove('loading'); }
+        return;
+      }
       const prof = guestProfile(v);
       Object.keys(D.person).forEach((k) => delete D.person[k]); applyProfile(prof);
       store.set(SAVE_KEY, prof); prefs.set('etal-visitante', JSON.stringify(prof));
@@ -2258,6 +2281,7 @@
     const f = e.target.closest('[data-form="login"]');
     if (!f) return;
     e.preventDefault();
+    if (API) { $('button[type="submit"]', f).classList.add('loading'); location.href = API.url('/api/auth/suap'); return; }
     const btn = $('button[type="submit"]', f);
     const err = $('#lgerr');
     const say = (m) => { err.textContent = m; err.hidden = false; lgShake(); };
@@ -2329,6 +2353,136 @@
   orgSync(true);
   window.addEventListener('storage', (e) => { if (e.key === ORG_KEY) orgSync(false); });
 
+  /* ---------------- servidor (config.js → api) ----------------
+     Com a API ligada, programação, perfil, agenda, presenças e avisos vêm do servidor; sem ela, tudo segue de exemplo. */
+  const isoHM = (iso) => (iso ? iso.slice(11, 16) : null);
+  function apiPerson(p) {
+    return { ...DEMO_PERSON, name: p.name, first: p.first, initials: p.initials, course: p.course || (p.source === 'visitante' ? 'Visitante' : ''), courseFull: p.course || '',
+      campus: p.campus || p.city || '', id: p.matricula || p.email || String(p.id), photo: p.photo || null, source: p.source === 'visitante' ? 'guest' : 'suap', org: p.org };
+  }
+  function apiState(me) {
+    Object.keys(D.person).forEach((k) => delete D.person[k]); applyProfile(apiPerson(me.person));
+    S.saved = new Set(me.saved); D.enrolled.length = 0; D.enrolled.push(...me.saved);
+    S.present = { ...me.present }; S.credAt = isoHM(me.person.credentialedAt);
+  }
+  async function apiQr(token) {
+    try {
+      const r = await API.post('/api/presenca', { qr: token });
+      if (r.activity) { S.present[r.activity] = r.time; }
+      if (!S.credAt) S.credAt = r.time;
+      const x = r.activity && byId(r.activity);
+      toast(r.alreadyPresent ? 'Presença já estava registrada' : x ? `Presença registrada: ${x.short}` : 'Credenciamento confirmado');
+      rerender();
+    } catch (x) { toast(x.message); }
+  }
+  /* Câmera de verdade no leitor. Lê com o BarcodeDetector do navegador ou, sem ele (computador, iPhone), com o jsQR.
+     Com o servidor, o QR assinado vai para /api/presenca; sem ele, o app tira a atividade de dentro do QR. */
+  let cam = null;
+  function camStop() {
+    if (!cam) return;
+    cam.stop = true; cam.stream?.getTracks().forEach((t) => t.stop()); cam = null;
+  }
+  let jsqrLoad = null;
+  const loadJsQR = () => jsqrLoad || (jsqrLoad = new Promise((ok, no) => { const sc = document.createElement('script'); sc.src = 'vendor/jsQR.js'; sc.onload = () => ok(window.jsQR); sc.onerror = no; document.head.appendChild(sc); }));
+  async function makeReader(video) {
+    if ('BarcodeDetector' in window) {
+      try {
+        const fm = await window.BarcodeDetector.getSupportedFormats?.();
+        if (!fm || fm.includes('qr_code')) { const det = new window.BarcodeDetector({ formats: ['qr_code'] }); return async () => (await det.detect(video)).map((c) => c.rawValue); }
+      } catch (_) { /* cai no jsQR */ }
+    }
+    const jsQR = await loadJsQR();
+    const cv = document.createElement('canvas'); const cx = cv.getContext('2d', { willReadFrequently: true });
+    return async () => {
+      const w = video.videoWidth; const h = video.videoHeight; if (!w) return [];
+      const k = Math.min(1, 720 / Math.max(w, h)); cv.width = Math.round(w * k); cv.height = Math.round(h * k);
+      cx.drawImage(video, 0, 0, cv.width, cv.height);
+      const r = jsQR(cx.getImageData(0, 0, cv.width, cv.height).data, cv.width, cv.height, { inversionAttempts: 'dontInvert' });
+      return r ? [r.data] : [];
+    };
+  }
+  /* Conteúdo do QR → atividade (sem servidor). Aceita o link /q/<token> e o texto "etal:<atividade>". */
+  function qrActivity(text) {
+    const m = /etal:([\w-]+)/i.exec(text); if (m) return m[1];
+    const t = (/\/q\/([\w.-]+)/.exec(text) || [])[1] || (/^[\w-]+\.[\w-]+$/.test(text) ? text : null);
+    if (!t) return undefined;
+    try { const j = JSON.parse(atob(t.split('.')[0].replace(/-/g, '+').replace(/_/g, '/'))); return j.a || 'recepcao'; } catch (_) { return undefined; }
+  }
+  function demoHit(text) {
+    const q = qrActivity(text); if (q === undefined) return false;
+    const x = byId(q);
+    if (!SPOTS[q]) { if (!x) return false; SPOTS[q] = { name: x.room || 'Sala', sign: x.short, where: floorOf(x.floor ?? 0).label, icon: 'qr', seed: 30 + Object.keys(SPOTS).length * 7 }; }
+    scanResult(q); return true;
+  }
+  let demoQrs = null;
+  async function demoQr(q) {
+    try {
+      demoQrs = demoQrs || await API.get('/api/homologacao/qrs');
+      const it = demoQrs.find((d) => (d.id || 'recepcao') === q) || demoQrs[0];
+      closeOverlay(() => apiQr(it.url));
+    } catch (_) { toast('Os QRs de teste só existem na homologação.'); }
+  }
+  async function camStart() {
+    const st = $('#camst'); const btn = $('[data-act="camstart"]'); const video = $('.scan-cam');
+    const say = (m) => { if (st) st.textContent = m; };
+    if (!video) return;
+    if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) { say('A câmera só abre com o app em HTTPS. Use a câmera do celular: ela abre o ETAL Connect e registra a presença.'); return; }
+    camStop();
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1280 } }, audio: false });
+      if (!$('.scan-cam')) { stream.getTracks().forEach((t) => t.stop()); return; }
+      cam = { stream, stop: false };
+      video.srcObject = stream; await video.play(); video.classList.add('on'); if (btn) btn.hidden = true;
+      say('Aponte para o QR. A leitura é automática.');
+      const read = await makeReader(video);
+      const me = cam; let warned = 0;
+      const tick = async () => {
+        if (me.stop) return;
+        try {
+          const codes = await read();
+          const hit = codes.find((v) => qrActivity(v) !== undefined);
+          if (hit) {
+            buzz([18, 40, 18]);
+            if (API) { camStop(); closeOverlay(() => apiQr(hit)); return; }
+            camStop(); video.classList.remove('on'); if (demoHit(hit)) return;
+          } else if (codes.length && Date.now() - warned > 2500) { warned = Date.now(); say('Esse QR não é do ETAL. Procure o QR da sala ou da recepção.'); }
+        } catch (_) { /* quadro ainda carregando */ }
+        setTimeout(tick, 200);
+      };
+      tick();
+    } catch (x) {
+      say(x && x.name === 'NotAllowedError' ? 'Permita o uso da câmera para ler o QR.' : 'Não foi possível abrir a câmera.');
+      if (btn) btn.hidden = false;
+    }
+  }
+  async function apiStart() {
+    const qs0 = new URLSearchParams(location.search);
+    const qr = qs0.get('qr'); const login = qs0.get('login');
+    if (qr || login) history.replaceState(history.state, '', location.pathname);
+    if (qr) sessionStorage.setItem('etal-qr', qr);
+    try {
+      const prog = await API.get('/api/programacao');
+      const extra = Object.fromEntries(D.sessions.map((x) => [x.id, x]));
+      D.sessions.length = 0; prog.sessions.forEach((x) => D.sessions.push({ ...(extra[x.id] || {}), ...x }));
+      applyRoomNumbers(prog.rooms || {});
+      const av = await API.get('/api/avisos');
+      if (av.length) { D.notices.length = 0; av.forEach((n) => D.notices.push({ time: n.time, title: n.title, text: n.text, org: true })); }
+    } catch (_) { toast('Sem conexão com o servidor: mostrando a programação salva.'); }
+    let me = null;
+    try { me = await API.get('/api/eu'); } catch (_) { /* não entrou */ }
+    API.live({
+      aviso: (n) => { D.notices.unshift({ time: n.time, title: n.title, text: n.text, fresh: true, org: true }); notify(n.title, n.text, n.activity); buzz([20, 40, 20]); if (S.auth && vp.querySelector('.page')) rerender(); },
+      sala: (m) => { const x = byId(m.activity); if (x) { Object.assign(x, { floor: m.floor, zone: m.zone, room: m.room }); if (S.auth) rerender(); } },
+      numeros: (rooms) => { applyRoomNumbers(rooms); if (S.auth) rerender(); },
+    });
+    if (login && login !== 'ok') toast({ erro: 'Não foi possível entrar. Tente de novo.', 'suap-indisponivel': 'O SUAP não respondeu. Tente de novo.', 'link-expirado': 'Esse link expirou. Peça outro.' }[login] || 'Não foi possível entrar.');
+    if (!me) { show(build({ s: 'login' }), 'fade'); return; }
+    apiState(me); splashDone = true; S.auth = true;
+    show(build(top()), 'fade');
+    const pend = sessionStorage.getItem('etal-qr');
+    if (pend) { sessionStorage.removeItem('etal-qr'); setTimeout(() => apiQr(pend), 600); }
+  }
+
   /* ---------------- início ---------------- */
   setInterval(checkReminders, 30000); netState();
   const openParam = new URLSearchParams(location.search).get('abrir');
@@ -2349,6 +2503,7 @@
   matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => { if (UI.mode === 'auto') { applyUI(); rerender(); } });
   if (mapSaved && mapSaved.seen ? mapSaved.flat : UI.view === '2d') window.Campus3D.setFlat(true);
   if (q === 'login') splashDone = true;
+  if (!q && API) { apiStart(); return; }
   if (!q) {
     const saved = store.get(SAVE_KEY);
     if (saved) { applyProfile(saved); splashDone = true; S.auth = true; show(build(top()), 'fade'); return; }

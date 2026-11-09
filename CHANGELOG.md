@@ -2,6 +2,17 @@
 
 O projeto segue o git flow: `main` tem só versões publicadas, `develop` junta as funcionalidades e cada uma nasce num ramo `feature/*`.
 
+## 0.3.0 (2026-11-09)
+
+O app passa a funcionar de verdade, com servidor.
+
+- API em FastAPI com banco (SQLite para desenvolver, PostgreSQL em produção): entrada pelo SUAP (OAuth2) e de visitante por link no e-mail, programação, agenda com vagas, presença por QR assinado, avisos ao vivo e painel da organização.
+- App e painel ligados à API; sem ela, seguem com os dados de exemplo.
+- Leitor de QR com a câmera do aparelho (BarcodeDetector ou jsQR) e QR lido pela câmera do celular abrindo o app.
+- Página `/homologacao` com entrada de teste e os QRs para ler; `/demo` com as ferramentas de teste no leitor.
+- Versão de teste na Vercel (API como função Python e PostgreSQL Neon), publicada a cada push no GitHub.
+- Implantação no IFRN com Docker Compose e Caddy; testes no GitHub Actions.
+
 ## 0.2.0 (2026-11-09)
 
 Mapa e planta revisados com o campus de hoje.

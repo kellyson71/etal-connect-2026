@@ -1,0 +1,32 @@
+{$DOMINIO} {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		Permissions-Policy "geolocation=(self), camera=(self)"
+		-Server
+	}
+	@api path /api/* /q/*
+	handle @api {
+		reverse_proxy api:8000 {
+			flush_interval -1
+		}
+	}
+	rewrite /homologacao /homologacao.html
+	# Em produção o app fala com a API na mesma origem.
+	handle /config.js {
+		header Content-Type "text/javascript; charset=utf-8"
+		header Cache-Control "no-cache"
+		respond "window.ETAL_CONFIG = { api: '' };" 200
+	}
+	# O app (PWA). O service worker não pode ficar em cache longo.
+	handle {
+		root * /srv/app
+		@privado path /server.py /server.log /rodar.sh /requirements.txt /.venv/*
+		respond @privado 404
+		header /sw.js Cache-Control "no-cache"
+		try_files {path} /index.html
+		file_server
+	}
+}
