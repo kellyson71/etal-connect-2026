@@ -2667,7 +2667,41 @@ window.SPRITES = {"trees": [{"radius": 0.36982399225234985, "height": 1.22623991
     const ha = Math.max(0.2, AUD_H * g);
     const aud = () => { draw('auditorio', PIECES.auditorio, ha, 0, true); if (g > 0.6) draw('escada', STAIR_TOWER, h, ha, false); };
     const main = () => draw('principal', PIECES.principal, h, 0, false);
-    if (depth(...centroid(PIECES.auditorio)) < depth(...centroid(PIECES.principal))) { aud(); main(); } else { main(); aud(); }
+    const ent = () => draw('entrada', entryPoly(), Math.max(0.2, ENTRY_H * g), 0, false);
+    /* Do mais distante para o mais próximo: o bloco de entrada fica na frente da fachada. */
+    [[PIECES.auditorio, aud], [PIECES.principal, main], [entryPoly(), ent]]
+      .sort((u, v) => depth(...centroid(u[0])) - depth(...centroid(v[0]))).forEach(([, f]) => f());
+  }
+  /* Entrada do bloco principal: o volume que sai do térreo (planta de 2012, x 860–922, y 542–614), revestido de
+     pastilha azul até a cobertura do pátio, com o painel branco do "Bem-vindo", o letreiro e a porta de vidro. */
+  const ENTRY_H = 6.2;
+  let entryQ = null;
+  const entryPoly = () => entryQ || (entryQ = [[860, 542], [922, 542], [922, 614], [860, 614]].map(wp));
+  const ENTRY_BLUE = [40, 62, 158];
+  function drawEntry(q, h, c, ev) {
+    const part = ev && c.parts && c.parts.principal;
+    drawExtruded(q, h, c, { wall: part ? part.wall : ENTRY_BLUE, roof: part ? part.roof : '#2a44a4', edge: part ? mix(part.wall, 0.8) : '#1a2b6e', floors: 0 });
+    if (ev || h < ENTRY_H * 0.85 || cam.z < 1.2 || !Q.view3d || cam.hv < 0.2) return;
+    const m = centroid(q);
+    const quad = (a, e, u0, u1, h0, h1) => { const A = lerp2(a, e, u0), B = lerp2(a, e, u1); const pts = [P(A[0], A[1], h0), P(B[0], B[1], h0), P(B[0], B[1], h1), P(A[0], A[1], h1)]; ctx.beginPath(); pts.forEach((z, i) => (i ? ctx.lineTo(z[0], z[1]) : ctx.moveTo(z[0], z[1]))); ctx.closePath(); };
+    q.forEach((a, i) => {
+      const e = q[(i + 1) % q.length];
+      if (!faceSeen(a, e, m)) return;
+      /* Pastilhas: grade clara bem fina, só de perto. */
+      if (cam.z > 2.2) {
+        const L = Math.hypot(e[0] - a[0], e[1] - a[1]); ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.lineWidth = 0.6; ctx.beginPath();
+        for (let k = 1; k < L / 0.45; k++) { const u = lerp2(a, e, k * 0.45 / L), s0 = P(u[0], u[1], 0), s1 = P(u[0], u[1], h); ctx.moveTo(s0[0], s0[1]); ctx.lineTo(s1[0], s1[1]); }
+        for (let y = 0.45; y < h; y += 0.45) { const s0 = P(a[0], a[1], y), s1 = P(e[0], e[1], y); ctx.moveTo(s0[0], s0[1]); ctx.lineTo(s1[0], s1[1]); }
+        ctx.stroke();
+      }
+      /* Frente (a face que olha para a portaria, y = 614 na planta): painel, letreiro e porta. */
+      if (i !== 2) return;
+      quad(a, e, 0.12, 0.88, 4.0, 5.8); ctx.fillStyle = '#f4f6f8'; ctx.fill();
+      faceText(lerp2(a, e, 0.12), lerp2(a, e, 0.88), 4.4, 5.4, 'Bem-vindo(a)!', '#3f8f1a', 0.02);
+      faceText(lerp2(a, e, 0.08), lerp2(a, e, 0.92), 2.9, 3.6, 'BLOCO PRINCIPAL', '#ffffff', 0.02);
+      quad(a, e, 0.3, 0.7, 0, 2.5); ctx.fillStyle = '#1b222c'; ctx.fill();
+      quad(a, e, 0.49, 0.51, 0, 2.5); ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.fill();
+    });
   }
   /* Janelas altas e estreitas do auditório, abaixo da faixa de pastilha. */
   function drawAudWindows(p, h, col) {
@@ -2898,7 +2932,7 @@ window.SPRITES = {"trees": [{"radius": 0.36982399225234985, "height": 1.22623991
         if (aud) drawAudWindows(poly0, hh, c.evWindow);
       };
       if (b.id === 'principal') {
-        principalParts(g, h, (id, q, hh, base, aud) => piece(id === 'escada' ? 'principal' : id, q, hh, base, aud));
+        principalParts(g, h, (id, q, hh, base, aud) => (id === 'entrada' ? drawEntry(q, hh, c, true) : piece(id === 'escada' ? 'principal' : id, q, hh, base, aud)));
         if (b.court && g > 0.85) drawWell(b, h, c, mix(c.parts.principal.wall, 0.72));
         return;
       }
@@ -2923,6 +2957,7 @@ window.SPRITES = {"trees": [{"radius": 0.36982399225234985, "height": 1.22623991
     }
     const opts = { wall: sel ? c.accentWall : c.wall, roof: sel ? c.accent : c.roof, edge: sel ? c.accent : mix(c.band || [120, 130, 160], 1), floors: b.floors, window: sel ? 'rgba(255,255,255,.28)' : NIGHT > 0.3 && b.id === 'anexo' ? WARM : c.window, tex: !sel && !(NIGHT > 0.3 && b.id === 'anexo'), roofTex: sel ? null : 'roof', band: sel ? null : c.band };
     if (b.id === 'principal') principalParts(g, h, (id, q, hh, base, aud) => {
+      if (id === 'entrada') { drawEntry(q, hh, c, false); return; }
       drawExtruded(q, hh, c, aud ? { ...opts, floors: 0, tex: false, band: sel ? null : c.band && c.band.map((v) => Math.round(v * 1.05)) } : { ...opts, base });
       if (aud) drawAudWindows(q, hh, opts.window);
       else if (id === 'principal' && b.ridges && !sel && g > 0.85 && cam.z > 1.1) drawRidges(q, hh, c);
@@ -2985,7 +3020,18 @@ window.SPRITES = {"trees": [{"radius": 0.36982399225234985, "height": 1.22623991
     for (let i = 0; i < n; i++) { const a0 = at(i / n, h - deep), m = at((i + 0.5) / n, h), a1 = at((i + 1) / n, h - deep); ctx.moveTo(a0[0], a0[1]); ctx.lineTo(m[0], m[1]); ctx.lineTo(a1[0], a1[1]); }
     ctx.stroke();
   }
+  /* A cobertura do pátio fica por cima do bloco de entrada azul: ali ela some, como se fosse transparente,
+     para a entrada aparecer no mapa. */
   function drawCover(b, c) {
+    if (b.id !== 'patio') { drawCoverBody(b, c); return; }
+    const q = entryPoly();
+    const sil = hull([...q.map((v) => P(v[0], v[1], 0)), ...q.map((v) => P(v[0], v[1], ENTRY_H))]);
+    ctx.save(); ctx.beginPath(); ctx.rect(-1e5, -1e5, 2e5, 2e5);
+    sil.forEach((u, i) => (i ? ctx.lineTo(u[0], u[1]) : ctx.moveTo(u[0], u[1]))); ctx.closePath(); ctx.clip('evenodd');
+    drawCoverBody(b, c);
+    ctx.restore();
+  }
+  function drawCoverBody(b, c) {
     const p = b.p; const g = growOf(...centroid(p)); const h = Math.max(0.2, b.h * g);
     const sel = selected === b.id;
     /* pilares nos cantos e no meio dos lados maiores */
