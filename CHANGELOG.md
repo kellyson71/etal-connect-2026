@@ -2,6 +2,10 @@
 
 O projeto segue o git flow: `main` tem só versões publicadas, `develop` junta as funcionalidades e cada uma nasce num ramo `feature/*`.
 
+## 0.4.2 (2026-11-09)
+
+- Bloco de entrada do bloco principal no modelo do campus: o volume que sai do térreo, com pastilha azul, painel de boas-vindas, letreiro e porta de vidro, visível através da cobertura do pátio.
+
 ## 0.4.1 (2026-11-09)
 
 - Pátio interno: a mureta fecha também as pontas do vão, ligando as salas dos dois lados.
