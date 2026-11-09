@@ -1,11 +1,51 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Como editar e gerar novamente · ETAL Connect</title><style>*{box-sizing:border-box}body{margin:0;background:#f4f7fb;color:#293f62;font:16px/1.75 system-ui,sans-serif}main{max-width:980px;margin:auto;padding:45px 28px 80px}a{color:#345e9b;text-underline-offset:4px}nav{display:flex;flex-wrap:wrap;gap:10px 22px;font-size:14px;margin-bottom:40px}h1{font-size:clamp(30px,5vw,46px);line-height:1.15;letter-spacing:-1.4px;max-width:780px}h2{font-size:23px;margin:38px 0 12px;line-height:1.4}p,ul,ol{margin:14px 0}li{margin:8px 0}.meta{color:#71839f;font-size:14px;margin-top:20px}.card{display:block;background:white;border:1px solid #dce5f1;padding:22px;border-radius:14px;text-decoration:none;margin:14px 0}.card strong{display:block;font-size:20px}.card span{color:#71839f}table{width:100%;border-collapse:collapse;background:white;font-size:14px;display:block;overflow:auto}th,td{border:1px solid #dce5f1;padding:12px;text-align:left}pre{background:#233b64;color:#ecf5ff;padding:22px;border-radius:10px;overflow:auto}code{font-size:.9em;overflow-wrap:anywhere}footer{border-top:1px solid #dce5f1;padding-top:20px;margin-top:50px;font-size:13px;color:#71839f}.badge{display:inline-block;border-radius:40px;padding:5px 12px;background:#d7eee5;font-size:12px;margin-bottom:20px}</style></head><body><main><nav><a href="../DOCUMENTACAO.html">Documentação</a><a href="../index.html">Abrir aplicativo</a><a href="../maps/bloco-principal.svg">Planta dos três andares</a></nav><span class="badge">ETAL CONNECT · EXPORTAÇÃO LOCAL</span><h1>Como editar e gerar novamente</h1><p class="meta">Exportado em 07/11/2026 · Protótipo independente · Dados demonstrativos</p>
-<h2>Conteúdo da pasta</h2><table><tr><th>Arquivo/pasta</th><th>Finalidade</th></tr><tr><td>index.html</td><td>Aplicativo exportado, pronto para duplo clique, sem instalação.</td></tr><tr><td>DOCUMENTACAO.html</td><td>Índice desta documentação.</td></tr><tr><td>app/</td><td>Fonte React/TypeScript e dados do protótipo.</td></tr><tr><td>public/</td><td>Recursos do projeto web original.</td></tr><tr><td>maps/</td><td>Prancha SVG usada pela versão HTML.</td></tr><tr><td>referencias/</td><td>KML, JSON, procedência e anotações enviadas pelo usuário.</td></tr><tr><td>exportacao/</td><td>Fontes locais, licenças e metadados para regenerar o HTML.</td></tr><tr><td>scripts/</td><td>Geradores da planta e da exportação; ferramentas do projeto original.</td></tr><tr><td>.openai/hosting.json</td><td>Identidade do Site original. Não é credencial e não publica automaticamente.</td></tr><tr><td>EXPORTACAO.json</td><td>Data, commit de origem e URL publicada.</td></tr></table>
-<h2>Abrir sem instalar</h2><p>Abra <code>index.html</code> no Chrome. CSS, JavaScript, fontes, QR ilustrativos e logotipo utilizados estão incorporados. A prancha abre pelo caminho relativo <code>maps/bloco-principal.svg</code>; mantenha essa pasta junto ao HTML. Links SUAP e referências externas continuam externos.</p><p>A exportação usa navegação por fragmentos <code>#tela=...</code> para funcionar em <code>file://</code>. O aplicativo hospedado original usa parâmetros <code>?tela=...</code>. Esse ajuste é aplicado somente durante a exportação e não altera o código-fonte da experiência hospedada.</p>
-<h2>Editar e atualizar a exportação</h2><p>Use Node.js 22.13 ou superior e npm. A primeira instalação requer internet. As dependências não foram incluídas na entrega.</p><pre>npm ci
-# editar app/ ou public/
-python3 scripts/build-principal-plan.py  # somente ao mudar a geometria
-npm run export:html
-python3 scripts/build-export-docs.py     # somente ao mudar esta documentação</pre><p>Reabra <code>index.html</code> após gerar. Opcionalmente, sirva a pasta com <code>npm run preview:html</code> e abra <code>http://127.0.0.1:8080</code>.</p>
-<h2>Bibliotecas e arquitetura atuais</h2><p>React 19 e TypeScript; React Native for Web para View, Text, Pressable, TextInput e StyleSheet; React Hook Form; Motion; Lucide; react-zoom-pan-pinch; CSS/Tailwind. O projeto original usa Vinext/Vite e infraestrutura de Sites/Cloudflare. A exportação HTML usa Vite diretamente, sem servidor e sem hospedar nada.</p><p><code>app/components/etal-app.tsx</code> concentra navegação e estado. Os mapas e campeonatos têm componentes separados. <code>app/components/native.ts</code> importa os módulos React Native Web individualmente. No Site original, <code>app/page.tsx</code> carrega o aplicativo apenas no cliente com <code>ssr:false</code>; manter isso ao trabalhar na versão hospedada.</p>
-<h2>Publicação e histórico</h2><p>A cópia não inclui histórico Git, credenciais, .env, node_modules ou caches. A origem permanece intacta em <code>/home/kellyson/etal-connect-2026</code>. Nenhum repositório foi enviado ao GitHub e esta exportação não altera a versão hospedada.</p><p>A configuração de hospedagem retida pertence ao Site existente; não reutilizar sua identidade para publicar outro projeto sem decidir isso explicitamente. A versão HTML pode ser hospedada como site estático, preservando os caminhos relativos e a pasta maps.</p>
-<footer>Esta documentação preserva decisões da conversa para continuidade. Não constitui documentação oficial do IFRN, SUAP, NADIC ou do evento.</footer></main></body></html>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Estrutura e execução · ETAL Connect</title><link rel="stylesheet" href="assets/documentacao.css"></head><body class="note-page"><header class="toolbar"><a href="../DOCUMENTACAO.html" class="btn">← Documentação visual</a></header><main class="notes"><div class="eyebrow">Consulta técnica</div><div class="reference-body"><h2>04 · Estrutura, modos e execução</h2>
+<h2>Peças do projeto</h2>
+<div class="table-scroll"><table><thead><tr><th>Caminho</th><th>Responsabilidade</th></tr></thead><tbody>
+<tr><td>prototipo/</td><td>Produto atual: app de celular e painel desktop</td></tr>
+<tr><td>prototipo/app.js e app.css</td><td>Telas, navegação, estado e apresentação</td></tr>
+<tr><td>prototipo/api.js e config.js</td><td>Cliente da API e escolha do modo</td></tr>
+<tr><td>prototipo/campus3d.js</td><td>Motor único do mapa, em Canvas</td></tr>
+<tr><td>prototipo/plan-data.js</td><td>Planta gerada dos três andares</td></tr>
+<tr><td>prototipo/admin.html, admin.js e admin.css</td><td>Painel da organização</td></tr>
+<tr><td>prototipo/server.py</td><td>Servidor local e simulação autorizada de login com SuaPy</td></tr>
+<tr><td>backend/app/main.py</td><td>Aplicação FastAPI e redirecionamento /q/{token}</td></tr>
+<tr><td>backend/app/rotas/</td><td>Autenticação, participante, público, organização e homologação</td></tr>
+<tr><td>backend/app/modelos.py e db.py</td><td>Modelo SQLAlchemy, conexão e sessão do banco</td></tr>
+<tr><td>backend/app/seguranca.py</td><td>Cookies, assinaturas de QR e papéis</td></tr>
+<tr><td>backend/app/ao_vivo.py</td><td>Canal SSE em memória</td></tr>
+<tr><td>backend/tests/</td><td>Testes de API com pytest</td></tr>
+<tr><td>deploy/</td><td>Caddy + API + PostgreSQL em Docker Compose</td></tr>
+<tr><td>api/index.py e vercel.json</td><td>Configuração alternativa de função Python e arquivos estáticos</td></tr>
+<tr><td>app/</td><td>Primeira versão React / Vinext; legado</td></tr>
+<tr><td>modelo-3d/</td><td>Cópia congelada do mapa; não editar</td></tr>
+</tbody></table></div>
+<h2>Caminho de uma chamada</h2>
+<p>No modo integrado: app → api.js → HTTP /api → FastAPI → dependências de sessão / permissão → SQLAlchemy → banco → JSON → interface.</p>
+<p>No Docker: Caddy entrega os arquivos e encaminha /api e /q para a API. O navegador não conecta diretamente ao PostgreSQL.</p>
+<h2>Escolha do modo</h2>
+<div class="table-scroll"><table><thead><tr><th>Valor de api em config.js</th><th>Efeito</th></tr></thead><tbody>
+<tr><td>null</td><td>Demonstração no navegador, sem cliente da API</td></tr>
+<tr><td>http://127.0.0.1:8011</td><td>API local em outra porta; exige CORS compatível</td></tr>
+<tr><td>string vazia</td><td>API na mesma origem; configuração entregue pelo deploy</td></tr>
+</tbody></table></div>
+<p>O cliente envia cookies com credentials: include. Ao iniciar com API, lê programação, avisos e perfil. O modo de avisos é SSE por padrão; vivo: consulta muda para consultas a cada 12 segundos.</p>
+<h2>Offline</h2>
+<p>O service worker guarda arquivos do app e mapa. /api/ e /q/ ficam fora do cache. Sem conexão, pode ser mostrada a programação de exemplo embutida. A última programação vinda da API e presenças pendentes não têm sincronização offline implementada. As notificações atuais são locais; não há push de servidor com o app fechado.</p>
+<h2>Rodar localmente</h2>
+<pre><code># App demonstrativo, na raiz
+sh prototipo/rodar.sh
+# http://127.0.0.1:8770</code></pre>
+<pre><code># API, na pasta backend; ambiente virtual já instalado
+.venv/bin/python -m app.importar programacao seed/programacao.json
+ETAL_LOGIN_DEV=1 .venv/bin/uvicorn app.main:app --port 8011
+# http://127.0.0.1:8011/api/docs</code></pre>
+<p>Para conectar o app à API, configurar api com o endereço local em prototipo/config.js e liberar a origem em ETAL_ORIGENS. Usar o modo de desenvolvimento apenas no ambiente de teste. A apresentação e suas capturas não mudam essa configuração.</p>
+<h2>Gerar e manter</h2>
+<pre><code>npm run planta       # somente ao alterar a geometria, na fonte scripts/build-principal-plan.py
+npm run pwa          # depois de mudar arquivos do protótipo
+npm run export:html  # gera index.html da raiz a partir de prototipo/
+npm run docs         # gera documentação, sem alterar o app</code></pre>
+<p>Não editar o index.html gerado. Preservar a geometria e as regras em docs/mapas.html. Atualizar a documentação local não publica nem muda o compartilhamento do Site original.</p>
+<h2>Implantação e limites</h2>
+<p>Docker Compose usa PostgreSQL 16 e Caddy. A API roda com um processo porque o SSE vive na memória. Escalar exige distribuir os eventos por outro mecanismo. A configuração Vercel usa função Python e consulta periódica, com PostgreSQL externo. A existência desses arquivos não é evidência de implantação ativa.</p>
+<p>O workflow backend.yml contém testes e uma etapa condicional de implantação. A documentação não presume uma rotina git flow nem um histórico de releases apenas por existir uma sugestão de fluxo.</p></div></main></body></html>

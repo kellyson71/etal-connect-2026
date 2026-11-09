@@ -1,5 +1,7 @@
 # ETAL Connect
 
+**[Documentação visual do projeto →](DOCUMENTACAO.html)** — 22 slides dinâmicos com plantas e referências reais, app e mapa interativos, fluxos, PWA, arquitetura, banco e Swagger. Os detalhes ficam nas referências ao final; para regenerar, `npm run docs`.
+
 Proposta de aplicativo para o **ETAL**, o Encontro de Tecnologia do Alto Oeste Potiguar, no IFRN Campus Pau dos Ferros. O NADIC desenvolve o app em parceria com o IFRN e o ETAL. A referência de funcionamento é o app do GO!RN: crachá, programação, presença, mapa e avisos num lugar só.
 
 <p>
