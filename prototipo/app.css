@@ -1497,3 +1497,5 @@ button.teacher{width:100%;text-align:left;padding:8px 10px;margin:0 -2px;border-
 .scan-cam.on~.scan-mask,.scan-cam.on~.frame,.scan-cam.on~.scan-top,.scan-cam.on~.scan-hint{z-index:2}
 .cam-dock{padding:16px 22px 28px;text-align:center}
 .cam-dock p{margin:0 0 10px;font-size:14px;line-height:1.4;color:var(--ink-2)}
+.cam-dock.with-demo{padding-bottom:6px}
+.cam-dock.with-demo+.scan-dock{margin-top:0;border-radius:0}
