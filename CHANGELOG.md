@@ -2,6 +2,11 @@
 
 O projeto segue o git flow: `main` tem só versões publicadas, `develop` junta as funcionalidades e cada uma nasce num ramo `feature/*`.
 
+## 0.4.1 (2026-11-09)
+
+- Pátio interno: a mureta fecha também as pontas do vão, ligando as salas dos dois lados.
+- Na vista de fora, o pátio aparece fundo, no térreo, com as varandas do 1º e do 2º andar.
+
 ## 0.4.0 (2026-11-09)
 
 Primeiro teste como produção.
