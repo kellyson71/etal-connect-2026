@@ -20,6 +20,7 @@
 
   function drawDatabase() {
     const graph = document.querySelector('.db-graph');
+    if (!graph) return;
     const svg = graph.querySelector('.db-wires');
     const area = graph.getBoundingClientRect();
     const ratio = graph.offsetWidth / area.width;
@@ -128,7 +129,7 @@
   previous.addEventListener('click', () => go(current - 1));
   next.addEventListener('click', () => go(current + 1));
   document.querySelectorAll('[data-references]').forEach(button => button.addEventListener('click', () => references()));
-  document.querySelector('[data-outline]').addEventListener('click', () => openDialog(outlineDialog));
+  document.querySelector('[data-outline]')?.addEventListener('click', () => openDialog(outlineDialog));
   document.querySelectorAll('dialog').forEach(dialog => {
     dialog.querySelector('[data-close]').addEventListener('click', () => dialog.close());
     dialog.addEventListener('close', () => setTimeout(loadCurrent, 50));
@@ -151,7 +152,7 @@
       target.scrollIntoView({block:'start'});
     }
   }));
-  document.querySelector('[data-fullscreen]').addEventListener('click', async () => {
+  document.querySelector('[data-fullscreen]')?.addEventListener('click', async () => {
     try {
       if (document.fullscreenElement) await document.exitFullscreen();
       else await document.documentElement.requestFullscreen();
@@ -178,13 +179,13 @@
     if (group) group.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b === button)));
   }));
   document.querySelectorAll('[data-compare] input').forEach(input => input.addEventListener('input', () => input.closest('[data-compare]').style.setProperty('--split', input.value + '%')));
-  document.querySelector('[data-gps]').addEventListener('click', event => {
+  document.querySelector('[data-gps]')?.addEventListener('click', event => {
     const button = event.currentTarget;
     const on = button.getAttribute('aria-pressed') !== 'true';
     button.setAttribute('aria-pressed', String(on));
     document.querySelector('[data-route-art]').classList.toggle('simulating', on);
   });
-  document.querySelector('[data-offline]').addEventListener('click', event => {
+  document.querySelector('[data-offline]')?.addEventListener('click', event => {
     const button = event.currentTarget;
     const off = button.getAttribute('aria-pressed') !== 'true';
     button.setAttribute('aria-pressed', String(off));
@@ -222,14 +223,14 @@
     document.querySelector('[data-schema]').dataset.schema = button.dataset.table;
     document.querySelectorAll('[data-table]').forEach(b => b.classList.toggle('selected', data.related.includes(b.dataset.table)));
   }));
-  document.querySelector('[data-schema]').addEventListener('click', event => references('schema-' + event.currentTarget.dataset.schema));
+  document.querySelector('[data-schema]')?.addEventListener('click', event => references('schema-' + event.currentTarget.dataset.schema));
   document.querySelectorAll('[data-swagger]').forEach(button => button.addEventListener('click', () => {
     const img = document.querySelector('[data-swagger-image]');
     img.src = new URL(button.dataset.swagger, assetBase).href;
     img.alt = button.dataset.swagger.includes('saude') ? 'GET /api/saude executado no Swagger: resposta HTTP 200 e ok true' : button.dataset.swagger.includes('presenca') ? 'Contrato POST /api/presenca no Swagger' : 'Swagger da API atual do ETAL Connect';
     document.querySelectorAll('[data-swagger]').forEach(b => b.setAttribute('aria-pressed', String(b === button)));
   }));
-  document.querySelector('[data-hour]').addEventListener('input', event => {
+  document.querySelector('[data-hour]')?.addEventListener('input', event => {
     const h = Number(event.target.value);
     document.querySelector('[data-hour-output]').value = `${String(Math.floor(h)).padStart(2,'0')}:${String(Math.round((h%1)*60)).padStart(2,'0')}`;
     cancelAnimationFrame(hourFrame);
