@@ -1,0 +1,128 @@
+[
+  {
+    "arquivo": "street-apartamentos.webp",
+    "origem": "Google Maps / Street View · print do usuário, 09/11/2026",
+    "original": "screenshot-2026-11-09_04.16.52.png",
+    "legenda": "Apartamentos em frente ao campus — Street View, imagem de outubro de 2024.",
+    "sha256_original": "f0180c24785187cae0ce221902f14ed6e4a476bf7125b287fb01a9b733adf94c"
+  },
+  {
+    "arquivo": "street-br405.webp",
+    "origem": "Google Maps / Street View · print do usuário, 09/11/2026",
+    "original": "screenshot-2026-11-09_04.17.57.png",
+    "legenda": "BR-405 e acesso ao campus — referência de localização e entorno.",
+    "sha256_original": "da910af9a6693892a1cd14b650eddd6f4629573d58e2fb840a543f30b7aebdf7"
+  },
+  {
+    "arquivo": "street-arvores.webp",
+    "origem": "Google Maps / Street View · print do usuário, 09/11/2026",
+    "original": "screenshot-2026-11-09_04.18.19.png",
+    "legenda": "Árvores e calçada junto à entrada — referência visual do entorno.",
+    "sha256_original": "aadedb0d04b0a49f381857e11ef34fa1b5ad2a21034911dd0cf42398bc017367"
+  },
+  {
+    "arquivo": "street-brisanet.webp",
+    "origem": "Google Maps / Street View · print do usuário, 09/11/2026",
+    "original": "screenshot-2026-11-09_04.17.25.png",
+    "legenda": "Galpão e estacionamento — referência do Google Street View.",
+    "sha256_original": "f22299dd37b4131d283f7e361f59d1b156ddea72d04a3927f6d62942fb1572bf"
+  },
+  {
+    "arquivo": "satelite-jardim.webp",
+    "origem": "Google Maps / Earth · recorte do usuário, 09/11/2026",
+    "original": "screenshot-2026-11-09_12.59.54.png",
+    "legenda": "Jardim da entrada, com contornos e árvores do levantamento.",
+    "sha256_original": "41b7ade1c6f38c647397a53527ff19267e9b088ee22056a6f7d53b1e57965c08"
+  },
+  {
+    "arquivo": "satelite-caminhos.webp",
+    "origem": "Google Maps / Earth · recorte do usuário, 09/11/2026",
+    "original": "screenshot-2026-11-09_13.02.18.png",
+    "legenda": "Caminhos e encontro central do jardim, marcados sobre a imagem.",
+    "sha256_original": "a0f45468db4935b23adddb22018bae7accadbc193e2999f8b9bd14db3204898c"
+  },
+  {
+    "arquivo": "satelite-canteiros.webp",
+    "origem": "Google Maps / Earth · recorte do usuário, 09/11/2026",
+    "original": "screenshot-2026-11-09_13.02.43.png",
+    "legenda": "Comparação dos canteiros e da circulação da entrada.",
+    "sha256_original": "770ab192dc4bb334372ba0d5bae1c083fe848147dd62f910e552326d81f311b1"
+  },
+  {
+    "arquivo": "satelite-campus.webp",
+    "origem": "Imagem fornecida pelo usuário durante o desenvolvimento do projeto",
+    "original": "21.png",
+    "legenda": "Levantamento do conjunto de prédios sobre a imagem de satélite.",
+    "sha256_original": "d46d5005790d3f2698306edded41ba94bb7ac0bb0a7196d0032ae5b67aade366"
+  },
+  {
+    "arquivo": "satelite-terreno.webp",
+    "origem": "Imagem fornecida pelo usuário durante o desenvolvimento do projeto",
+    "original": "22.png",
+    "legenda": "Contorno do campus e construções de fundo.",
+    "sha256_original": "06273b2f396165dd838b5f2cc210c4a143a1455edba7d62098137bf7e813b2f9"
+  },
+  {
+    "arquivo": "satelite-geral.webp",
+    "origem": "Imagem fornecida pelo usuário durante o desenvolvimento do projeto",
+    "original": "25.png",
+    "legenda": "Vista geral do campus e vizinhança.",
+    "sha256_original": "cc21a0fcf979f658f2d6aa609b386a941bce8093976177bec984201a00840d1a"
+  },
+  {
+    "arquivo": "campus-fachada.webp",
+    "origem": "Imagem fornecida pelo usuário durante o desenvolvimento do projeto",
+    "original": "27.png",
+    "legenda": "Fachada do campus usada como referência visual.",
+    "sha256_original": "30948d27d654b8a104340f474d422a89f1ae98714c45f78f0008f2a268469267"
+  },
+  {
+    "arquivo": "campus-patio.webp",
+    "origem": "Imagem fornecida pelo usuário durante o desenvolvimento do projeto",
+    "original": "28.png",
+    "legenda": "Pátio interno e circulação entre os pavimentos.",
+    "sha256_original": "6df28534334b070846d3f748b9d644677ec8b8f3f8622b49a7bf65f39ad8fcb5"
+  },
+  {
+    "arquivo": "campus-lateral.webp",
+    "origem": "Imagem fornecida pelo usuário durante o desenvolvimento do projeto",
+    "original": "29.png",
+    "legenda": "Fachada lateral e tonalidades reais do bloco principal.",
+    "sha256_original": "9a1ef1abe77ce8de049da58ffe14c8538c474ddea74d4e5174432678ae1b4f2f"
+  },
+  {
+    "arquivo": "campus-obelisco.webp",
+    "origem": "Imagem fornecida pelo usuário durante o desenvolvimento do projeto",
+    "original": "30.png",
+    "legenda": "Obelisco e passarela da entrada.",
+    "sha256_original": "0f4d9cb3114f9020bab4a8df4da043299f0cddb61e22431fa3a19ad51e1dda19"
+  },
+  {
+    "arquivo": "campus-auditorio.webp",
+    "origem": "Imagem fornecida pelo usuário durante o desenvolvimento do projeto",
+    "original": "31.png",
+    "legenda": "Auditório curvo com faixa de pastilha azul, abaixo dos pavimentos do bloco.",
+    "sha256_original": "a0ef7db6a6fcaf5bfce98ff8b0f205bc12c9cb748cea950677a5248453198821"
+  },
+  {
+    "arquivo": "planta-2012-0.webp",
+    "origem": "Souza, Larissa Leiros de. UFRN, 2012, figuras 9 a 11, páginas impressas 132–133.",
+    "original": "andar-0.png",
+    "legenda": "Planta original de 2012 — térreo.",
+    "sha256_original": "44407a07c4102376e5dcf548e4e06e2c5757d34571b0266a092c35cd3c3a198e"
+  },
+  {
+    "arquivo": "planta-2012-1.webp",
+    "origem": "Souza, Larissa Leiros de. UFRN, 2012, figuras 9 a 11, páginas impressas 132–133.",
+    "original": "andar-1.png",
+    "legenda": "Planta original de 2012 — 1º pavimento.",
+    "sha256_original": "1017b317c7bcf5edcd32be8fb85644ce3778bfca65184d273c0490887be0ec40"
+  },
+  {
+    "arquivo": "planta-2012-2.webp",
+    "origem": "Souza, Larissa Leiros de. UFRN, 2012, figuras 9 a 11, páginas impressas 132–133.",
+    "original": "andar-2.png",
+    "legenda": "Planta original de 2012 — 2º pavimento.",
+    "sha256_original": "4f4c3294afbe88b84cbc83cc561df56a8c64103cb86b5111de3ae2eb633a14e9"
+  }
+]
