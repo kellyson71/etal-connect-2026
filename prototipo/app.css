@@ -1491,3 +1491,9 @@ button.teacher{width:100%;text-align:left;padding:8px 10px;margin:0 -2px;border-
 .lg-note{margin:0 0 12px;font-size:13.5px;line-height:1.4;color:var(--muted)}
 .lg-err.ok{color:var(--green-ink,#2f6b1d);background:var(--green-50,#e9f5e1)}
 .lg-err.ok a{font-weight:700;color:inherit}
+/* Câmera de verdade no leitor */
+.scan-cam{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .35s;z-index:1}
+.scan-cam.on{opacity:1}
+.scan-cam.on~.scan-mask,.scan-cam.on~.frame,.scan-cam.on~.scan-top,.scan-cam.on~.scan-hint{z-index:2}
+.cam-dock{padding:16px 22px 28px;text-align:center}
+.cam-dock p{margin:0 0 10px;font-size:14px;line-height:1.4;color:var(--ink-2)}
