@@ -81,7 +81,9 @@
       ['roof', 'wall'].forEach((k) => ['blue', 'honey'].forEach((v) => load(`${k}-event-${v}-${m}`)));
     });
   }
-  const themeKey = () => (document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light');
+  /* Luz do horário (ver setHour): à noite, árvores, casas e texturas usam as versões escuras. */
+  let NIGHT = 0, DUSK = 0, hourOn = null;
+  const themeKey = () => (document.documentElement.dataset.theme === 'dark' || NIGHT >= 0.5 ? 'dark' : 'light');
   const tintKey = () => `${isEv() ? 'mono' : 'color'}-${themeKey()}`;
   const PATS = {};
   function patternOf(name, ev) {
@@ -111,11 +113,11 @@
       sand: '#ecd9a6', courtLine: '#ffffff', field: '#cfd3a0', fieldLine: 'rgba(255,255,255,.9)', tank: [120, 134, 176], tankTop: '#a3b0d2', panel: '#2f4a86', panelLine: 'rgba(255,255,255,.28)',
       tile: '#e09a5e', tileWall: [236, 214, 190], hexBase: [214, 208, 196], hexDeck: '#f0ece2', hexRoof: [252, 247, 234], rail: 'rgba(95,105,130,.75)', neighbor: '#dfe2e8', neighborWall: [200, 205, 216], glass: 'rgba(205,232,216,.78)', glassWall: [186, 216, 200], glassRib: 'rgba(255,255,255,.75)',
       aptoWall: [240, 238, 232], aptoSlab: '#eeeeea', aptoBand: 'rgb(233,170,58)', aptoGap: 'rgba(70,74,84,.42)', aptoShop: 'rgb(150,154,160)', aptoDoor: 'rgb(222,224,226)', aptoSign: 'rgb(44,92,164)',
-      laneMid: '#e7b93a', curbYellow: '#e2b33a', pole: '#d4d1c9', poleLamp: '#f4f4ef', wire: 'rgba(40,44,52,.5)', cone: '#e8742c', shade: [248, 248, 246], shadeEdge: 'rgba(150,156,168,.6)',
+      zebra: 'rgba(255,255,255,.92)', laneMid: '#e7b93a', curbYellow: '#e2b33a', pole: '#d4d1c9', poleLamp: '#f4f4ef', wire: 'rgba(40,44,52,.5)', cone: '#e8742c', shade: [248, 248, 246], shadeEdge: 'rgba(150,156,168,.6)',
       gateRgb: [200, 58, 50], gateRoof: '#f4f3ef', gateGrade: 'rgba(200,58,50,.16)', lojaWall: [226, 228, 230], lojaBand: [232, 92, 44], lojaGlass: 'rgba(62,92,126,.85)',
       metal: '#d6dadf', metalEdge: 'rgba(140,148,160,.7)', barWall: [236, 234, 228], barOpen: 'rgba(48,50,48,.78)', barCounter: 'rgb(64,150,88)', truss2: 'rgb(246,246,244)', barInk: '#2b2f36', barSign: 'rgba(214,226,206,.95)',
       plate: '#e6ebf4', plateEdge: '#cbd3e2', slab: [176, 188, 212], roomEdge: '#d2d9e8', rampF: '#f3f6fb', door: '#9aa8c4',
-      kinds: { classroom: ['#ffffff', [205, 214, 232]], laboratory: ['#dce7fb', [176, 196, 232]], staff: ['#eef1f7', [204, 210, 224]], auditorium: ['#2c4785', [34, 56, 111], true], stairs: ['#f6f8fc', [205, 214, 232]], restroom: ['#dce7fb', [176, 196, 232]], accessible: ['#dce7fb', [176, 196, 232]], reception: ['#4f9e22', [58, 122, 24], true] },
+      kinds: { classroom: ['#ffffff', [205, 214, 232]], laboratory: ['#dce7fb', [176, 196, 232]], staff: ['#eef1f7', [204, 210, 224]], office: ['#fbf1df', [226, 206, 168]], auditorium: ['#2c4785', [34, 56, 111], true], stairs: ['#f6f8fc', [205, 214, 232]], restroom: ['#dce7fb', [176, 196, 232]], accessible: ['#dce7fb', [176, 196, 232]], reception: ['#4f9e22', [58, 122, 24], true] },
     },
     dark: {
       sky: '#0c1529', outside: '#101a31', road: '#1c2740', lane: '#3b4a6c', walk: '#1a2540',
@@ -131,14 +133,14 @@
       sand: '#6b5c38', courtLine: 'rgba(255,255,255,.8)', field: '#26422f', fieldLine: 'rgba(255,255,255,.55)', tank: [70, 86, 130], tankTop: '#7b8fc0', panel: '#16264e', panelLine: 'rgba(160,190,255,.3)',
       tile: '#a4663a', tileWall: [84, 66, 62], hexBase: [60, 72, 104], hexDeck: '#3a4b78', hexRoof: [120, 135, 175], rail: 'rgba(190,205,235,.65)', neighbor: '#27324e', neighborWall: [34, 44, 70], glass: 'rgba(90,150,130,.55)', glassWall: [50, 96, 86], glassRib: 'rgba(200,235,220,.45)',
       aptoWall: [70, 80, 110], aptoSlab: '#3a4a74', aptoBand: 'rgb(176,120,42)', aptoGap: 'rgba(8,12,24,.55)', aptoShop: 'rgb(54,62,84)', aptoDoor: 'rgb(96,108,140)', aptoSign: 'rgb(48,86,160)',
-      laneMid: '#b08a2c', curbYellow: '#a8862e', pole: '#56658c', poleLamp: '#ffe6a8', wire: 'rgba(160,175,210,.4)', cone: '#c8642a', shade: [120, 134, 170], shadeEdge: 'rgba(170,185,220,.5)',
+      zebra: 'rgba(200,210,230,.55)', laneMid: '#b08a2c', curbYellow: '#a8862e', pole: '#56658c', poleLamp: '#ffe6a8', wire: 'rgba(160,175,210,.4)', cone: '#c8642a', shade: [120, 134, 170], shadeEdge: 'rgba(170,185,220,.5)',
       gateRgb: [200, 80, 72], gateRoof: '#3a4a74', gateGrade: 'rgba(255,122,112,.16)', lojaWall: [60, 70, 98], lojaBand: [196, 84, 44], lojaGlass: 'rgba(250,210,140,.55)',
       metal: '#46557c', metalEdge: 'rgba(120,138,180,.55)', barWall: [62, 72, 100], barOpen: 'rgba(250,200,120,.55)', barCounter: 'rgb(46,112,70)', truss2: 'rgb(200,210,232)', barInk: '#14224a', barSign: 'rgba(250,220,150,.9)',
       plate: '#16244a', plateEdge: '#2a3c6c', slab: [18, 28, 58], roomEdge: '#3a4f85', rampF: '#1c2c56', door: '#6d82b5',
-      kinds: { classroom: ['#2a3f73', [26, 40, 78], true], laboratory: ['#37548f', [32, 50, 92], true], staff: ['#2a3f73', [26, 40, 78], true], auditorium: ['#e8eefb', [150, 165, 200]], stairs: ['#2a3f73', [26, 40, 78], true], restroom: ['#37548f', [32, 50, 92], true], accessible: ['#37548f', [32, 50, 92], true], reception: ['#7dd14a', [70, 128, 40]] },
+      kinds: { classroom: ['#2a3f73', [26, 40, 78], true], laboratory: ['#37548f', [32, 50, 92], true], staff: ['#2a3f73', [26, 40, 78], true], office: ['#4a456f', [44, 40, 74], true], auditorium: ['#e8eefb', [150, 165, 200]], stairs: ['#2a3f73', [26, 40, 78], true], restroom: ['#37548f', [32, 50, 92], true], accessible: ['#37548f', [32, 50, 92], true], reception: ['#7dd14a', [70, 128, 40]] },
     },
   };
-  const roomName = (z) => (z.kind === 'laboratory' ? `Lab ${z.roomNumber}` : z.kind === 'staff' ? 'Professores' : z.roomNumber ? `Sala ${z.roomNumber}` : z.useLabel);
+  const roomName = (z) => z.name || (z.kind === 'laboratory' ? `Lab ${z.roomNumber}` : z.kind === 'staff' ? 'Professores' : z.roomNumber ? `Sala ${z.roomNumber}` : z.useLabel);
   PAL.light.roomName = roomName; PAL.dark.roomName = roomName;
   /* Modo evento: o mapa inteiro vira um único tom neutro, gerado da paleta normal. Só o evento tem cor. */
   const EV = {
@@ -183,12 +185,44 @@
   /* O obelisco não é parte do evento, mas aparece no modo Evento como ponto de referência. */
   const EVENT_LABELS = new Set([...EVENT_IDS, 'obelisco']);
   const isEv = () => mode === 'evento';
-  const palBase = () => (document.documentElement.dataset.theme === 'dark' ? PAL.dark : PAL.light);
+  /* Luz do horário: NIGHT vai de 0 (dia) a 1 (noite); DUSK é o tom quente do nascer e do pôr do sol.
+     A paleta da noite é a escura com as janelas acesas; as intermediárias são misturas guardadas em cache. */
+  const NIGHT_PAL = () => ({ ...PAL.dark, window: 'rgba(255,208,130,.8)', aptoGap: 'rgba(255,190,110,.38)', zebra: 'rgba(200,210,230,.55)' });
+  const parseCol = (v) => {
+    if (typeof v !== 'string') return null;
+    let m = v.match(/^#([0-9a-f]{6})$/i); if (m) return [0, 2, 4].map((i) => parseInt(m[1].slice(i, i + 2), 16)).concat(1);
+    m = v.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/); if (m) return [+m[1], +m[2], +m[3], m[4] === undefined ? 1 : +m[4]];
+    return null;
+  };
+  function mixAny(a, b, t) {
+    if (typeof a === 'number' && typeof b === 'number') return Math.round(a + (b - a) * t);
+    const ca = parseCol(a), cb = parseCol(b);
+    if (ca && cb) { const q = ca.map((v, i) => v + (cb[i] - v) * t); return `rgba(${Math.round(q[0])},${Math.round(q[1])},${Math.round(q[2])},${q[3].toFixed(3)})`; }
+    if (Array.isArray(a) && Array.isArray(b) && a.length === b.length) return a.map((v, i) => mixAny(v, b[i], t));
+    if (a && b && typeof a === 'object' && typeof b === 'object' && !Array.isArray(a)) { const o = {}; Object.keys(a).forEach((k) => { o[k] = k in b ? mixAny(a[k], b[k], t) : a[k]; }); return o; }
+    return t < 0.5 ? a : b;
+  }
+  const nightCache = new Map();
+  function nightPal(dark, step) {
+    const key = `${dark ? 'd' : 'l'}${step}`; if (nightCache.has(key)) return nightCache.get(key);
+    const base = { ...(dark ? PAL.dark : PAL.light) }; delete base.mono;
+    const night = NIGHT_PAL(); delete night.mono;
+    const out = mixAny(base, night, step / 10); out.roomName = roomName;
+    out.mono = monoize(out, dark || step >= 5);
+    nightCache.set(key, out); return out;
+  }
+  const palBase = () => {
+    const dark = document.documentElement.dataset.theme === 'dark';
+    const step = Math.round(NIGHT * 10);
+    return step ? nightPal(dark, step) : dark ? PAL.dark : PAL.light;
+  };
   const pal = () => (isEv() ? palBase().mono : palBase());
 
   /* A pista segue a marcação sem nome do levantamento (y 68,4–75, o traçado da BR-405), com acostamento;
      antes dela fica a ilha do meio-fio com as árvores (marcação "meio fio"). */
   const ROAD_Y0 = 66.2, ROAD_Y1 = 76.6, ROAD_MID = 71.4;
+  /* Faixa de pedestres na BR, em frente à portaria (satélite). */
+  const CROSS_X = 14, CROSS_W = 4;
   /* Planta do prédio de apartamentos: frente para a rodovia (lado -y), lateral para a rua de terra (lado -x). */
   const APTO = [[14.2, 95.6], [34.6, 95.6], [34.6, 120.6], [14.2, 120.6]];
   /* Alturas adotadas: 4,5 m por pavimento + 0,3 m de cobertura. */
@@ -285,8 +319,9 @@
     'casa-mel': [START, [-20, 41], [-46, 40], [-98.5, -65], [-132, -122], [-122, -129], [-96, -142.500], [-74, -160], [-100, -198], [-98, -216], [-125, -245], [-143, -262]],
     'seu-assis': [START, [-20, 52], [-56, 53], [-78.5, 8.4], [-110, -53], [-118.4, -42.4], [-122, -37.5]],
     obelisco: [START, [13, 30], [12.6, 16]],
-    apartamentos: [START, [15, 58], [11.5, 92], [11.5, 100], [14, 100]],
-    eletrica: [START, [15, 58], [11.5, 92], [11.5, 128], [15.3, 128]],
+    apartamentos: [START, [CROSS_X, 60], [CROSS_X, 78], [15.5, 95]],
+    eletrica: [START, [CROSS_X, 60], [CROSS_X, 78], [11, 84], [11, 128], [15.3, 128]],
+    brisanet: [START, [CROSS_X, 60], [CROSS_X, 78], [-20, 78.5], [-74, 78.5], [-112, 79], [-118, 119]],
     portaria: [START],
   };
 
@@ -481,6 +516,22 @@
     const hline = (y) => { const a = P(-900, y), e = P(900, y); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(e[0], e[1]); ctx.stroke(); };
     ctx.strokeStyle = c.lane; ctx.lineWidth = Math.max(0.6, 0.14 * cam.z); hline(ROAD_Y0 + 0.4); hline(ROAD_Y1 - 0.4);
     ctx.strokeStyle = c.laneMid; ctx.lineWidth = Math.max(0.8, 0.16 * cam.z); hline(ROAD_MID - 0.18); hline(ROAD_MID + 0.18);
+    /* Faixa de pedestres: listras brancas no sentido da pista. */
+    ctx.fillStyle = c.zebra;
+    for (let y = ROAD_Y0 + 0.5; y < ROAD_Y1 - 0.6; y += 1) { poly(rect(CROSS_X - CROSS_W / 2, y, CROSS_X + CROSS_W / 2, y + 0.5)); ctx.fill(); }
+    /* Poças de luz dos postes à noite. */
+    if (NIGHT > 0.05 && !Q.lean) {
+      const prev = ctx.globalCompositeOperation; ctx.globalCompositeOperation = 'lighter';
+      const pool = (x, y, r, a) => {
+        const m = P(x, y); if (m[0] < -200 || m[0] > W + 200 || m[1] < -200 || m[1] > H + 200) return;
+        const g = ctx.createRadialGradient(m[0], m[1], 0, m[0], m[1], r * cam.z);
+        g.addColorStop(0, `rgba(255,196,110,${(a * NIGHT).toFixed(3)})`); g.addColorStop(1, 'rgba(255,196,110,0)');
+        ctx.fillStyle = g; poly(Array.from({ length: 18 }, (_, i) => [x + Math.cos((i / 18) * 6.283) * r, y + Math.sin((i / 18) * 6.283) * r])); ctx.fill();
+      };
+      POLES.forEach((x) => pool(x, POLE_Y + 2, 9, 0.34));
+      pool(15, 47, 6, 0.3); pool(15.3, 131, 7, 0.28); pool(-98, 98, 16, 0.22); pool(24, 92, 6, 0.2);
+      ctx.globalCompositeOperation = prev;
+    }
     /* Calçada de concreto na frente do prédio dos apartamentos. */
     ctx.fillStyle = c.paved; poly([[13.5, ROAD_Y1], [34.6, ROAD_Y1], [34.6, 95.6], [13.5, 95.6]]); ctx.fill();
     ctx.fillStyle = c.grass; poly(pts(25)); ctx.fill();
@@ -885,7 +936,13 @@
     ctx.beginPath(); ctx.moveTo(b[0], b[1]); ctx.lineTo(t[0], t[1]); ctx.stroke();
     ctx.lineWidth = Math.max(0.6, 0.12 * cam.z); const k = P(x, POLE_Y, H - 1.2);
     ctx.beginPath(); ctx.moveTo(k[0], k[1]); ctx.quadraticCurveTo(arm[0], k[1], arm[0], arm[1]); ctx.stroke();
-    ctx.fillStyle = c.poleLamp; ctx.beginPath(); ctx.ellipse(arm[0], arm[1], Math.max(1, 0.4 * cam.z), Math.max(0.6, 0.18 * cam.z), 0, 0, 7); ctx.fill();
+    ctx.fillStyle = NIGHT > 0.2 ? '#ffe2a8' : c.poleLamp; ctx.beginPath(); ctx.ellipse(arm[0], arm[1], Math.max(1, 0.4 * cam.z), Math.max(0.6, 0.18 * cam.z), 0, 0, 7); ctx.fill();
+    if (NIGHT > 0.05) {
+      const g = ctx.createRadialGradient(arm[0], arm[1], 0, arm[0], arm[1], Math.max(4, 2.2 * cam.z));
+      g.addColorStop(0, `rgba(255,214,140,${(0.7 * NIGHT).toFixed(3)})`); g.addColorStop(1, 'rgba(255,214,140,0)');
+      const prev = ctx.globalCompositeOperation; ctx.globalCompositeOperation = 'lighter';
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(arm[0], arm[1], Math.max(4, 2.2 * cam.z), 0, 7); ctx.fill(); ctx.globalCompositeOperation = prev;
+    }
     if (next == null || cam.z < 0.6) return;
     /* Fiação até o próximo poste, com barriga. */
     ctx.strokeStyle = c.wire; ctx.lineWidth = Math.max(0.5, 0.05 * cam.z);
@@ -1152,7 +1209,15 @@
     const L = t.axis === 'x' ? 2.7 : 1.15, D = t.axis === 'x' ? 1.15 : 2.7;
     const box = (l, d) => [[t.x - l, t.y - d], [t.x + l, t.y - d], [t.x + l, t.y + d], [t.x - l, t.y + d]];
     poly(box(L, D).map((q) => [q[0] - 0.7, q[1] - 0.7])); ctx.fillStyle = c.shadow; ctx.fill();
-    const col = isEv() ? c.bigWall : t.color;
+    const col = isEv() ? c.bigWall : NIGHT ? t.color.map((v) => Math.round(v * (1 - 0.45 * NIGHT))) : t.color;
+    if (NIGHT > 0.3 && t.v && !isEv()) {
+      /* Faróis: facho no chão à frente do carro. */
+      const fx = t.x + t.dir * (L + 3.2), f0 = P(fx, t.y); const r = 3.4 * cam.z;
+      const g = ctx.createRadialGradient(f0[0], f0[1], 0, f0[0], f0[1], r);
+      g.addColorStop(0, `rgba(255,236,190,${(0.42 * NIGHT).toFixed(3)})`); g.addColorStop(1, 'rgba(255,236,190,0)');
+      const prev = ctx.globalCompositeOperation; ctx.globalCompositeOperation = 'lighter';
+      ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(f0[0], f0[1], r, r * 0.6, 0, 0, 7); ctx.fill(); ctx.globalCompositeOperation = prev;
+    }
     drawExtruded(box(L, D), 1, c, { wall: col, roof: mix(col, 1.04), edge: mix(col, 0.82), floors: 0 });
     drawExtruded(box(L * 0.56, D * 0.86), 1.85, c, { base: 1, wall: isEv() ? mix(col, 0.8).match(/\d+/g).map(Number) : [58, 72, 98], roof: mix(col, 1.08), edge: mix(col, 0.82), floors: 0 });
   }
@@ -1791,6 +1856,7 @@
     items.sort((p, q) => p.d - q.d);
     items.forEach((o) => o.f());
     if (Q.soften && !isEv()) softenRear(c);
+    if (DUSK > 0.02 && !isEv()) { ctx.fillStyle = `rgba(255,140,60,${(0.13 * DUSK).toFixed(3)})`; ctx.fillRect(0, 0, W, H); }
     if (sv.mix < 0.25) drawLabels(c); else labelHits = [];
     }
     if (sv.dim > 0.001) { ctx.globalAlpha = sv.dim; ctx.fillStyle = palBase().sky; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
@@ -2120,6 +2186,23 @@
     setAccent(hex) {
       const rgb = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
       [PAL.light, PAL.dark].forEach((pl) => { pl.accent = hex; pl.accentWall = rgb.map((v) => Math.round(v * 0.8)); });
+      nightCache.clear();
+      schedule();
+    },
+    /* Hora do dia (0–24) para a luz do mapa, ou null para dia sempre. */
+    setHour(h) {
+      hourOn = h;
+      const ramp = (a, b, x) => Math.max(0, Math.min(1, (x - a) / (b - a)));
+      const n = h == null ? 0 : Math.max(1 - ramp(5.2, 6.4, h), ramp(17.6, 18.8, h));
+      const d = h == null ? 0 : Math.max(Math.exp(-(((h - 17.6) / 0.7) ** 2)), Math.exp(-(((h - 5.9) / 0.6) ** 2))) * (1 - n * 0.7);
+      const n2 = Math.round(n * 20) / 20, d2 = Math.round(d * 20) / 20;
+      if (n2 === NIGHT && d2 === DUSK) return;
+      NIGHT = n2; DUSK = d2; schedule();
+    },
+    hour: () => ({ hour: hourOn, night: NIGHT, dusk: DUSK }),
+    /* Copia da planta (window.PLAN) os números e nomes das salas, depois de o app aplicar a numeração da organização. */
+    syncRooms() {
+      FLOORS.forEach((F) => F.zones.forEach((z) => { const r = F.raw.zones.find((q) => q.id === z.id); if (r) Object.assign(z, { roomNumber: r.roomNumber, name: r.name, label: r.label }); }));
       schedule();
     },
     setFlat(v) {
