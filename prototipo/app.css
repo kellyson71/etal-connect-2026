@@ -732,6 +732,7 @@ button.search{width:100%;text-align:left}
 .campus-sheet .sh-acts{margin-top:8px}
 /* busca */
 .overlay.finder .ov-panel{transform:translateY(100%)}
+.overlay.finder.open .ov-panel{transform:none}
 .finder{padding-bottom:30px}
 .finder-in{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:calc(15px*var(--rk,1));background:var(--bg);color:var(--muted);margin-bottom:8px}
 .finder-in input{flex:1;min-width:0;border:0;background:none;outline:0;font-size:16px;color:var(--ink)}
@@ -1457,3 +1458,32 @@ button.teacher{width:100%;text-align:left;padding:8px 10px;margin:0 -2px;border-
 .map-cfg button{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 6px;border:0;background:none;border-radius:10px;font:inherit;font-size:13.5px;color:var(--ink);text-align:left;cursor:pointer}
 .map-cfg button:hover{background:var(--seg)}
 .map-cfg button.on .switch{background:var(--green)}.map-cfg button.on .switch::after{transform:translateX(15px)}
+
+/* Busca: grupos, atalhos e minutos a pé */
+.finder-res{height:310px}
+.finder-res li.fd-h{display:block;padding:14px 2px 4px;border:0;font:700 11.5px/1 var(--ui);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);cursor:default}
+.finder-res li.fd-h+li{border-top:0}
+.finder-res li.fd-chips{display:flex;gap:8px;flex-wrap:wrap;padding:4px 0 6px;border:0;cursor:default}
+.fd-chips button{display:inline-flex;align-items:center;gap:7px;padding:6px 12px 6px 6px;border-radius:999px;background:var(--bg);border:1px solid var(--line);font:600 13px var(--ui);color:var(--ink)}
+.fd-chips .fd-ic{width:26px;height:26px;border-radius:50%}
+.fd-chips .fd-ic .i{width:15px;height:15px}
+.finder-res li>.fd-ic,.fd-ic{width:38px;height:38px;border-radius:calc(12px*var(--rk,1));display:grid;place-items:center;flex:none;background:var(--blue-50);color:var(--accent-ink)}
+.fd-ic.w{background:#e3f2fb;color:#1f7fbf}.fd-ic.b{background:#eef0f6;color:#3b4a6b}.fd-ic.g{background:#e6f2dc;color:#3f7a2a}.fd-ic.y{background:#fdf1d8;color:#9a6a08}
+:root[data-theme="dark"] .fd-ic.w{background:#173a52;color:#8fd0f5}:root[data-theme="dark"] .fd-ic.b{background:#253150;color:#c9d3ea}:root[data-theme="dark"] .fd-ic.g{background:#20402b;color:#a6dc8f}:root[data-theme="dark"] .fd-ic.y{background:#43361a;color:#f3cf7a}
+.finder-res li>div{flex:1;min-width:0}
+.finder-res li>div b,.finder-res li>div small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.finder-res li>em{font:600 12px var(--ui);font-style:normal;color:var(--muted);background:var(--bg);padding:4px 8px;border-radius:999px;flex:none}
+.finder-res li>em.live{color:#fff;background:var(--green)}
+
+/* Seletores do mapa: pílulas de vidro fosco; a escolhida em destaque. */
+.map-top .seg{border-radius:999px;padding:4px;background:color-mix(in srgb,var(--card) 80%,transparent);backdrop-filter:blur(14px) saturate(1.4);-webkit-backdrop-filter:blur(14px) saturate(1.4);box-shadow:0 8px 22px -12px rgba(20,32,64,.45),inset 0 0 0 1px color-mix(in srgb,var(--line) 70%,transparent)}
+.map-top .seg .seg-ind{top:4px;bottom:4px;border-radius:999px;background:var(--navy);box-shadow:0 6px 14px -6px var(--navy)}
+.map-top .seg button{padding:8px 0;font-size:13px;font-weight:600;color:var(--ink-2);letter-spacing:.01em}
+.map-top .seg button.on{color:#fff}
+.map-top .seg.four{width:min(100%,300px);justify-self:center;align-self:center;padding:3px;background:color-mix(in srgb,var(--card) 70%,transparent)}
+.map-top .seg.four .seg-ind{top:3px;bottom:3px;background:var(--card);box-shadow:0 2px 8px -2px rgba(20,32,64,.3)}
+.map-top .seg.four button{padding:5px 0;font-size:12px}
+.map-top .seg.four button.on{color:var(--accent-ink)}
+.dim{border-radius:999px;background:color-mix(in srgb,var(--card) 80%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 8px 22px -12px rgba(20,32,64,.45),inset 0 0 0 1px color-mix(in srgb,var(--line) 70%,transparent)}
+.dim>i{border-radius:999px}
+.map-ctrl.cam-ctrl{border-radius:18px;background:color-mix(in srgb,var(--card) 80%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 8px 22px -12px rgba(20,32,64,.45)}

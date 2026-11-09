@@ -212,7 +212,7 @@
      até a vista, o modo (Evento ou Campus) e o 3D/2D em que a pessoa estava. Guardado em etal-mapa. */
   const MAP_KEY = 'etal-mapa';
   const mapSaved = (() => { try { return JSON.parse(localStorage.getItem(MAP_KEY)) || null; } catch (_) { return null; } })();
-  let mapIntro = mapSaved && mapSaved.seen ? 'short' : 'full';
+  let mapIntro = mapSaved && mapSaved.seen && !new URLSearchParams(location.search).get('intro') ? 'short' : 'full';
   if (mapIntro === 'full') S.mapView = 'campus';
   else if (['evento', 'campus'].includes(mapSaved.mode)) S.mapView = mapSaved.mode;
   function saveMap() {
@@ -351,7 +351,6 @@
           </div>
           <div class="lx-done" role="status">
             <h2 class="lx-q" data-live="hello">Tudo certo!</h2>
-            <p>Puxe o crachá para baixo e a tela abre o app.</p>
             <button class="btn primary big" data-act="lgenter" type="button">Abrir o app</button>
             <button class="btn ghost" data-act="lgredo" type="button">Não sou eu</button>
           </div>
@@ -1649,6 +1648,22 @@
     setChrome(el);
     if (el._mount) el._mount(el);
   }
+  /* Entre atividades: se uma atividade sua começa em até 10 minutos, o mapa já abre com a rota até a sala.
+     Uma vez por atividade; a primeira visita ao mapa (a entrada completa) tem prioridade. */
+  const soonSeen = new Set();
+  function soonRoute() {
+    if (mapIntro === 'full') return false;
+    const now = Math.round(skyHour * 60);
+    const x = D.sessions.filter((q) => D.enrolled.includes(q.id) && q.day === D.now.day && q.floor !== undefined && !soonSeen.has(q.id))
+      .map((q) => ({ q, left: toMin(q.time) - now })).filter((o) => o.left >= 0 && o.left <= 10).sort((a, b) => a.left - b.left)[0];
+    if (!x) return false;
+    soonSeen.add(x.q.id);
+    const w = walkMin(x.q);
+    S.mapView = 'bloco'; S.mapFloor = x.q.floor; S.mapZone = x.q.zone; S.mapRoute = true; S.pending = true; S.journeying = true;
+    switchTab('map', true);
+    toast(`${x.q.short}: começa ${x.left ? `em ${x.left} min` : 'agora'}${w ? ` · ${w} min a pé` : ''}`);
+    return true;
+  }
   function switchTab(t, reset = false) {
     if (busy) return;
     if (t !== S.tab || reset || S.stacks[t].length > 1) navMark('tab');
@@ -1848,8 +1863,20 @@
       const kind = mapIntro; mapIntro = null;
       C.setMode(S.mapView === 'campus' ? 'campus' : 'evento');
       if (kind === 'short' && mapSaved.cam) C.setView(mapSaved.cam);
-      C.intro(kind).then(() => {
-        if (kind === 'full' && S.tab === 'map' && S.mapView === 'campus' && !S.campusPlace) { S.mapView = 'evento'; rerender(); }
+      if (kind === 'full') {
+        /* A entrada é sempre em 3D: o botão 3D/2D acompanha na hora. */
+        const dim = $('.dim', page);
+        if (dim) { dim.style.setProperty('--k', 0); dim.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.v !== '2d')); }
+      }
+      C.intro(kind).then(async () => {
+        if (kind === 'full' && S.tab === 'map' && S.mapView === 'campus' && !S.campusPlace) {
+          /* As abas acompanham a revelação na hora; a folha do evento entra no fim. */
+          S.mapView = 'evento';
+          const seg = $('.map-top .seg', page);
+          if (seg) { seg.style.setProperty('--k', MAP_TABS.findIndex(([v]) => v === 'evento')); seg.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.v === 'evento')); }
+          await C.eventReveal();
+          if (S.tab === 'map') rerender();
+        }
         saveMap();
       });
       return;
@@ -1899,19 +1926,44 @@
     if (a.k === 'bebedouro') (window.Campus3D.pois?.() || []).filter((q) => q.kind === 'agua').forEach((q) => out.push({ t: 'Bebedouro', d: q.where, i: a.icon, tone: a.tone, min: q.min, a: `data-k="poi" data-id="${q.id}"` }));
     return out.sort((x, y) => (x.min ?? 99) - (y.min ?? 99));
   }
+  /* Temas: a busca por "IA", "web", "dados"… traz as atividades do tema (palavras inteiras, não pedaços). */
+  const SEARCH_TOPICS = {
+    ia: ['inteligencia artificial', 'ia', 'machine learning', 'aprendizado de maquina', 'llm', 'chatgpt', 'redes neurais'],
+    dados: ['dados', 'python', 'analise', 'estatistica', 'pandas'],
+    web: ['web', 'react', 'next', 'frontend', 'front-end', 'html', 'css', 'javascript', 'site'],
+    mobile: ['mobile', 'react native', 'expo', 'aplicativo', 'app', 'android'],
+    design: ['design', 'interface', 'interfaces', 'ux', 'ui', 'figma', 'experiencia'],
+    seguranca: ['seguranca', 'senha', 'hacker', 'privacidade', 'golpe'],
+    carreira: ['carreira', 'mercado', 'emprego', 'estagio', 'interior'],
+    jogos: ['jogos', 'games', 'campeonato', 'mortal kombat', 'fifa'],
+  };
+  const words = (t) => ` ${fold(t).replace(/[^a-z0-9]+/g, ' ')} `;
+  const hasWord = (text, w) => words(text).includes(` ${w} `) || (w.length > 3 && words(text).includes(` ${w}`));
+  const actText = (x) => `${x.title} ${x.short} ${x.type} ${x.description || ''} ${(x.learn || []).join(' ')} ${x.speaker || ''} ${x.role || ''}`;
   function finderGroups(q) {
     const n = fold(q.trim());
     const groups = [];
+    const theme = n && Object.entries(SEARCH_TOPICS).find(([k, syn]) => k === n || syn.includes(n) || (n.length > 3 && k.startsWith(n)));
     const hits = n ? AMENITIES.filter((a) => a.syn.some((w) => w.startsWith(n) || n.startsWith(w))) : [];
     if (hits.length) groups.push(['Mais perto da entrada', hits.flatMap(amenityItems).slice(0, 6)]);
-    const acts = D.sessions.filter((x) => x.floor !== undefined && (!n || fold(`${x.title} ${x.speaker || ''} ${x.room} ${x.type}`).includes(n)))
-      .filter((x) => n || D.enrolled.includes(x.id))
-      .map((x) => ({ t: x.short, d: `${dayOf(x.day).week} ${x.day} · ${x.time} · ${x.room}`, i: 'cal', tone: 'n', live: isNow(x), a: `data-k="room" data-floor="${x.floor}" data-zone="${x.zone}"` }));
+    const actItem = (x) => ({ t: x.short, d: `${dayOf(x.day).week} ${x.day} · ${x.time} · ${x.room}`, i: 'cal', tone: 'n', live: isNow(x), a: `data-k="act" data-id="${x.id}"` });
+    if (theme) {
+      const list = D.sessions.filter((x) => theme[1].some((w) => hasWord(actText(x), w)));
+      if (list.length) groups.push([`Tema: ${theme[0] === 'ia' ? 'IA' : theme[0][0].toUpperCase() + theme[0].slice(1)}`, list.slice(0, 6).map(actItem)]);
+    }
+    const shown = new Set(groups.flatMap(([, l]) => l.map((i) => i.a)));
+    const acts = D.sessions.filter((x) => (!n || (n.length <= 3 ? hasWord(actText(x), n) : fold(actText(x)).includes(n))) && (n || D.enrolled.includes(x.id)))
+      .map(actItem).filter((i) => !shown.has(i.a));
     if (acts.length) groups.push([n ? 'Atividades' : 'Suas atividades', acts.slice(0, 5)]);
+    if (n && n.length > 2) {
+      const seen = new Set(); const people = [];
+      D.sessions.filter((x) => x.speaker && fold(x.speaker).includes(n)).forEach((x) => { if (!seen.has(x.speaker)) { seen.add(x.speaker); people.push({ t: x.speaker, d: `${x.role || 'Palestrante'} · ${x.short}`, i: 'mic', tone: 'y', a: `data-k="act" data-id="${x.id}"` }); } });
+      if (people.length) groups.unshift(['Palestrantes', people.slice(0, 4)]);
+    }
     if (n) {
       const rooms = [];
-      P.floors.forEach((f) => f.zones.filter((z) => !['courtyard', 'water', 'wall', 'ramp', 'stairs'].includes(z.kind)).forEach((z) => {
-        if (fold(`${zoneName(z)} ${z.useLabel} ${z.roomNumber} ${z.name || ''}`).includes(n)) rooms.push({ t: zoneName(z), d: `${z.name && z.roomNumber ? `Sala ${z.roomNumber} · ` : ''}${f.label}`, i: 'pin', tone: 'n', a: `data-k="room" data-floor="${f.level}" data-zone="${z.id}"` });
+      P.floors.forEach((f) => f.zones.filter((z) => !['courtyard', 'water', 'wall', 'ramp', 'stairs', ...(hits.length ? ['restroom', 'lounge', 'reception'] : [])].includes(z.kind)).forEach((z) => {
+        const rt = `${zoneName(z)} ${z.useLabel} ${z.roomNumber} ${z.name || ''}`; if (n.length <= 3 && !/^\d+$/.test(n) ? hasWord(rt, n) : fold(rt).includes(n)) rooms.push({ t: zoneName(z), d: `${z.name && z.roomNumber ? `Sala ${z.roomNumber} · ` : ''}${f.label}`, i: 'pin', tone: 'n', a: `data-k="room" data-floor="${f.level}" data-zone="${z.id}"` });
       }));
       if (rooms.length) groups.push(['Salas', rooms.slice(0, 6)]);
     }
@@ -2005,7 +2057,7 @@
         if (navTag() === 'screen' || S.stacks[S.tab].length < 2) navBack();
         else if (!busy) { navMark('tab'); S.stacks[S.tab].pop(); show(build(top()), 'pop'); }
         break;
-      case 'tab': switchTab(el.dataset.tab); break;
+      case 'tab': if (el.dataset.tab === 'map' && S.tab !== 'map' && soonRoute()) break; switchTab(el.dataset.tab); break;
       case 'retro': retroOpen(false); break;
       case 'retrodemo': closeOverlay(() => retroOpen(true)); break;
       case 'retroprev': retroShow(retro.i - 1); break;
@@ -2124,6 +2176,7 @@
       case 'findergo': {
         const d = el.dataset;
         closeOverlay(() => {
+          if (d.k === 'act') { openActivity(d.id); return; }
           if (d.k === 'poi') { S.mapView = 'campus'; S.campusPlace = null; window.Campus3D.setMode('campus'); window.Campus3D.select(null); switchTab('map', true); setTimeout(() => window.Campus3D.focusPoi(d.id), reduce ? 0 : 700); return; }
           if (d.k === 'place') { S.mapView = EVENT_PLACES.includes(d.id) ? 'evento' : 'campus'; window.Campus3D.setMode(S.mapView); S.campusPlace = d.id; window.Campus3D.select(d.id); switchTab('map', true); setTimeout(() => window.Campus3D.focus(d.id), reduce ? 0 : 950); return; }
           S.mapView = 'bloco'; S.mapFloor = +d.floor; S.mapZone = d.zone; S.mapRoute = true; S.pending = true; S.journeying = true; switchTab('map', true);
