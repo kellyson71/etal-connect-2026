@@ -2,6 +2,18 @@
 
 O projeto segue o git flow: `main` tem só versões publicadas, `develop` junta as funcionalidades e cada uma nasce num ramo `feature/*`.
 
+## 0.4.0 (2026-11-09)
+
+Primeiro teste como produção.
+
+- Entrada pelo SUAP de duas formas: pela página do SUAP (OAuth2) ou com matrícula e senha (token JWT da API do SUAP). Senha e token não ficam guardados.
+- Sem moldura de celular nem enfeites de demonstração quando há servidor.
+- Mapa pensado para o polegar: abas e busca embaixo, 3D/2D e controles numa coluna à direita; sai o cartão "Onde o ETAL acontece".
+- Busca colada no teclado, com Banheiro, Bebedouro e Descanso à mão e o botão Atividades; o melhor resultado fica junto da barra, e Enter abre com a rota.
+- Rota até o bebedouro mais próximo.
+- Pátio interno: jardim só no térreo; no 1º e 2º andar, vão aberto com mureta de ponta a ponta.
+- Documentação técnica (requisitos, casos de uso, banco de dados, arquitetura, API e testes).
+
 ## 0.3.0 (2026-11-09)
 
 O app passa a funcionar de verdade, com servidor.
