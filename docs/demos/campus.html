@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Campus interativo · demonstração da apresentação</title>
+<style>
+@font-face{font-family:Onest;src:url('../../exportacao/fontes/dm-sans.woff2');font-weight:100 900}
+@font-face{font-family:Geologica;src:url('../../exportacao/fontes/manrope.woff2');font-weight:100 900}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f0f3f6;color:#1f2f57;font:14px Onest,system-ui,sans-serif}canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}canvas:active{cursor:grabbing}
+.stamp{position:absolute;bottom:15px;left:17px;padding:7px 10px;background:#ffffffdd;border:1px solid #d7e0e6;border-radius:7px;color:#4c6278;font-size:10px;pointer-events:none;backdrop-filter:blur(8px)}
+</style></head><body><canvas id="map" aria-label="Mapa interativo real do campus. Arraste para mover e use os controles da apresentação."></canvas><span class="stamp" id="stamp">Campus3D · motor real do aplicativo</span>
+<script src="isolar.js"></script><script src="../../prototipo/plan-data.js"></script><script src="../../prototipo/campus-data.js"></script>
+<script src="../../prototipo/campus-fundo.js"></script><script src="../../prototipo/campus-limpo.js"></script>
+<script src="../../prototipo/campus-entorno.js"></script><script src="../../prototipo/sprites.js"></script>
+<script src="../../prototipo/data.js"></script>
+<script>window.ASSET_DATA = new Proxy({}, {get:(_target,key)=>typeof key==='string' && key.startsWith('assets/')?'../../prototipo/'+key:undefined});</script>
+<script src="../../prototipo/campus3d.js"></script><script src="campus.js"></script></body></html>

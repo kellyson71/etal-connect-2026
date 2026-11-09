@@ -1,0 +1,1542 @@
+{
+  "openapi": {
+    "openapi": "3.1.0",
+    "info": {
+      "title": "ETAL Connect",
+      "version": "0.3.0"
+    },
+    "paths": {
+      "/api/auth/suap": {
+        "get": {
+          "tags": [
+            "entrada"
+          ],
+          "summary": "Suap Inicio",
+          "operationId": "suap_inicio_api_auth_suap_get",
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/auth/suap/retorno": {
+        "get": {
+          "tags": [
+            "entrada"
+          ],
+          "summary": "Suap Retorno",
+          "operationId": "suap_retorno_api_auth_suap_retorno_get",
+          "parameters": [
+            {
+              "name": "code",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "default": "",
+                "title": "Code"
+              }
+            },
+            {
+              "name": "state",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "default": "",
+                "title": "State"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/auth/suap/senha": {
+        "post": {
+          "tags": [
+            "entrada"
+          ],
+          "summary": "Suap Senha",
+          "description": "Entrada direta com matrícula e senha: pede o token JWT à API do SUAP e lê o perfil.\nA senha e os tokens só passam por aqui; nada é guardado.",
+          "operationId": "suap_senha_api_auth_suap_senha_post",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginSuap"
+                }
+              }
+            },
+            "required": true
+          },
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/auth/visitante": {
+        "post": {
+          "tags": [
+            "entrada"
+          ],
+          "summary": "Visitante",
+          "operationId": "visitante_api_auth_visitante_post",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Visitante"
+                }
+              }
+            },
+            "required": true
+          },
+          "responses": {
+            "202": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/auth/link": {
+        "get": {
+          "tags": [
+            "entrada"
+          ],
+          "summary": "Link",
+          "operationId": "link_api_auth_link_get",
+          "parameters": [
+            {
+              "name": "t",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "default": "",
+                "title": "T"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/auth/dev": {
+        "post": {
+          "tags": [
+            "entrada"
+          ],
+          "summary": "Dev",
+          "description": "Só com ETAL_LOGIN_DEV=1: entra sem SUAP, para testar.",
+          "operationId": "dev_api_auth_dev_post",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dev"
+                }
+              }
+            },
+            "required": true
+          },
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/auth/sair": {
+        "post": {
+          "tags": [
+            "entrada"
+          ],
+          "summary": "Sair",
+          "operationId": "sair_api_auth_sair_post",
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/eu": {
+        "get": {
+          "tags": [
+            "participante"
+          ],
+          "summary": "Eu",
+          "operationId": "eu_api_eu_get",
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/eu/agenda/{atividade_id}": {
+        "post": {
+          "tags": [
+            "participante"
+          ],
+          "summary": "Salvar",
+          "operationId": "salvar_api_eu_agenda__atividade_id__post",
+          "parameters": [
+            {
+              "name": "atividade_id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "title": "Atividade Id"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "delete": {
+          "tags": [
+            "participante"
+          ],
+          "summary": "Tirar",
+          "operationId": "tirar_api_eu_agenda__atividade_id__delete",
+          "parameters": [
+            {
+              "name": "atividade_id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "title": "Atividade Id"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/presenca": {
+        "post": {
+          "tags": [
+            "participante"
+          ],
+          "summary": "Presenca",
+          "description": "QR do evento: credencia. QR de uma atividade: credencia (se preciso) e registra a presença nela.\nLer de novo não duplica.",
+          "operationId": "presenca_api_presenca_post",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Leitura"
+                }
+              }
+            },
+            "required": true
+          },
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/saude": {
+        "get": {
+          "tags": [
+            "público"
+          ],
+          "summary": "Saude",
+          "operationId": "saude_api_saude_get",
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/programacao": {
+        "get": {
+          "tags": [
+            "público"
+          ],
+          "summary": "Programacao",
+          "operationId": "programacao_api_programacao_get",
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/avisos": {
+        "get": {
+          "tags": [
+            "público"
+          ],
+          "summary": "Avisos",
+          "operationId": "avisos_api_avisos_get",
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/lotacao": {
+        "get": {
+          "tags": [
+            "público"
+          ],
+          "summary": "Lotacao",
+          "description": "Quantas pessoas registraram presença em cada atividade que está acontecendo agora.",
+          "operationId": "lotacao_api_lotacao_get",
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/ao-vivo": {
+        "get": {
+          "tags": [
+            "público"
+          ],
+          "summary": "Ao Vivo",
+          "description": "Eventos: aviso, sala (troca de sala), numeros (numeração das salas), lotacao.",
+          "operationId": "ao_vivo_api_ao_vivo_get",
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/org/avisos": {
+        "post": {
+          "tags": [
+            "organização"
+          ],
+          "summary": "Novo Aviso",
+          "operationId": "novo_aviso_api_org_avisos_post",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NovoAviso"
+                }
+              }
+            },
+            "required": true
+          },
+          "responses": {
+            "201": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/org/atividades/{atividade_id}/sala": {
+        "patch": {
+          "tags": [
+            "organização"
+          ],
+          "summary": "Trocar Sala",
+          "operationId": "trocar_sala_api_org_atividades__atividade_id__sala_patch",
+          "parameters": [
+            {
+              "name": "atividade_id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "title": "Atividade Id"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrocaSala"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/org/salas": {
+        "put": {
+          "tags": [
+            "organização"
+          ],
+          "summary": "Numeros",
+          "description": "Numeração definida pela organização: {\"andar:zona\": \"número\"}; número vazio volta ao original.",
+          "operationId": "numeros_api_org_salas_put",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Mapa"
+                }
+              }
+            },
+            "required": true
+          },
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/org/participantes": {
+        "get": {
+          "tags": [
+            "organização"
+          ],
+          "summary": "Participantes",
+          "operationId": "participantes_api_org_participantes_get",
+          "parameters": [
+            {
+              "name": "q",
+              "in": "query",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "default": "",
+                "title": "Q"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/org/credenciar/{pessoa_id}": {
+        "post": {
+          "tags": [
+            "organização"
+          ],
+          "summary": "Credenciar",
+          "operationId": "credenciar_api_org_credenciar__pessoa_id__post",
+          "parameters": [
+            {
+              "name": "pessoa_id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "title": "Pessoa Id"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            },
+            "422": {
+              "description": "Validation Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/HTTPValidationError"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/org/resumo": {
+        "get": {
+          "tags": [
+            "organização"
+          ],
+          "summary": "Resumo",
+          "operationId": "resumo_api_org_resumo_get",
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/org/presencas.csv": {
+        "get": {
+          "tags": [
+            "organização"
+          ],
+          "summary": "Presencas Csv",
+          "description": "Presenças por atividade, para lançar no SUAP (certificados).",
+          "operationId": "presencas_csv_api_org_presencas_csv_get",
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/org/credenciados.csv": {
+        "get": {
+          "tags": [
+            "organização"
+          ],
+          "summary": "Credenciados Csv",
+          "operationId": "credenciados_csv_api_org_credenciados_csv_get",
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/org/qrs": {
+        "get": {
+          "tags": [
+            "organização"
+          ],
+          "summary": "Qrs",
+          "description": "Página para imprimir: um QR do credenciamento e um por atividade com sala.",
+          "operationId": "qrs_api_org_qrs_get",
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "text/html": {
+                  "schema": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/homologacao/qrs": {
+        "get": {
+          "tags": [
+            "homologação"
+          ],
+          "summary": "Qrs",
+          "operationId": "qrs_api_homologacao_qrs_get",
+          "responses": {
+            "200": {
+              "description": "Successful Response",
+              "content": {
+                "application/json": {
+                  "schema": {}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "schemas": {
+        "Dev": {
+          "properties": {
+            "nome": {
+              "type": "string",
+              "title": "Nome",
+              "default": "Pessoa de Teste"
+            },
+            "matricula": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Matricula"
+            },
+            "organizacao": {
+              "type": "boolean",
+              "title": "Organizacao",
+              "default": false
+            },
+            "codigo": {
+              "type": "string",
+              "title": "Codigo",
+              "default": ""
+            }
+          },
+          "type": "object",
+          "title": "Dev"
+        },
+        "HTTPValidationError": {
+          "properties": {
+            "detail": {
+              "items": {
+                "$ref": "#/components/schemas/ValidationError"
+              },
+              "type": "array",
+              "title": "Detail"
+            }
+          },
+          "type": "object",
+          "title": "HTTPValidationError"
+        },
+        "Leitura": {
+          "properties": {
+            "qr": {
+              "type": "string",
+              "maxLength": 600,
+              "minLength": 8,
+              "title": "Qr"
+            }
+          },
+          "type": "object",
+          "required": [
+            "qr"
+          ],
+          "title": "Leitura"
+        },
+        "LoginSuap": {
+          "properties": {
+            "matricula": {
+              "type": "string",
+              "maxLength": 40,
+              "minLength": 3,
+              "title": "Matricula"
+            },
+            "senha": {
+              "type": "string",
+              "maxLength": 200,
+              "minLength": 1,
+              "title": "Senha"
+            }
+          },
+          "type": "object",
+          "required": [
+            "matricula",
+            "senha"
+          ],
+          "title": "LoginSuap"
+        },
+        "NovoAviso": {
+          "properties": {
+            "titulo": {
+              "type": "string",
+              "maxLength": 140,
+              "minLength": 2,
+              "title": "Titulo"
+            },
+            "texto": {
+              "type": "string",
+              "maxLength": 1000,
+              "minLength": 2,
+              "title": "Texto"
+            },
+            "atividade": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Atividade"
+            }
+          },
+          "type": "object",
+          "required": [
+            "titulo",
+            "texto"
+          ],
+          "title": "NovoAviso"
+        },
+        "TrocaSala": {
+          "properties": {
+            "andar": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Andar"
+            },
+            "zona": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Zona"
+            },
+            "sala": {
+              "type": "string",
+              "maxLength": 120,
+              "minLength": 1,
+              "title": "Sala"
+            },
+            "avisar": {
+              "type": "boolean",
+              "title": "Avisar",
+              "default": true
+            }
+          },
+          "type": "object",
+          "required": [
+            "sala"
+          ],
+          "title": "TrocaSala"
+        },
+        "ValidationError": {
+          "properties": {
+            "loc": {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ]
+              },
+              "type": "array",
+              "title": "Location"
+            },
+            "msg": {
+              "type": "string",
+              "title": "Message"
+            },
+            "type": {
+              "type": "string",
+              "title": "Error Type"
+            },
+            "input": {
+              "title": "Input"
+            },
+            "ctx": {
+              "type": "object",
+              "title": "Context"
+            }
+          },
+          "type": "object",
+          "required": [
+            "loc",
+            "msg",
+            "type"
+          ],
+          "title": "ValidationError"
+        },
+        "Visitante": {
+          "properties": {
+            "nome": {
+              "type": "string",
+              "maxLength": 200,
+              "minLength": 2,
+              "title": "Nome"
+            },
+            "email": {
+              "type": "string",
+              "format": "email",
+              "title": "Email"
+            },
+            "instituicao": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Instituicao"
+            },
+            "cidade": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 120
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cidade"
+            }
+          },
+          "type": "object",
+          "required": [
+            "nome",
+            "email"
+          ],
+          "title": "Visitante"
+        }
+      }
+    }
+  },
+  "tabelas": [
+    {
+      "nome": "atividades",
+      "campos": [
+        {
+          "nome": "id",
+          "tipo": "VARCHAR(64)",
+          "nulo": false,
+          "pk": true,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "tipo",
+          "tipo": "VARCHAR(40)",
+          "nulo": false,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "titulo",
+          "tipo": "VARCHAR(300)",
+          "nulo": false,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "curto",
+          "tipo": "VARCHAR(120)",
+          "nulo": false,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "descricao",
+          "tipo": "TEXT",
+          "nulo": true,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "palestrante",
+          "tipo": "VARCHAR(200)",
+          "nulo": true,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "papel_palestrante",
+          "tipo": "VARCHAR(200)",
+          "nulo": true,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "data",
+          "tipo": "DATE",
+          "nulo": false,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "inicio",
+          "tipo": "VARCHAR(5)",
+          "nulo": false,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "fim",
+          "tipo": "VARCHAR(5)",
+          "nulo": false,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "andar",
+          "tipo": "INTEGER",
+          "nulo": true,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "zona",
+          "tipo": "VARCHAR(64)",
+          "nulo": true,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "sala",
+          "tipo": "VARCHAR(120)",
+          "nulo": true,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "vagas",
+          "tipo": "INTEGER",
+          "nulo": true,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "extra",
+          "tipo": "JSON",
+          "nulo": false,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        }
+      ],
+      "unicos": []
+    },
+    {
+      "nome": "numeros_sala",
+      "campos": [
+        {
+          "nome": "chave",
+          "tipo": "VARCHAR(80)",
+          "nulo": false,
+          "pk": true,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "numero",
+          "tipo": "VARCHAR(12)",
+          "nulo": false,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        }
+      ],
+      "unicos": []
+    },
+    {
+      "nome": "pessoas",
+      "campos": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "nulo": false,
+          "pk": true,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "tipo",
+          "tipo": "VARCHAR(16)",
+          "nulo": false,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "matricula",
+          "tipo": "VARCHAR(32)",
+          "nulo": true,
+          "pk": false,
+          "unico": true,
+          "fk": []
+        },
+        {
+          "nome": "email",
+          "tipo": "VARCHAR(254)",
+          "nulo": true,
+          "pk": false,
+          "unico": true,
+          "fk": []
+        },
+        {
+          "nome": "nome",
+          "tipo": "VARCHAR(200)",
+          "nulo": false,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "curso",
+          "tipo": "VARCHAR(200)",
+          "nulo": true,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "campus",
+          "tipo": "VARCHAR(120)",
+          "nulo": true,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "instituicao",
+          "tipo": "VARCHAR(200)",
+          "nulo": true,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "cidade",
+          "tipo": "VARCHAR(120)",
+          "nulo": true,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "foto_url",
+          "tipo": "VARCHAR(500)",
+          "nulo": true,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "papel",
+          "tipo": "VARCHAR(16)",
+          "nulo": false,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "credenciado_em",
+          "tipo": "DATETIME",
+          "nulo": true,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "criado_em",
+          "tipo": "DATETIME",
+          "nulo": false,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        }
+      ],
+      "unicos": [
+        [
+          "email"
+        ],
+        [
+          "matricula"
+        ]
+      ]
+    },
+    {
+      "nome": "agenda",
+      "campos": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "nulo": false,
+          "pk": true,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "pessoa_id",
+          "tipo": "INTEGER",
+          "nulo": false,
+          "pk": false,
+          "unico": false,
+          "fk": [
+            "pessoas.id"
+          ]
+        },
+        {
+          "nome": "atividade_id",
+          "tipo": "VARCHAR(64)",
+          "nulo": false,
+          "pk": false,
+          "unico": false,
+          "fk": [
+            "atividades.id"
+          ]
+        },
+        {
+          "nome": "criado_em",
+          "tipo": "DATETIME",
+          "nulo": false,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        }
+      ],
+      "unicos": [
+        [
+          "pessoa_id",
+          "atividade_id"
+        ]
+      ]
+    },
+    {
+      "nome": "avisos",
+      "campos": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "nulo": false,
+          "pk": true,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "titulo",
+          "tipo": "VARCHAR(140)",
+          "nulo": false,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "texto",
+          "tipo": "TEXT",
+          "nulo": false,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "atividade_id",
+          "tipo": "VARCHAR(64)",
+          "nulo": true,
+          "pk": false,
+          "unico": false,
+          "fk": [
+            "atividades.id"
+          ]
+        },
+        {
+          "nome": "autor_id",
+          "tipo": "INTEGER",
+          "nulo": true,
+          "pk": false,
+          "unico": false,
+          "fk": [
+            "pessoas.id"
+          ]
+        },
+        {
+          "nome": "em",
+          "tipo": "DATETIME",
+          "nulo": false,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        }
+      ],
+      "unicos": []
+    },
+    {
+      "nome": "links_acesso",
+      "campos": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "nulo": false,
+          "pk": true,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "pessoa_id",
+          "tipo": "INTEGER",
+          "nulo": false,
+          "pk": false,
+          "unico": false,
+          "fk": [
+            "pessoas.id"
+          ]
+        },
+        {
+          "nome": "token_hash",
+          "tipo": "VARCHAR(64)",
+          "nulo": false,
+          "pk": false,
+          "unico": true,
+          "fk": []
+        },
+        {
+          "nome": "expira_em",
+          "tipo": "DATETIME",
+          "nulo": false,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "usado_em",
+          "tipo": "DATETIME",
+          "nulo": true,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        }
+      ],
+      "unicos": [
+        [
+          "token_hash"
+        ]
+      ]
+    },
+    {
+      "nome": "presencas",
+      "campos": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "nulo": false,
+          "pk": true,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "pessoa_id",
+          "tipo": "INTEGER",
+          "nulo": false,
+          "pk": false,
+          "unico": false,
+          "fk": [
+            "pessoas.id"
+          ]
+        },
+        {
+          "nome": "atividade_id",
+          "tipo": "VARCHAR(64)",
+          "nulo": false,
+          "pk": false,
+          "unico": false,
+          "fk": [
+            "atividades.id"
+          ]
+        },
+        {
+          "nome": "em",
+          "tipo": "DATETIME",
+          "nulo": false,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        },
+        {
+          "nome": "via",
+          "tipo": "VARCHAR(16)",
+          "nulo": false,
+          "pk": false,
+          "unico": false,
+          "fk": []
+        }
+      ],
+      "unicos": [
+        [
+          "pessoa_id",
+          "atividade_id"
+        ]
+      ]
+    }
+  ],
+  "capturado_em": "2026-11-09",
+  "origem": "API local, SQLite temporário, programação de exemplo; nenhuma conta real.",
+  "capturado_em_iso": "2026-11-09T18:14:00-03:00",
+  "fontes_app": {
+    "index.html": "e521eb21682bc9bda6eb695ea61a1cfd779af6bae7b08b86791175f95467187c",
+    "app.js": "fc9dabf9453c0d2df87f06da3f44bb27fd4d9221e24a65c987f5d6d22ba353b1",
+    "app.css": "8f375ac6cd068e6589e254ae5af40618f92225905fda0abf8ee581c275443749",
+    "campus3d.js": "e7ec889ce7c1fd54ccd73a5edc43dbf9b38fa44d5b37e3279bd1c3248443735f",
+    "plan-data.js": "38959a496b23641972f42d6b272357f6df7595d3d1944f04ad9df597e56547eb"
+  }
+}
