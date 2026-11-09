@@ -2899,7 +2899,7 @@ window.SPRITES = {"trees": [{"radius": 0.36982399225234985, "height": 1.22623991
       };
       if (b.id === 'principal') {
         principalParts(g, h, (id, q, hh, base, aud) => piece(id === 'escada' ? 'principal' : id, q, hh, base, aud));
-        if (b.court && g > 0.85) { poly(b.court, h); ctx.fillStyle = mix(c.parts.principal.wall, 0.72); ctx.fill(); }
+        if (b.court && g > 0.85) drawWell(b, h, c, mix(c.parts.principal.wall, 0.72));
         return;
       }
       piece(b.id, p);
@@ -2934,12 +2934,28 @@ window.SPRITES = {"trees": [{"radius": 0.36982399225234985, "height": 1.22623991
     if (b.solar && !sel && g > 0.85) drawPanels(Array.isArray(b.solar) ? b.solar : shrink(p, b.solar), h + 0.02, c);
     if (b.skylight && g > 0.85) drawSkylight(b.skylight, h, c);
     if (NIGHT > 0.3 && LIT[b.id] && !sel && g > 0.85) litWindows(b.id === 'principal' ? PIECES.principal : p, h, b.floors, LIT[b.id], b.id);
-    if (b.court && g > 0.85) {
-      poly(b.court, h); ctx.fillStyle = c.courtWall; ctx.fill();
-      ctx.save(); poly(b.court, h); ctx.clip();
-      drawCourtyard(orderYard(b.court), h - 3 * g, c, false);
-      ctx.restore();
-    }
+    if (b.court && g > 0.85) drawWell(b, h, c, c.courtWall);
+  }
+  /* Pátio interno visto de fora: um poço aberto até o térreo. Pela abertura do telhado se veem as paredes
+     do fundo, com as varandinhas do 1º e do 2º andar, e só um pedaço do jardim lá embaixo. */
+  function drawWell(b, h, c, wallCol) {
+    const q = b.court; const m = centroid(q); const lv = h / (b.floors || 3);
+    ctx.save(); poly(q, h); ctx.clip();
+    drawCourtyard(orderYard(q), 0.05, c, false);
+    const far = q.map((a, i) => [a, q[(i + 1) % q.length]]).filter(([a, e]) => depth(...lerp2(a, e, 0.5)) < depth(...m))
+      .sort((u, v) => depth(...lerp2(u[0], u[1], 0.5)) - depth(...lerp2(v[0], v[1], 0.5)));
+    far.forEach(([a, e]) => {
+      wallQuad(a, e, 0, lv); ctx.fillStyle = wallCol; ctx.fill();
+      for (let f = 1; f < (b.floors || 3); f++) {
+        const y0 = lv * f;
+        wallQuad(a, e, y0, Math.min(h, y0 + lv)); ctx.fillStyle = 'rgba(20,32,64,0.38)'; ctx.fill(); // fundo da varanda, na sombra
+        wallQuad(a, e, y0 - 0.25, y0 + 1.1); ctx.fillStyle = wallCol; ctx.fill(); // laje e mureta
+        const s0 = P(a[0], a[1], y0 + 1.1), s1 = P(e[0], e[1], y0 + 1.1);
+        ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = Math.max(0.6, cam.z * 0.1); ctx.beginPath(); ctx.moveTo(s0[0], s0[1]); ctx.lineTo(s1[0], s1[1]); ctx.stroke();
+      }
+    });
+    ctx.restore();
+    poly(q, h); ctx.strokeStyle = c.roofEdge; ctx.lineWidth = Math.max(0.6, cam.z * 0.12); ctx.stroke();
   }
 
   /* Telhado do bloco principal: fibrocimento em duas águas com cumeeira no meio de cada ala (norte e sul),
@@ -3327,8 +3343,9 @@ window.SPRITES = {"trees": [{"radius": 0.36982399225234985, "height": 1.22623991
     const [a, b, d, e] = orderYard(z.poly);
     /* Um véu escuro no furo: lê como vão (vê-se o andar de baixo através dele), não como piso. */
     poly(z.poly, b0 - 0.7); ctx.fillStyle = 'rgba(20,32,64,0.09)'; ctx.fill();
-    /* As duas bordas compridas do vão, de ponta a ponta; as pontas encostam nas salas. Primeiro a mais distante. */
-    const sides = [[a, b], [d, e]].sort((p, q) => P(...lerp2(p[0], p[1], 0.5), b0)[1] - P(...lerp2(q[0], q[1], 0.5), b0)[1]);
+    /* Mureta em volta de todo o vão: nas bordas compridas e nas pontas, ligando as salas dos dois lados
+       (no 2º andar, 206 com 209 e 208 com 211). Primeiro a mais distante. */
+    const sides = [[a, b], [b, d], [d, e], [e, a]].sort((p, q) => P(...lerp2(p[0], p[1], 0.5), b0)[1] - P(...lerp2(q[0], q[1], 0.5), b0)[1]);
     sides.forEach(([u, v]) => {
       wallQuad(u, v, b0 - 0.7, b0 + PARAPET); ctx.fillStyle = c.slab; ctx.fill(); ctx.fillStyle = 'rgba(20,32,64,0.16)'; ctx.fill();
       ctx.strokeStyle = c.plateEdge; ctx.lineWidth = 1; ctx.stroke();
