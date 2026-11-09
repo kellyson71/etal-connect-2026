@@ -108,5 +108,5 @@ def test_homologacao(app_cliente, monkeypatch):
 
 
 def test_atividade_sem_sala_sem_andar(app_cliente):
-    sem = [x for x in app_cliente.get('/api/programacao').json()['sessions'] if x['id'] == 'credenciamento']
+    sem = [x for x in app_cliente.get('/api/programacao').json()['sessions'] if x['id'] == 'encerramento']
     assert sem and 'floor' not in sem[0]
