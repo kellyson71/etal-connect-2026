@@ -57,3 +57,10 @@ __pycache__/
 # Estado local de ferramentas e da hospedagem original
 /tmp/
 /.openai/
+
+# backend
+backend/.venv/
+backend/*.db
+deploy/.env
+!deploy/.env.example
+.pytest_cache/
