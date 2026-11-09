@@ -13,6 +13,8 @@ class Config(BaseSettings):
     origens: str = 'http://127.0.0.1:8770,http://localhost:8770'
     cookie_seguro: bool = False
     login_dev: bool = False
+    # Se preenchido, a entrada de teste (/api/auth/dev) pede este código. Use em homologação pública.
+    senha_homologacao: str = ''
 
     # OAuth2 do SUAP: a aplicação precisa ser registrada pela TI do IFRN.
     suap_client_id: str = ''
@@ -39,6 +41,16 @@ class Config(BaseSettings):
     @property
     def org(self) -> set[str]:
         return {x.strip().lower() for x in self.organizacao.split(',') if x.strip()}
+
+
+    def model_post_init(self, _ctx) -> None:
+        # Hospedagens como a Vercel entregam o banco em DATABASE_URL/POSTGRES_URL (postgres://...).
+        import os
+        if self.banco == 'sqlite:///./etal.db':
+            self.banco = os.environ.get('DATABASE_URL') or os.environ.get('POSTGRES_URL') or self.banco
+        for velho in ('postgres://', 'postgresql://'):
+            if self.banco.startswith(velho):
+                self.banco = 'postgresql+psycopg://' + self.banco[len(velho):]
 
 
 @lru_cache
