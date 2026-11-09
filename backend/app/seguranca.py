@@ -84,6 +84,17 @@ def hash_token(t: str) -> str:
     return hashlib.sha256(t.encode()).hexdigest()
 
 
+def publica(request: Request | None = None) -> str:
+    """Endereço público do app: ETAL_URL_PUBLICA ou, vazio, o endereço pelo qual o pedido chegou."""
+    url = config().url_publica.rstrip('/')
+    if url or request is None:
+        return url
+    h = request.headers
+    host = h.get('x-forwarded-host') or h.get('host') or request.url.netloc
+    proto = h.get('x-forwarded-proto') or request.url.scheme
+    return f'{proto.split(",")[0]}://{host.split(",")[0]}'
+
+
 def agora() -> datetime:
     """Hora local do campus, sem fuso (é como os horários das atividades são guardados)."""
     return datetime.now(ZoneInfo(config().fuso)).replace(tzinfo=None, microsecond=0)

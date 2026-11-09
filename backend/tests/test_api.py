@@ -93,4 +93,15 @@ def test_qr_aberto_na_camera(app_cliente):
 
 
 def test_suap_sem_configuracao(app_cliente):
-    assert app_cliente.get('/api/auth/suap', follow_redirects=False).status_code == 503
+    r = app_cliente.get('/api/auth/suap', follow_redirects=False)
+    assert r.status_code == 302 and r.headers['location'].endswith('/?login=suap-indisponivel')
+
+
+def test_homologacao(app_cliente, monkeypatch):
+    from app.config import config
+    monkeypatch.setattr(config(), 'senha_homologacao', 'etal')
+    assert app_cliente.post('/api/auth/dev', json={'nome': 'X', 'codigo': 'errado'}).status_code == 403
+    assert app_cliente.post('/api/auth/dev', json={'nome': 'X', 'codigo': 'etal'}).status_code == 200
+    qrs = app_cliente.get('/api/homologacao/qrs').json()
+    assert qrs[0]['id'] is None and '<svg' in qrs[0]['svg'] and len(qrs) > 5
+    assert app_cliente.post('/api/presenca', json={'qr': qrs[1]['url']}).json()['activity'] == qrs[1]['id']

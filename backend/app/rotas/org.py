@@ -3,7 +3,7 @@ import csv
 import io
 
 import segno
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse, Response
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
@@ -14,7 +14,7 @@ from ..ao_vivo import canal
 from ..config import config
 from ..db import sessao
 from ..modelos import Agenda, Atividade, Aviso, NumeroSala, Pessoa, Presenca
-from ..seguranca import agora, organizacao, token_qr
+from ..seguranca import agora, organizacao, publica, token_qr
 
 rota = APIRouter(prefix='/api/org', tags=['organização'], dependencies=[Depends(organizacao)])
 
@@ -132,9 +132,9 @@ def credenciados_csv(db: Session = Depends(sessao)):
 
 
 @rota.get('/qrs', response_class=HTMLResponse)
-def qrs(db: Session = Depends(sessao)):
+def qrs(request: Request, db: Session = Depends(sessao)):
     """Página para imprimir: um QR do credenciamento e um por atividade com sala."""
-    base = config().url_publica
+    base = publica(request)
     itens = [('Credenciamento no ETAL', 'Recepção e entrada', token_qr(None))]
     itens += [(a.titulo, f'{a.sala or ""} · {a.data.strftime("%d/%m")} · {a.inicio}–{a.fim}', token_qr(a.id))
               for a in db.scalars(select(Atividade).where(Atividade.andar.is_not(None)).order_by(Atividade.data, Atividade.inicio))]

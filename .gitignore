@@ -64,3 +64,7 @@ backend/*.db
 deploy/.env
 !deploy/.env.example
 .pytest_cache/
+
+# Vercel
+/publico/
+.vercel
