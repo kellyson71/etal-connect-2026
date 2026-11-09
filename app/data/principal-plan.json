@@ -1,1531 +1,2162 @@
 {
-  "source": "Imagens e correções fornecidas pelo usuário",
-  "units": "schematic",
-  "viewBox": "0 0 900 430",
-  "floors": [
-    {
-      "level": 0,
-      "passage": [
-        [
-          245,
-          20
-        ],
-        [
-          245,
-          340
-        ]
-      ],
-      "audRoof": "",
-      "label": "Térreo",
-      "zones": [
-        {
-          "id": "auditorio",
-          "label": "Auditório",
-          "points": "20,20 230,20 230,150 170,150 170,210 230,210 230,282 20,282",
-          "labelX": 100,
-          "labelY": 150,
-          "kind": "auditorium",
-          "lines": [
-            "Auditório"
-          ],
-          "roomNumber": "",
-          "useLabel": "Auditório",
-          "description": "Auditório"
-        },
-        {
-          "id": "saida",
-          "label": "Saída do auditório",
-          "x": 132.5,
-          "y": 282,
-          "w": 127.5,
-          "h": 58,
-          "kind": "exit",
-          "lines": [
-            ""
-          ],
-          "roomNumber": "",
-          "useLabel": "Saída do auditório",
-          "description": "Saída do auditório"
-        },
-        {
-          "id": "sala-norte-0",
-          "label": "Sala 001",
-          "x": 260.0,
-          "y": 20,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 001"
-          ],
-          "roomNumber": "001",
-          "useLabel": "Sala",
-          "description": "Salas de aula — lateral norte 1"
-        },
-        {
-          "id": "sala-norte-1",
-          "label": "Sala 002",
-          "x": 387.5,
-          "y": 20,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 002"
-          ],
-          "roomNumber": "002",
-          "useLabel": "Sala",
-          "description": "Salas de aula — lateral norte 2"
-        },
-        {
-          "id": "sala-norte-2",
-          "label": "Sala 003",
-          "x": 515.0,
-          "y": 20,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 003"
-          ],
-          "roomNumber": "003",
-          "useLabel": "Sala",
-          "description": "Salas de aula — lateral norte 3"
-        },
-        {
-          "id": "sala-norte-3",
-          "label": "Sala 004",
-          "x": 642.5,
-          "y": 20,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 004"
-          ],
-          "roomNumber": "004",
-          "useLabel": "Sala",
-          "description": "Salas de aula — lateral norte 4"
-        },
-        {
-          "id": "sala-interna-norte-0",
-          "label": "Sala 005",
-          "x": 260.0,
-          "y": 108,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 005"
-          ],
-          "roomNumber": "005",
-          "useLabel": "Sala",
-          "description": "Sala de aula — lado interno do corredor superior 1"
-        },
-        {
-          "id": "sala-interna-norte-1",
-          "label": "Sala 006",
-          "x": 387.5,
-          "y": 108,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 006"
-          ],
-          "roomNumber": "006",
-          "useLabel": "Sala",
-          "description": "Sala de aula — lado interno do corredor superior 2"
-        },
-        {
-          "id": "sala-interna-norte-2",
-          "label": "Sala 007",
-          "x": 515.0,
-          "y": 108,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 007"
-          ],
-          "roomNumber": "007",
-          "useLabel": "Sala",
-          "description": "Sala de aula — lado interno do corredor superior 3"
-        },
-        {
-          "id": "sala-interna-norte-3",
-          "label": "Sala 008",
-          "x": 642.5,
-          "y": 108,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 008"
-          ],
-          "roomNumber": "008",
-          "useLabel": "Sala",
-          "description": "Sala de aula — lado interno do corredor superior 4"
-        },
-        {
-          "id": "patio-interno",
-          "label": "Pátio interno",
-          "x": 260,
-          "y": 166,
-          "w": 510,
-          "h": 28,
-          "kind": "courtyard",
-          "lines": [
-            "Pátio interno"
-          ],
-          "roomNumber": "",
-          "useLabel": "Pátio interno",
-          "description": "Pátio interno"
-        },
-        {
-          "id": "sala-interna-sul-0",
-          "label": "Sala 009",
-          "x": 260.0,
-          "y": 194,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 009"
-          ],
-          "roomNumber": "009",
-          "useLabel": "Sala",
-          "description": "Sala de aula — lado interno do corredor inferior 1"
-        },
-        {
-          "id": "sala-interna-sul-1",
-          "label": "Sala 010",
-          "x": 387.5,
-          "y": 194,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 010"
-          ],
-          "roomNumber": "010",
-          "useLabel": "Sala",
-          "description": "Sala de aula — lado interno do corredor inferior 2"
-        },
-        {
-          "id": "sala-interna-sul-2",
-          "label": "Sala 011",
-          "x": 515.0,
-          "y": 194,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 011"
-          ],
-          "roomNumber": "011",
-          "useLabel": "Sala",
-          "description": "Sala de aula — lado interno do corredor inferior 3"
-        },
-        {
-          "id": "sala-interna-sul-3",
-          "label": "Sala 012",
-          "x": 642.5,
-          "y": 194,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 012"
-          ],
-          "roomNumber": "012",
-          "useLabel": "Sala",
-          "description": "Sala de aula — lado interno do corredor inferior 4"
-        },
-        {
-          "id": "sala-sul-0",
-          "label": "Sala 013",
-          "x": 260.0,
-          "y": 282,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 013"
-          ],
-          "roomNumber": "013",
-          "useLabel": "Sala",
-          "description": "Salas de aula — lateral sul 1"
-        },
-        {
-          "id": "sala-sul-1",
-          "label": "Sala 014",
-          "x": 387.5,
-          "y": 282,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 014"
-          ],
-          "roomNumber": "014",
-          "useLabel": "Sala",
-          "description": "Salas de aula — lateral sul 2"
-        },
-        {
-          "id": "sala-sul-2",
-          "label": "Sala 015",
-          "x": 515.0,
-          "y": 282,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 015"
-          ],
-          "roomNumber": "015",
-          "useLabel": "Sala",
-          "description": "Salas de aula — lateral sul 3"
-        },
-        {
-          "id": "recepcao",
-          "label": "Recepção",
-          "x": 642.5,
-          "y": 282,
-          "w": 127.5,
-          "h": 58,
-          "kind": "reception",
-          "lines": [
-            "Recepção"
-          ],
-          "roomNumber": "",
-          "useLabel": "Recepção",
-          "description": "Recepção"
-        },
-        {
-          "id": "escada",
-          "label": "Escada lateral oeste",
-          "x": 170,
-          "y": 150.0,
-          "w": 60,
-          "h": 60,
-          "kind": "stairs",
-          "lines": [
-            "Escada"
-          ],
-          "roomNumber": "",
-          "useLabel": "Escada lateral oeste",
-          "description": "Escada lateral oeste"
-        },
-        {
-          "id": "banheiro-masculino",
-          "label": "Banheiro masculino",
-          "x": 770,
-          "y": 20,
-          "w": 55,
-          "h": 58,
-          "kind": "restroom",
-          "lines": [
-            "WC"
-          ],
-          "roomNumber": "",
-          "useLabel": "Banheiro masculino",
-          "description": "Banheiro masculino"
-        },
-        {
-          "id": "banheiro-acessivel",
-          "label": "Banheiro acessível",
-          "x": 825,
-          "y": 20,
-          "w": 55,
-          "h": 58,
-          "kind": "accessible",
-          "lines": [
-            "Acessível"
-          ],
-          "roomNumber": "",
-          "useLabel": "Banheiro acessível",
-          "description": "Banheiro acessível"
-        },
-        {
-          "id": "banheiro-feminino",
-          "label": "Banheiro feminino",
-          "x": 840,
-          "y": 78,
-          "w": 40,
-          "h": 42,
-          "kind": "restroom",
-          "lines": [
-            "WC"
-          ],
-          "roomNumber": "",
-          "useLabel": "Banheiro feminino",
-          "description": "Banheiro feminino"
-        },
-        {
-          "id": "rampa",
-          "label": "Rampa lateral leste",
-          "x": 800,
-          "y": 120,
-          "w": 80,
-          "h": 191.0,
-          "kind": "ramp",
-          "lines": [
-            "Rampa"
-          ],
-          "roomNumber": "",
-          "useLabel": "Rampa lateral leste",
-          "description": "Rampa lateral leste"
-        }
-      ],
-      "corridors": [
-        {
-          "id": "corredor-superior",
-          "label": "Corredor superior",
-          "x": 230,
-          "y": 78,
-          "w": 570,
-          "h": 30
-        },
-        {
-          "id": "corredor-lateral",
-          "label": "Circulação lateral",
-          "x": 230,
-          "y": 108,
-          "w": 30,
-          "h": 144
-        },
-        {
-          "id": "corredor-inferior",
-          "label": "Corredor inferior",
-          "x": 230,
-          "y": 252,
-          "w": 570,
-          "h": 30
-        },
-        {
-          "id": "corredor-leste",
-          "label": "Corredor lateral direito",
-          "x": 770,
-          "y": 78,
-          "w": 30,
-          "h": 262
-        },
-        {
-          "id": "saida-auditorio",
-          "label": "Entrada pelo auditório",
-          "x": 132.5,
-          "y": 282,
-          "w": 127.5,
-          "h": 58
-        },
-        {
-          "id": "acesso-anexo",
-          "label": "Entrada pelo Anexo",
-          "x": 230,
-          "y": 20,
-          "w": 30,
-          "h": 58
-        },
-        {
-          "id": "area-sol",
-          "label": "Área aberta",
-          "x": 800,
-          "y": 78,
-          "w": 40,
-          "h": 42
-        },
-        {
-          "id": "patamar",
-          "label": "Patamar da rampa",
-          "x": 800,
-          "y": 311.0,
-          "w": 80,
-          "h": 79.0
-        }
-      ],
-      "doors": [
-        {
-          "x": 323.75,
-          "y": 78,
-          "axis": "h"
-        },
-        {
-          "x": 451.25,
-          "y": 78,
-          "axis": "h"
-        },
-        {
-          "x": 578.75,
-          "y": 78,
-          "axis": "h"
-        },
-        {
-          "x": 706.25,
-          "y": 78,
-          "axis": "h"
-        },
-        {
-          "x": 323.75,
-          "y": 108,
-          "axis": "h"
-        },
-        {
-          "x": 451.25,
-          "y": 108,
-          "axis": "h"
-        },
-        {
-          "x": 578.75,
-          "y": 108,
-          "axis": "h"
-        },
-        {
-          "x": 706.25,
-          "y": 108,
-          "axis": "h"
-        },
-        {
-          "x": 323.75,
-          "y": 252,
-          "axis": "h"
-        },
-        {
-          "x": 451.25,
-          "y": 252,
-          "axis": "h"
-        },
-        {
-          "x": 578.75,
-          "y": 252,
-          "axis": "h"
-        },
-        {
-          "x": 706.25,
-          "y": 252,
-          "axis": "h"
-        },
-        {
-          "x": 323.75,
-          "y": 282,
-          "axis": "h"
-        },
-        {
-          "x": 451.25,
-          "y": 282,
-          "axis": "h"
-        },
-        {
-          "x": 578.75,
-          "y": 282,
-          "axis": "h"
-        },
-        {
-          "x": 706.25,
-          "y": 282,
-          "axis": "h"
-        },
-        {
-          "x": 230,
-          "y": 231.0,
-          "axis": "v"
-        }
-      ],
-      "outline": "M20 20H880V390H800V340H132.5V282H20Z",
-      "entryRoute": [
-        [
-          820,
-          385
-        ],
-        [
-          820,
-          329.0
-        ],
-        [
-          785,
-          329.0
-        ],
-        [
-          785,
-          267.0
-        ],
-        [
-          706.25,
-          267.0
-        ],
-        [
-          706.25,
-          281
-        ]
-      ],
-      "entryArrow": "M702.25 275l4 6 4-6",
-      "rampRails": "M816.0 305.0V148Q816.0 132 840.0 132Q864.0 132 864.0 148V305.0",
-      "rampArrows": "M816.0 235v-30m-3 6 3-6 3 6M864.0 205v30m-3-6 3 6 3-6"
-    },
-    {
-      "level": 1,
-      "passage": [],
-      "audRoof": "20,20 230,20 230,282 20,282",
-      "label": "1º andar",
-      "zones": [
-        {
-          "id": "sala-norte-0",
-          "label": "Sala 101",
-          "x": 260.0,
-          "y": 20,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 101"
-          ],
-          "roomNumber": "101",
-          "useLabel": "Sala",
-          "description": "Salas de aula — lateral norte 1"
-        },
-        {
-          "id": "sala-norte-1",
-          "label": "Sala 102",
-          "x": 387.5,
-          "y": 20,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 102"
-          ],
-          "roomNumber": "102",
-          "useLabel": "Sala",
-          "description": "Salas de aula — lateral norte 2"
-        },
-        {
-          "id": "sala-norte-2",
-          "label": "Sala 103",
-          "x": 515.0,
-          "y": 20,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 103"
-          ],
-          "roomNumber": "103",
-          "useLabel": "Sala",
-          "description": "Salas de aula — lateral norte 3"
-        },
-        {
-          "id": "sala-norte-3",
-          "label": "Sala 104",
-          "x": 642.5,
-          "y": 20,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 104"
-          ],
-          "roomNumber": "104",
-          "useLabel": "Sala",
-          "description": "Salas de aula — lateral norte 4"
-        },
-        {
-          "id": "sala-interna-norte-0",
-          "label": "Sala 105",
-          "x": 260.0,
-          "y": 108,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 105"
-          ],
-          "roomNumber": "105",
-          "useLabel": "Sala",
-          "description": "Sala de aula — lado interno do corredor superior 1"
-        },
-        {
-          "id": "sala-interna-norte-1",
-          "label": "Sala 106",
-          "x": 387.5,
-          "y": 108,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 106"
-          ],
-          "roomNumber": "106",
-          "useLabel": "Sala",
-          "description": "Sala de aula — lado interno do corredor superior 2"
-        },
-        {
-          "id": "sala-interna-norte-2",
-          "label": "Sala 107",
-          "x": 515.0,
-          "y": 108,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 107"
-          ],
-          "roomNumber": "107",
-          "useLabel": "Sala",
-          "description": "Sala de aula — lado interno do corredor superior 3"
-        },
-        {
-          "id": "sala-interna-norte-3",
-          "label": "Sala 108",
-          "x": 642.5,
-          "y": 108,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 108"
-          ],
-          "roomNumber": "108",
-          "useLabel": "Sala",
-          "description": "Sala de aula — lado interno do corredor superior 4"
-        },
-        {
-          "id": "patio-interno",
-          "label": "Vão do pátio",
-          "x": 260,
-          "y": 166,
-          "w": 510,
-          "h": 28,
-          "kind": "courtyard",
-          "lines": [
-            "Vão do pátio"
-          ],
-          "roomNumber": "",
-          "useLabel": "Vão do pátio",
-          "description": "Vão do pátio"
-        },
-        {
-          "id": "sala-interna-sul-0",
-          "label": "Sala 109",
-          "x": 260.0,
-          "y": 194,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 109"
-          ],
-          "roomNumber": "109",
-          "useLabel": "Sala",
-          "description": "Sala de aula — lado interno do corredor inferior 1"
-        },
-        {
-          "id": "sala-interna-sul-1",
-          "label": "Sala 110",
-          "x": 387.5,
-          "y": 194,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 110"
-          ],
-          "roomNumber": "110",
-          "useLabel": "Sala",
-          "description": "Sala de aula — lado interno do corredor inferior 2"
-        },
-        {
-          "id": "sala-interna-sul-2",
-          "label": "Sala 111",
-          "x": 515.0,
-          "y": 194,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 111"
-          ],
-          "roomNumber": "111",
-          "useLabel": "Sala",
-          "description": "Sala de aula — lado interno do corredor inferior 3"
-        },
-        {
-          "id": "sala-interna-sul-3",
-          "label": "Sala 112",
-          "x": 642.5,
-          "y": 194,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 112"
-          ],
-          "roomNumber": "112",
-          "useLabel": "Sala",
-          "description": "Sala de aula — lado interno do corredor inferior 4"
-        },
-        {
-          "id": "salas-sul-0",
-          "label": "Sala 113",
-          "x": 260.0,
-          "y": 282,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 113"
-          ],
-          "roomNumber": "113",
-          "useLabel": "Sala",
-          "description": "Salas de aula — lateral sul 1"
-        },
-        {
-          "id": "salas-sul-1",
-          "label": "Sala 114",
-          "x": 387.5,
-          "y": 282,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 114"
-          ],
-          "roomNumber": "114",
-          "useLabel": "Sala",
-          "description": "Salas de aula — lateral sul 2"
-        },
-        {
-          "id": "salas-sul-2",
-          "label": "Sala 115",
-          "x": 515.0,
-          "y": 282,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 115"
-          ],
-          "roomNumber": "115",
-          "useLabel": "Sala",
-          "description": "Salas de aula — lateral sul 3"
-        },
-        {
-          "id": "salas-sul-3",
-          "label": "Sala 116",
-          "x": 642.5,
-          "y": 282,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 116"
-          ],
-          "roomNumber": "116",
-          "useLabel": "Sala",
-          "description": "Salas de aula — lateral sul 4"
-        },
-        {
-          "id": "escada",
-          "label": "Escada lateral oeste",
-          "x": 170,
-          "y": 150.0,
-          "w": 60,
-          "h": 60,
-          "kind": "stairs",
-          "lines": [
-            "Escada"
-          ],
-          "roomNumber": "",
-          "useLabel": "Escada lateral oeste",
-          "description": "Escada lateral oeste"
-        },
-        {
-          "id": "banheiro-masculino",
-          "label": "Banheiro masculino",
-          "x": 770,
-          "y": 20,
-          "w": 55,
-          "h": 58,
-          "kind": "restroom",
-          "lines": [
-            "WC"
-          ],
-          "roomNumber": "",
-          "useLabel": "Banheiro masculino",
-          "description": "Banheiro masculino"
-        },
-        {
-          "id": "banheiro-acessivel",
-          "label": "Banheiro acessível",
-          "x": 825,
-          "y": 20,
-          "w": 55,
-          "h": 58,
-          "kind": "accessible",
-          "lines": [
-            "Acessível"
-          ],
-          "roomNumber": "",
-          "useLabel": "Banheiro acessível",
-          "description": "Banheiro acessível"
-        },
-        {
-          "id": "banheiro-feminino",
-          "label": "Banheiro feminino",
-          "x": 840,
-          "y": 78,
-          "w": 40,
-          "h": 42,
-          "kind": "restroom",
-          "lines": [
-            "WC"
-          ],
-          "roomNumber": "",
-          "useLabel": "Banheiro feminino",
-          "description": "Banheiro feminino"
-        },
-        {
-          "id": "rampa",
-          "label": "Rampa lateral leste",
-          "x": 800,
-          "y": 120,
-          "w": 80,
-          "h": 191.0,
-          "kind": "ramp",
-          "lines": [
-            "Rampa"
-          ],
-          "roomNumber": "",
-          "useLabel": "Rampa lateral leste",
-          "description": "Rampa lateral leste"
-        },
-        {
-          "id": "bebedouro",
-          "label": "Bebedouro",
-          "x": 806,
-          "y": 368,
-          "w": 16,
-          "h": 16,
-          "kind": "water",
-          "lines": [
-            ""
-          ],
-          "roomNumber": "",
-          "useLabel": "Bebedouro",
-          "description": "Bebedouro"
-        }
-      ],
-      "corridors": [
-        {
-          "id": "corredor-superior",
-          "label": "Corredor superior",
-          "x": 230,
-          "y": 78,
-          "w": 570,
-          "h": 30
-        },
-        {
-          "id": "corredor-lateral",
-          "label": "Corredor com janelas para o telhado do auditório",
-          "x": 230,
-          "y": 20,
-          "w": 30,
-          "h": 320
-        },
-        {
-          "id": "corredor-inferior",
-          "label": "Corredor inferior",
-          "x": 230,
-          "y": 252,
-          "w": 570,
-          "h": 30
-        },
-        {
-          "id": "corredor-leste",
-          "label": "Corredor lateral direito",
-          "x": 770,
-          "y": 78,
-          "w": 30,
-          "h": 262
-        },
-        {
-          "id": "area-sol",
-          "label": "Área aberta",
-          "x": 800,
-          "y": 78,
-          "w": 40,
-          "h": 42
-        },
-        {
-          "id": "patamar",
-          "label": "Patamar da rampa",
-          "x": 800,
-          "y": 311.0,
-          "w": 80,
-          "h": 79.0
-        }
-      ],
-      "doors": [
-        {
-          "x": 323.75,
-          "y": 78,
-          "axis": "h"
-        },
-        {
-          "x": 451.25,
-          "y": 78,
-          "axis": "h"
-        },
-        {
-          "x": 578.75,
-          "y": 78,
-          "axis": "h"
-        },
-        {
-          "x": 706.25,
-          "y": 78,
-          "axis": "h"
-        },
-        {
-          "x": 323.75,
-          "y": 108,
-          "axis": "h"
-        },
-        {
-          "x": 451.25,
-          "y": 108,
-          "axis": "h"
-        },
-        {
-          "x": 578.75,
-          "y": 108,
-          "axis": "h"
-        },
-        {
-          "x": 706.25,
-          "y": 108,
-          "axis": "h"
-        },
-        {
-          "x": 323.75,
-          "y": 252,
-          "axis": "h"
-        },
-        {
-          "x": 451.25,
-          "y": 252,
-          "axis": "h"
-        },
-        {
-          "x": 578.75,
-          "y": 252,
-          "axis": "h"
-        },
-        {
-          "x": 706.25,
-          "y": 252,
-          "axis": "h"
-        },
-        {
-          "x": 323.75,
-          "y": 282,
-          "axis": "h"
-        },
-        {
-          "x": 451.25,
-          "y": 282,
-          "axis": "h"
-        },
-        {
-          "x": 578.75,
-          "y": 282,
-          "axis": "h"
-        },
-        {
-          "x": 706.25,
-          "y": 282,
-          "axis": "h"
-        }
-      ],
-      "outline": "M230 20H880V390H800V340H230V210H170V150H230Z",
-      "entryRoute": [],
-      "entryArrow": "",
-      "rampRails": "M816.0 305.0V148Q816.0 132 840.0 132Q864.0 132 864.0 148V305.0",
-      "rampArrows": "M816.0 235v-30m-3 6 3-6 3 6M864.0 205v30m-3-6 3 6 3-6"
-    },
-    {
-      "level": 2,
-      "passage": [],
-      "audRoof": "20,20 230,20 230,282 20,282",
-      "label": "2º andar",
-      "zones": [
-        {
-          "id": "labs-norte",
-          "label": "Sala 201",
-          "x": 260.0,
-          "y": 20,
-          "w": 127.5,
-          "h": 58,
-          "kind": "laboratory",
-          "lines": [
-            "Sala 201"
-          ],
-          "roomNumber": "201",
-          "useLabel": "Laboratório",
-          "description": "Laboratórios — lateral norte"
-        },
-        {
-          "id": "professores",
-          "label": "Sala 202",
-          "x": 387.5,
-          "y": 20,
-          "w": 127.5,
-          "h": 58,
-          "kind": "staff",
-          "lines": [
-            "Sala 202"
-          ],
-          "roomNumber": "202",
-          "useLabel": "Professores",
-          "description": "Sala dos professores"
-        },
-        {
-          "id": "salas-norte",
-          "label": "Sala 203",
-          "x": 515.0,
-          "y": 20,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 203"
-          ],
-          "roomNumber": "203",
-          "useLabel": "Sala",
-          "description": "Salas de aula — lateral norte"
-        },
-        {
-          "id": "labs-norte-2",
-          "label": "Sala 204",
-          "x": 642.5,
-          "y": 20,
-          "w": 127.5,
-          "h": 58,
-          "kind": "laboratory",
-          "lines": [
-            "Sala 204"
-          ],
-          "roomNumber": "204",
-          "useLabel": "Laboratório",
-          "description": "Laboratórios — lateral norte 2"
-        },
-        {
-          "id": "sala-interna-norte-0",
-          "label": "Sala 205",
-          "x": 260.0,
-          "y": 108,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 205"
-          ],
-          "roomNumber": "205",
-          "useLabel": "Sala",
-          "description": "Sala de aula — lado interno do corredor superior 1"
-        },
-        {
-          "id": "sala-interna-norte-1",
-          "label": "Sala 206",
-          "x": 387.5,
-          "y": 108,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 206"
-          ],
-          "roomNumber": "206",
-          "useLabel": "Sala",
-          "description": "Sala de aula — lado interno do corredor superior 2"
-        },
-        {
-          "id": "sala-interna-norte-2",
-          "label": "Sala 207",
-          "x": 515.0,
-          "y": 108,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 207"
-          ],
-          "roomNumber": "207",
-          "useLabel": "Sala",
-          "description": "Sala de aula — lado interno do corredor superior 3"
-        },
-        {
-          "id": "sala-interna-norte-3",
-          "label": "Sala 208",
-          "x": 642.5,
-          "y": 108,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 208"
-          ],
-          "roomNumber": "208",
-          "useLabel": "Sala",
-          "description": "Sala de aula — lado interno do corredor superior 4"
-        },
-        {
-          "id": "patio-interno",
-          "label": "Vão do pátio",
-          "x": 260,
-          "y": 166,
-          "w": 510,
-          "h": 28,
-          "kind": "courtyard",
-          "lines": [
-            "Vão do pátio"
-          ],
-          "roomNumber": "",
-          "useLabel": "Vão do pátio",
-          "description": "Vão do pátio"
-        },
-        {
-          "id": "sala-interna-sul-0",
-          "label": "Sala 209",
-          "x": 260.0,
-          "y": 194,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 209"
-          ],
-          "roomNumber": "209",
-          "useLabel": "Sala",
-          "description": "Sala de aula — lado interno do corredor inferior 1"
-        },
-        {
-          "id": "sala-interna-sul-1",
-          "label": "Sala 210",
-          "x": 387.5,
-          "y": 194,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 210"
-          ],
-          "roomNumber": "210",
-          "useLabel": "Sala",
-          "description": "Sala de aula — lado interno do corredor inferior 2"
-        },
-        {
-          "id": "sala-interna-sul-2",
-          "label": "Sala 211",
-          "x": 515.0,
-          "y": 194,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 211"
-          ],
-          "roomNumber": "211",
-          "useLabel": "Sala",
-          "description": "Sala de aula — lado interno do corredor inferior 3"
-        },
-        {
-          "id": "sala-interna-sul-3",
-          "label": "Sala 212",
-          "x": 642.5,
-          "y": 194,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 212"
-          ],
-          "roomNumber": "212",
-          "useLabel": "Sala",
-          "description": "Sala de aula — lado interno do corredor inferior 4"
-        },
-        {
-          "id": "salas-sul-0",
-          "label": "Sala 213",
-          "x": 260.0,
-          "y": 282,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 213"
-          ],
-          "roomNumber": "213",
-          "useLabel": "Sala",
-          "description": "Salas de aula — lateral sul 1"
-        },
-        {
-          "id": "salas-sul-1",
-          "label": "Sala 214",
-          "x": 387.5,
-          "y": 282,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 214"
-          ],
-          "roomNumber": "214",
-          "useLabel": "Sala",
-          "description": "Salas de aula — lateral sul 2"
-        },
-        {
-          "id": "salas-sul-2",
-          "label": "Sala 215",
-          "x": 515.0,
-          "y": 282,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 215"
-          ],
-          "roomNumber": "215",
-          "useLabel": "Sala",
-          "description": "Salas de aula — lateral sul 3"
-        },
-        {
-          "id": "salas-sul-3",
-          "label": "Sala 216",
-          "x": 642.5,
-          "y": 282,
-          "w": 127.5,
-          "h": 58,
-          "kind": "classroom",
-          "lines": [
-            "Sala 216"
-          ],
-          "roomNumber": "216",
-          "useLabel": "Sala",
-          "description": "Salas de aula — lateral sul 4"
-        },
-        {
-          "id": "escada",
-          "label": "Escada lateral oeste",
-          "x": 170,
-          "y": 150.0,
-          "w": 60,
-          "h": 60,
-          "kind": "stairs",
-          "lines": [
-            "Escada"
-          ],
-          "roomNumber": "",
-          "useLabel": "Escada lateral oeste",
-          "description": "Escada lateral oeste"
-        },
-        {
-          "id": "banheiro-masculino",
-          "label": "Banheiro masculino",
-          "x": 770,
-          "y": 20,
-          "w": 55,
-          "h": 58,
-          "kind": "restroom",
-          "lines": [
-            "WC"
-          ],
-          "roomNumber": "",
-          "useLabel": "Banheiro masculino",
-          "description": "Banheiro masculino"
-        },
-        {
-          "id": "banheiro-acessivel",
-          "label": "Banheiro acessível",
-          "x": 825,
-          "y": 20,
-          "w": 55,
-          "h": 58,
-          "kind": "accessible",
-          "lines": [
-            "Acessível"
-          ],
-          "roomNumber": "",
-          "useLabel": "Banheiro acessível",
-          "description": "Banheiro acessível"
-        },
-        {
-          "id": "banheiro-feminino",
-          "label": "Banheiro feminino",
-          "x": 840,
-          "y": 78,
-          "w": 40,
-          "h": 42,
-          "kind": "restroom",
-          "lines": [
-            "WC"
-          ],
-          "roomNumber": "",
-          "useLabel": "Banheiro feminino",
-          "description": "Banheiro feminino"
-        },
-        {
-          "id": "rampa",
-          "label": "Rampa lateral leste",
-          "x": 800,
-          "y": 120,
-          "w": 80,
-          "h": 191.0,
-          "kind": "ramp",
-          "lines": [
-            "Rampa"
-          ],
-          "roomNumber": "",
-          "useLabel": "Rampa lateral leste",
-          "description": "Rampa lateral leste"
-        }
-      ],
-      "corridors": [
-        {
-          "id": "corredor-superior",
-          "label": "Corredor superior",
-          "x": 230,
-          "y": 78,
-          "w": 570,
-          "h": 30
-        },
-        {
-          "id": "corredor-lateral",
-          "label": "Corredor com janelas para o telhado do auditório",
-          "x": 230,
-          "y": 20,
-          "w": 30,
-          "h": 320
-        },
-        {
-          "id": "corredor-inferior",
-          "label": "Corredor inferior",
-          "x": 230,
-          "y": 252,
-          "w": 570,
-          "h": 30
-        },
-        {
-          "id": "corredor-leste",
-          "label": "Corredor lateral direito",
-          "x": 770,
-          "y": 78,
-          "w": 30,
-          "h": 262
-        },
-        {
-          "id": "area-sol",
-          "label": "Área aberta",
-          "x": 800,
-          "y": 78,
-          "w": 40,
-          "h": 42
-        },
-        {
-          "id": "patamar",
-          "label": "Patamar da rampa",
-          "x": 800,
-          "y": 311.0,
-          "w": 80,
-          "h": 79.0
-        }
-      ],
-      "doors": [
-        {
-          "x": 323.75,
-          "y": 78,
-          "axis": "h"
-        },
-        {
-          "x": 451.25,
-          "y": 78,
-          "axis": "h"
-        },
-        {
-          "x": 578.75,
-          "y": 78,
-          "axis": "h"
-        },
-        {
-          "x": 706.25,
-          "y": 78,
-          "axis": "h"
-        },
-        {
-          "x": 323.75,
-          "y": 108,
-          "axis": "h"
-        },
-        {
-          "x": 451.25,
-          "y": 108,
-          "axis": "h"
-        },
-        {
-          "x": 578.75,
-          "y": 108,
-          "axis": "h"
-        },
-        {
-          "x": 706.25,
-          "y": 108,
-          "axis": "h"
-        },
-        {
-          "x": 323.75,
-          "y": 252,
-          "axis": "h"
-        },
-        {
-          "x": 451.25,
-          "y": 252,
-          "axis": "h"
-        },
-        {
-          "x": 578.75,
-          "y": 252,
-          "axis": "h"
-        },
-        {
-          "x": 706.25,
-          "y": 252,
-          "axis": "h"
-        },
-        {
-          "x": 323.75,
-          "y": 282,
-          "axis": "h"
-        },
-        {
-          "x": 451.25,
-          "y": 282,
-          "axis": "h"
-        },
-        {
-          "x": 578.75,
-          "y": 282,
-          "axis": "h"
-        },
-        {
-          "x": 706.25,
-          "y": 282,
-          "axis": "h"
-        }
-      ],
-      "outline": "M230 20H880V390H800V340H230V210H170V150H230Z",
-      "entryRoute": [],
-      "entryArrow": "",
-      "rampRails": "M816.0 305.0V148Q816.0 132 840.0 132Q864.0 132 864.0 148V305.0",
-      "rampArrows": "M816.0 235v-30m-3 6 3-6 3 6M864.0 205v30m-3-6 3 6 3-6"
-    }
+ "source": "Plantas de 2012 (Souza, UFRN), figuras 9 a 11; traçado em pixels da figura do térreo",
+ "units": "px da figura de 2012",
+ "viewBox": "0 0 960 660",
+ "world": {
+  "sx": 0.068172,
+  "sy": 0.065299,
+  "x0": -42.2988,
+  "y0": -52.1472
+ },
+ "entrances": {
+  "principal": [
+   891,
+   612
+  ],
+  "auditorio": [
+   212,
+   484
+  ],
+  "anexo": [
+   226,
+   28
   ]
+ },
+ "rampFoot": [
+  887.8,
+  522
+ ],
+ "rampLoop": [
+  [
+   887.8,
+   522
+  ],
+  [
+   859.0,
+   500
+  ],
+  [
+   843.0,
+   460
+  ],
+  [
+   827.0,
+   420
+  ],
+  [
+   811.0,
+   380
+  ],
+  [
+   795.0,
+   340
+  ],
+  [
+   779.0,
+   300
+  ],
+  [
+   763.0,
+   260
+  ],
+  [
+   747.0,
+   220
+  ],
+  [
+   733.0,
+   185
+  ],
+  [
+   731.6,
+   173.4
+  ],
+  [
+   735.8,
+   169.5
+  ],
+  [
+   741.9,
+   166.9
+  ],
+  [
+   749.2,
+   166.0
+  ],
+  [
+   756.5,
+   166.9
+  ],
+  [
+   762.6,
+   169.5
+  ],
+  [
+   766.8,
+   173.4
+  ],
+  [
+   771.0,
+   185
+  ],
+  [
+   785.0,
+   220
+  ],
+  [
+   801.0,
+   260
+  ],
+  [
+   817.0,
+   300
+  ],
+  [
+   833.0,
+   340
+  ],
+  [
+   849.0,
+   380
+  ],
+  [
+   865.0,
+   420
+  ],
+  [
+   881.0,
+   460
+  ],
+  [
+   897.0,
+   500
+  ],
+  [
+   897.0,
+   500
+  ],
+  [
+   887.8,
+   522
+  ]
+ ],
+ "floors": [
+  {
+   "level": 0,
+   "label": "Térreo",
+   "zones": [
+    {
+     "id": "auditorio",
+     "kind": "auditorium",
+     "label": "Auditório",
+     "x": 20,
+     "y": 24,
+     "w": 196,
+     "h": 278,
+     "name": "Auditório",
+     "lines": [
+      "Auditório"
+     ],
+     "info": "Palco com camarins e saída própria pelo hall curvo.",
+     "roomNumber": "",
+     "useLabel": "Auditório",
+     "description": "Auditório"
+    },
+    {
+     "id": "rh",
+     "kind": "office",
+     "label": "Recursos Humanos",
+     "x": 235,
+     "y": 24,
+     "w": 80,
+     "h": 89,
+     "name": "Recursos Humanos",
+     "word": "RH",
+     "lines": [
+      "Recursos Humanos"
+     ],
+     "icon": "pessoas",
+     "roomNumber": "001",
+     "useLabel": "Recursos Humanos",
+     "description": "Recursos Humanos",
+     "source": "Uso atual informado pelo usuário, de memória (nov/2026)."
+    },
+    {
+     "id": "descanso-norte",
+     "kind": "lounge",
+     "label": "Área de descanso",
+     "x": 315,
+     "y": 24,
+     "w": 26,
+     "h": 87,
+     "name": "Área de descanso",
+     "word": "DESCANSO",
+     "lines": [
+      "Área de descanso"
+     ],
+     "icon": "sofa",
+     "info": "Sofá e guarda-volumes. A porta de vidro ao lado dá para fora.",
+     "roomNumber": "",
+     "useLabel": "Área de descanso",
+     "description": "Área de descanso"
+    },
+    {
+     "id": "parede-descanso",
+     "kind": "wall",
+     "label": "Parede",
+     "x": 315,
+     "y": 111,
+     "w": 26,
+     "h": 3,
+     "name": "Parede",
+     "lines": [
+      "Parede"
+     ],
+     "roomNumber": "",
+     "useLabel": "Parede",
+     "description": "Parede"
+    },
+    {
+     "id": "descanso-corredor",
+     "kind": "lounge",
+     "label": "Área de descanso com puffs e poltronas",
+     "x": 238,
+     "y": 116,
+     "w": 74,
+     "h": 31,
+     "name": "Área de descanso com puffs e poltronas",
+     "word": "DESCANSO",
+     "lines": [
+      "Área de descanso com puffs e poltronas"
+     ],
+     "icon": "sofa",
+     "info": "Puffs e poltronas.",
+     "roomNumber": "",
+     "useLabel": "Área de descanso com puffs e poltronas",
+     "description": "Área de descanso com puffs e poltronas"
+    },
+    {
+     "id": "comunicacao",
+     "kind": "office",
+     "label": "Comunicação Social e Eventos",
+     "x": 377,
+     "y": 24,
+     "w": 54,
+     "h": 89,
+     "name": "Comunicação Social e Eventos",
+     "word": "COMUNICAÇÃO",
+     "lines": [
+      "Comunicação Social e Eventos"
+     ],
+     "icon": "setor",
+     "roomNumber": "004",
+     "useLabel": "Comunicação Social e Eventos",
+     "description": "Comunicação Social e Eventos",
+     "source": "Uso conforme a planta de 2012 (dissertação de Larissa Leiros de Souza, UFRN)."
+    },
+    {
+     "id": "extensao-pesquisa",
+     "kind": "office",
+     "label": "Extensão e Pesquisa",
+     "x": 431,
+     "y": 24,
+     "w": 89,
+     "h": 89,
+     "name": "Extensão e Pesquisa",
+     "word": "EXTENSÃO",
+     "lines": [
+      "Extensão e Pesquisa"
+     ],
+     "icon": "setor",
+     "roomNumber": "005",
+     "useLabel": "Extensão e Pesquisa",
+     "description": "Extensão e Pesquisa",
+     "source": "Uso conforme a planta de 2012 (dissertação de Larissa Leiros de Souza, UFRN)."
+    },
+    {
+     "id": "dep-academico",
+     "kind": "office",
+     "label": "Departamento Acadêmico",
+     "x": 520,
+     "y": 24,
+     "w": 89,
+     "h": 89,
+     "name": "Departamento Acadêmico",
+     "word": "DEP. ACADÊMICO",
+     "lines": [
+      "Departamento Acadêmico"
+     ],
+     "icon": "doc",
+     "roomNumber": "006",
+     "useLabel": "Departamento Acadêmico",
+     "description": "Departamento Acadêmico",
+     "source": "Uso conforme a planta de 2012 (dissertação de Larissa Leiros de Souza, UFRN)."
+    },
+    {
+     "id": "assuntos-estudantis",
+     "kind": "office",
+     "label": "Ensino e Assuntos Estudantis",
+     "x": 609,
+     "y": 24,
+     "w": 53,
+     "h": 89,
+     "name": "Ensino e Assuntos Estudantis",
+     "word": "ESTUDANTIS",
+     "lines": [
+      "Ensino e Assuntos Estudantis"
+     ],
+     "icon": "pessoas",
+     "roomNumber": "007",
+     "useLabel": "Ensino e Assuntos Estudantis",
+     "description": "Ensino e Assuntos Estudantis",
+     "source": "Uso conforme a planta de 2012 (dissertação de Larissa Leiros de Souza, UFRN)."
+    },
+    {
+     "id": "secretaria-academica",
+     "kind": "office",
+     "label": "Secretaria Acadêmica",
+     "x": 235,
+     "y": 150,
+     "w": 106,
+     "h": 88,
+     "name": "Secretaria Acadêmica",
+     "word": "SECRETARIA",
+     "lines": [
+      "Secretaria Acadêmica"
+     ],
+     "icon": "doc",
+     "info": "Matrícula, declarações e documentos.",
+     "roomNumber": "003",
+     "useLabel": "Secretaria Acadêmica",
+     "description": "Secretaria Acadêmica",
+     "source": "Uso atual informado pelo usuário, de memória (nov/2026)."
+    },
+    {
+     "id": "diretor",
+     "kind": "office",
+     "label": "Direção-Geral",
+     "x": 235,
+     "y": 238,
+     "w": 63,
+     "h": 89,
+     "name": "Direção-Geral",
+     "word": "DIREÇÃO",
+     "lines": [
+      "Direção-Geral"
+     ],
+     "icon": "setor",
+     "roomNumber": "008",
+     "useLabel": "Direção-Geral",
+     "description": "Direção-Geral",
+     "source": "Uso conforme a planta de 2012 (dissertação de Larissa Leiros de Souza, UFRN)."
+    },
+    {
+     "id": "escada",
+     "kind": "stairs",
+     "label": "Escada",
+     "x": 298,
+     "y": 238,
+     "w": 43,
+     "h": 84,
+     "name": "Escada",
+     "word": "ESCADA",
+     "lines": [
+      "Escada"
+     ],
+     "roomNumber": "",
+     "useLabel": "Escada",
+     "description": "Escada"
+    },
+    {
+     "id": "gabinete",
+     "kind": "office",
+     "label": "Chefia de Gabinete",
+     "x": 235,
+     "y": 327,
+     "w": 63,
+     "h": 90,
+     "name": "Chefia de Gabinete",
+     "word": "GABINETE",
+     "lines": [
+      "Chefia de Gabinete"
+     ],
+     "icon": "setor",
+     "roomNumber": "009",
+     "useLabel": "Chefia de Gabinete",
+     "description": "Chefia de Gabinete",
+     "source": "Uso conforme a planta de 2012 (dissertação de Larissa Leiros de Souza, UFRN)."
+    },
+    {
+     "id": "estar",
+     "kind": "office",
+     "label": "Sala de estar",
+     "x": 298,
+     "y": 322,
+     "w": 43,
+     "h": 95,
+     "name": "Sala de estar",
+     "word": "ESTAR",
+     "lines": [
+      "Sala de estar"
+     ],
+     "icon": "copa",
+     "roomNumber": "010",
+     "useLabel": "Sala de estar",
+     "description": "Sala de estar",
+     "source": "Uso conforme a planta de 2012 (dissertação de Larissa Leiros de Souza, UFRN)."
+    },
+    {
+     "id": "estudos-servidores",
+     "kind": "office",
+     "label": "Sala de estudos dos servidores",
+     "x": 377,
+     "y": 150,
+     "w": 54,
+     "h": 88,
+     "name": "Sala de estudos dos servidores",
+     "word": "ESTUDOS",
+     "lines": [
+      "Sala de estudos dos servidores"
+     ],
+     "icon": "livro",
+     "roomNumber": "011",
+     "useLabel": "Sala de estudos dos servidores",
+     "description": "Sala de estudos dos servidores",
+     "source": "Uso conforme a planta de 2012 (dissertação de Larissa Leiros de Souza, UFRN)."
+    },
+    {
+     "id": "sala-servidores",
+     "kind": "office",
+     "label": "Sala dos servidores",
+     "x": 431,
+     "y": 150,
+     "w": 89,
+     "h": 88,
+     "name": "Sala dos servidores",
+     "word": "SERVIDORES",
+     "lines": [
+      "Sala dos servidores"
+     ],
+     "icon": "pessoas",
+     "roomNumber": "012",
+     "useLabel": "Sala dos servidores",
+     "description": "Sala dos servidores",
+     "source": "Uso conforme a planta de 2012 (dissertação de Larissa Leiros de Souza, UFRN)."
+    },
+    {
+     "id": "coordenacoes",
+     "kind": "office",
+     "label": "Coordenações de cursos e Pedagogia",
+     "x": 520,
+     "y": 150,
+     "w": 89,
+     "h": 88,
+     "name": "Coordenações de cursos e Pedagogia",
+     "word": "COORDENAÇÕES",
+     "lines": [
+      "Coordenações de cursos e Pedagogia"
+     ],
+     "icon": "pessoas",
+     "roomNumber": "014",
+     "useLabel": "Coordenações de cursos e Pedagogia",
+     "description": "Coordenações de cursos e Pedagogia",
+     "source": "Uso conforme a planta de 2012 (dissertação de Larissa Leiros de Souza, UFRN)."
+    },
+    {
+     "id": "registro-academico",
+     "kind": "office",
+     "label": "Registro Acadêmico e Seleção Discente",
+     "x": 609,
+     "y": 150,
+     "w": 53,
+     "h": 88,
+     "name": "Registro Acadêmico e Seleção Discente",
+     "word": "REG. ACADÊMICO",
+     "lines": [
+      "Registro Acadêmico e Seleção Discente"
+     ],
+     "icon": "doc",
+     "roomNumber": "015",
+     "useLabel": "Registro Acadêmico e Seleção Discente",
+     "description": "Registro Acadêmico e Seleção Discente",
+     "source": "Uso conforme a planta de 2012 (dissertação de Larissa Leiros de Souza, UFRN)."
+    },
+    {
+     "id": "patio-interno",
+     "kind": "courtyard",
+     "label": "Pátio interno",
+     "points": "378,238 692,238 729.3,327 378,327",
+     "labelX": 544.5,
+     "labelY": 283.3,
+     "bx": 378,
+     "by": 238,
+     "bw": 351.3,
+     "bh": 89,
+     "name": "Pátio interno",
+     "lines": [
+      "Pátio interno"
+     ],
+     "roomNumber": "",
+     "useLabel": "Pátio interno",
+     "description": "Pátio interno"
+    },
+    {
+     "id": "sala-ti",
+     "kind": "office",
+     "label": "Sala de TI",
+     "x": 377,
+     "y": 327,
+     "w": 54,
+     "h": 90,
+     "name": "Sala de TI",
+     "word": "TI",
+     "lines": [
+      "Sala de TI"
+     ],
+     "icon": "pc",
+     "roomNumber": "016",
+     "useLabel": "Sala de TI",
+     "description": "Sala de TI",
+     "source": "Uso atual informado pelo usuário, de memória (nov/2026)."
+    },
+    {
+     "id": "manutencao",
+     "kind": "office",
+     "label": "Manutenção, Serviços Gerais e Transporte",
+     "x": 431,
+     "y": 327,
+     "w": 89,
+     "h": 90,
+     "name": "Manutenção, Serviços Gerais e Transporte",
+     "word": "MANUTENÇÃO",
+     "lines": [
+      "Manutenção, Serviços Gerais e Transporte"
+     ],
+     "icon": "caixa",
+     "roomNumber": "017",
+     "useLabel": "Manutenção, Serviços Gerais e Transporte",
+     "description": "Manutenção, Serviços Gerais e Transporte",
+     "source": "Uso conforme a planta de 2012 (dissertação de Larissa Leiros de Souza, UFRN)."
+    },
+    {
+     "id": "copa",
+     "kind": "staff",
+     "label": "Copa",
+     "x": 520,
+     "y": 327,
+     "w": 33,
+     "h": 90,
+     "name": "Copa",
+     "word": "COPA",
+     "lines": [
+      "Copa"
+     ],
+     "icon": "copa",
+     "roomNumber": "018",
+     "useLabel": "Copa",
+     "description": "Copa",
+     "source": "Uso conforme a planta de 2012 (dissertação de Larissa Leiros de Souza, UFRN)."
+    },
+    {
+     "id": "coord-ti",
+     "kind": "office",
+     "label": "Coordenação de TI",
+     "x": 553,
+     "y": 327,
+     "w": 56,
+     "h": 90,
+     "name": "Coordenação de TI",
+     "word": "COORD. TI",
+     "lines": [
+      "Coordenação de TI"
+     ],
+     "icon": "pc",
+     "roomNumber": "019",
+     "useLabel": "Coordenação de TI",
+     "description": "Coordenação de TI",
+     "source": "Uso conforme a planta de 2012 (dissertação de Larissa Leiros de Souza, UFRN)."
+    },
+    {
+     "id": "servico-social",
+     "kind": "office",
+     "label": "Serviço Social",
+     "x": 609,
+     "y": 327,
+     "w": 53,
+     "h": 90,
+     "name": "Serviço Social",
+     "word": "S. SOCIAL",
+     "lines": [
+      "Serviço Social"
+     ],
+     "icon": "pessoas",
+     "roomNumber": "13",
+     "useLabel": "Serviço Social",
+     "description": "Serviço Social",
+     "confirmed": true,
+     "source": "Notícia do IFRN, 13/03/2019: atendimento da Coordenação de Atividades Estudantis “na sala 13, no pavimento térreo do Bloco I”. Na planta de 2012 o serviço social fica aqui; a correspondência é provável.",
+     "url": "https://portal.ifrn.edu.br/campus/paudosferros/noticias/coordenacao-de-atividades-estudantis-convoca-candidatos-a-bolsas-para-entrevistas/"
+    },
+    {
+     "id": "sala-projetos",
+     "kind": "office",
+     "label": "Sala de Projetos",
+     "points": "662,327 729.3,327 767.1,417 662,417",
+     "labelX": 705.8,
+     "labelY": 375.3,
+     "bx": 662,
+     "by": 327,
+     "bw": 105.1,
+     "bh": 90,
+     "name": "Sala de Projetos",
+     "word": "PROJETOS",
+     "lines": [
+      "Sala de Projetos"
+     ],
+     "icon": "setor",
+     "roomNumber": "020",
+     "useLabel": "Sala de Projetos",
+     "description": "Sala de Projetos",
+     "source": "Uso conforme a planta de 2012 (dissertação de Larissa Leiros de Souza, UFRN)."
+    },
+    {
+     "id": "protocolo",
+     "kind": "office",
+     "label": "Protocolo",
+     "x": 235,
+     "y": 454,
+     "w": 53,
+     "h": 88,
+     "name": "Protocolo",
+     "word": "PROTOCOLO",
+     "lines": [
+      "Protocolo"
+     ],
+     "icon": "doc",
+     "roomNumber": "021",
+     "useLabel": "Protocolo",
+     "description": "Protocolo",
+     "source": "Uso conforme a planta de 2012 (dissertação de Larissa Leiros de Souza, UFRN)."
+    },
+    {
+     "id": "manut-informatica",
+     "kind": "office",
+     "label": "Manutenção de Informática",
+     "x": 288,
+     "y": 454,
+     "w": 89,
+     "h": 88,
+     "name": "Manutenção de Informática",
+     "word": "MANUT. INFO.",
+     "lines": [
+      "Manutenção de Informática"
+     ],
+     "icon": "pc",
+     "roomNumber": "022",
+     "useLabel": "Manutenção de Informática",
+     "description": "Manutenção de Informática",
+     "source": "Uso conforme a planta de 2012 (dissertação de Larissa Leiros de Souza, UFRN)."
+    },
+    {
+     "id": "napne",
+     "kind": "office",
+     "label": "NAPNE",
+     "x": 377,
+     "y": 454,
+     "w": 54,
+     "h": 88,
+     "name": "NAPNE",
+     "word": "NAPNE",
+     "lines": [
+      "NAPNE"
+     ],
+     "icon": "pessoas",
+     "info": "Acessibilidade e apoio a pessoas com necessidades específicas.",
+     "roomNumber": "023",
+     "useLabel": "NAPNE",
+     "description": "NAPNE",
+     "source": "Uso atual informado pelo usuário, de memória (nov/2026)."
+    },
+    {
+     "id": "almoxarifado",
+     "kind": "office",
+     "label": "Almoxarifado",
+     "x": 431,
+     "y": 454,
+     "w": 89,
+     "h": 88,
+     "name": "Almoxarifado",
+     "word": "ALMOXARIFADO",
+     "lines": [
+      "Almoxarifado"
+     ],
+     "icon": "caixa",
+     "roomNumber": "024",
+     "useLabel": "Almoxarifado",
+     "description": "Almoxarifado",
+     "source": "Uso conforme a planta de 2012 (dissertação de Larissa Leiros de Souza, UFRN)."
+    },
+    {
+     "id": "sala-estudos-informatica",
+     "kind": "laboratory",
+     "label": "Sala de Estudos de Informática",
+     "x": 520,
+     "y": 454,
+     "w": 142,
+     "h": 88,
+     "name": "Sala de Estudos de Informática",
+     "word": "ESTUDOS INFO.",
+     "lines": [
+      "Sala de Estudos de Informática"
+     ],
+     "icon": "pc",
+     "info": "Computadores para estudo.",
+     "roomNumber": "025",
+     "useLabel": "Sala de Estudos de Informática",
+     "description": "Sala de Estudos de Informática",
+     "source": "Uso conforme a planta de 2012 (dissertação de Larissa Leiros de Souza, UFRN)."
+    },
+    {
+     "id": "grafica",
+     "kind": "office",
+     "label": "Gráfica",
+     "x": 662,
+     "y": 454,
+     "w": 72,
+     "h": 88,
+     "name": "Gráfica",
+     "word": "GRÁFICA",
+     "lines": [
+      "Gráfica"
+     ],
+     "icon": "doc",
+     "roomNumber": "026",
+     "useLabel": "Gráfica",
+     "description": "Gráfica",
+     "source": "Uso conforme a planta de 2012 (dissertação de Larissa Leiros de Souza, UFRN)."
+    },
+    {
+     "id": "dir-adm",
+     "kind": "office",
+     "label": "Diretoria de Administração",
+     "points": "734,454 782.7,454 819.6,542 734,542",
+     "labelX": 768.4,
+     "labelY": 502.0,
+     "bx": 734,
+     "by": 454,
+     "bw": 85.6,
+     "bh": 88,
+     "name": "Diretoria de Administração",
+     "word": "DIR. ADM.",
+     "lines": [
+      "Diretoria de Administração"
+     ],
+     "icon": "setor",
+     "roomNumber": "027",
+     "useLabel": "Diretoria de Administração",
+     "description": "Diretoria de Administração",
+     "source": "Uso conforme a planta de 2012 (dissertação de Larissa Leiros de Souza, UFRN)."
+    },
+    {
+     "id": "wc-auditorio",
+     "kind": "restroom",
+     "label": "Banheiros do auditório",
+     "x": 124,
+     "y": 327,
+     "w": 92,
+     "h": 90,
+     "name": "Banheiros do auditório",
+     "word": "WC",
+     "lines": [
+      "Banheiros do auditório"
+     ],
+     "roomNumber": "",
+     "useLabel": "Banheiros do auditório",
+     "description": "Banheiros do auditório"
+    },
+    {
+     "id": "recepcao",
+     "kind": "reception",
+     "label": "Recepção",
+     "x": 860,
+     "y": 578,
+     "w": 62,
+     "h": 36,
+     "name": "Recepção",
+     "word": "RECEPÇÃO",
+     "lines": [
+      "Recepção"
+     ],
+     "roomNumber": "",
+     "useLabel": "Recepção",
+     "description": "Recepção"
+    },
+    {
+     "id": "wc-leste",
+     "kind": "restroom",
+     "label": "Banheiros",
+     "points": "662,24 727.6,24 774.8,142 705,165 684.2,113 662,113",
+     "labelX": 711.5,
+     "labelY": 90.4,
+     "bx": 662,
+     "by": 24,
+     "bw": 112.8,
+     "bh": 141,
+     "name": "Banheiros",
+     "word": "WC",
+     "lines": [
+      "Banheiros"
+     ],
+     "roomNumber": "",
+     "useLabel": "Banheiros",
+     "description": "Banheiros"
+    },
+    {
+     "id": "rampa",
+     "kind": "ramp",
+     "label": "Rampa",
+     "points": "705,165 784,165 920,505 841,505",
+     "labelX": 812.5,
+     "labelY": 335.0,
+     "bx": 705.0,
+     "by": 165,
+     "bw": 215.0,
+     "bh": 340,
+     "name": "Rampa",
+     "word": "RAMPA",
+     "lines": [
+      "Rampa"
+     ],
+     "roomNumber": "",
+     "useLabel": "Rampa",
+     "description": "Rampa"
+    }
+   ],
+   "corridors": [
+    {
+     "id": "saida-norte",
+     "label": "Circulação até a saída norte",
+     "x": 341,
+     "y": 24,
+     "w": 37,
+     "h": 89
+    },
+    {
+     "id": "circulacao-leste",
+     "label": "Circulação da rampa",
+     "points": "662,113 684.2,113 855.8,542 819.6,542 663,169",
+     "x": 662,
+     "y": 113,
+     "w": 193.8,
+     "h": 429
+    },
+    {
+     "id": "patamar",
+     "label": "Patamar da rampa",
+     "points": "841,505 920,505 934.8,542 855.8,542",
+     "x": 841.0,
+     "y": 505,
+     "w": 93.8,
+     "h": 37
+    },
+    {
+     "id": "passagem-anexo",
+     "label": "Corredor do Anexo",
+     "x": 213,
+     "y": 24,
+     "w": 23,
+     "h": 446
+    },
+    {
+     "id": "corredor-norte",
+     "label": "Corredor",
+     "x": 235,
+     "y": 113,
+     "w": 427,
+     "h": 37
+    },
+    {
+     "id": "circulacao-oeste",
+     "label": "Circulação",
+     "x": 341,
+     "y": 150,
+     "w": 37,
+     "h": 267
+    },
+    {
+     "id": "corredor-sul",
+     "label": "Corredor",
+     "x": 213,
+     "y": 417,
+     "w": 563,
+     "h": 37
+    },
+    {
+     "id": "hall-auditorio",
+     "label": "Hall do auditório",
+     "points": "20,302 216,302 216,327 124,327 124,417 216,417 216,490 197,492 147,488 127,476 100,452 86,440 78,416 72,392 68,380 67,332 20,332",
+     "x": 20,
+     "y": 302,
+     "w": 196,
+     "h": 190
+    },
+    {
+     "id": "hall-entrada",
+     "label": "Hall de entrada",
+     "x": 856,
+     "y": 542,
+     "w": 66,
+     "h": 36
+    }
+   ],
+   "doors": [
+    {
+     "x": 124,
+     "y": 372,
+     "axis": "v"
+    },
+    {
+     "x": 306,
+     "y": 113,
+     "axis": "h"
+    },
+    {
+     "x": 386,
+     "y": 113,
+     "axis": "h"
+    },
+    {
+     "x": 511,
+     "y": 113,
+     "axis": "h"
+    },
+    {
+     "x": 528,
+     "y": 113,
+     "axis": "h"
+    },
+    {
+     "x": 653,
+     "y": 113,
+     "axis": "h"
+    },
+    {
+     "x": 386,
+     "y": 150,
+     "axis": "h"
+    },
+    {
+     "x": 511,
+     "y": 150,
+     "axis": "h"
+    },
+    {
+     "x": 528,
+     "y": 150,
+     "axis": "h"
+    },
+    {
+     "x": 653,
+     "y": 150,
+     "axis": "h"
+    },
+    {
+     "x": 332,
+     "y": 150,
+     "axis": "h"
+    },
+    {
+     "x": 270,
+     "y": 327,
+     "axis": "h"
+    },
+    {
+     "x": 298,
+     "y": 336,
+     "axis": "v"
+    },
+    {
+     "x": 341,
+     "y": 370,
+     "axis": "v"
+    },
+    {
+     "x": 386,
+     "y": 417,
+     "axis": "h"
+    },
+    {
+     "x": 511,
+     "y": 417,
+     "axis": "h"
+    },
+    {
+     "x": 536,
+     "y": 417,
+     "axis": "h"
+    },
+    {
+     "x": 561,
+     "y": 417,
+     "axis": "h"
+    },
+    {
+     "x": 653,
+     "y": 417,
+     "axis": "h"
+    },
+    {
+     "x": 670,
+     "y": 417,
+     "axis": "h"
+    },
+    {
+     "x": 282,
+     "y": 454,
+     "axis": "h"
+    },
+    {
+     "x": 372,
+     "y": 454,
+     "axis": "h"
+    },
+    {
+     "x": 385,
+     "y": 454,
+     "axis": "h"
+    },
+    {
+     "x": 515,
+     "y": 454,
+     "axis": "h"
+    },
+    {
+     "x": 528,
+     "y": 454,
+     "axis": "h"
+    },
+    {
+     "x": 670,
+     "y": 454,
+     "axis": "h"
+    },
+    {
+     "x": 740,
+     "y": 454,
+     "axis": "h"
+    }
+   ],
+   "outline": "M20 24 L727.6 24 L934.8 542 L922 542 L922 614 L860 614 L860 542 L235 542 L235 492 L197 492 L147 488 L127 476 L100 452 L86 440 L78 416 L72 392 L68 380 L67 332 L20 332 Z",
+   "outlinePts": [
+    [
+     20,
+     24
+    ],
+    [
+     727.6,
+     24
+    ],
+    [
+     934.8,
+     542
+    ],
+    [
+     922,
+     542
+    ],
+    [
+     922,
+     614
+    ],
+    [
+     860,
+     614
+    ],
+    [
+     860,
+     542
+    ],
+    [
+     235,
+     542
+    ],
+    [
+     235,
+     492
+    ],
+    [
+     197,
+     492
+    ],
+    [
+     147,
+     488
+    ],
+    [
+     127,
+     476
+    ],
+    [
+     100,
+     452
+    ],
+    [
+     86,
+     440
+    ],
+    [
+     78,
+     416
+    ],
+    [
+     72,
+     392
+    ],
+    [
+     68,
+     380
+    ],
+    [
+     67,
+     332
+    ],
+    [
+     20,
+     332
+    ]
+   ],
+   "roofs": [],
+   "marks": [
+    {
+     "text": "Entrada do Anexo",
+     "x": 226,
+     "y": 14
+    },
+    {
+     "text": "Entrada do auditório",
+     "x": 160,
+     "y": 512
+    }
+   ],
+   "entryRoute": [
+    [
+     891,
+     646
+    ],
+    [
+     891,
+     600
+    ]
+   ],
+   "walls": [],
+   "glass": [],
+   "rampRails": "M756 195 L877.2 498",
+   "rampArrows": "M791 330 l-3 9 M791 330 l5 7 M817 300 l3 -9 M817 300 l-5 -7"
+  },
+  {
+   "level": 1,
+   "label": "1º andar",
+   "zones": [
+    {
+     "id": "sala-norte-0",
+     "kind": "classroom",
+     "label": "Sala 101",
+     "x": 235,
+     "y": 24,
+     "w": 142,
+     "h": 89,
+     "lines": [
+      "Sala 101"
+     ],
+     "icon": "aula",
+     "roomNumber": "101",
+     "useLabel": "Sala",
+     "description": "sala-norte-0"
+    },
+    {
+     "id": "sala-norte-1",
+     "kind": "classroom",
+     "label": "Sala 102",
+     "x": 377,
+     "y": 24,
+     "w": 143,
+     "h": 89,
+     "lines": [
+      "Sala 102"
+     ],
+     "icon": "aula",
+     "roomNumber": "102",
+     "useLabel": "Sala",
+     "description": "sala-norte-1"
+    },
+    {
+     "id": "sala-norte-2",
+     "kind": "classroom",
+     "label": "Sala 103",
+     "x": 520,
+     "y": 24,
+     "w": 142,
+     "h": 89,
+     "lines": [
+      "Sala 103"
+     ],
+     "icon": "aula",
+     "roomNumber": "103",
+     "useLabel": "Sala",
+     "description": "sala-norte-2"
+    },
+    {
+     "id": "sala-oeste-norte",
+     "kind": "classroom",
+     "label": "Sala 104",
+     "x": 235,
+     "y": 150,
+     "w": 106,
+     "h": 88,
+     "lines": [
+      "Sala 104"
+     ],
+     "icon": "aula",
+     "roomNumber": "104",
+     "useLabel": "Sala",
+     "description": "sala-oeste-norte",
+     "source": "Uso atual informado pelo usuário, de memória (nov/2026)."
+    },
+    {
+     "id": "antigo-gremio",
+     "kind": "office",
+     "label": "Antiga sala do Grêmio",
+     "x": 235,
+     "y": 238,
+     "w": 63,
+     "h": 89,
+     "name": "Antiga sala do Grêmio",
+     "word": "EX-GRÊMIO",
+     "lines": [
+      "Antiga sala do Grêmio"
+     ],
+     "icon": "caixa",
+     "info": "Era a sala do Grêmio.",
+     "roomNumber": "115",
+     "useLabel": "Antiga sala do Grêmio",
+     "description": "Antiga sala do Grêmio",
+     "source": "Uso atual informado pelo usuário, de memória (nov/2026)."
+    },
+    {
+     "id": "escada",
+     "kind": "stairs",
+     "label": "Escada",
+     "x": 298,
+     "y": 238,
+     "w": 43,
+     "h": 84,
+     "name": "Escada",
+     "word": "ESCADA",
+     "lines": [
+      "Escada"
+     ],
+     "roomNumber": "",
+     "useLabel": "Escada",
+     "description": "Escada"
+    },
+    {
+     "id": "sala-oeste-sul",
+     "kind": "classroom",
+     "label": "Sala 105",
+     "x": 235,
+     "y": 327,
+     "w": 106,
+     "h": 90,
+     "lines": [
+      "Sala 105"
+     ],
+     "icon": "aula",
+     "roomNumber": "105",
+     "useLabel": "Sala",
+     "description": "sala-oeste-sul",
+     "source": "Uso atual informado pelo usuário, de memória (nov/2026)."
+    },
+    {
+     "id": "sala-interna-norte-0",
+     "kind": "classroom",
+     "label": "Sala 106",
+     "x": 377,
+     "y": 150,
+     "w": 143,
+     "h": 88,
+     "lines": [
+      "Sala 106"
+     ],
+     "icon": "aula",
+     "roomNumber": "106",
+     "useLabel": "Sala",
+     "description": "sala-interna-norte-0"
+    },
+    {
+     "id": "sala-interna-norte-1",
+     "kind": "classroom",
+     "label": "Sala 107",
+     "x": 520,
+     "y": 150,
+     "w": 142,
+     "h": 88,
+     "lines": [
+      "Sala 107"
+     ],
+     "icon": "aula",
+     "roomNumber": "107",
+     "useLabel": "Sala",
+     "description": "sala-interna-norte-1"
+    },
+    {
+     "id": "vao-patio",
+     "kind": "courtyard",
+     "label": "Vão do pátio",
+     "points": "378,238 692,238 729.3,327 378,327",
+     "labelX": 544.5,
+     "labelY": 283.3,
+     "bx": 378,
+     "by": 238,
+     "bw": 351.3,
+     "bh": 89,
+     "name": "Vão do pátio",
+     "lines": [
+      "Vão do pátio"
+     ],
+     "roomNumber": "",
+     "useLabel": "Vão do pátio",
+     "description": "Vão do pátio"
+    },
+    {
+     "id": "sala-interna-sul-0",
+     "kind": "classroom",
+     "label": "Sala 108",
+     "x": 377,
+     "y": 327,
+     "w": 143,
+     "h": 90,
+     "lines": [
+      "Sala 108"
+     ],
+     "icon": "aula",
+     "roomNumber": "108",
+     "useLabel": "Sala",
+     "description": "sala-interna-sul-0"
+    },
+    {
+     "id": "sala-nadic",
+     "kind": "office",
+     "label": "Sala dos bolsistas do NADIC",
+     "x": 520,
+     "y": 327,
+     "w": 142,
+     "h": 90,
+     "name": "Sala dos bolsistas do NADIC",
+     "word": "NADIC",
+     "lines": [
+      "Sala dos bolsistas do NADIC"
+     ],
+     "icon": "pc",
+     "info": "Dos bolsistas do NADIC, que fizeram este app.",
+     "roomNumber": "109",
+     "useLabel": "Sala dos bolsistas do NADIC",
+     "description": "Sala dos bolsistas do NADIC",
+     "source": "Uso atual informado pelo usuário, de memória (nov/2026)."
+    },
+    {
+     "id": "gremio",
+     "kind": "office",
+     "label": "Grêmio Estudantil",
+     "points": "662,327 729.3,327 767.1,417 662,417",
+     "labelX": 705.8,
+     "labelY": 375.3,
+     "bx": 662,
+     "by": 327,
+     "bw": 105.1,
+     "bh": 90,
+     "name": "Grêmio Estudantil",
+     "word": "GRÊMIO",
+     "lines": [
+      "Grêmio Estudantil"
+     ],
+     "icon": "pessoas",
+     "roomNumber": "110",
+     "useLabel": "Grêmio Estudantil",
+     "description": "Grêmio Estudantil",
+     "source": "Uso atual informado pelo usuário, de memória (nov/2026)."
+    },
+    {
+     "id": "salas-sul-0",
+     "kind": "classroom",
+     "label": "Sala 111",
+     "x": 235,
+     "y": 454,
+     "w": 142,
+     "h": 88,
+     "lines": [
+      "Sala 111"
+     ],
+     "icon": "aula",
+     "roomNumber": "111",
+     "useLabel": "Sala",
+     "description": "salas-sul-0"
+    },
+    {
+     "id": "salas-sul-1",
+     "kind": "classroom",
+     "label": "Sala 112",
+     "x": 377,
+     "y": 454,
+     "w": 143,
+     "h": 88,
+     "lines": [
+      "Sala 112"
+     ],
+     "icon": "aula",
+     "roomNumber": "112",
+     "useLabel": "Sala",
+     "description": "salas-sul-1"
+    },
+    {
+     "id": "salas-sul-2",
+     "kind": "classroom",
+     "label": "Sala 113",
+     "x": 520,
+     "y": 454,
+     "w": 142,
+     "h": 88,
+     "lines": [
+      "Sala 113"
+     ],
+     "icon": "aula",
+     "roomNumber": "113",
+     "useLabel": "Sala",
+     "description": "salas-sul-2"
+    },
+    {
+     "id": "salas-sul-3",
+     "kind": "classroom",
+     "label": "Sala 114",
+     "x": 662,
+     "y": 454,
+     "w": 116,
+     "h": 88,
+     "lines": [
+      "Sala 114"
+     ],
+     "icon": "aula",
+     "roomNumber": "114",
+     "useLabel": "Sala",
+     "description": "salas-sul-3"
+    },
+    {
+     "id": "wc-leste",
+     "kind": "restroom",
+     "label": "Banheiros",
+     "points": "662,24 727.6,24 774.8,142 705,165 684.2,113 662,113",
+     "labelX": 711.5,
+     "labelY": 90.4,
+     "bx": 662,
+     "by": 24,
+     "bw": 112.8,
+     "bh": 141,
+     "name": "Banheiros",
+     "word": "WC",
+     "lines": [
+      "Banheiros"
+     ],
+     "roomNumber": "",
+     "useLabel": "Banheiros",
+     "description": "Banheiros"
+    },
+    {
+     "id": "rampa",
+     "kind": "ramp",
+     "label": "Rampa",
+     "points": "705,165 784,165 920,505 841,505",
+     "labelX": 812.5,
+     "labelY": 335.0,
+     "bx": 705.0,
+     "by": 165,
+     "bw": 215.0,
+     "bh": 340,
+     "name": "Rampa",
+     "word": "RAMPA",
+     "lines": [
+      "Rampa"
+     ],
+     "roomNumber": "",
+     "useLabel": "Rampa",
+     "description": "Rampa"
+    }
+   ],
+   "corridors": [
+    {
+     "id": "circulacao-leste",
+     "label": "Circulação da rampa",
+     "points": "662,113 684.2,113 855.8,542 819.6,542 663,169",
+     "x": 662,
+     "y": 113,
+     "w": 193.8,
+     "h": 429
+    },
+    {
+     "id": "patamar",
+     "label": "Patamar da rampa",
+     "points": "841,505 920,505 934.8,542 855.8,542",
+     "x": 841.0,
+     "y": 505,
+     "w": 93.8,
+     "h": 37
+    },
+    {
+     "id": "corredor-norte",
+     "label": "Corredor",
+     "x": 235,
+     "y": 113,
+     "w": 427,
+     "h": 37
+    },
+    {
+     "id": "circulacao-oeste",
+     "label": "Circulação",
+     "x": 341,
+     "y": 113,
+     "w": 37,
+     "h": 304
+    },
+    {
+     "id": "corredor-sul",
+     "label": "Corredor",
+     "x": 235,
+     "y": 417,
+     "w": 541,
+     "h": 37
+    }
+   ],
+   "doors": [
+    {
+     "x": 298,
+     "y": 300,
+     "axis": "v"
+    },
+    {
+     "x": 368,
+     "y": 113,
+     "axis": "h"
+    },
+    {
+     "x": 386,
+     "y": 113,
+     "axis": "h"
+    },
+    {
+     "x": 652,
+     "y": 113,
+     "axis": "h"
+    },
+    {
+     "x": 330,
+     "y": 150,
+     "axis": "h"
+    },
+    {
+     "x": 386,
+     "y": 150,
+     "axis": "h"
+    },
+    {
+     "x": 653,
+     "y": 150,
+     "axis": "h"
+    },
+    {
+     "x": 330,
+     "y": 417,
+     "axis": "h"
+    },
+    {
+     "x": 386,
+     "y": 417,
+     "axis": "h"
+    },
+    {
+     "x": 652,
+     "y": 417,
+     "axis": "h"
+    },
+    {
+     "x": 668,
+     "y": 417,
+     "axis": "h"
+    },
+    {
+     "x": 368,
+     "y": 454,
+     "axis": "h"
+    },
+    {
+     "x": 386,
+     "y": 454,
+     "axis": "h"
+    },
+    {
+     "x": 650,
+     "y": 454,
+     "axis": "h"
+    },
+    {
+     "x": 668,
+     "y": 454,
+     "axis": "h"
+    }
+   ],
+   "outline": "M235 24 L727.6 24 L934.8 542 L235 542 Z",
+   "outlinePts": [
+    [
+     235,
+     24
+    ],
+    [
+     727.6,
+     24
+    ],
+    [
+     934.8,
+     542
+    ],
+    [
+     235,
+     542
+    ]
+   ],
+   "roofs": [
+    {
+     "points": "860,542 922,542 922,614 860,614",
+     "label": "Hall de entrada (pé-direito duplo)"
+    },
+    {
+     "points": "20,24 233,24 233,501 160,500 126,488 108,476 83,452 68,428 59,404 55,380 55,333 20,333",
+     "label": "Telhado do auditório"
+    }
+   ],
+   "marks": [],
+   "entryRoute": [],
+   "walls": [],
+   "glass": [],
+   "rampRails": "M756 195 L877.2 498",
+   "rampArrows": "M791 330 l-3 9 M791 330 l5 7 M817 300 l3 -9 M817 300 l-5 -7"
+  },
+  {
+   "level": 2,
+   "label": "2º andar",
+   "zones": [
+    {
+     "id": "lab-manutencao",
+     "kind": "laboratory",
+     "label": "Laboratório de Manutenção de Computadores",
+     "x": 235,
+     "y": 24,
+     "w": 142,
+     "h": 89,
+     "name": "Laboratório de Manutenção de Computadores",
+     "word": "MANUT. PCs",
+     "lines": [
+      "Laboratório de Manutenção de Computadores"
+     ],
+     "icon": "pc",
+     "roomNumber": "201",
+     "useLabel": "Laboratório de Manutenção de Computadores",
+     "description": "Laboratório de Manutenção de Computadores",
+     "source": "Uso atual informado pelo usuário, de memória (nov/2026)."
+    },
+    {
+     "id": "lab-quimica",
+     "kind": "laboratory",
+     "label": "Laboratório de Química (a confirmar)",
+     "x": 377,
+     "y": 24,
+     "w": 143,
+     "h": 89,
+     "name": "Laboratório de Química (a confirmar)",
+     "word": "QUÍMICA?",
+     "lines": [
+      "Laboratório de Química (a confirmar)"
+     ],
+     "icon": "lab",
+     "info": "Talvez de química.",
+     "roomNumber": "202",
+     "useLabel": "Laboratório de Química (a confirmar)",
+     "description": "Laboratório de Química (a confirmar)",
+     "source": "Uso atual informado pelo usuário, de memória (nov/2026)."
+    },
+    {
+     "id": "lab-norte-3",
+     "kind": "laboratory",
+     "label": "Lab 203",
+     "x": 520,
+     "y": 24,
+     "w": 142,
+     "h": 89,
+     "lines": [
+      "Lab 203"
+     ],
+     "icon": "lab",
+     "roomNumber": "203",
+     "useLabel": "Laboratório",
+     "description": "lab-norte-3"
+    },
+    {
+     "id": "lab-oeste-norte",
+     "kind": "laboratory",
+     "label": "Lab 204",
+     "x": 235,
+     "y": 150,
+     "w": 106,
+     "h": 88,
+     "lines": [
+      "Lab 204"
+     ],
+     "icon": "lab",
+     "roomNumber": "204",
+     "useLabel": "Laboratório",
+     "description": "lab-oeste-norte"
+    },
+    {
+     "id": "escada",
+     "kind": "stairs",
+     "label": "Escada",
+     "x": 298,
+     "y": 238,
+     "w": 43,
+     "h": 84,
+     "name": "Escada",
+     "word": "ESCADA",
+     "lines": [
+      "Escada"
+     ],
+     "roomNumber": "",
+     "useLabel": "Escada",
+     "description": "Escada"
+    },
+    {
+     "id": "lab-oeste-sul",
+     "kind": "laboratory",
+     "label": "Lab 205",
+     "x": 235,
+     "y": 327,
+     "w": 106,
+     "h": 90,
+     "lines": [
+      "Lab 205"
+     ],
+     "icon": "lab",
+     "roomNumber": "205",
+     "useLabel": "Laboratório",
+     "description": "lab-oeste-sul"
+    },
+    {
+     "id": "professores",
+     "kind": "staff",
+     "label": "Sala dos professores",
+     "x": 377,
+     "y": 150,
+     "w": 163,
+     "h": 88,
+     "name": "Sala dos professores",
+     "word": "PROFESSORES",
+     "lines": [
+      "Sala dos professores"
+     ],
+     "icon": "pessoas",
+     "roomNumber": "206",
+     "useLabel": "Sala dos professores",
+     "description": "Sala dos professores",
+     "source": "Uso atual informado pelo usuário, de memória (nov/2026)."
+    },
+    {
+     "id": "sala-reuniao",
+     "kind": "office",
+     "label": "Sala de reunião",
+     "x": 540,
+     "y": 150,
+     "w": 60,
+     "h": 88,
+     "name": "Sala de reunião",
+     "word": "REUNIÃO",
+     "lines": [
+      "Sala de reunião"
+     ],
+     "icon": "atos",
+     "roomNumber": "207",
+     "useLabel": "Sala de reunião",
+     "description": "Sala de reunião",
+     "source": "Uso atual informado pelo usuário, de memória (nov/2026)."
+    },
+    {
+     "id": "coord-ads",
+     "kind": "office",
+     "label": "Coordenação de ADS",
+     "x": 600,
+     "y": 150,
+     "w": 62,
+     "h": 88,
+     "name": "Coordenação de ADS",
+     "word": "COORD. ADS",
+     "lines": [
+      "Coordenação de ADS"
+     ],
+     "icon": "pessoas",
+     "roomNumber": "208",
+     "useLabel": "Coordenação de ADS",
+     "description": "Coordenação de ADS",
+     "source": "Uso atual informado pelo usuário, de memória (nov/2026)."
+    },
+    {
+     "id": "vao-patio",
+     "kind": "courtyard",
+     "label": "Vão do pátio",
+     "points": "378,238 692,238 729.3,327 378,327",
+     "labelX": 544.5,
+     "labelY": 283.3,
+     "bx": 378,
+     "by": 238,
+     "bw": 351.3,
+     "bh": 89,
+     "name": "Vão do pátio",
+     "lines": [
+      "Vão do pátio"
+     ],
+     "roomNumber": "",
+     "useLabel": "Vão do pátio",
+     "description": "Vão do pátio"
+    },
+    {
+     "id": "labs-norte",
+     "kind": "laboratory",
+     "label": "Lab 209",
+     "x": 378,
+     "y": 327,
+     "w": 143,
+     "h": 90,
+     "lines": [
+      "Lab 209"
+     ],
+     "icon": "lab",
+     "roomNumber": "209",
+     "useLabel": "Laboratório",
+     "description": "labs-norte"
+    },
+    {
+     "id": "labs-norte-2",
+     "kind": "laboratory",
+     "label": "Lab 210",
+     "x": 521,
+     "y": 327,
+     "w": 143,
+     "h": 90,
+     "lines": [
+      "Lab 210"
+     ],
+     "icon": "lab",
+     "roomNumber": "210",
+     "useLabel": "Laboratório",
+     "description": "labs-norte-2"
+    },
+    {
+     "id": "coord-labs",
+     "kind": "office",
+     "label": "Coordenação de Laboratórios e Ferramental",
+     "points": "664,327 729.3,327 767.1,417 664,417",
+     "labelX": 706.8,
+     "labelY": 375.4,
+     "bx": 664,
+     "by": 327,
+     "bw": 103.1,
+     "bh": 90,
+     "name": "Coordenação de Laboratórios e Ferramental",
+     "word": "COORD. LABS",
+     "lines": [
+      "Coordenação de Laboratórios e Ferramental"
+     ],
+     "icon": "pessoas",
+     "roomNumber": "211",
+     "useLabel": "Coordenação de Laboratórios e Ferramental",
+     "description": "Coordenação de Laboratórios e Ferramental",
+     "source": "Uso conforme a planta de 2012 (dissertação de Larissa Leiros de Souza, UFRN)."
+    },
+    {
+     "id": "sala-ads",
+     "kind": "office",
+     "label": "Sala de estudo e descanso de ADS",
+     "x": 235,
+     "y": 454,
+     "w": 143,
+     "h": 88,
+     "name": "Sala de estudo e descanso de ADS",
+     "word": "ESTUDO ADS",
+     "lines": [
+      "Sala de estudo e descanso de ADS"
+     ],
+     "icon": "livro",
+     "roomNumber": "212",
+     "useLabel": "Sala de estudo e descanso de ADS",
+     "description": "Sala de estudo e descanso de ADS",
+     "source": "Uso atual informado pelo usuário, de memória (nov/2026)."
+    },
+    {
+     "id": "lab-sul-1",
+     "kind": "laboratory",
+     "label": "Lab 213",
+     "x": 378,
+     "y": 454,
+     "w": 143,
+     "h": 88,
+     "lines": [
+      "Lab 213"
+     ],
+     "icon": "lab",
+     "roomNumber": "213",
+     "useLabel": "Laboratório",
+     "description": "lab-sul-1"
+    },
+    {
+     "id": "lab-sul-2",
+     "kind": "laboratory",
+     "label": "Lab 214",
+     "x": 521,
+     "y": 454,
+     "w": 179,
+     "h": 88,
+     "lines": [
+      "Lab 214"
+     ],
+     "icon": "lab",
+     "roomNumber": "214",
+     "useLabel": "Laboratório",
+     "description": "lab-sul-2",
+     "source": "Uso atual informado pelo usuário, de memória (nov/2026)."
+    },
+    {
+     "id": "loja",
+     "kind": "office",
+     "label": "Loja",
+     "x": 700,
+     "y": 454,
+     "w": 78,
+     "h": 88,
+     "name": "Loja",
+     "word": "LOJA",
+     "lines": [
+      "Loja"
+     ],
+     "icon": "loja",
+     "roomNumber": "215",
+     "useLabel": "Loja",
+     "description": "Loja",
+     "source": "Uso conforme a planta de 2012 (dissertação de Larissa Leiros de Souza, UFRN)."
+    },
+    {
+     "id": "wc-leste",
+     "kind": "restroom",
+     "label": "Banheiros",
+     "points": "662,24 727.6,24 774.8,142 705,165 684.2,113 662,113",
+     "labelX": 711.5,
+     "labelY": 90.4,
+     "bx": 662,
+     "by": 24,
+     "bw": 112.8,
+     "bh": 141,
+     "name": "Banheiros",
+     "word": "WC",
+     "lines": [
+      "Banheiros"
+     ],
+     "roomNumber": "",
+     "useLabel": "Banheiros",
+     "description": "Banheiros"
+    },
+    {
+     "id": "rampa",
+     "kind": "ramp",
+     "label": "Rampa",
+     "points": "705,165 784,165 920,505 841,505",
+     "labelX": 812.5,
+     "labelY": 335.0,
+     "bx": 705.0,
+     "by": 165,
+     "bw": 215.0,
+     "bh": 340,
+     "name": "Rampa",
+     "word": "RAMPA",
+     "lines": [
+      "Rampa"
+     ],
+     "roomNumber": "",
+     "useLabel": "Rampa",
+     "description": "Rampa"
+    }
+   ],
+   "corridors": [
+    {
+     "id": "circulacao-leste",
+     "label": "Circulação da rampa",
+     "points": "662,113 684.2,113 855.8,542 819.6,542 663,169",
+     "x": 662,
+     "y": 113,
+     "w": 193.8,
+     "h": 429
+    },
+    {
+     "id": "patamar",
+     "label": "Patamar da rampa",
+     "points": "841,505 920,505 934.8,542 855.8,542",
+     "x": 841.0,
+     "y": 505,
+     "w": 93.8,
+     "h": 37
+    },
+    {
+     "id": "corredor-norte",
+     "label": "Corredor",
+     "x": 235,
+     "y": 113,
+     "w": 427,
+     "h": 37
+    },
+    {
+     "id": "circulacao-oeste",
+     "label": "Circulação",
+     "x": 341,
+     "y": 113,
+     "w": 37,
+     "h": 304
+    },
+    {
+     "id": "corredor-sul",
+     "label": "Corredor",
+     "x": 235,
+     "y": 417,
+     "w": 541,
+     "h": 37
+    }
+   ],
+   "doors": [
+    {
+     "x": 368,
+     "y": 113,
+     "axis": "h"
+    },
+    {
+     "x": 386,
+     "y": 113,
+     "axis": "h"
+    },
+    {
+     "x": 652,
+     "y": 113,
+     "axis": "h"
+    },
+    {
+     "x": 330,
+     "y": 150,
+     "axis": "h"
+    },
+    {
+     "x": 386,
+     "y": 150,
+     "axis": "h"
+    },
+    {
+     "x": 590,
+     "y": 150,
+     "axis": "h"
+    },
+    {
+     "x": 653,
+     "y": 150,
+     "axis": "h"
+    },
+    {
+     "x": 330,
+     "y": 417,
+     "axis": "h"
+    },
+    {
+     "x": 388,
+     "y": 417,
+     "axis": "h"
+    },
+    {
+     "x": 655,
+     "y": 417,
+     "axis": "h"
+    },
+    {
+     "x": 672,
+     "y": 417,
+     "axis": "h"
+    },
+    {
+     "x": 366,
+     "y": 454,
+     "axis": "h"
+    },
+    {
+     "x": 390,
+     "y": 454,
+     "axis": "h"
+    },
+    {
+     "x": 690,
+     "y": 454,
+     "axis": "h"
+    },
+    {
+     "x": 708,
+     "y": 454,
+     "axis": "h"
+    }
+   ],
+   "outline": "M235 24 L727.6 24 L934.8 542 L235 542 Z",
+   "outlinePts": [
+    [
+     235,
+     24
+    ],
+    [
+     727.6,
+     24
+    ],
+    [
+     934.8,
+     542
+    ],
+    [
+     235,
+     542
+    ]
+   ],
+   "roofs": [
+    {
+     "points": "860,542 922,542 922,614 860,614",
+     "label": "Hall de entrada (pé-direito duplo)"
+    },
+    {
+     "points": "20,24 233,24 233,501 160,500 126,488 108,476 83,452 68,428 59,404 55,380 55,333 20,333",
+     "label": "Telhado do auditório"
+    },
+    {
+     "points": "235,238 298,238 298,327 235,327",
+     "label": ""
+    }
+   ],
+   "marks": [],
+   "entryRoute": [],
+   "walls": [],
+   "glass": [],
+   "rampRails": "M756 195 L877.2 498",
+   "rampArrows": "M791 330 l-3 9 M791 330 l5 7 M817 300 l3 -9 M817 300 l-5 -7"
+  }
+ ]
 }
