@@ -1,0 +1,45 @@
+# Produção: Caddy (HTTPS automático) serve o app e encaminha /api e /q para a API; PostgreSQL guarda os dados.
+# Uso, na pasta deploy/:  cp .env.example .env  (editar)  &&  docker compose up -d --build
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment:
+      DOMINIO: ${DOMINIO}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ../prototipo:/srv/app:ro
+      - caddy_dados:/data
+      - caddy_config:/config
+    depends_on: [api]
+
+  api:
+    build: ../backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      ETAL_BANCO: postgresql+psycopg://etal:${POSTGRES_PASSWORD}@db:5432/etal
+      ETAL_URL_PUBLICA: https://${DOMINIO}
+      ETAL_ORIGENS: https://${DOMINIO}
+      ETAL_COOKIE_SEGURO: "true"
+    depends_on:
+      db: { condition: service_healthy }
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: etal
+      POSTGRES_USER: etal
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes: [pg_dados:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U etal -d etal"]
+      interval: 5s
+      retries: 10
+
+volumes:
+  caddy_dados:
+  caddy_config:
+  pg_dados:

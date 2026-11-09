@@ -1,0 +1,573 @@
+{
+ "event": {
+  "name": "ETAL",
+  "days": [
+   {
+    "day": 26,
+    "week": "Qua",
+    "long": "Quarta, 26 de novembro",
+    "date": "2025-11-26"
+   },
+   {
+    "day": 27,
+    "week": "Qui",
+    "long": "Quinta, 27 de novembro",
+    "date": "2025-11-27"
+   },
+   {
+    "day": 28,
+    "week": "Sex",
+    "long": "Sexta, 28 de novembro",
+    "date": "2025-11-28"
+   }
+  ]
+ },
+ "sessions": [
+  {
+   "simple": true,
+   "learn": [],
+   "materials": [],
+   "requirements": "",
+   "id": "credenciamento",
+   "type": "Credenciamento",
+   "day": 26,
+   "time": "13:00",
+   "end": "14:00",
+   "title": "Credenciamento",
+   "short": "Credenciamento",
+   "floor": 0,
+   "zone": "recepcao",
+   "room": "Recepção",
+   "description": "Leia o QR da recepção para confirmar sua participação.",
+   "date": "2025-11-26"
+  },
+  {
+   "id": "react-native",
+   "type": "Minicurso",
+   "day": 26,
+   "time": "14:00",
+   "end": "18:00",
+   "title": "Introdução ao React Native com Expo",
+   "short": "React Native com Expo",
+   "speaker": "Jonhy Everton Silva Gomes de Santana",
+   "speakerShort": "Jonhy Everton",
+   "initials": "JE",
+   "role": "Desenvolvedor mobile",
+   "floor": 2,
+   "zone": "labs-norte-2",
+   "room": "Lab 203",
+   "description": "Da ideia ao primeiro app. Explore componentes, navegação e as primeiras telas de um aplicativo com React Native e Expo.",
+   "requirements": "Notebook com Node.js instalado e conhecimentos básicos de JavaScript.",
+   "learn": [
+    "Criar um projeto com Expo e abrir no seu celular",
+    "Montar telas com View, Text, Image e listas",
+    "Navegar entre telas com o Expo Router"
+   ],
+   "link": "etal.app/rn201",
+   "materials": [
+    {
+     "kind": "pdf",
+     "name": "Slides da aula",
+     "meta": "PDF · 3,1 MB"
+    },
+    {
+     "kind": "link",
+     "name": "Projeto inicial",
+     "meta": "github.com/etal-demo/expo-inicial"
+    },
+    {
+     "kind": "zip",
+     "name": "Exercício 1 · lista de contatos",
+     "meta": "ZIP · 120 KB",
+     "fresh": "Adicionado às 14:01"
+    },
+    {
+     "kind": "link",
+     "name": "Documentação do Expo",
+     "meta": "docs.expo.dev"
+    }
+   ],
+   "seats": 30,
+   "date": "2025-11-26"
+  },
+  {
+   "id": "fastapi",
+   "type": "Minicurso",
+   "day": 26,
+   "time": "14:00",
+   "end": "18:00",
+   "title": "FastAPI: construindo APIs modernas e performáticas",
+   "short": "APIs modernas com FastAPI",
+   "speaker": "Marcos Queiroz",
+   "speakerShort": "Marcos Queiroz",
+   "initials": "MQ",
+   "role": "Desenvolvedor backend",
+   "floor": 2,
+   "zone": "labs-norte",
+   "room": "Lab 201",
+   "description": "Crie sua primeira API com Python e FastAPI. Entenda rotas, validação de dados e documentação interativa.",
+   "requirements": "Notebook com Python instalado e noções básicas de programação.",
+   "learn": [
+    "Criar rotas e respostas em JSON",
+    "Validar dados com Pydantic",
+    "Usar a documentação interativa"
+   ],
+   "link": "etal.app/api204",
+   "materials": [
+    {
+     "kind": "pdf",
+     "name": "Slides da aula",
+     "meta": "PDF · 2,4 MB"
+    },
+    {
+     "kind": "link",
+     "name": "Repositório de exemplo",
+     "meta": "github.com/etal-demo/fastapi-basico"
+    }
+   ],
+   "seats": 30,
+   "date": "2025-11-26"
+  },
+  {
+   "id": "experiencia-ia",
+   "type": "Minicurso",
+   "day": 26,
+   "time": "14:00",
+   "end": "18:00",
+   "title": "O futuro da experiência com IA",
+   "short": "O futuro da experiência com IA",
+   "speaker": "Pablo Rodrigo Bernardino de Lira",
+   "speakerShort": "Pablo Rodrigo",
+   "initials": "PR",
+   "role": "Designer de produto",
+   "floor": 1,
+   "zone": "salas-sul-0",
+   "room": "Sala 111",
+   "description": "Uso, experiência e tecnologia: como a inteligência artificial está redefinindo nossas interações.",
+   "requirements": "Notebook e curiosidade para experimentar novas ferramentas.",
+   "learn": [
+    "Padrões de interface para produtos com IA",
+    "Como testar ideias com protótipos rápidos"
+   ],
+   "link": "etal.app/ia001",
+   "materials": [
+    {
+     "kind": "pdf",
+     "name": "Slides da aula",
+     "meta": "PDF · 5,8 MB"
+    }
+   ],
+   "seats": 40,
+   "date": "2025-11-26"
+  },
+  {
+   "learn": [
+    "Commits, branches e merge",
+    "Pull requests em equipe"
+   ],
+   "materials": [
+    {
+     "kind": "pdf",
+     "name": "Guia de comandos",
+     "meta": "PDF · 800 KB"
+    }
+   ],
+   "requirements": "Notebook com Git instalado.",
+   "link": "etal.app/exemplo",
+   "seats": 25,
+   "room": "Sala 103",
+   "id": "git",
+   "type": "Oficina",
+   "day": 26,
+   "time": "14:00",
+   "end": "18:00",
+   "title": "Git e GitHub na prática",
+   "short": "Git e GitHub",
+   "speaker": "Helena Duarte",
+   "speakerShort": "Helena Duarte",
+   "initials": "HD",
+   "role": "Desenvolvedora de software",
+   "floor": 1,
+   "zone": "sala-norte-2",
+   "description": "Versione seu código, trabalhe em equipe e publique seu primeiro repositório.",
+   "date": "2025-11-26"
+  },
+  {
+   "simple": true,
+   "learn": [],
+   "materials": [],
+   "requirements": "",
+   "id": "intervalo-26",
+   "type": "Intervalo",
+   "day": 26,
+   "time": "16:00",
+   "end": "16:20",
+   "title": "Intervalo com lanche",
+   "short": "Intervalo",
+   "place": "cantina",
+   "room": "Cantina",
+   "description": "Pausa da tarde, na cantina.",
+   "date": "2025-11-26"
+  },
+  {
+   "simple": true,
+   "learn": [],
+   "materials": [],
+   "requirements": "",
+   "id": "abertura",
+   "type": "Abertura",
+   "day": 26,
+   "time": "19:00",
+   "end": "20:00",
+   "title": "Abertura do ETAL",
+   "short": "Abertura",
+   "floor": 0,
+   "zone": "auditorio",
+   "room": "Auditório",
+   "description": "Boas-vindas e apresentação da programação.",
+   "date": "2025-11-26"
+  },
+  {
+   "id": "react-next",
+   "type": "Minicurso",
+   "day": 27,
+   "time": "08:00",
+   "end": "12:00",
+   "title": "Desenvolvimento de aplicações web com React e Next.js",
+   "short": "React e Next.js",
+   "speaker": "Caio Rafael da Rocha Gomes",
+   "speakerShort": "Caio Rafael",
+   "initials": "CR",
+   "role": "Desenvolvedor web",
+   "floor": 1,
+   "zone": "sala-interna-norte-1",
+   "room": "Sala 105",
+   "description": "Explore componentes e rotas na construção de uma aplicação web com React e Next.js.",
+   "requirements": "Notebook com Node.js e noções de JavaScript.",
+   "learn": [
+    "Componentes e estado no React",
+    "Rotas e páginas no Next.js"
+   ],
+   "link": "etal.app/web108",
+   "materials": [
+    {
+     "kind": "pdf",
+     "name": "Slides da aula",
+     "meta": "PDF · 2,9 MB"
+    },
+    {
+     "kind": "link",
+     "name": "Projeto inicial",
+     "meta": "github.com/etal-demo/next-inicial"
+    }
+   ],
+   "seats": 30,
+   "date": "2025-11-27"
+  },
+  {
+   "learn": [
+    "Montar um circuito simples",
+    "Ler um sensor e reagir a ele"
+   ],
+   "materials": [],
+   "requirements": "Não é preciso levar nada.",
+   "link": "etal.app/exemplo",
+   "seats": 20,
+   "room": "Lab 209",
+   "id": "arduino",
+   "type": "Oficina",
+   "day": 27,
+   "time": "08:00",
+   "end": "12:00",
+   "title": "Primeiros passos com Arduino",
+   "short": "Arduino",
+   "speaker": "Rafael Nóbrega",
+   "speakerShort": "Rafael Nóbrega",
+   "initials": "RN",
+   "role": "Engenheiro de sistemas embarcados",
+   "floor": 2,
+   "zone": "labs-norte",
+   "description": "Monte circuitos simples e programe sensores e LEDs.",
+   "date": "2025-11-27"
+  },
+  {
+   "learn": [
+    "Caminhos para o primeiro emprego",
+    "Como montar um portfólio"
+   ],
+   "materials": [],
+   "requirements": "Não é preciso levar nada.",
+   "link": "etal.app/exemplo",
+   "seats": 200,
+   "room": "Auditório",
+   "id": "mesa-carreira",
+   "type": "Mesa-redonda",
+   "day": 27,
+   "time": "10:00",
+   "end": "11:30",
+   "title": "Carreira em tecnologia no interior",
+   "short": "Carreira no interior",
+   "speaker": "Beatriz Lacerda",
+   "speakerShort": "Beatriz Lacerda",
+   "initials": "BL",
+   "role": "Mediadora",
+   "floor": 0,
+   "zone": "auditorio",
+   "description": "Conversa sobre trabalho remoto, empresas locais e como começar.",
+   "date": "2025-11-27"
+  },
+  {
+   "simple": true,
+   "learn": [],
+   "materials": [],
+   "requirements": "",
+   "id": "almoco-27",
+   "type": "Refeição",
+   "day": 27,
+   "time": "12:00",
+   "end": "13:30",
+   "title": "Almoço",
+   "short": "Almoço",
+   "place": "cantina",
+   "room": "Cantina",
+   "description": "Refeição na cantina do campus.",
+   "date": "2025-11-27"
+  },
+  {
+   "learn": [
+    "Ler e limpar planilhas com Pandas",
+    "Fazer gráficos claros"
+   ],
+   "materials": [],
+   "requirements": "Notebook com Python instalado.",
+   "link": "etal.app/exemplo",
+   "seats": 30,
+   "room": "Sala 108",
+   "id": "dados",
+   "type": "Minicurso",
+   "day": 27,
+   "time": "14:00",
+   "end": "18:00",
+   "title": "Análise de dados com Python",
+   "short": "Dados com Python",
+   "speaker": "Marina Telles",
+   "speakerShort": "Marina Telles",
+   "initials": "MT",
+   "role": "Analista de dados",
+   "floor": 1,
+   "zone": "sala-interna-sul-0",
+   "description": "Limpe, explore e visualize dados com Pandas.",
+   "date": "2025-11-27"
+  },
+  {
+   "simple": true,
+   "learn": [],
+   "materials": [],
+   "requirements": "",
+   "id": "jogo-mk",
+   "type": "Campeonato",
+   "day": 27,
+   "time": "14:00",
+   "end": "15:20",
+   "title": "Campeonato de Mortal Kombat",
+   "short": "Mortal Kombat",
+   "tournament": "mk",
+   "floor": 1,
+   "zone": "sala-norte-1",
+   "room": "Sala 102",
+   "description": "Eliminação simples, melhor de três.",
+   "date": "2025-11-27"
+  },
+  {
+   "simple": true,
+   "learn": [],
+   "materials": [],
+   "requirements": "",
+   "id": "jogo-fifa",
+   "type": "Campeonato",
+   "day": 27,
+   "time": "15:30",
+   "end": "16:50",
+   "title": "Campeonato de FIFA",
+   "short": "FIFA",
+   "tournament": "fifa",
+   "floor": 1,
+   "zone": "sala-norte-1",
+   "room": "Sala 102",
+   "description": "Mata-mata com oito participantes.",
+   "date": "2025-11-27"
+  },
+  {
+   "id": "saude-mental",
+   "type": "Palestra",
+   "day": 28,
+   "time": "07:30",
+   "end": "08:30",
+   "title": "Saúde mental na era da IA",
+   "short": "Saúde mental na era da IA",
+   "speaker": "Francisco Rômulo Raulino Santos",
+   "speakerShort": "Francisco Rômulo",
+   "initials": "FR",
+   "role": "Palestrante",
+   "floor": 0,
+   "zone": "auditorio",
+   "room": "Auditório",
+   "description": "Da atenção fragmentada ao foco com significado. Uma conversa sobre bem-estar, hábitos e a presença da tecnologia em nosso cotidiano.",
+   "requirements": "Venha com suas perguntas e disponibilidade para uma boa conversa.",
+   "learn": [
+    "Hábitos que protegem a atenção",
+    "Como usar a tecnologia a seu favor"
+   ],
+   "link": "etal.app/saude",
+   "materials": [
+    {
+     "kind": "pdf",
+     "name": "Slides da palestra",
+     "meta": "PDF · 1,8 MB"
+    },
+    {
+     "kind": "link",
+     "name": "Leituras recomendadas",
+     "meta": "Lista com 6 textos"
+    }
+   ],
+   "seats": 200,
+   "date": "2025-11-28"
+  },
+  {
+   "id": "imagens-ia",
+   "type": "Palestra",
+   "day": 28,
+   "time": "09:20",
+   "end": "10:20",
+   "title": "Como a IA está transformando o mundo das imagens",
+   "short": "IA e imagens",
+   "speaker": "Keylly Eyglys Araújo dos Santos",
+   "speakerShort": "Keylly Eyglys",
+   "initials": "KE",
+   "role": "Palestrante",
+   "floor": 0,
+   "zone": "auditorio",
+   "room": "Auditório",
+   "description": "Novas possibilidades criativas, ferramentas e reflexões sobre inteligência artificial e imagens.",
+   "requirements": "Não é necessário levar equipamento.",
+   "learn": [
+    "Ferramentas atuais de geração e edição",
+    "Cuidados éticos com imagens geradas"
+   ],
+   "link": "etal.app/imagens",
+   "materials": [
+    {
+     "kind": "pdf",
+     "name": "Slides da palestra",
+     "meta": "PDF · 7,2 MB"
+    }
+   ],
+   "seats": 200,
+   "date": "2025-11-28"
+  },
+  {
+   "simple": true,
+   "learn": [],
+   "materials": [],
+   "requirements": "",
+   "id": "intervalo-28",
+   "type": "Intervalo",
+   "day": 28,
+   "time": "10:20",
+   "end": "10:40",
+   "title": "Intervalo com lanche",
+   "short": "Intervalo",
+   "place": "cantina",
+   "room": "Cantina",
+   "description": "Pausa da manhã, na cantina.",
+   "date": "2025-11-28"
+  },
+  {
+   "learn": [
+    "Reconhecer golpes comuns",
+    "Proteger suas contas"
+   ],
+   "materials": [],
+   "requirements": "Não é preciso levar nada.",
+   "link": "etal.app/exemplo",
+   "seats": 200,
+   "room": "Auditório",
+   "id": "seguranca",
+   "type": "Palestra",
+   "day": 28,
+   "time": "10:40",
+   "end": "11:40",
+   "title": "Segurança digital no dia a dia",
+   "short": "Segurança digital",
+   "speaker": "Tiago Brandão",
+   "speakerShort": "Tiago Brandão",
+   "initials": "TB",
+   "role": "Especialista em segurança",
+   "floor": 0,
+   "zone": "auditorio",
+   "description": "Golpes comuns, senhas e como proteger suas contas.",
+   "date": "2025-11-28"
+  },
+  {
+   "simple": true,
+   "learn": [],
+   "materials": [],
+   "requirements": "",
+   "id": "almoco-28",
+   "type": "Refeição",
+   "day": 28,
+   "time": "12:00",
+   "end": "13:30",
+   "title": "Almoço",
+   "short": "Almoço",
+   "place": "cantina",
+   "room": "Cantina",
+   "description": "Refeição na cantina do campus.",
+   "date": "2025-11-28"
+  },
+  {
+   "learn": [
+    "Hierarquia visual",
+    "Contraste e legibilidade"
+   ],
+   "materials": [],
+   "requirements": "Não é preciso levar nada.",
+   "link": "etal.app/exemplo",
+   "seats": 30,
+   "room": "Lab 025",
+   "id": "interfaces",
+   "type": "Oficina",
+   "day": 28,
+   "time": "14:00",
+   "end": "16:30",
+   "title": "Design de interfaces para quem programa",
+   "short": "Design de interfaces",
+   "speaker": "Camila Rocha",
+   "speakerShort": "Camila Rocha",
+   "initials": "CM",
+   "role": "Designer de produto",
+   "floor": 0,
+   "zone": "sala-estudos-informatica",
+   "description": "Hierarquia, contraste e como deixar uma tela clara.",
+   "date": "2025-11-28"
+  },
+  {
+   "simple": true,
+   "learn": [],
+   "materials": [],
+   "requirements": "",
+   "id": "encerramento",
+   "type": "Encerramento",
+   "day": 28,
+   "time": "17:00",
+   "end": "18:00",
+   "title": "Encerramento e premiação",
+   "short": "Encerramento",
+   "place": "patio",
+   "room": "Pátio",
+   "description": "Premiação dos campeonatos e encerramento, no pátio.",
+   "date": "2025-11-28"
+  }
+ ]
+}

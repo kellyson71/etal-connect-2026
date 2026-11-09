@@ -24,7 +24,7 @@ if REDE:
 TYPES = {'.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
          '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp',
          '.webmanifest': 'application/manifest+json'}
-PUBLIC = {'index.html', 'app.js', 'app.css', 'data.js', 'plan-data.js', 'campus-data.js', 'campus-fundo.js', 'campus-limpo.js', 'campus-entorno.js', 'sprites.js', 'campus3d.js', 'sw.js', 'manifest.webmanifest', 'admin.html', 'admin.js', 'admin.css'}
+PUBLIC = {'index.html', 'homologacao.html', 'homologacao.js', 'vendor/jsQR.js', 'config.js', 'api.js', 'admin.html', 'admin.js', 'admin.css', 'app.js', 'app.css', 'data.js', 'plan-data.js', 'campus-data.js', 'campus-fundo.js', 'campus-limpo.js', 'campus-entorno.js', 'sprites.js', 'campus3d.js', 'sw.js', 'manifest.webmanifest', 'admin.html', 'admin.js', 'admin.css'}
 PREFIXES = ('Tecnologia em ', 'Técnico Integrado em ', 'Técnico Subsequente em ', 'Técnico em ', 'Bacharelado em ', 'Licenciatura em ')
 CAMPUS = {'PF': 'Campus Pau dos Ferros'}
 
@@ -106,6 +106,7 @@ class Handler(BaseHTTPRequestHandler):
         if self.headers.get('Host', '') not in HOSTS:
             return self._json(403, {'erro': 'Host não permitido.'})
         rel = self.path.split('?')[0].lstrip('/') or 'index.html'
+        rel = {'demo': 'index.html', 'homologacao': 'homologacao.html'}.get(rel.rstrip('/'), rel)
         is_asset = rel.startswith('assets/') and '..' not in rel and Path(rel).suffix in ('.svg', '.png', '.jpg', '.webp')
         file = ROOT / rel
         if (rel in PUBLIC or is_asset) and file.is_file():
