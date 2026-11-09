@@ -53,7 +53,8 @@ def suap_retorno(request: Request, code: str = '', state: str = '', db: Session 
             eu = h.get(c.suap_userinfo_url, headers={'Authorization': f'Bearer {tok.json()["access_token"]}'})
             eu.raise_for_status()
             d = eu.json()
-    except (httpx.HTTPError, KeyError, ValueError):
+    except (httpx.HTTPError, KeyError, ValueError) as erro:
+        print(f'login SUAP falhou: {erro!r}', flush=True)  # aparece nos logs da hospedagem
         return RedirectResponse(f'{publica(request)}/?login=suap-indisponivel', 302)
     matricula = str(d.get('identificacao') or d.get('matricula') or '').strip()
     if not matricula:
@@ -66,7 +67,10 @@ def suap_retorno(request: Request, code: str = '', state: str = '', db: Session 
     p.nome = d.get('nome_usual') or d.get('nome') or matricula
     p.email = p.email or (email if email and not db.scalar(select(Pessoa).where(Pessoa.email == email, Pessoa.id != p.id)) else None)
     p.campus = d.get('campus') or p.campus
-    p.foto_url = d.get('foto') or p.foto_url
+    foto = d.get('foto') or d.get('url_foto_150x200') or ''
+    if foto.startswith('/'):
+        foto = 'https://suap.ifrn.edu.br' + foto
+    p.foto_url = foto or p.foto_url
     p.papel = _papel(matricula, email)
     db.commit()
     resp = RedirectResponse(f'{publica(request)}/?login=ok', 302)
