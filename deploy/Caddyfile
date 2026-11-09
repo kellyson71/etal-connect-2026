@@ -13,6 +13,7 @@
 			flush_interval -1
 		}
 	}
+	rewrite /homologacao /homologacao.html
 	# Em produção o app fala com a API na mesma origem.
 	handle /config.js {
 		header Content-Type "text/javascript; charset=utf-8"
