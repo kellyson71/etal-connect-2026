@@ -129,7 +129,7 @@ Ainda de exemplo, mesmo com a API ligada:
 Para desenvolver com a API:
 
 ```sh
-cd backend && ETAL_LOGIN_DEV=1 ETAL_JANELA_PRESENCA=0 ETAL_ORIGENS=http://127.0.0.1:8770 .venv/bin/uvicorn app.main:app --port 8011
+cd backend && ETAL_LOGIN_DEV=1 ETAL_JANELA_PRESENCA=0 ETAL_URL_PUBLICA=http://127.0.0.1:8770 ETAL_ORIGENS=http://127.0.0.1:8770 .venv/bin/uvicorn app.main:app --port 8011
 # em prototipo/config.js: window.ETAL_CONFIG = { api: 'http://127.0.0.1:8011' };
 sh prototipo/rodar.sh   # http://127.0.0.1:8770
 ```
