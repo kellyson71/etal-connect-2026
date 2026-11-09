@@ -38,6 +38,20 @@ def gravar(p, nome, url, roteiro, tam=(1440, 810), corte=1.2, dpr=1):
 def main(base):
     demo = base + '/docs/demos/campus.html?clean&qualidade=alta'
     with sync_playwright() as p:
+        so = set(sys.argv[1:])
+        quer = lambda n: not so or n in so
+
+        def capa(pg):
+            pg.evaluate('window.Campus3D.setLayers({ ...window.Campus3D.layers(), labels: false })')
+            pg.evaluate('window.Campus3D.zoom(1.5)'); pg.wait_for_timeout(1000)
+            pg.evaluate("""() => new Promise((ok) => { const C = window.Campus3D; const v = C.getView(); const t0 = performance.now();
+              const f = (t) => { const k = Math.min(1, (t - t0) / 16000); C.setView({ ...v, t: v.t - k * 0.9 }); if (k < 1) requestAnimationFrame(f); else ok(); }; requestAnimationFrame(f); })""")
+        if quer('capa'): gravar(p, 'capa', demo + '&mode=campus&hour=17.4', capa)
+
+        def evento(pg):
+            pg.wait_for_timeout(1800); pg.evaluate('window.Campus3D.eventReveal()'); pg.wait_for_timeout(4200)
+        if quer('evento'): gravar(p, 'evento', demo + '&mode=campus&hour=14', evento)
+        if so and not so & {'campus-voo', 'andares', 'rota', 'dia-24h', 'app-tour'}: return
         def voo(pg):
             pg.evaluate('window.Campus3D.zoom(1.45)'); pg.wait_for_timeout(900)
             pg.evaluate("""() => new Promise((ok) => { const C = window.Campus3D; const v = C.getView(); const t0 = performance.now();

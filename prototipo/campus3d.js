@@ -2689,6 +2689,9 @@
       room = { level, id: zone };
       await Promise.all([trail(1, 950), anim({ rise: 1.2, ...viewRoom(level, zone, plan.pts) }, 800)]);
     },
+    /* Geometria da rota (mundo, com o andar em z) e dos andares: usada pela apresentação para animar escada × rampa. */
+    routeGeo: (level, zone, via = null) => { const q = planFor(level, zone, via); return { via: q.via, entrance: q.entrance, cost: Math.round(q.cost), campus: q.campus, path: q.path }; },
+    floorsGeo: () => FLOORS.map((f) => ({ level: f.level, outline: f.outline, zones: f.zones.map((z) => ({ kind: z.kind, poly: z.poly })) })),
     routeInfo: (level, zone, via = null) => { const q = planFor(level, zone, via); return { via: q.via, viaWhere: q.viaWhere, entrance: q.entrance, cost: Math.round(q.cost) }; },
     reframe(level, zone) { return anim({ rise: zone ? 1.2 : 0, ...(zone ? viewRoom(level, zone, floorRoute?.pts) : viewFloor(level)) }, 480); },
     /* volta ao campus: o prédio se fecha e a câmera recua */
