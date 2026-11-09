@@ -18,7 +18,7 @@
 	handle /config.js {
 		header Content-Type "text/javascript; charset=utf-8"
 		header Cache-Control "no-cache"
-		respond "window.ETAL_CONFIG = { api: '' };" 200
+		respond "window.ETAL_CONFIG = { api: '' }; document.documentElement.classList.add('prod');" 200
 	}
 	# O app (PWA). O service worker não pode ficar em cache longo.
 	handle {
