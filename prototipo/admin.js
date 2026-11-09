@@ -20,6 +20,7 @@
     clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
     alert: '<path d="M12 3 2 20h20Z"/><path d="M12 10v4M12 17v.01"/>',
     download: '<path d="M12 4v12M7 11l5 5 5-5M5 20h14"/>',
+    grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
   };
   const ic = (n) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]}</svg>`;
 
@@ -30,18 +31,33 @@
   const floorLabel = (l) => P.floors[l].label;
   const isNow = (x) => x.day === D.now.day && toMin(x.time) <= NOW && NOW < toMin(x.end);
   const isPast = (x) => x.day < D.now.day || (x.day === D.now.day && toMin(x.end) <= NOW);
-  const roomsAll = () => P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => ({ floor: f.level, zone: z.id, name: z.kind === 'laboratory' ? `Lab ${z.roomNumber}` : `Sala ${z.roomNumber}` })));
+  const roomName = (z) => z.name || (z.kind === 'laboratory' ? `Lab ${z.roomNumber}` : z.kind === 'staff' ? `Sala dos professores ${z.roomNumber}` : `Sala ${z.roomNumber}`);
+  const roomsAll = () => P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => ({ floor: f.level, zone: z.id, name: roomName(z) })));
   const where = (x) => (x.floor === undefined ? x.room : `${x.room} · ${floorLabel(x.floor)}`);
   const present = (x) => (x.seats ? Math.min(x.seats, Math.round(x.taken * 0.86 + 1)) : 0);
 
   /* ---------- estado compartilhado com o app ---------- */
   const KEY = 'etal-org';
-  const load = () => { try { return { notices: [], moves: {}, creds: {}, ...JSON.parse(localStorage.getItem(KEY)) }; } catch (_) { return { notices: [], moves: {}, creds: {} }; } };
+  const load = () => { try { return { notices: [], moves: {}, creds: {}, rooms: {}, ...JSON.parse(localStorage.getItem(KEY)) }; } catch (_) { return { notices: [], moves: {}, creds: {}, rooms: {} }; } };
   let ORG = load();
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(ORG)); } catch (_) { /* sem armazenamento */ } };
   const applyMoves = () => Object.entries(ORG.moves).forEach(([id, m]) => { const x = D.sessions.find((s) => s.id === id); if (x) Object.assign(x, m); });
-  applyMoves();
-  window.addEventListener('storage', (e) => { if (e.key === KEY) { ORG = load(); applyMoves(); render(); } });
+  /* Numeração das salas definida pela organização (ORG.rooms, chave "andar:zona"). Igual à do app. */
+  function applyRooms() {
+    P.floors.forEach((f) => f.zones.forEach((z) => {
+      if (!z.roomNumber) return;
+      if (z.num0 === undefined) z.num0 = z.roomNumber;
+      const v = (ORG.rooms[`${f.level}:${z.id}`] || '').trim(); const n = v || z.num0;
+      z.orgNumber = !!v && v !== z.num0;
+      if (n === z.roomNumber) return;
+      z.roomNumber = n;
+      const re = new RegExp(`(data-num="${f.level}:${z.id}"[^>]*>)[^<]*<`, 'g');
+      f.svg = f.svg.replace(re, `$1${esc(n)}<`); f.svgDark = f.svgDark.replace(re, `$1${esc(n)}<`);
+    }));
+    D.sessions.forEach((x) => { if (x.floor === undefined) return; const z = P.floors[x.floor].zones.find((q) => q.id === x.zone); if (z && z.roomNumber) x.room = roomName(z); });
+  }
+  applyMoves(); applyRooms();
+  window.addEventListener('storage', (e) => { if (e.key === KEY) { ORG = load(); applyMoves(); applyRooms(); render(); } });
 
   /* ---------- participantes simulados (sempre os mesmos) ---------- */
   const rng = (seed) => () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
@@ -74,9 +90,12 @@
   /* ---------- navegação ---------- */
   const SECTIONS = [
     ['visao', 'Visão geral', 'home'], ['planta', 'Planta ao vivo', 'map'], ['programacao', 'Programação', 'cal'],
-    ['participantes', 'Participantes', 'users'], ['avisos', 'Avisos', 'bell'],
+    ['participantes', 'Participantes', 'users'], ['salas', 'Salas', 'grid'], ['avisos', 'Avisos', 'bell'],
   ];
-  const state = { day: D.now.day, ptype: 'todos', pstat: 'todos', q: '', limit: 40, floor: 2, room: null };
+  const state = { day: D.now.day, ptype: 'todos', pstat: 'todos', q: '', limit: 40, floor: 2, room: null, ref: 'off', refOp: 0.55 };
+  /* Plantas de 2012 (dissertação de Larissa Leiros de Souza, UFRN), recortadas no contorno do prédio.
+     Na sobreposição, o recorte ocupa o retângulo do bloco na planta esquemática: alinhamento aproximado. */
+  const REF = { src: (l) => `assets/ref2012/andar-${l}.png`, box: (l) => [[0, 0, 974, 621], [1.5, 1.5, 964, 619], [-2, -1, 972, 622]][l], credit: 'Plantas de 2012: Larissa Leiros de Souza, dissertação de mestrado (UFRN), figuras 9 a 11.' };
   const current = () => (SECTIONS.find(([k]) => `#${k}` === location.hash) || SECTIONS[0])[0];
   function nav() {
     const k = current();
@@ -171,14 +190,35 @@
           <text x="${cx}" y="${cy - 2}" text-anchor="middle" font-size="15" font-weight="700" fill="${ink}" font-family="Geologica">${live.seats ? `${n}/${live.seats}` : 'Agora'}</text><text x="${cx}" y="${cy + 15}" text-anchor="middle" font-size="10.5" font-weight="600" fill="${ink}">${full ? 'lotada' : esc(live.short.length > 17 ? `${live.short.slice(0, 16).trim()}…` : live.short)}</text></g>`;
       }).join('');
       const sel = state.room && today.filter((x) => x.zone === state.room);
-      const zr = state.room && f.zones.find((z) => z.id === state.room); const zname = zr && (zr.kind === 'laboratory' ? `Lab ${zr.roomNumber}` : zr.roomNumber ? `Sala ${zr.roomNumber}` : zr.label);
+      const zr = state.room && f.zones.find((z) => z.id === state.room); const zname = zr && (zr.roomNumber ? roomName(zr) : zr.label);
       return `<section class="card"><div class="toolbar"><div class="seg" role="group" aria-label="Andar">${P.floors.map((q) => `<button type="button" data-act="floor" data-v="${q.level}" aria-pressed="${q.level === state.floor}">${q.label}</button>`).join('')}</div>
           <span class="count">${today.filter(isNow).length} atividades agora neste andar · ${dayOf(D.now.day).long}, ${D.now.time}</span></div>
-        <div class="plan-wrap"><div><div class="plan"><svg viewBox="0 0 900 430" role="img" aria-label="Planta do ${f.label} com a lotação das salas">${P.defs}${f.svg}${overlays}</svg></div>
+        <div class="toolbar ref-bar"><span class="lbl">Planta de 2012</span><div class="seg" role="group" aria-label="Planta de 2012">${[['off', 'Desligada'], ['sobre', 'Sobreposta'], ['lado', 'Lado a lado']].map(([v, t]) => `<button type="button" data-act="ref" data-v="${v}" aria-pressed="${state.ref === v}">${t}</button>`).join('')}</div>
+          ${state.ref === 'sobre' ? `<label class="ref-op">Opacidade <input type="range" min="0.15" max="1" step="0.05" value="${state.refOp}" data-ref-op></label>` : ''}${state.ref !== 'off' ? `<small class="ref-note">Registro histórico; o uso das salas mudou. ${state.ref === 'sobre' ? 'A planta do app foi traçada sobre estas figuras.' : ''}</small>` : ''}</div>
+        <div class="plan-wrap"><div><div class="plan"><svg viewBox="${P.viewBox || '0 0 900 430'}" role="img" aria-label="Planta do ${f.label} com a lotação das salas">${P.defs}${f.svg}${state.ref === 'sobre' ? `<image class="ref-img" href="${REF.src(f.level)}" x="${REF.box(f.level)[0]}" y="${REF.box(f.level)[1]}" width="${REF.box(f.level)[2]}" height="${REF.box(f.level)[3]}" preserveAspectRatio="none" opacity="${state.refOp}" style="mix-blend-mode:multiply;pointer-events:none"/>` : ''}${overlays}</svg></div>
+          ${state.ref === 'lado' ? `<figure class="ref-side"><img src="${REF.src(f.level)}" alt="Planta de 2012 do ${f.label}, com os nomes dos ambientes na época"><figcaption>${REF.credit}</figcaption></figure>` : state.ref === 'sobre' ? `<p class="ref-cap">${REF.credit}</p>` : ''}
           <div class="plan-legend"><span>Lotação</span><span class="ramp">${RAMP.map((c) => `<i style="background:${c}"></i>`).join('')}</span><span>vazia → cheia</span><span class="pill full">${ic('alert')}90% ou mais</span><span class="pill ifrn">Tracejado: começa mais tarde</span></div></div>
           <aside class="room-panel">${zr ? `<h3>${esc(zname)}</h3><p>${f.label} · ${sel.length ? `${sel.length} ${sel.length === 1 ? 'atividade' : 'atividades'} hoje` : 'sem atividades hoje'}</p>
             <ul>${sel.map((x) => `<li><b>${esc(x.short)}</b>${x.time} às ${x.end} · ${statusOf(x)}${x.seats ? `<div class="mt"><small>Inscritos</small>${meter(x)}${isNow(x) ? `<small>${present(x)} em sala agora</small>` : ''}</div>` : ''}<div class="mt"><button class="btn soft sm" data-act="move" data-id="${x.id}" type="button">${ic('route')}Trocar sala</button></div></li>`).join('')}</ul>`
             : `<h3>Escolha uma sala</h3><p>As salas coloridas têm atividade agora. Clique numa delas para ver a lotação e trocar a sala, se precisar.</p>`}</aside></div></section>`;
+    },
+    salas() {
+      const KIND = { classroom: 'Sala de aula', laboratory: 'Laboratório', staff: 'Professores', office: 'Setor' };
+      const status = (z) => (z.orgNumber ? '<span class="pill ifrn">Definido pela organização</span>'
+        : z.confirmed ? `<span class="pill ok">${ic('check')}Confirmado</span>` : '<span class="pill wait">Demonstrativo</span>');
+      const used = (f, z) => D.sessions.filter((x) => x.floor === f.level && x.zone === z.id).length;
+      const rows = P.floors.map((f) => `<tbody><tr class="grp"><th colspan="6">${f.label}</th></tr>${f.zones.filter((z) => z.roomNumber).map((z) => {
+        const k = `${f.level}:${z.id}`; const n = used(f, z);
+        return `<tr><td class="title"><b>${esc(z.name || KIND[z.kind] || z.kind)}</b><small>${esc(z.description || '')}</small></td>
+          <td><input class="num-in" data-room-num="${k}" value="${esc(z.roomNumber)}" aria-label="Número de ${esc(roomName(z))}, ${f.label}" maxlength="12" inputmode="text"></td>
+          <td>${status(z)}</td><td class="src">${z.source ? `${esc(z.source)}${z.url ? ` <a href="${z.url}" target="_blank" rel="noopener">Fonte</a>` : ''}` : '<small>Sem fonte. Número de exemplo.</small>'}</td>
+          <td class="num">${n ? `${n} ${n === 1 ? 'atividade' : 'atividades'}` : '—'}</td>
+          <td class="r">${ORG.rooms[k] ? `<button class="btn ghost sm" type="button" data-act="roomreset" data-k="${k}">Restaurar</button>` : ''}</td></tr>`;
+      }).join('')}</tbody>`).join('');
+      const all = P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber)); const conf = all.filter((z) => z.confirmed).length; const org = all.filter((z) => z.orgNumber).length;
+      return `<section class="card"><h2>Numeração das salas <small>${all.length} ambientes · ${conf} confirmados por fonte · ${org} definidos aqui</small></h2>
+        <p class="sub">Os números demonstrativos ainda não foram conferidos no campus. Corrija aqui o que a equipe souber: o app aberto neste navegador atualiza a planta, as atividades e o mapa 3D na hora. Deixe o campo vazio para voltar ao número original.</p>
+        <div class="tbl-wrap"><table class="rooms"><thead><tr><th>Ambiente</th><th>Número</th><th>Situação</th><th>Fonte</th><th>Atividades</th><th></th></tr></thead>${rows}</table></div></section>`;
     },
     programacao() {
       const list = D.sessions.filter((x) => x.day === state.day).sort((a, b) => a.time.localeCompare(b.time));
@@ -254,6 +294,8 @@
     const a = el.dataset.act;
     if (a === 'compose') { location.hash = '#avisos'; setTimeout(() => $('[name=title]')?.focus(), 60); }
     if (a === 'floor') { state.floor = +el.dataset.v; state.room = null; render(); }
+    if (a === 'ref') { state.ref = el.dataset.v; render(); }
+    if (a === 'roomreset') { delete ORG.rooms[el.dataset.k]; save(); applyRooms(); render(); toast('Número restaurado'); }
     if (a === 'room') { state.room = el.dataset.zone; render(); }
     if (a === 'day') { state.day = +el.dataset.v; render(); }
     if (a === 'ptype' || a === 'pstat') { state[a] = el.dataset.v; state.limit = 40; render(); }
@@ -278,6 +320,17 @@
       if (d.get('warn')) sendNotice('Mudança de sala', `${x.short}: agora em ${r.name}, ${floorLabel(r.floor)}. Antes era ${from}.`, `inscritos em ${x.short}`);
       else { save(); render(); toast('Sala trocada'); }
     }
+  });
+  document.addEventListener('input', (e) => {
+    if (e.target.matches('[data-ref-op]')) { state.refOp = +e.target.value; const im = $('.ref-img'); if (im) im.setAttribute('opacity', state.refOp); }
+  });
+  /* Número de sala: salva ao sair do campo ou com Enter. */
+  document.addEventListener('change', (e) => {
+    const el = e.target; if (!el.matches('[data-room-num]')) return;
+    const k = el.dataset.roomNum; const v = el.value.trim().slice(0, 12);
+    const z = P.floors[+k.split(':')[0]].zones.find((q) => q.id === k.split(':')[1]);
+    if (!v || v === z.num0) delete ORG.rooms[k]; else ORG.rooms[k] = v;
+    save(); applyRooms(); render(); toast(v && v !== z.num0 ? `Agora é ${roomName(z)}` : 'Número restaurado');
   });
   $('#q').addEventListener('input', (e) => { state.q = e.target.value; state.limit = 40; if (current() !== 'participantes') location.hash = '#participantes'; else render(); });
 

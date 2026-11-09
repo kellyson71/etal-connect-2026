@@ -1,0 +1,4 @@
+Plantas baixas do bloco principal do IFRN Campus Pau dos Ferros (térreo, 1º e 2º pavimento), 2012.
+Fonte: SOUZA, Larissa Leiros de. Dissertação de mestrado, UFRN, 2012, Figuras 9, 10 e 11 (p. 132–133).
+https://repositorio.ufrn.br/server/api/core/bitstreams/2be1d619-02aa-4c23-aa6b-4d65aa238aba/content
+Imagens originais das figuras, extraídas do PDF. A planta do app foi traçada sobre elas (scripts/build-principal-plan.py) e o painel as mostra sobrepostas, no mesmo sistema de coordenadas. Registro de 2012: o uso das salas pode ter mudado.
