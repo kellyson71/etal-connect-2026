@@ -17,6 +17,14 @@
      Com a luz do horário ligada, segue o sol de Pau dos Ferros nos dias do evento (ver setHour). */
   const LIGHT = [0.52, 0.85];
   let SHADOW_K = 0.72;
+  /* Pontos de interesse ao ar livre (informados pelo usuário). */
+  const POIS = [
+    { id: 'bebedouro-anexo', kind: 'agua', label: 'Bebedouro', where: 'Entrada do Anexo', at: [-32.5, -81.5] },
+    { id: 'bebedouro-cantina', kind: 'agua', label: 'Bebedouro', where: 'Cantina', at: [-61.5, -57.8] },
+  ];
+  let poiSel = null;
+  /* Camadas do mapa (ajustes no canto do mapa). */
+  const LAYERS = { labels: true, shadows: true, trees: true, cars: true };
   /* Norte e leste no mapa (levantamento: a frente do campus, +y, olha para o oeste). */
   const NORTH = [-0.9984, 0.0573], EAST = [-0.0573, -0.9984];
   const SITE = { lat: -6.146, lon: -38.205, tz: -3, doy: 330 }; // 26 de novembro
@@ -128,6 +136,7 @@
       sand: '#ecd9a6', courtLine: '#ffffff', field: '#cfd3a0', fieldLine: 'rgba(255,255,255,.9)', tank: [120, 134, 176], tankTop: '#a3b0d2', panel: '#2f4a86', panelLine: 'rgba(255,255,255,.28)',
       tile: '#e09a5e', tileWall: [236, 214, 190], hexBase: [214, 208, 196], hexDeck: '#f0ece2', hexRoof: [252, 247, 234], rail: 'rgba(95,105,130,.75)', neighbor: '#dfe2e8', neighborWall: [200, 205, 216], glass: 'rgba(205,232,216,.78)', glassWall: [186, 216, 200], glassRib: 'rgba(255,255,255,.75)',
       aptoWall: [240, 238, 232], aptoSlab: '#eeeeea', aptoBand: 'rgb(233,170,58)', aptoGap: 'rgba(70,74,84,.42)', aptoShop: 'rgb(150,154,160)', aptoDoor: 'rgb(222,224,226)', aptoSign: 'rgb(44,92,164)',
+      obra: [196, 194, 188], obraTop: '#d9d7d1', crane: '#e0a92a',
       zebra: 'rgba(255,255,255,.92)', laneMid: '#e7b93a', curbYellow: '#e2b33a', pole: '#d4d1c9', poleLamp: '#f4f4ef', wire: 'rgba(40,44,52,.5)', cone: '#e8742c', shade: [248, 248, 246], shadeEdge: 'rgba(150,156,168,.6)',
       gateRgb: [200, 58, 50], gateRoof: '#f4f3ef', gateGrade: 'rgba(200,58,50,.16)', lojaWall: [226, 228, 230], lojaBand: [232, 92, 44], lojaGlass: 'rgba(62,92,126,.85)',
       metal: '#d6dadf', metalEdge: 'rgba(140,148,160,.7)', barWall: [236, 234, 228], barOpen: 'rgba(48,50,48,.78)', barCounter: 'rgb(64,150,88)', truss2: 'rgb(246,246,244)', barInk: '#2b2f36', barSign: 'rgba(214,226,206,.95)',
@@ -148,6 +157,7 @@
       sand: '#6b5c38', courtLine: 'rgba(255,255,255,.8)', field: '#26422f', fieldLine: 'rgba(255,255,255,.55)', tank: [70, 86, 130], tankTop: '#7b8fc0', panel: '#16264e', panelLine: 'rgba(160,190,255,.3)',
       tile: '#a4663a', tileWall: [84, 66, 62], hexBase: [60, 72, 104], hexDeck: '#3a4b78', hexRoof: [120, 135, 175], rail: 'rgba(190,205,235,.65)', neighbor: '#27324e', neighborWall: [34, 44, 70], glass: 'rgba(90,150,130,.55)', glassWall: [50, 96, 86], glassRib: 'rgba(200,235,220,.45)',
       aptoWall: [70, 80, 110], aptoSlab: '#3a4a74', aptoBand: 'rgb(176,120,42)', aptoGap: 'rgba(8,12,24,.55)', aptoShop: 'rgb(54,62,84)', aptoDoor: 'rgb(96,108,140)', aptoSign: 'rgb(48,86,160)',
+      obra: [74, 80, 96], obraTop: '#56607a', crane: '#c49a2e',
       zebra: 'rgba(200,210,230,.55)', laneMid: '#b08a2c', curbYellow: '#a8862e', pole: '#56658c', poleLamp: '#ffe6a8', wire: 'rgba(160,175,210,.4)', cone: '#c8642a', shade: [120, 134, 170], shadeEdge: 'rgba(170,185,220,.5)',
       gateRgb: [200, 80, 72], gateRoof: '#3a4a74', gateGrade: 'rgba(255,122,112,.16)', lojaWall: [60, 70, 98], lojaBand: [196, 84, 44], lojaGlass: 'rgba(250,210,140,.55)',
       metal: '#46557c', metalEdge: 'rgba(120,138,180,.55)', barWall: [62, 72, 100], barOpen: 'rgba(250,200,120,.55)', barCounter: 'rgb(46,112,70)', truss2: 'rgb(200,210,232)', barInk: '#14224a', barSign: 'rgba(250,220,150,.9)',
@@ -246,23 +256,24 @@
        O pátio interno aberto é o da planta de 2012. */
     { id: 'principal', el: 0, h: 11.7, floors: 3, label: 'Bloco principal', at: [4, -34], court: [[-16.53, -36.61], [4.88, -36.61], [7.4, -30.8], [-16.53, -30.8]], ridges: true },
     { id: 'anexo', el: 1, h: 4.8, floors: 1, label: 'Anexo', at: [-44, -96], skylight: XT.skylight },
-    { id: 'laboratorios', el: 3, h: 9.3, floors: 2, label: 'Laboratórios', at: [-47, 9], solar: 0.86 },
+    { id: 'laboratorios', el: 3, h: 9.3, floors: 2, label: 'Bloco dos Laboratórios', at: [-47, 9], solar: 0.86 },
     { id: 'cantina', el: 4, h: 4.8, floors: 1, label: 'Cantina', at: [-61, -36], solar: 0.88 },
-    { id: 'diretoria', el: 6, h: 4.8, floors: 1, label: 'Diretoria', at: [26, 3] },
+    { id: 'diretoria', el: 6, h: 4.8, floors: 1, label: 'Direção Geral', at: [26, 3] },
     { id: 'biblioteca', el: 7, h: 4.8, floors: 1, label: 'Biblioteca', at: [-78, -69] },
     /* Duas entradas na frente, como na foto da rua: pedestres pela portaria (pórtico vermelho com cobertura)
        e, à esquerda de quem chega pela rodovia, o portão de veículos para o estacionamento. */
     { id: 'portaria', el: 8, h: 3.35, floors: 0, kind: 'gate', label: 'Portaria', at: [15, 48] },
     { id: 'portao-veiculos', pontos: [[1.5, 47.9], [8.5, 47.9], [8.5, 48.8], [1.5, 48.8]], h: 2.6, kind: 'gate', vehicles: true, noLabel: true },
     /* Resto do campus: fora da programação do evento. */
-    { id: 'auxiliar', pontos: F('predio auxiliar'), h: 9.3, floors: 2, label: 'Prédio auxiliar', at: [-12.7, -62.8], rear: true, viewT: 3.64 },
-    { id: 'coliseu', pontos: F('colisel'), h: 3.2, kind: 'hex', label: 'Coliseu', at: [-31.7, -69], rear: true, viewT: 3.64 },
+    { id: 'auxiliar', pontos: F('predio auxiliar'), h: 4.8, floors: 1, label: 'Prédio auxiliar', at: [-12.7, -62.8], rear: true, viewT: 3.64 },
+    { id: 'coliseu', pontos: F('colisel'), h: 3.2, kind: 'hex', label: 'Coreto', at: [-31.7, -69], rear: true, viewT: 3.64 },
     { id: 'centro-medico', pontos: F('centro medico'), h: 4.8, floors: 1, label: 'Centro médico', at: [-76, -38], rear: true },
     { id: 'vestiario', pontos: F('vestiario'), h: 4.8, floors: 1, label: 'Vestiário', at: [-79, -49], rear: true },
     { id: 'obelisco', pontos: [[8, 14.7], [9.3, 14.7], [9.3, 15.2], [8, 15.2]], panel: [[7.85, 15.2], [9.05, 15.2], [9.05, 15.42], [7.85, 15.42]], h: 5.6, kind: 'stele', label: 'Obelisco', at: [8.6, 15] },
     { id: 'manutencao', pontos: F('quartinho de manutencao'), h: 3, floors: 0, noLabel: true },
     { id: 'ginasio', pontos: F('quadra'), h: 8, rise: 3.6, kind: 'gym', label: 'Ginásio', at: [-100, -108], rear: true },
-    { id: 'predio-nadic', pontos: F('predio nadic 2 andares'), h: 13.2, floors: 2, label: 'Prédio do NADIC', at: [-70, -140], rear: true },
+    /* Em construção (informado pelo usuário): estrutura de concreto de dois andares, sem fechamento, com uma grua. */
+    { id: 'predio-nadic', pontos: F('predio nadic 2 andares'), h: 9.4, floors: 2, kind: 'obra', label: 'Novo prédio (em obras)', at: [-70, -140], rear: true },
     { id: 'academia', pontos: F('Polígono sem título'), h: 4.8, floors: 1, label: 'Academia', at: [-113, -151], rear: true },
     { id: 'estufa', pontos: F('jardim (estufa simples)'), h: 2.8, kind: 'greenhouse', label: 'Estufa', at: [-112, -212], rear: true },
     { id: 'casa-mel', pontos: F('casa do mel'), h: 4.8, floors: 1, tile: true, label: 'Casa do Mel', at: [-148, -269], rear: true },
@@ -429,6 +440,16 @@
     p.forEach((q, i) => { const a = P(q[0], q[1]); const n = p[(i + 1) % p.length]; const b = P(n[0], n[1]); s += a[0] * b[1] - b[0] * a[1]; });
     return s;
   };
+  /* Revelação do evento: cada parte do evento sobe do chão, com um pequeno salto, uma depois da outra. */
+  let popStart = 0;
+  const POP_ORDER = { patio: 0, principal: 160, auditorio: 160, cantina: 330, obelisco: 480 };
+  const popOf = (id) => {
+    if (!popStart || !(id in POP_ORDER)) return 1;
+    const t = Math.max(0, Math.min(1, (performance.now() - popStart - POP_ORDER[id]) / 820));
+    const c1 = 1.7, c3 = c1 + 1; const e = 1 + c3 * (t - 1) ** 3 + c1 * (t - 1) ** 2; // easeOutBack
+    return 0.12 + 0.88 * e;
+  };
+  let introRunning = false;
   const growOf = (x, y) => {
     if (grown || growStart === null) return 1;
     const delay = Math.min(520, Math.hypot(x - 15, y - 47) * 2.1);
@@ -663,7 +684,7 @@
   function drawShadows(c) {
     ctx.fillStyle = c.shadow;
     ctx.beginPath();
-    const list = [...BUILDINGS, ...COVERS].filter((b) => b.kind !== 'hex' && b.kind !== 'gate');
+    const list = [...BUILDINGS, ...COVERS].filter((b) => b.kind !== 'hex' && b.kind !== 'gate' && b.kind !== 'obra');
     list.forEach((b) => {
       const p = b.p; const g = growOf(...centroid(p));
       const off = [-LIGHT[0] * b.h * SHADOW_K * g, -LIGHT[1] * b.h * SHADOW_K * g];
@@ -1020,6 +1041,28 @@
     facePanel(F[0], F[1], u(-125.5), u(-110.5), 0, 3.6 * k, 0.05); ctx.fillStyle = c.lojaGlass; ctx.fill();
     if (cam.z > 1.3) faceText(lerp2(F[0], F[1], u(-118)), lerp2(F[0], F[1], u(-90)), h - 3, h - 0.3, 'brisanet', '#ffffff', 0.06);
   }
+  /* Prédio em obras: lajes de concreto, pilares e uma grua amarela. */
+  function drawObra(b, c, h, sel) {
+    const p = b.p, k = h / b.h, m = centroid(p);
+    const conc = sel ? c.accentWall : c.obra, slab = sel ? c.accent : c.obraTop;
+    const inner = shrink(p, 0.96);
+    const cols = []; p.forEach((a, i) => { const e = p[(i + 1) % p.length]; const n = Math.max(1, Math.round(Math.hypot(e[0] - a[0], e[1] - a[1]) / 6)); for (let j = 0; j < n; j++) cols.push(lerp2(lerp2(a, e, j / n), m, 0.04)); });
+    cols.sort((u, v) => depth(...u) - depth(...v));
+    const lev = [0, 4.6 * k, 9.2 * k];
+    drawExtruded(p, 0.35 * k, c, { wall: conc, roof: slab, edge: c.roofEdge, floors: 0 });
+    for (let i = 0; i < lev.length - 1; i++) {
+      cols.forEach((q) => drawExtruded([[q[0] - 0.25, q[1] - 0.25], [q[0] + 0.25, q[1] - 0.25], [q[0] + 0.25, q[1] + 0.25], [q[0] - 0.25, q[1] + 0.25]], lev[i + 1], c, { base: lev[i], wall: conc, roof: slab, edge: c.roofEdge, floors: 0 }));
+      drawExtruded(inner, lev[i + 1] + 0.3 * k, c, { base: lev[i + 1], wall: conc, roof: slab, edge: c.roofEdge, floors: 0 });
+    }
+    if (k < 0.85 || cam.z < 0.7 || sel) return;
+    /* Grua: torre num canto e lança por cima do prédio. */
+    const base = lerp2(p[0], m, -0.12), top = P(base[0], base[1], h + 9), jibEnd = lerp2(base, m, 2.1), jib = P(jibEnd[0], jibEnd[1], h + 9), cw = lerp2(base, m, -0.5), cwp = P(cw[0], cw[1], h + 9);
+    const b0 = P(base[0], base[1], 0);
+    ctx.strokeStyle = c.crane; ctx.lineCap = 'round'; ctx.lineWidth = Math.max(1, 0.32 * cam.z);
+    ctx.beginPath(); ctx.moveTo(b0[0], b0[1]); ctx.lineTo(top[0], top[1]); ctx.moveTo(cwp[0], cwp[1]); ctx.lineTo(jib[0], jib[1]); ctx.stroke();
+    ctx.lineWidth = Math.max(0.6, 0.1 * cam.z); const hook = P(jibEnd[0], jibEnd[1], h + 3);
+    ctx.beginPath(); ctx.moveTo(jib[0], jib[1]); ctx.lineTo(hook[0], hook[1]); ctx.stroke();
+  }
   /* Face vertical vista de frente? Maior profundidade = mais perto de quem olha. */
   const faceSeen = (a, e, inner) => cam.hv > 0.02 && depth(...lerp2(a, e, 0.5)) > depth(...inner);
   /* Painel na fachada, entre u0 e u1 ao longo de a→e, um pouco para fora dela. */
@@ -1092,7 +1135,7 @@
     }
   }
   function drawBuildingBody(b, c) {
-    const p = b.p; const g = growOf(...centroid(p)); const h = Math.max(0.2, b.h * g);
+    const p = b.p; const g = growOf(...centroid(p)) * (isEv() ? popOf(b.id) : 1); const h = Math.max(0.2, b.h * g);
     const sel = selected === b.id;
     if (isEv() && EVENT_IDS.has(b.id)) {
       const piece = (id, poly0, hh = h, base = 0, aud = false) => {
@@ -1114,6 +1157,7 @@
     if (b.kind === 'hex') { drawHex(b, c, g, sel); return; }
     if (b.kind === 'greenhouse') { drawGreenhouse(b, c, g, sel); return; }
     if (b.kind === 'apto') { drawApto(b, c, h, sel); return; }
+    if (b.kind === 'obra') { drawObra(b, c, h, sel); return; }
     if (b.kind === 'gate') { drawGate(b, c, h, sel); return; }
     if (b.kind === 'loja') { drawLoja(b, c, h, sel); return; }
     if (b.kind === 'bar') { drawBar(b, c, h, sel); return; }
@@ -1171,7 +1215,7 @@
     ctx.stroke();
   }
   function drawCover(b, c) {
-    const p = b.p; const g = growOf(...centroid(p)); const h = Math.max(0.2, b.h * g);
+    const p = b.p; const g = growOf(...centroid(p)) * (isEv() ? popOf(b.id) : 1); const h = Math.max(0.2, b.h * g);
     const sel = selected === b.id;
     /* pilares nos cantos e no meio dos lados maiores */
     const evc = isEv() && EVENT_IDS.has(b.id);
@@ -1199,7 +1243,14 @@
     const base = P(t.x, t.y);
     const sc = cam.z;
     if (!Q.sprites) { ctx.fillStyle = c.leaf[t.tone % c.leaf.length]; ctx.beginPath(); ctx.arc(base[0], base[1], Math.max(1, r * sc * 0.9), 0, 7); ctx.fill(); return; }
-    if (Q.shadows && !Q.lean) { ctx.fillStyle = c.shadow; ctx.beginPath(); ctx.ellipse(base[0] - 1 * sc * r * 0.4, base[1] - 0.7 * sc * r * 0.3, r * sc * 0.95, r * sc * cam.k * 0.8, 0, 0, 7); ctx.fill(); }
+    if (Q.shadows && !Q.lean && LAYERS.shadows && SHADOW_K > 0) {
+      /* Sombra da copa no chão, deslocada para longe do sol e esticada quando o sol está baixo. */
+      const L = r * 1.7 * SHADOW_K, cx = t.x - LIGHT[0] * L, cy = t.y - LIGHT[1] * L, ax = r * 0.95 + L * 0.35, ay = r * 0.9;
+      const ang = Math.atan2(LIGHT[1], LIGHT[0]); const co = Math.cos(ang), si = Math.sin(ang);
+      ctx.fillStyle = c.shadow; ctx.beginPath();
+      for (let i = 0; i < 14; i++) { const a = (i / 14) * 6.283; const u = Math.cos(a) * ax, v = Math.sin(a) * ay; const q = P(cx + u * co - v * si, cy + u * si + v * co); if (i) ctx.lineTo(q[0], q[1]); else ctx.moveTo(q[0], q[1]); }
+      ctx.closePath(); ctx.fill();
+    }
     const atlasT = SPR && IMG[`trees-${tintKey()}`];
     if (atlasT) {
       const S = SPR.trees[t.kind]; const v = cam.hv < 0.5 ? S.top : S.tilt; const k = (r / S.radius) * v.mpp * sc;
@@ -1274,13 +1325,13 @@
   }
   /* A cena fica pronta numa camada; a cada passo só os carros são redesenhados sobre ela. */
   const fadeCanvas = document.createElement('canvas');
-  const FADE = 380;
+  let FADE = 380;
   let fadeT = 0;
   function present(c) {
     const scene = ctx;
     out.setTransform(1, 0, 0, 1, 0, 0);
     out.drawImage(baseCanvas, 0, 0);
-    if (Q.cars && sv.mix < 0.01 && roadInFront()) {
+    if (Q.cars && LAYERS.cars && sv.mix < 0.01 && roadInFront()) {
       out.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx = out;
       /* Com a rodovia na frente, os carros vão numa camada por cima da cena; só os vizinhos do outro lado ficam à frente deles. */
@@ -1344,8 +1395,10 @@
 
   /* ---------- rótulos ---------- */
   function pill(x, y, text, sel, c, boxes, small, part) {
-    ctx.font = `${small ? 500 : 600} ${sel ? 13 : small ? 10.5 : 11.5}px Onest, system-ui, sans-serif`;
-    const w = ctx.measureText(text).width + (small ? 11 : 14); const h = sel ? 24 : small ? 18 : 21;
+    /* No modo Campus as plaquinhas são pequenas; no Evento e na sala escolhida, maiores. */
+    const tiny = !isEv() && !sel && !part && sv.mix < 0.5;
+    ctx.font = `${small || tiny ? 500 : 600} ${sel ? 13 : tiny ? (small ? 8.5 : 9.5) : small ? 10.5 : 11.5}px Onest, system-ui, sans-serif`;
+    const w = ctx.measureText(text).width + (tiny ? 8 : small ? 11 : 14); const h = sel ? 24 : tiny ? (small ? 14 : 15) : small ? 18 : 21;
     const bx = x - w / 2, by = y - h - 7;
     if (boxes.some((o) => bx < o[0] + o[2] + 2 && bx + w + 2 > o[0] && by < o[1] + o[3] + 2 && by + h + 2 > o[1])) return false;
     if (bx + w < 0 || bx > W || by + h < 0 || by > H) return false;
@@ -1361,8 +1414,9 @@
   function drawLabels(c) {
     const boxes = [];
     labelHits = [];
+    if (introRunning) return;
     const rank = (b) => (b.id === selected ? 0 : b.rear ? 2 : 1);
-    const all = ALL.filter((b) => !b.noLabel && (!isEv() ? !b.evOnly : EVENT_LABELS.has(b.id))).sort((a, b) => rank(a) - rank(b));
+    const all = ALL.filter((b) => !b.noLabel && (!isEv() ? !b.evOnly : EVENT_LABELS.has(b.id)) && (LAYERS.labels || b.id === selected)).sort((a, b) => rank(a) - rank(b));
     all.forEach((b) => {
       if (!grown && growStart !== null && performance.now() - growStart < 900) return;
       const s = P(b.at[0], b.at[1], b.h);
@@ -1371,6 +1425,15 @@
       for (const dy of tries) {
         if (pill(s[0], s[1] + dy, isEv() && b.id !== selected ? `${b.label} ›` : b.label, b.id === selected || isEv(), c, boxes, b.rear && b.id !== selected, isEv() ? c.parts[b.id] : null)) { labelHits.push({ id: b.id, box: boxes[boxes.length - 1] }); break; }
       }
+    });
+    /* Bebedouros: gotinha azul no chão; o escolhido na busca fica maior e com o nome. */
+    if (!isEv() && sv.mix < 0.25 && (LAYERS.labels || poiSel)) POIS.forEach((q) => {
+      const on = q.id === poiSel; if (!on && cam.z < 0.9) return;
+      const s = P(q.at[0], q.at[1], 0.4); const r = on ? 11 : 7.5;
+      ctx.fillStyle = 'rgba(20,32,64,.18)'; ctx.beginPath(); ctx.arc(s[0], s[1] + 1.5, r, 0, 7); ctx.fill();
+      ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(s[0], s[1], r, 0, 7); ctx.fill();
+      ctx.fillStyle = '#2f8fd0'; ctx.save(); ctx.translate(s[0], s[1] + 0.5); ctx.scale(r / 13, r / 13); ctx.fill(ICON.water); ctx.restore();
+      if (on) pill(s[0], s[1] - r - 2, `${q.label} · ${q.where}`, true, c, boxes);
     });
     const here = P(START[0], START[1] + 2.5);
     ctx.fillStyle = 'rgba(47,125,225,.22)'; ctx.beginPath(); ctx.arc(here[0], here[1], 11, 0, 7); ctx.fill();
@@ -1906,7 +1969,7 @@
     drawGround(c);
     drawFlowerbeds(c);
     drawRoute(c);
-    if (Q.shadows) drawShadows(c);
+    if (Q.shadows && LAYERS.shadows) drawShadows(c);
     const items = [];
     BUILDINGS.forEach((b) => { if (!near(b.p, 70 * cam.z + 60)) return; const m = centroid(b.p); items.push({ d: depth(m[0], m[1]), f: () => drawBuilding(b, c) }); });
     COVERS.forEach((b) => { const m = centroid(b.p); items.push({ d: depth(m[0], m[1]), f: () => drawCover(b, c) }); });
@@ -1920,7 +1983,7 @@
       const e = pool.p[(i + 1) % pool.p.length]; const n = Math.max(1, Math.round(Math.hypot(e[0] - a[0], e[1] - a[1]) / 6));
       for (let k = 0; k < n; k++) { const u = lerp2(a, e, k / n), v = lerp2(a, e, (k + 1) / n), m = lerp2(u, v, 0.5); if (Q.ground > 0 && onScreen(m[0], m[1], 40)) items.push({ d: depth(m[0], m[1]), f: () => drawFenceSeg(u, v, c) }); }
     });
-    trees.forEach((t) => { if (!(Q.lean && t.far) && onScreen(t.x, t.y, 40)) items.push({ d: depth(t.x, t.y), f: () => drawTree(t, c) }); });
+    if (LAYERS.trees) trees.forEach((t) => { if (!(Q.lean && t.far) && onScreen(t.x, t.y, 40)) items.push({ d: depth(t.x, t.y), f: () => drawTree(t, c) }); });
     if (Q.ground > 0) HOUSES.forEach((t) => { if (onScreen(t.m[0], t.m[1], 30)) items.push({ d: depth(t.m[0], t.m[1]), f: () => drawHouse(t, c) }); });
     ENT.big.forEach((b) => { const m = centroid(b.pts); if (onScreen(m[0], m[1], 120)) items.push({ d: depth(m[0], m[1]), f: () => drawExtruded(b.pts, b.h, c, { wall: c.bigWall, roof: c.bigRoof, edge: c.roofEdge, floors: 0 }) }); });
     if (Q.ground > 0) [...ENT.lots.map((l) => [...l.pts, l.pts[0]]), ...ENT.fences].forEach((L) => { for (let i = 0; i < L.length - 1; i++) { const a = L[i], e = L[i + 1], m = lerp2(a, e, 0.5); if (onScreen(m[0], m[1], 100)) items.push({ d: depth(m[0], m[1]), f: () => { wallQuad(a, e, 0, 1.5); ctx.fillStyle = mix(c.lotWall, 1); ctx.fill(); } }); } });
@@ -1952,7 +2015,7 @@
         PARKED.forEach((t) => { if (onScreen(t.x, t.y, 10)) items.push({ d: depth(t.x, t.y), f: () => drawCar({ ...t, color: CAR_COLORS[t.k] }, c) }); });
       }
     }
-    if (Q.cars && !roadInFront() && sv.mix < 0.01) movers.forEach((t) => items.push({ d: depth(t.x, t.y), f: () => drawCar(t, c) }));
+    if (Q.cars && LAYERS.cars && !roadInFront() && sv.mix < 0.01) movers.forEach((t) => items.push({ d: depth(t.x, t.y), f: () => drawCar(t, c) }));
     items.sort((p, q) => p.d - q.d);
     items.forEach((o) => o.f());
     if (Q.soften && !isEv()) softenRear(c);
@@ -1969,11 +2032,12 @@
     let again = false, soft = false;
     if (tween) {
       const k = Math.min(1, (now - tween.t0) / tween.ms); const e = k < 0.5 ? 4 * k * k * k : 1 - (-2 * k + 2) ** 3 / 2;
-      tween.keys.forEach(([o, key, a, b]) => { o[key] = a + (b - a) * e; });
+      if (tween.fn) tween.fn(k); else tween.keys.forEach(([o, key, a, b]) => { o[key] = a + (b - a) * e; });
       dirty = true;
       if (k >= 1) { const done = tween.done; tween = null; done(true); } else again = true;
     }
     if (!grown && growStart !== null) { dirty = true; if (now - growStart > 1200) grown = true; else again = true; }
+    if (popStart) { dirty = true; if (now - popStart > 1500) popStart = 0; else again = true; }
     if (floorRouteMs) {
       const k = Math.min(1, (now - floorRouteStart) / floorRouteMs); const e = k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;
       floorRouteP = floorRouteFrom + (floorRouteTo - floorRouteFrom) * e;
@@ -2170,7 +2234,7 @@
       schedule();
       if (!reduce && !carRaf && Q.cars) { carLast = performance.now(); carRaf = requestAnimationFrame(carLoop); }
     },
-    select(id) { selected = id; if (routeId && routeId !== id) routeId = null; schedule(); },
+    select(id) { selected = id; if (id) poiSel = null; if (routeId && routeId !== id) routeId = null; schedule(); },
     focus(id) {
       const b = byId(id); if (!b) return;
       const p = b.p;
@@ -2310,6 +2374,61 @@
       NIGHT = n2; DUSK = d2; LIGHT[0] = lx; LIGHT[1] = ly; SHADOW_K = k; schedule();
     },
     hour: () => ({ hour: hourOn, night: NIGHT, dusk: DUSK }),
+    setLayers(v) { Object.assign(LAYERS, v); schedule(); },
+    pois: () => POIS.map((q) => ({ ...q, min: Math.max(1, Math.round((Math.hypot(q.at[0] - START[0], q.at[1] - START[1]) * 1.35) / 75)) })),
+    focusPoi(id) {
+      const q = POIS.find((p) => p.id === id); if (!q) return;
+      poiSel = id; selected = null; const [x, y] = q.at;
+      anim(view([[x - 14, y - 14], [x + 14, y - 14], [x + 14, y + 14], [x - 14, y + 14]], cam.t, 50, 70, cam.k, 2), 800);
+    },
+    clearPoi() { poiSel = null; schedule(); },
+    /* Câmera para guardar e restaurar entre visitas. */
+    getView: () => ({ x: cam.x, y: cam.y, z: cam.z, t: cam.t, k: cam.k, hv: cam.hv }),
+    setView(v) { if (v && Number.isFinite(v.x)) { Object.assign(cam, v); syncAngle(); grown = true; growStart = null; schedule(); } },
+    /* Entrada no mapa. 'full': um movimento só, contínuo: começa em 3D, de cima, com o horizonte todo; aproxima
+       indo para o IF; no meio do caminho inclina, passa rápido pela Elétrica e pelos apartamentos e termina com o
+       campus em perspectiva. 'short': aproximação rápida até a vista guardada. */
+    async intro(kind) {
+      if (reduce || !kind) return;
+      if (kind === 'short') {
+        const to = { x: cam.x, y: cam.y, z: cam.z, t: cam.t };
+        Object.assign(cam, { z: cam.z * 0.8, t: cam.t - 0.14 }); syncAngle(); schedule();
+        await anim(to, 560); return;
+      }
+      if (flat) flat = false;
+      const end = { ...view(corePts(), 0.5, 24, 30, 0.64), hv: 1 };
+      const far = { ...view(regionPts(), -0.4, 10, 10, 0.99), hv: 0.06 };
+      const mid = { ...view([[-150, -150], [90, -150], [90, 130], [-150, 130]], -0.2, 20, 20, 0.93), hv: 0.22 };
+      const pass = { ...view([[2, 72], [40, 72], [40, 146], [2, 146]], 0.22, 60, 70, 0.72), hv: 0.82 };
+      const K = [far, far, mid, pass, end, end]; const T = [0, 0.43, 0.72, 1];
+      const ch = ['x', 'y', 'lz', 't', 'k', 'hv'];
+      K.forEach((q) => { q.lz = Math.log(q.z); });
+      const cr = (p0, p1, p2, p3, u) => 0.5 * (2 * p1 + (-p0 + p2) * u + (2 * p0 - 5 * p1 + 4 * p2 - p3) * u * u + (-p0 + 3 * p1 - 3 * p2 + p3) * u * u * u);
+      introRunning = true; grown = true; growStart = null;
+      Object.assign(cam, { x: far.x, y: far.y, z: far.z, t: far.t, k: far.k, hv: far.hv }); syncAngle(); schedule();
+      await new Promise((done) => {
+        if (tween) { tween.done(false); tween = null; }
+        tween = { t0: performance.now(), ms: 4600, keys: [], done, fn: (k) => {
+          const e = 0.5 - Math.cos(Math.PI * k) / 2; // um único ritmo: acelera e desacelera uma vez
+          let i = 0; while (i < 2 && e > T[i + 1]) i++;
+          const u = (e - T[i]) / (T[i + 1] - T[i]);
+          const v = {}; ch.forEach((c) => { v[c] = cr(K[i][c], K[i + 1][c], K[i + 2][c], K[i + 3][c], u); });
+          Object.assign(cam, { x: v.x, y: v.y, z: Math.exp(v.lz), t: v.t, k: v.k, hv: Math.max(0, Math.min(1, v.hv)) });
+        } };
+        schedule();
+      });
+      introRunning = false; schedule();
+    },
+    /* Do campus para o evento: as cores se dissolvem, as partes do evento sobem do chão uma a uma
+       e a câmera se ajusta ao enquadramento do evento. */
+    async eventReveal() {
+      if (reduce) { this.setMode('evento'); return; }
+      FADE = 620; this.setMode('evento'); popStart = performance.now();
+      await new Promise((r) => setTimeout(r, 640));
+      await anim(homeView(), 1400);
+      FADE = 380;
+    },
+    layers: () => ({ ...LAYERS }),
     /* Sol agora e fachadas do bloco principal que recebem sol (a frente olha para o oeste). */
     sunInfo(h = hourOn) {
       if (h == null) return null;

@@ -21,7 +21,7 @@ window.DATA = {
       id: 'react-native', type: 'Minicurso', day: 26, time: '14:00', end: '18:00',
       title: 'Introdução ao React Native com Expo', short: 'React Native com Expo',
       speaker: 'Jonhy Everton Silva Gomes de Santana', speakerShort: 'Jonhy Everton', initials: 'JE',
-      role: 'Desenvolvedor mobile', floor: 2, zone: 'labs-norte-2', room: 'Lab 204',
+      role: 'Desenvolvedor mobile', floor: 2, zone: 'labs-norte-2', room: 'Lab 203',
       description: 'Da ideia ao primeiro app. Explore componentes, navegação e as primeiras telas de um aplicativo com React Native e Expo.',
       requirements: 'Notebook com Node.js instalado e conhecimentos básicos de JavaScript.',
       learn: ['Criar um projeto com Expo e abrir no seu celular', 'Montar telas com View, Text, Image e listas', 'Navegar entre telas com o Expo Router'],
@@ -51,7 +51,7 @@ window.DATA = {
       id: 'experiencia-ia', type: 'Minicurso', day: 26, time: '14:00', end: '18:00',
       title: 'O futuro da experiência com IA', short: 'O futuro da experiência com IA',
       speaker: 'Pablo Rodrigo Bernardino de Lira', speakerShort: 'Pablo Rodrigo', initials: 'PR',
-      role: 'Designer de produto', floor: 0, zone: 'sala-norte-0', room: 'Sala 001',
+      role: 'Designer de produto', floor: 1, zone: 'salas-sul-0', room: 'Sala 111',
       description: 'Uso, experiência e tecnologia: como a inteligência artificial está redefinindo nossas interações.',
       requirements: 'Notebook e curiosidade para experimentar novas ferramentas.',
       learn: ['Padrões de interface para produtos com IA', 'Como testar ideias com protótipos rápidos'],
@@ -62,7 +62,7 @@ window.DATA = {
       id: 'react-next', type: 'Minicurso', day: 27, time: '08:00', end: '12:00',
       title: 'Desenvolvimento de aplicações web com React e Next.js', short: 'React e Next.js',
       speaker: 'Caio Rafael da Rocha Gomes', speakerShort: 'Caio Rafael', initials: 'CR',
-      role: 'Desenvolvedor web', floor: 1, zone: 'sala-interna-norte-1', room: 'Sala 106',
+      role: 'Desenvolvedor web', floor: 1, zone: 'sala-interna-norte-1', room: 'Sala 105',
       description: 'Explore componentes e rotas na construção de uma aplicação web com React e Next.js.',
       requirements: 'Notebook com Node.js e noções de JavaScript.',
       learn: ['Componentes e estado no React', 'Rotas e páginas no Next.js'],
@@ -95,7 +95,7 @@ window.DATA = {
   enrolled: ['react-native', 'react-next', 'saude-mental'],
   notices: [
     { time: '13:30', title: 'Minicursos da tarde começam às 14:00', text: 'Chegue alguns minutos antes para registrar presença na porta.', fresh: true },
-    { time: '11:05', title: 'Lab 204: traga notebook', text: 'Com Node.js instalado. Há tomadas nas bancadas.', fresh: true },
+    { time: '11:05', title: 'Lab 203: traga notebook', text: 'Com Node.js instalado. Há tomadas nas bancadas.', fresh: true },
     { time: '07:30', title: 'Credenciamento aberto', text: 'Na recepção do térreo, ao lado da rampa.' },
   ],
   tournaments: [
@@ -141,13 +141,16 @@ window.DATA = {
 
 /* Lugares do campus: nomes do levantamento; descrição do que o participante encontra. */
 window.DATA.places = {
-  principal: { name: 'Bloco principal', kind: 'Salas e auditório', floors: 3, text: 'Três andares, com recepção no térreo. Minicursos e palestras acontecem aqui.' },
-  laboratorios: { name: 'Bloco de laboratórios', kind: 'Aprendizado', text: 'Laboratórios do campus, ao lado do pátio.' },
-  patio: { name: 'Pátio', kind: 'Convivência', text: 'Área coberta no centro do campus, entre a entrada e o bloco principal.' },
-  cantina: { name: 'Cantina', kind: 'Alimentação', text: 'Lanches e refeições, ao lado da coberta de madeira.' },
-  biblioteca: { name: 'Biblioteca', kind: 'Aprendizado', text: 'Atrás da cantina, seguindo pela coberta de madeira.' },
+  principal: { name: 'Bloco principal', kind: 'Salas e auditório', floors: 3, sun: true, text: 'Salas, laboratórios e auditório, em três andares.' },
+  laboratorios: { name: 'Bloco dos Laboratórios Rosane Liége', kind: 'Aprendizado', text: 'Ao lado do pátio.',
+    projeto: 'Curiosidade: reformado em 2026, ganhou o nome de uma ex-servidora do campus.' },
+  patio: { name: 'Pátio', kind: 'Convivência', text: 'Área coberta entre a entrada e o bloco principal.',
+    projeto: 'Curiosidade: o pátio já existia no terreno, e o bloco principal foi projetado a partir dele.' },
+  cantina: { name: 'Cantina', kind: 'Alimentação', text: 'Lanches e refeições.' },
+  biblioteca: { name: 'Biblioteca', kind: 'Aprendizado', text: 'Atrás da cantina, pela coberta de madeira.',
+    projeto: 'Curiosidade: antes deste bloco, a biblioteca ficava no 2º andar do bloco principal.' },
   anexo: { name: 'Anexo', kind: 'Edifício', text: 'Bloco ao fundo, ligado ao bloco principal por um caminho.' },
-  diretoria: { name: 'Diretoria', kind: 'Administração', text: 'Prédio térreo à direita de quem entra, ao lado do pátio.' },
+  diretoria: { name: 'Bloco da Direção Geral', kind: 'Administração', text: 'À direita de quem entra, ao lado do pátio.' },
   portaria: { name: 'Portaria', kind: 'Entrada do campus', text: 'Acesso de pedestres. A passarela leva direto ao pátio.' },
 };
 window.DATA.placeOrder = ['principal', 'laboratorios', 'patio', 'cantina', 'biblioteca', 'anexo', 'diretoria', 'portaria'];
@@ -182,12 +185,13 @@ window.DATA.org = { inscritos: 480, porHora: [[7, 38], [8, 96], [9, 71], [10, 34
 
 /* Resto do campus: fora da programação do evento. Nomes e andares informados pelo usuário. */
 Object.assign(window.DATA.places, {
-  auxiliar: { name: 'Prédio auxiliar', kind: 'Edifício', text: 'Prédio de dois andares, ao lado do Coliseu.' },
-  coliseu: { name: 'Coliseu', kind: 'Convivência', text: 'Deck coberto de seis lados, com colunas e uma escadinha de acesso. Fica no meio do caminho entre o bloco e o anexo.' },
+  auxiliar: { name: 'Prédio auxiliar', kind: 'Edifício', text: 'Prédio térreo ao lado do Coliseu.' },
+  coliseu: { name: 'Coreto', kind: 'Convivência', text: 'Deck coberto de seis lados, entre o bloco e o anexo.',
+    projeto: 'Curiosidade: inaugurado em julho de 2026.' },
   'centro-medico': { name: 'Centro médico', kind: 'Saúde', text: 'Prédio térreo, entre a cantina e o vestiário.' },
   vestiario: { name: 'Vestiário', kind: 'Apoio', text: 'Prédio térreo, ao lado do centro médico e da biblioteca.' },
   ginasio: { name: 'Ginásio', kind: 'Esporte', text: 'Quadra coberta, atrás da biblioteca.' },
-  'predio-nadic': { name: 'Prédio do NADIC', kind: 'Pesquisa', text: 'Prédio de dois andares, quase da altura do bloco principal, atrás do Anexo.', link: 'nadic' },
+  'predio-nadic': { name: 'Novo prédio', kind: 'Em obras', text: 'Em construção, com dois andares. Foi anunciado para os bolsistas do NADIC, mas pode virar um grande laboratório.' },
   academia: { name: 'Academia', kind: 'Esporte', text: 'Prédio térreo, entre o ginásio e a piscina.' },
   piscina: { name: 'Piscina', kind: 'Esporte', text: 'Área da piscina, ao lado da academia e do campo.' },
   volei: { name: 'Quadra de vôlei', kind: 'Esporte', text: 'Quadra de areia, ao lado do Prédio do NADIC.' },
@@ -195,8 +199,11 @@ Object.assign(window.DATA.places, {
   estufa: { name: 'Estufa', kind: 'Jardim', text: 'Estufa simples, no caminho para a Casa do Mel.' },
   'casa-mel': { name: 'Casa do Mel', kind: 'Apicultura', text: 'Prédio térreo no fim do campus, entre as árvores.' },
   'seu-assis': { name: 'Seu Assis', kind: 'Restaurante vizinho', text: 'Restaurante familiar ao lado do campus, do lado de fora do muro.' },
+  apartamentos: { name: 'Prédio dos apartamentos', kind: 'Vizinho', text: 'Em frente à portaria. Boa parte da galera do campus mora aqui.' },
+  brisanet: { name: 'Brisanet', kind: 'Vizinho', text: 'Loja do outro lado da rodovia, com o estacionamento e as coberturas das motos na frente.' },
+  eletrica: { name: 'Elétrica', kind: 'Restaurante vizinho', text: 'Restaurante coberto nos fundos do prédio dos apartamentos, aberto para a rua lateral.' },
 });
-window.DATA.placeOrder.push('coliseu', 'auxiliar', 'centro-medico', 'vestiario', 'ginasio', 'predio-nadic', 'academia', 'piscina', 'volei', 'campo', 'estufa', 'casa-mel', 'seu-assis');
+window.DATA.placeOrder.push('coliseu', 'auxiliar', 'centro-medico', 'vestiario', 'ginasio', 'predio-nadic', 'academia', 'piscina', 'volei', 'campo', 'estufa', 'casa-mel', 'seu-assis', 'apartamentos', 'eletrica', 'brisanet');
 
 /* Partes do evento, destacadas no modo Evento. O auditório fica na ala oeste do bloco principal, no térreo. */
 Object.assign(window.DATA.places.principal, { kind: 'Minicursos', text: 'Três andares, com recepção no térreo. Os minicursos acontecem aqui.' });
@@ -251,13 +258,13 @@ Object.assign(window.DATA.nadic, {
     talk({ id: 'arduino', type: 'Oficina', day: 27, time: '08:00', end: '12:00', title: 'Primeiros passos com Arduino', short: 'Arduino', speaker: 'Rafael Nóbrega', speakerShort: 'Rafael Nóbrega', initials: 'RN', role: 'Engenheiro de sistemas embarcados', floor: 2, zone: 'labs-norte', description: 'Monte circuitos simples e programe sensores e LEDs.', learn: ['Montar um circuito simples', 'Ler um sensor e reagir a ele'], taken: 19, seats: 20 }),
     talk({ id: 'mesa-carreira', type: 'Mesa-redonda', day: 27, time: '10:00', end: '11:30', title: 'Carreira em tecnologia no interior', short: 'Carreira no interior', speaker: 'Beatriz Lacerda', speakerShort: 'Beatriz Lacerda', initials: 'BL', role: 'Mediadora', floor: 0, zone: 'auditorio', description: 'Conversa sobre trabalho remoto, empresas locais e como começar.', learn: ['Caminhos para o primeiro emprego', 'Como montar um portfólio'], taken: 88, seats: 200 }),
     stop({ id: 'almoco-27', type: 'Refeição', day: 27, time: '12:00', end: '13:30', title: 'Almoço', short: 'Almoço', place: 'cantina', room: 'Cantina', description: 'Refeição na cantina do campus.' }),
-    talk({ id: 'dados', type: 'Minicurso', day: 27, time: '14:00', end: '18:00', title: 'Análise de dados com Python', short: 'Dados com Python', speaker: 'Marina Telles', speakerShort: 'Marina Telles', initials: 'MT', role: 'Analista de dados', floor: 1, zone: 'sala-interna-sul-1', description: 'Limpe, explore e visualize dados com Pandas.', requirements: 'Notebook com Python instalado.', learn: ['Ler e limpar planilhas com Pandas', 'Fazer gráficos claros'], taken: 27, seats: 30 }),
+    talk({ id: 'dados', type: 'Minicurso', day: 27, time: '14:00', end: '18:00', title: 'Análise de dados com Python', short: 'Dados com Python', speaker: 'Marina Telles', speakerShort: 'Marina Telles', initials: 'MT', role: 'Analista de dados', floor: 1, zone: 'sala-interna-sul-0', description: 'Limpe, explore e visualize dados com Pandas.', requirements: 'Notebook com Python instalado.', learn: ['Ler e limpar planilhas com Pandas', 'Fazer gráficos claros'], taken: 27, seats: 30 }),
     stop({ id: 'jogo-mk', type: 'Campeonato', day: 27, time: '14:00', end: '15:20', title: 'Campeonato de Mortal Kombat', short: 'Mortal Kombat', tournament: 'mk', floor: 1, zone: 'sala-norte-1', room: 'Sala 102', description: 'Eliminação simples, melhor de três.' }),
     stop({ id: 'jogo-fifa', type: 'Campeonato', day: 27, time: '15:30', end: '16:50', title: 'Campeonato de FIFA', short: 'FIFA', tournament: 'fifa', floor: 1, zone: 'sala-norte-1', room: 'Sala 102', description: 'Mata-mata com oito participantes.' }),
     stop({ id: 'intervalo-28', type: 'Intervalo', day: 28, time: '10:20', end: '10:40', title: 'Intervalo com lanche', short: 'Intervalo', place: 'cantina', room: 'Cantina', description: 'Pausa da manhã, na cantina.' }),
     talk({ id: 'seguranca', type: 'Palestra', day: 28, time: '10:40', end: '11:40', title: 'Segurança digital no dia a dia', short: 'Segurança digital', speaker: 'Tiago Brandão', speakerShort: 'Tiago Brandão', initials: 'TB', role: 'Especialista em segurança', floor: 0, zone: 'auditorio', description: 'Golpes comuns, senhas e como proteger suas contas.', learn: ['Reconhecer golpes comuns', 'Proteger suas contas'], taken: 64, seats: 200 }),
     stop({ id: 'almoco-28', type: 'Refeição', day: 28, time: '12:00', end: '13:30', title: 'Almoço', short: 'Almoço', place: 'cantina', room: 'Cantina', description: 'Refeição na cantina do campus.' }),
-    talk({ id: 'interfaces', type: 'Oficina', day: 28, time: '14:00', end: '16:30', title: 'Design de interfaces para quem programa', short: 'Design de interfaces', speaker: 'Camila Rocha', speakerShort: 'Camila Rocha', initials: 'CM', role: 'Designer de produto', floor: 0, zone: 'sala-norte-2', description: 'Hierarquia, contraste e como deixar uma tela clara.', learn: ['Hierarquia visual', 'Contraste e legibilidade'], taken: 15, seats: 30 }),
+    talk({ id: 'interfaces', type: 'Oficina', day: 28, time: '14:00', end: '16:30', title: 'Design de interfaces para quem programa', short: 'Design de interfaces', speaker: 'Camila Rocha', speakerShort: 'Camila Rocha', initials: 'CM', role: 'Designer de produto', floor: 0, zone: 'sala-estudos-informatica', description: 'Hierarquia, contraste e como deixar uma tela clara.', learn: ['Hierarquia visual', 'Contraste e legibilidade'], taken: 15, seats: 30 }),
     stop({ id: 'encerramento', type: 'Encerramento', day: 28, time: '17:00', end: '18:00', title: 'Encerramento e premiação', short: 'Encerramento', place: 'patio', room: 'Pátio', description: 'Premiação dos campeonatos e encerramento, no pátio.' }),
   );
   D.sessions.sort((a, b) => a.day - b.day || a.time.localeCompare(b.time));
