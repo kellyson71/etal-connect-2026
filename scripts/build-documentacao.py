@@ -92,124 +92,130 @@ def slide(id, title, chapter, body, source='', tone='', cover='cena-campus.webp'
     SLIDES.append(dict(id=id,title=title,chapter=chapter,body=head+body,source=source,tone=tone,cover=cover))
 
 
-slide('visao','O campus vira caminho','01 / O encontro',f'''
-<div class="hero-content"><div class="hero-text"><p class="eyebrow reveal">ETAL Connect / uma experiência de evento</p><h1 class="reveal" style="--i:1">O campus<br>vira <span class="accent">caminho.</span></h1>
-<p class="lede reveal" style="--i:2">Da programação à porta da sala.<br>Um app para viver o encontro.</p><div class="pills reveal" style="--i:3">{badge('App + mapa + presença','spark','ghost')}{badge('IFRN · Pau dos Ferros',tone='ghost')}</div></div>
-<div class="hero-scene reveal" style="--i:1"><div class="orbit"></div><img class="scene" data-depth="0.5" src="{{assets}}/cena-evento.webp" alt="Modelo atual do campus do IFRN Pau dos Ferros"><img class="phone" data-depth="1.4" src="{{assets}}/app-home.png" alt="Tela inicial atual do ETAL Connect, capturada novamente para a apresentação"><div class="float-note n1">{icon('calendar')}<div><b>O que acontece agora?</b><small>Programação na mão.</small></div></div><div class="float-note n2">{icon('route')}<div><b>Como eu chego lá?</b><small>Um caminho até a sala.</small></div></div></div>
-<div class="hero-kicker"><img src="{{root}}prototipo/assets/nadic-logo.svg" alt="NADIC"><span>Proposta 2026 · implementação e referências reais do projeto</span></div></div>
-''','Apresentação da implementação · capturas locais atualizadas · programação demonstrativa de referência: VII ETAL / 2025','dark', 'cena-evento.webp')
+def vid(name, cls=''):
+    return f'<video class="auto-video {cls}" src="{{assets}}/videos/{name}.mp4" poster="{{assets}}/videos/{name}.webp" muted loop playsinline preload="metadata"></video>'
 
-slide('proposito','Por que esse app?','01 / O encontro',f'''
-<img class="full-photo" src="{{assets}}/fontes/campus-fachada.webp" alt="Fachada e entrada do campus, em fotografia usada no projeto"><div class="photo-shade"></div>
-<div class="reveal" style="margin-top:35px"><p class="eyebrow">O problema aparece quando a gente chega</p><h2 class="big-question">Muita coisa<br>acontecendo.<br>Um lugar só<br>para se achar.</h2></div>
-<div class="question-tags"><span class="reveal" style="--i:1">{icon('clock')}Já começou?</span><span class="reveal" style="--i:2">{icon('pin')}Onde é a sala?</span><span class="reveal" style="--i:3">{icon('qr')}Como confirmo a presença?</span></div>
-''','Fotografia fornecida pelo usuário na sessão do projeto · a apresentação parte dos fluxos construídos, sem levantamento formal de requisitos','dark','fontes/campus-fachada.webp')
 
-slide('app','O aplicativo, aqui dentro','01 / O encontro',f'''
-<div class="app-layout"><div class="app-copy"><p class="eyebrow reveal">Demonstração interativa</p><h2 class="reveal" style="font-size:65px">Pode tocar.<br>É o <span class="accent">app.</span></h2><p class="body-copy reveal" style="--i:1">Os cards abrem. A agenda navega. O crachá vira. A experiência está dentro do slide.</p><div class="app-tabs reveal" style="--i:2"><button data-app-screen="home" aria-pressed="true">{icon('phone')}Início</button><button data-app-screen="agenda">{icon('calendar')}Agenda</button><button data-app-screen="credencial">{icon('user')}Crachá</button></div><p class="micro reveal" style="margin-top:22px;--i:3">Código atual de prototipo/ · sessão isolada e dados demonstrativos.</p></div>
-<div class="reveal" style="--i:1">{demo('app','tela=home&tema=light&ceu=14','app-home.png',True)}</div>
-<div class="feature-stack"><article class="feature reveal" style="--i:2"><h3>{icon('calendar')}Escolher</h3><p>Programação, detalhes e atividades salvas.</p></article><article class="feature reveal" style="--i:3"><h3>{icon('map')}Encontrar</h3><p>Campus, salas, andares e caminhos.</p></article><article class="feature reveal" style="--i:4"><h3>{icon('qr')}Participar</h3><p>Identificação primeiro. Credenciamento após QR válido.</p></article></div></div>
-''','Demonstração executa os arquivos reais do app, com API desabilitada e armazenamento isolado','', 'app-home.png')
+def full(name, title, extra=''):
+    """Slide de vídeo em tela cheia: o vídeo toca sozinho e o título fica por cima."""
+    return f'<div class="full-video">{vid(name)}</div><div class="full-shade"></div><h2 class="full-title reveal">{title}</h2>{extra}'
 
-slide('processo','Como o projeto cresceu','01 / O encontro',f'''
-<div class="process"><figure class="process-picture reveal"><img src="{{root}}docs/prints/15-propostas-de-entrada.png" alt="Registro histórico das propostas Cartaz, Crachá e Explorar"><figcaption>Exploração inicial de entrada · este é um registro histórico, não a tela atual.</figcaption></figure><article class="process-note reveal" style="--i:1"><p>Construir.<br>Experimentar.<br>Olhar de novo.<br>Ajustar.</p><small>O protótipo foi o espaço de decisão.</small></article><div class="process-loop reveal" style="--i:2"><span>Telas e navegação</span><span>Mapa e localização</span><span>API e persistência</span><span>Documentar o que existe</span></div></div>
-<div class="note reveal" style="--i:3">Não houve uma etapa formal de reuniões de requisitos. A apresentação registra a implementação e as decisões observadas.</div>
-''','Registro histórico preservado em docs/prints · sem atas ou prioridades formais reconstruídas depois do fato','', 'app-login.png', 'A gente começou pelo protótipo.', 'O produto foi tomando forma ao experimentar as telas e comparar o mapa com o lugar real.')
+
+# ---------------- 01 · Abertura ----------------
+slide('visao','ETAL Connect','01 / Abertura',f"""
+<div class="hero-content"><div class="hero-text"><h1 class="reveal" style="--i:1">ETAL<br><span class="accent">Connect</span></h1>
+<p class="cover-line reveal" style="--i:2">App do ETAL · IFRN Pau dos Ferros</p></div>
+<div class="hero-scene reveal" style="--i:1"><div class="orbit"></div><img class="scene" data-depth="0.5" src="{{assets}}/cena-evento.webp" alt="Modelo atual do campus"><img class="phone" data-depth="1.4" src="{{assets}}/app-home.png" alt="Tela inicial do app"></div>
+<div class="hero-kicker"><img src="{{root}}prototipo/assets/nadic-logo.svg" alt="NADIC"></div></div>
+""",'','dark','cena-evento.webp')
+
+slide('chegada','Chegar ao evento','01 / Abertura',f"""
+<img class="full-photo" src="{{assets}}/fontes/campus-fachada.webp" alt="Fachada do campus"><div class="photo-shade"></div>
+<div class="question-tags big"><span class="reveal" style="--i:1">{icon('clock')}Já começou?</span><span class="reveal" style="--i:2">{icon('pin')}Onde é a sala?</span><span class="reveal" style="--i:3">{icon('qr')}Como confirmo a presença?</span></div>
+""",'','dark','fontes/campus-fachada.webp')
 
 TIMELINE = [
-    ('15 out', 'O campus em KML', 'Polígonos, caminhos e pontos marcados sobre o satélite.', 'globe', ''),
-    ('06–07 nov', 'Primeiro protótipo', 'Telas, mapa 3D em Canvas, PWA e painel da organização.', 'spark', 'v0.1.0'),
-    ('09 nov · madrugada', 'Entorno e planta de 2012', 'BR-405, vizinhos e o interior refeito pela dissertação.', 'file', ''),
-    ('09 nov · manhã', 'O campus de hoje', 'Uso atual das salas, sol e sombras, noite e busca.', 'map', 'v0.2.0'),
-    ('09 nov · tarde', 'O app ganha servidor', 'FastAPI, banco, QR assinado, homologação e Vercel.', 'layers', 'v0.3.0'),
-    ('09 nov · noite', 'Teste como produção', 'SUAP, mapa para o polegar, busca colada no teclado.', 'shield', 'v0.4'),
+    ('15 out', 'Campus em KML', 'globe', ''),
+    ('06–07 nov', 'Protótipo', 'spark', 'v0.1.0'),
+    ('09 nov', 'Planta de 2012', 'file', ''),
+    ('09 nov', 'Campus de hoje', 'map', 'v0.2.0'),
+    ('09 nov', 'Servidor e QR', 'layers', 'v0.3.0'),
+    ('09 nov', 'Teste em produção', 'shield', 'v0.4'),
 ]
-slide('linha-do-tempo','Linha do tempo','01 / O encontro',f'''
-<div class="timeline">{''.join(f'<article class="tl-item reveal" style="--i:{n+1}"><span class="tl-dot">{icon(ic)}</span><small class="tl-when">{w}</small><b>{t}</b><p>{d}</p>{f'<span class="tl-tag">{v}</span>' if v else ''}</article>' for n,(w,t,d,ic,v) in enumerate(TIMELINE))}<i class="tl-line"></i></div>
-<div class="tl-stats"><div class="reveal" style="--i:7"><b data-count="25">25</b><small>dias do KML ao teste em produção</small></div><div class="reveal" style="--i:8"><b data-count="6">6</b><small>versões publicadas pelo git flow</small></div><div class="reveal" style="--i:9"><b data-count="3">3</b><small>pavimentos traçados da planta original</small></div><div class="reveal" style="--i:10"><b data-count="14">14</b><small>testes automáticos da API</small></div></div>
-''','Datas do histórico do repositório (git flow: main, develop, feature/*, release/*) · versões v0.1.0 a v0.4.2','', 'cena-evento.webp', 'Do KML à produção.', 'Tudo começou com polígonos sobre o satélite. Vinte e cinco dias depois, o app falava com o servidor.')
+slide('linha-do-tempo','Linha do tempo','01 / Abertura',f"""
+<div class="timeline">{''.join(f'<article class="tl-item reveal" style="--i:{n+1}"><span class="tl-dot">{icon(ic)}</span><small class="tl-when">{w}</small><b>{t}</b>{f'<span class="tl-tag">{v}</span>' if v else ''}</article>' for n,(w,t,ic,v) in enumerate(TIMELINE))}<i class="tl-line"></i></div>
+<div class="tl-stats"><div class="reveal" style="--i:7"><b data-count="25">25</b><small>dias</small></div><div class="reveal" style="--i:8"><b data-count="6">6</b><small>versões</small></div><div class="reveal" style="--i:9"><b data-count="3">3</b><small>andares traçados</small></div><div class="reveal" style="--i:10"><b data-count="14">14</b><small>testes da API</small></div></div>
+""",'Datas do histórico do repositório','', 'cena-evento.webp', 'Linha do tempo')
 
-slide('referencias-campus','O campus real','02 / Do lugar ao modelo',f'''
-<div class="image-collage reveal"><img class="collage-main" src="{{assets}}/fontes/campus-auditorio.webp" alt="Auditório curvo com faixa azul e bloco amarelo ao fundo"><img class="collage-small s1" src="{{assets}}/fontes/campus-patio.webp" alt="Pátio interno e corredores"><img class="collage-small s2" src="{{assets}}/fontes/satelite-campus.webp" alt="Satélite com os polígonos usados no levantamento"><div class="collage-tag">{icon('camera')} Fotos, satélite e observação do campus.</div></div>
-''','Imagens fornecidas pelo usuário e recuperadas da sessão do projeto · fotografias como referência visual; marcações sobre Google Maps / Earth','', 'fontes/campus-auditorio.webp', 'Primeiro, olhar para o lugar.', 'Fachada, pátio, auditório e entorno dão ao mapa uma identidade que a gente reconhece.')
+# ---------------- 02 · O lugar ----------------
+REGIAO = (ROOT / 'docs/assets/regiao-rn.svg').read_text() if (ROOT / 'docs/assets/regiao-rn.svg').exists() else ''
+slide('regiao','Pau dos Ferros, Alto Oeste','02 / O lugar',f"""
+<div class="region"><div class="region-map">{REGIAO}</div>
+<img class="region-sat" src="{{assets}}/fontes/satelite-campus.webp" alt="Satélite do campus"><img class="region-3d" src="{{assets}}/cena-campus.webp" alt="Campus no modelo 3D">
+<div class="region-labels"><span class="rl rl1">Rio Grande do Norte</span><span class="rl rl2">Alto Oeste · microrregião de Pau dos Ferros</span><span class="rl rl3">Pau dos Ferros · ~400 km de Natal</span><span class="rl rl4">IFRN · Campus Pau dos Ferros · BR-405</span></div>
+<div class="region-legend reveal" style="--i:2"><span><i class="lg-oeste"></i>Oeste Potiguar</span><span><i class="lg-micro"></i>Microrregião de Pau dos Ferros</span><span><i class="lg-pf"></i>Pau dos Ferros</span></div></div>
+""",'Malhas e divisões territoriais: IBGE · satélite: Google Maps / Earth','dark','fontes/satelite-campus.webp', 'Pau dos Ferros, Alto Oeste')
 
-slide('documento','Encontramos a planta','02 / Do lugar ao modelo',f'''
-<div class="book-layout"><div class="book-stack reveal"><img class="book-cover" src="{{assets}}/fontes/souza-capa.webp" alt="Capa da dissertação Padronização e Flexibilidade, Larissa Leiros de Souza, UFRN, 2012"><img class="book-plan" src="{{assets}}/fontes/planta-2012-0.webp" alt="Planta original do pavimento térreo encontrada na dissertação"></div>
-<div class="discovery-copy"><p class="eyebrow reveal">Uma referência que mudou o desenho</p><h3 class="reveal" style="--i:1">Padronização e flexibilidade:<br>proposta de um edifício tipo para<br>uma escola técnica profissionalizante.</h3><p class="body-copy reveal" style="--i:2">Na dissertação de Larissa Leiros de Souza, encontramos os três pavimentos do bloco principal. A planta passou a orientar a reconstrução do interior.</p><div class="discovery-meta reveal" style="--i:3"><div><b>2012</b><span>UFRN / dissertação</span></div><div><b>3</b><span>pavimentos documentados</span></div><div><b>9–11</b><span>figuras usadas</span></div></div><a class="button lime" href="{{assets}}/fontes/souza-2012.pdf" target="_blank" rel="noopener">Abrir documento original{icon('book')}</a></div></div>
-''','Souza, Larissa Leiros de · UFRN, 2012 · figuras 9–11, páginas impressas 132–133 (PDF: páginas 134–135) · uso das salas pode ter mudado','dark','fontes/planta-2012-0.webp', 'E encontramos a planta.')
+slide('foto-modelo','Foto real e modelo','02 / O lugar',f"""
+<div class="pairs">{''.join(f'<figure class="pair reveal" style="--i:{n+1}"><div class="pair-imgs"><img src="{{assets}}/{a}" alt="Foto: {c}"><span class="pair-arrow">{icon("arrow-right")}</span><img src="{{assets}}/{b}" alt="Modelo: {c}"></div><figcaption>{c}</figcaption></figure>' for n,(a,b,c) in enumerate([('fontes/street-apartamentos.webp','cena-entorno.webp','Entorno da BR-405'),('fontes/satelite-jardim.webp','cena-jardim.webp','Jardim e caminhos'),('fontes/campus-auditorio.webp','cena-evento.webp','Auditório e bloco principal')]))}</div>
+""",'Fotos e prints do Google Maps / Street View usados como referência','', 'cena-entorno.webp', 'Foto real e modelo')
 
-slide('planta','Do documento à planta','02 / Do lugar ao modelo',f'''
-<div class="compare-layout"><div><div class="compare reveal" data-compare><img src="{{assets}}/fontes/planta-2012-0.webp" alt="Planta do térreo em 2012"><div class="after"><img src="{{assets}}/fontes/planta-atual-0.svg" alt="Planta atual gerada para o aplicativo"></div><div class="compare-line"><span>↔</span></div><span class="compare-label left">DOCUMENTO / 2012</span><span class="compare-label right">MODELO DO APP</span><input type="range" min="0" max="100" value="50" aria-label="Comparar planta original e modelo atual"></div><p class="micro">Arraste para comparar. Visualização das duas fontes; usos atuais foram ajustados com as informações do usuário.</p></div>
-<aside class="compare-aside reveal" style="--i:1"><h3>Uma base.<br>Várias representações.</h3><div class="line-icon">{icon('file')}<div><strong>Fonte da geometria</strong><small>scripts/build-principal-plan.py</small></div></div><div class="line-icon">{icon('layers')}<div><strong>Mesmo conjunto de zonas</strong><small>JSON, SVG, planta e 3D.</small></div></div><div class="line-icon">{icon('shield')}<div><strong>Regras preservadas</strong><small>Corredor, escada, rampa e recepção.</small></div></div><div class="pills" style="margin-top:25px">{badge('Gerar + conferir: npm run planta','terminal')}</div></aside></div>
-''','Comparação visual das fontes · planta traçada sobre as figuras de 2012; números e alocações do evento permanecem demonstrativos','', 'fontes/planta-2012-0.webp', 'Do documento ao mapa.', 'A mesma geometria sustenta a planta, os andares e a localização das atividades.')
+slide('documento','A planta encontrada','02 / O lugar',f"""
+<div class="book-layout"><div class="book-stack reveal"><img class="book-cover" src="{{assets}}/fontes/souza-capa.webp" alt="Capa da dissertação, UFRN, 2012"><img class="book-plan" src="{{assets}}/fontes/planta-2012-0.webp" alt="Planta do térreo na dissertação"></div>
+<div class="doc-facts"><div class="reveal" style="--i:1"><b data-count="2012">2012</b><small>dissertação · UFRN</small></div><div class="reveal" style="--i:2"><b data-count="3">3</b><small>pavimentos em planta</small></div><div class="reveal" style="--i:3"><b>{icon('file')}</b><small>Larissa Leiros de Souza</small></div></div></div>
+""",'Souza, L. L. · Padronização e flexibilidade · UFRN, 2012 · figuras 9–11','dark','fontes/planta-2012-0.webp', 'A planta encontrada')
 
-slide('levantamento','Do satélite aos metros','02 / Do lugar ao modelo',f'''
-<div class="data-pipeline"><figure class="satellite-frame reveal">{image('fontes/satelite-geral.webp','Levantamento do campus e vizinhança sobre imagem de satélite',credit='Imagem do usuário sobre Google Maps / Earth; marcações manuais do levantamento.')}<span class="floating-pill">35 marcações na base inicial · KML completo com 66 marcações</span></figure>
-<div class="pipeline"><div class="pipeline-step reveal" style="--i:1"><span>01</span>{icon('globe')}<div><b>Marcar no Google Earth</b><small>Polígonos, caminhos e pontos → KML.</small></div></div><div class="pipeline-arrow">{icon('arrow-down')}</div><div class="pipeline-step reveal" style="--i:2"><span>02</span>{icon('compass')}<div><b>Converter para metros locais</b><small>WGS84 → origem no pátio → eixos alinhados.</small></div></div><div class="pipeline-arrow">{icon('arrow-down')}</div><div class="pipeline-step reveal" style="--i:3"><span>03</span>{icon('layers')}<div><b>Construir a cena</b><small>Contornos, alturas adotadas, caminhos e volumes.</small></div></div></div></div>
-''','Fontes: referencias/*.kml · implantacao_kml.json · scripts/import-fundo-kml.py · marcações manuais não equivalem a levantamento topográfico','', 'fontes/satelite-geral.webp', 'De polígonos a metros.', 'O mapa preserva a base geográfica do levantamento e usa uma transformação local para desenhar o campus.')
+slide('planta','2012 e hoje','02 / O lugar',f"""
+<div class="wipe reveal"><img src="{{assets}}/fontes/planta-2012-0.webp" alt="Planta do térreo em 2012"><div class="wipe-top"><img src="{{assets}}/fontes/planta-atual-0.svg" alt="Planta atual do app"></div><i class="wipe-line"></i><span class="wipe-tag l">2012</span><span class="wipe-tag r">Hoje, no app</span></div>
+""",'Planta traçada sobre as figuras de 2012, com o uso atual das salas','', 'fontes/planta-2012-0.webp', '2012 e hoje')
 
-slide('fotos-modelo','Google Maps como referência','02 / Do lugar ao modelo',f'''
-<div class="split-photos"><figure class="split-photo reveal">{image('fontes/street-apartamentos.webp','Apartamentos vistos do Google Street View',credit='Google Maps / Street View. Captura do usuário de 09/11/2026; imagem do Street View de outubro de 2024.')}<figcaption><strong>Observar</strong><span>Volumes, cores, calçada e posição.</span></figcaption></figure><figure class="split-photo reveal" style="--i:1">{image('cena-entorno.webp','Apartamentos e entorno reconstruídos no motor atual do mapa',credit='Renderização atual do motor Campus3D, com as referências visuais usadas no projeto.')}<figcaption><strong>Reconstruir</strong><span>Uma cena própria, leve e navegável.</span></figcaption></figure></div><div class="note reveal" style="--i:2">Google Maps / Earth ajudaram a observar o lugar. O mapa do aplicativo é desenhado pelo próprio motor Canvas, sem carregar o Google Maps dentro dele.</div>
-''','Street View: Google, imagem de out/2024, print de 09/11/2026 · render atual: prototipo/campus3d.js · fontes adicionais na biblioteca da apresentação','', 'fontes/street-apartamentos.webp', 'As fotos viraram detalhes.', 'O entorno também ajuda a reconhecer o caminho: apartamentos, rodovia, entrada, árvores e pontos de referência.')
+slide('levantamento','Do satélite ao 3D','02 / O lugar',f"""
+<div class="strip">{''.join(f'<figure class="strip-step reveal" style="--i:{n+1}"><img src="{{assets}}/{img}" alt="{t}"><figcaption><span>{n+1}</span>{t}</figcaption></figure>' + (f'<i class="strip-arrow reveal" style="--i:{n+1}">{icon("arrow-right")}</i>' if n<2 else '') for n,(img,t) in enumerate([('fontes/satelite-geral.webp','Marcação no satélite (KML)'),('fontes/planta-atual-0.svg','Planta em metros'),('cena-campus.webp','Campus em 3D')]))}</div>
+""",'Levantamento sobre Google Earth · 66 marcações no KML','', 'fontes/satelite-geral.webp', 'Do satélite ao 3D')
 
-slide('mapa','Explore o campus ao vivo','03 / Um mapa que responde',f'''
-<div class="live-layout"><aside class="live-aside reveal"><p>Arraste a cena e experimente as vistas. O código aqui é o mesmo do mapa do aplicativo.</p><div class="seg"><button data-command="mode" data-value="evento" aria-pressed="true">Evento</button><button data-command="mode" data-value="campus">Campus</button><button data-command="floors">{icon('layers')}Andares</button></div><div class="seg"><button data-command="floor" data-value="0">Térreo</button><button data-command="floor" data-value="1">1º</button><button data-command="floor" data-value="2">2º</button></div><div class="seg"><button data-command="route" data-value="escada">{icon('route')}Via escada</button><button data-command="route" data-value="rampa">Via rampa</button></div><div class="live-controls"><button class="control-circle" data-command="zoom" data-value="in" aria-label="Aproximar">{icon('zoom-in')}</button><button class="control-circle" data-command="zoom" data-value="out" aria-label="Afastar">{icon('zoom-out')}</button><button class="control-circle" data-command="rotate" aria-label="Girar">{icon('rotate')}</button><button class="control-circle" data-command="fit" aria-label="Enquadrar">{icon('expand')}</button></div><p class="hint">{icon('mouse')}Você pode tocar nos prédios e abrir os pavimentos.</p><div class="map-state" data-map-state>Mapa do campus · demonstração interativa</div></aside><div class="reveal" style="--i:1">{demo('map','mode=evento','cena-evento.webp')}</div></div>
-''','Motor real: prototipo/campus3d.js · a demonstração carrega sob demanda e é encerrada ao sair deste slide','', 'cena-evento.webp', 'Agora, o campus responde.', 'Gire, abra os pavimentos e veja uma rota atravessar o modelo.')
+# ---------------- 03 · O app ----------------
+slide('app','O app','03 / O app',f"""
+<div class="app-show"><div class="phone-frame reveal">{vid('app-tour')}</div>
+<ul class="app-points">{''.join(f'<li class="reveal" style="--i:{n+2}"><span>{icon(ic)}</span>{t}</li>' for n,(ic,t) in enumerate([('calendar','Programação e agenda'),('map','Mapa do campus e dos andares'),('route','Rota até a sala'),('qr','Presença por QR'),('bell','Avisos ao vivo')]))}</ul></div>
+""",'Gravação do app atual com dados de exemplo','', 'app-home.png', 'O app')
 
-slide('gps','Rotas, localização e GPS','03 / Um mapa que responde',f'''
-<div class="route-layout"><div class="route-art reveal" data-route-art><img class="plan-faded" src="{{assets}}/fontes/planta-atual-0.svg" alt="Planta atual como contexto da lógica de rotas"><span class="badge">Esquema da lógica / não é rastreamento de posição</span><svg class="route-schema" viewBox="0 0 620 390" aria-label="Portaria, entrada, corredor e sala ligados por uma rota"><path d="M80 305H235V235H340V125H500" stroke="#d6e4ce" stroke-width="15" stroke-linecap="round" fill="none"/><path class="route-path" d="M80 305H235V235H340V125H500" stroke="#649d42" stroke-width="5" stroke-linecap="round" fill="none"/><circle class="pulse-dot" cx="80" cy="305" r="11" fill="#3b7ac8" stroke="white" stroke-width="4"/><circle cx="235" cy="235" r="7" fill="#78a857" stroke="white" stroke-width="3"/><circle cx="340" cy="125" r="7" fill="#78a857" stroke="white" stroke-width="3"/><circle cx="500" cy="125" r="10" fill="#224875" stroke="white" stroke-width="4"/><text class="route-svg-label" x="42" y="340">Portaria</text><text class="route-svg-label" x="185" y="270">Entrada</text><text class="route-svg-label" x="280" y="95">Circulação</text><text class="route-svg-label" x="476" y="160">Sala</text></svg><div class="route-gps"><small>Raio de incerteza ilustrativo · GPS futuro</small></div></div>
-<div class="route-copy reveal" style="--i:1"><h3>Hoje: a rota parte da portaria.</h3><p>O caminho usa corredores e acessos conhecidos. O Dijkstra busca uma passagem, considerando bordas, curvas, escada ou rampa.</p><div class="line-icon">{icon('compass')}<div><strong>Uma localização futura</strong><small>Permissão → latitude/longitude → metros locais.</small></div></div><div class="line-icon">{icon('qr')}<div><strong>Uma ideia para o interior</strong><small>QR da sala como origem conhecida, sem depender do GPS.</small></div></div><button class="button light" data-gps aria-pressed="false">Visualizar a hipótese de GPS{icon('pin')}</button><div class="note">GPS e origem a partir do QR ainda são propostas. O ponto azul atual não acompanha a posição real da pessoa.</div></div></div>
-''','Implementado: gridPath / planFor em campus3d.js · localização futura: Geolocation API com permissão · esquema didático, sem coordenadas captadas','', 'cena-andares.webp', 'Um caminho calculado.', 'Desenhar uma rota e medir a posição da pessoa são problemas diferentes.')
+slide('campus3d','O campus em 3D','03 / O app', full('campus-voo','O campus em 3D'), '', 'dark video', 'videos/campus-voo.webp')
+slide('andares','Os três andares','03 / O app', full('andares','Os três andares'), '', 'dark video', 'videos/andares.webp')
 
-slide('pwa','Por que PWA?','04 / Escolhas técnicas',f'''
-<div class="pwa-layout"><div class="install-visual reveal"><div class="mini-phone"><img src="{{root}}prototipo/assets/pwa/icon-192.png" alt="Ícone do ETAL Connect"><strong>ETAL Connect</strong><small>Um link para abrir.</small><div class="install-bar"><span></span></div><div class="install-check">{icon('check')}Na tela inicial.</div></div></div>
-<article class="card selected reveal" style="--i:1"><div class="decision-label">{icon('check')}Escolha atual deste projeto</div><h3>PWA</h3><p>Acesso por link, instalação pelo navegador e cache do app. Reaproveita o mapa Canvas e a base web que já construímos.</p><div class="pills" style="margin-top:25px">{badge('Distribuição simples','link')}{badge('Uma base web','browser')}</div><small>Instalação e recursos variam conforme o navegador.</small></article>
-<article class="card reveal" style="--i:2">{icon('react')}<h3>React Native</h3><p>Seria uma alternativa para um aplicativo nativo. Acrescentaria o trabalho de build, distribuição e adaptação das partes que hoje dependem do navegador.</p><small>Não fizemos um benchmark entre stacks. Esta é a leitura técnica da implementação atual.</small></article></div>
-''','Base: prototipo/manifest.webmanifest e sw.js · fontes técnicas: web.dev/learn/pwa/service-workers e reactnative.dev/docs/set-up-your-environment','', 'app-home.png', 'Um link. O campus inteiro.', 'Para um app de evento, o acesso imediato e o reaproveitamento da experiência web fazem sentido.')
+slide('rotas','Como a rota é calculada','03 / O app',f"""
+<div class="algo"><div class="algo-stage reveal"><img src="{{assets}}/fontes/planta-atual-0.svg" alt="Planta do térreo"><canvas class="algo-canvas" width="1920" height="1320" data-algo="{{assets}}/rota-dijkstra.json"></canvas>
+<div class="algo-result"><b>72 m</b><small>≈ 1 min a pé</small></div></div>
+<ol class="algo-steps">{''.join(f'<li class="reveal" style="--i:{n+2}"><span>{icon(ic)}</span><b>{t}</b></li>' for n,(ic,t) in enumerate([('grid','Grade de 33 cm só nos corredores'),('route','Dijkstra: o caminho de menor custo'),('walk','Parede e curva custam mais'),('compare' if False else 'layers','3 entradas × escada ou rampa'),('clock','metros ÷ 75 = minutos')]))}</ol></div>
+""",'Mesma regra do app (campus3d.js, gridPath e planFor) · entrada principal → sala 001','', 'fontes/planta-atual-0.svg', 'Como a rota é calculada')
 
-slide('offline','O que funciona sem rede','04 / Escolhas técnicas',f'''
-<div class="offline-layout"><div class="offline-flow" data-offline-flow><article class="offline-node reveal">{icon('phone')}<h3>Interface + mapa</h3><p>Arquivos e recursos usados no aparelho.</p></article><div class="offline-wire"></div><article class="offline-node reveal" style="--i:1">{icon('database')}<h3>Cache do PWA</h3><p>Service worker + Cache Storage.<br>Uma cópia para abrir depois.</p></article><div class="offline-wire network-wire"></div><article class="offline-node network reveal" style="--i:2">{icon('cloud')}<h3>API + banco</h3><p>Sessão, agenda e confirmação de presença no servidor.</p></article></div><div class="offline-foot"><span class="offline-status" data-offline-status>{icon('wifi')}Diagrama conectado</span><button class="button lime" data-offline aria-pressed="false">Desligar a rede do diagrama{icon('wifi-off')}</button></div><p class="micro" style="margin-top:25px">A simulação altera apenas a ilustração. No app atual, /api/ e /q/ ficam fora do cache. Não existe fila de presença offline; sem rede, pode aparecer a programação de exemplo embutida.</p></div>
-''','Limite real do código: prototipo/sw.js · cache da interface não equivale à sincronização de operações','dark', 'cena-noite.webp', 'A rede cai.<br>O mapa continua com você.', 'O PWA guarda a experiência visual no aparelho. A confirmação de presença continua dependendo do servidor.')
+slide('rota-video','Rota até a sala','03 / O app', full('rota','Rota até a sala'), '', 'dark video', 'videos/rota.webp')
+slide('dia','Segue a hora do dia','03 / O app', full('dia-24h','Segue a hora do dia'), '', 'dark video', 'videos/dia-24h.webp')
 
-slide('jornada','A jornada do participante','05 / Da ação ao registro',f'''
-<div class="journey-phones">''' + ''.join(f'''<figure class="journey-phone reveal" style="--i:{i}"><button class="zoom-image" data-zoom aria-label="Ampliar tela {title}"><img src="{{assets}}/app-{screen}.png" alt="Tela atual: {title}"></button><figcaption><b>{icon(ic)}{i+1:02d} / {title}</b>{desc}</figcaption></figure>''' for i,(screen,title,ic,desc) in enumerate([('login','Entrar','user','Identificação pelo caminho disponível.'),('agenda','Escolher','calendar','Explorar e salvar atividades.'),('qr','Ler o QR','qr','Na recepção ou na atividade.'),('credencial','Participar','shield','Ver o credenciamento confirmado.')])) + '</div>',
-'Capturas locais atualizadas do protótipo · no modo API, autenticar não credencia; a confirmação vem do servidor','', 'app-qr.png', 'Entrar é só o começo.', 'A participação no evento é confirmada depois, por um QR válido.')
+PWA_ROWS = [('Abre por um link', True, False), ('Instala sem loja de apps', True, False), ('Usa o mesmo mapa web', True, False), ('Funciona sem internet', True, True), ('Câmera para o QR', True, True)]
+slide('pwa','Por que PWA','03 / O app',f"""
+<div class="pwa-cmp reveal"><div class="pwa-head"><span></span><b class="pwa-us">{icon('browser')}PWA</b><b>{icon('react')}React Native</b></div>
+{''.join(f'<div class="pwa-row reveal" style="--i:{n+2}"><span>{t}</span><i class="{"yes" if a else "no"}">{icon("check" if a else "close")}</i><i class="{"yes" if b else "no"}">{icon("check" if b else "close")}</i></div>' for n,(t,a,b) in enumerate(PWA_ROWS))}</div>
+""",'React Native exige publicar nas lojas e reescrever o mapa em componentes nativos','', 'app-home.png', 'Por que PWA')
 
-slide('presenca','O que o QR confirma','05 / Da ação ao registro',f'''
-<div class="qr-flow"><figure class="reveal"><img src="{{assets}}/app-qr.png" alt="Leitor de QR atual do aplicativo"></figure><div><div class="qr-steps"><article class="qr-step reveal" style="--i:1">{icon('camera')}<b>Ler</b><small>Câmera do app ou link aberto pelo celular.</small></article>{icon('arrow-right')}<article class="qr-step reveal" style="--i:2">{icon('shield')}<b>Validar</b><small>Sessão, assinatura e janela de horário.</small></article>{icon('arrow-right')}<article class="qr-step reveal" style="--i:3">{icon('database')}<b>Gravar</b><small>Somente após a validação da API.</small></article></div><div class="qr-results"><div class="qr-result reveal" style="--i:3">{icon('user')}<div><b>QR do evento</b><small>pessoas.credenciado_em</small></div></div><div class="qr-result reveal" style="--i:4">{icon('calendar')}<div><b>QR da atividade</b><small>Credenciamento + presencas.</small></div></div></div><div class="qr-limits"><span>{icon('check')}Repetir não duplica.</span><span>{icon('clock')}Fora da janela: 409.</span><span>{icon('shield')}QR inválido: 400.</span></div></div></div>
-''','POST /api/presenca · regras em backend/app/rotas/eu.py · não registra presença automaticamente no SUAP','', 'app-qr.png', 'Um QR. Uma confirmação.', 'Identificação, credenciamento e presença em atividade têm papéis diferentes.')
+slide('jornada','Do login à presença','03 / O app',f"""
+<div class="journey">{''.join(f'<figure class="journey-step reveal" style="--i:{n+1}"><img src="{{assets}}/{img}" alt="{t}"><figcaption><span>{n+1}</span>{t}</figcaption></figure>' for n,(img,t) in enumerate([('app-login.png','Entra com o SUAP'),('app-agenda.png','Escolhe as atividades'),('app-qr.png','Lê o QR da sala'),('app-credencial.png','Presença confirmada')]))}</div>
+<div class="journey-note reveal" style="--i:6">{icon('shield')}QR assinado pelo servidor · só vale no horário da atividade</div>
+""",'Telas atuais do app','', 'app-qr.png', 'Do login à presença')
 
-slide('arquitetura','A arquitetura em movimento','05 / Da ação ao registro',f'''
-<div class="seg reveal" data-action-options><button data-flow="agenda" aria-pressed="true">{icon('calendar')}Salvar atividade</button><button data-flow="presenca">{icon('qr')}Ler QR</button><button data-flow="aviso">{icon('bell')}Enviar aviso</button></div><div class="architecture"><article class="arch-card reveal">{icon('browser')}<h3>App / painel</h3><p>HTML, CSS e JavaScript.<br>O cliente envia a ação.</p></article><div class="arch-wire"><small>HTTP / JSON</small></div><article class="arch-card highlight reveal" style="--i:1">{icon('server')}<h3>FastAPI</h3><p>Sessão, permissão e regras.<br>A operação é validada.</p></article><div class="arch-wire"><small>SQLAlchemy</small></div><article class="arch-card reveal" style="--i:2">{icon('database')}<h3 data-flow-table>agenda</h3><p data-flow-description>Relaciona a pessoa à atividade salva, sem repetir o par.</p></article></div><div class="arch-request"><span class="request-method">POST</span><span data-flow-route>/api/eu/agenda/{'{atividade_id}'}</span></div><div class="arch-legend"><span>Caddy / entrega e proxy</span><span>SUAP / identidade</span><span>SMTP / visitante</span><span>SSE ou consulta / avisos</span></div>
-''','Fluxo real de responsabilidade · API: backend/app/ · produto atual em prototipo/; a primeira versão React ficou como legado','', 'cena-campus.webp', 'Cada ação tem um caminho.', 'O navegador cuida da experiência. A API aplica as regras. O banco guarda o resultado.')
+# ---------------- 04 · O que já funciona ----------------
+slide('arquitetura','Como as peças se ligam','04 / O que já funciona',f"""
+<div class="arch"><div class="arch-node reveal" style="--i:1"><span>{icon('phone')}</span><b>Celular</b><small>PWA</small></div><i class="arch-wire"><em></em></i>
+<div class="arch-node reveal" style="--i:2"><span>{icon('cloud')}</span><b>Site + API</b><small>FastAPI · Vercel (teste) · IFRN (produção)</small></div><i class="arch-wire"><em></em></i>
+<div class="arch-node reveal" style="--i:3"><span>{icon('database')}</span><b>Banco</b><small>PostgreSQL</small></div>
+<div class="arch-side reveal" style="--i:4"><span>{icon('user')}</span><b>SUAP</b><small>login do IFRN</small></div></div>
+""",'','', 'cena-campus.webp', 'Como as peças se ligam')
 
+DB = [('pessoas','user','Pessoa','participante, visitante ou organização'),('atividades','calendar','Atividade','horário, sala e vagas'),
+      ('agenda','bookmark' if False else 'check','Agenda','quem salvou o quê'),('presencas','qr','Presença','quem leu o QR e quando'),
+      ('avisos','bell','Aviso','mensagem da organização'),('numeros_sala','pin','Número de sala','como cada sala é chamada'),('links_acesso','mail','Link de acesso','entrada do visitante por e-mail')]
+slide('banco','O banco de dados','04 / O que já funciona',f"""
+<div class="er"><div class="er-main">
+<div class="er-card big reveal" style="--i:1" data-er="pessoas"><span>{icon('user')}</span><b>Pessoa</b><small>participante, visitante ou organização</small></div>
+<div class="er-links"><div class="er-rel reveal" style="--i:3"><i class="er-line"></i><div class="er-card"><span>{icon('check')}</span><b>Agenda</b><small>salvou a atividade</small></div><i class="er-line"></i></div>
+<div class="er-rel reveal" style="--i:4"><i class="er-line"></i><div class="er-card"><span>{icon('qr')}</span><b>Presença</b><small>leu o QR na sala</small></div><i class="er-line"></i></div></div>
+<div class="er-card big reveal" style="--i:2" data-er="atividades"><span>{icon('calendar')}</span><b>Atividade</b><small>horário, sala e vagas</small></div></div>
+<div class="er-extra">{''.join(f'<div class="er-card small reveal" style="--i:{n+5}"><span>{icon(ic)}</span><b>{t}</b><small>{d}</small></div>' for n,(ic,t,d) in enumerate([('bell','Aviso','da organização para todos'),('pin','Número de sala','nome de cada sala'),('mail','Link de acesso','entrada do visitante')]))}</div>
+<div class="er-count reveal" style="--i:9"><b data-count="7">7</b><small>tabelas</small></div></div>
+""",'backend/app/modelos.py · SQLite para desenvolver, PostgreSQL em produção','', 'cena-campus.webp', 'O banco de dados')
 
-def table(name, fields):
-    return '<button class="table-card" data-table="'+name+'"><header>'+icon('database')+name+'</header><div class="fields">'+''.join(f'<span><i>{key}</i>{field}</span>' for key,field in fields)+'</div></button>'
+slide('organizacao','Painel da organização','04 / O que já funciona',f"""
+<div class="shot-big reveal">{image('painel.png','Painel da organização')}</div>
+""",'','', 'painel.png', 'Painel da organização')
 
-slide('banco','O banco da jornada','05 / Da ação ao registro',f'''
-<div class="db-layout"><div class="db-graph"><svg class="db-wires" viewBox="0 0 950 370" preserveAspectRatio="none" aria-hidden="true"><path d="M279 157H298V70H322M298 157V246H322M671 157H650V70H628M650 157V246H628"/></svg><div class="db-column">{table('pessoas',[('PK','id'),('','nome · tipo · papel'),('','credenciado_em')])}</div><div class="db-column">{table('agenda',[('FK','pessoa_id'),('FK','atividade_id')])}{table('presencas',[('FK','pessoa_id'),('FK','atividade_id · em · via')])}</div><div class="db-column">{table('atividades',[('PK','id'),('','data · inicio · fim'),('','andar · zona · sala')])}</div><div class="db-support"><button data-table="links_acesso">links_acesso<small>1 pessoa → N links de entrada.</small></button><button data-table="avisos">avisos<small>Autor e atividade opcionais.</small></button><button data-table="numeros_sala">numeros_sala<small>Chave andar:zona · sem FK.</small></button></div></div><aside class="db-explain reveal" style="--i:1"><p class="eyebrow">Clique em uma tabela</p><h3 data-db-title>Uma pessoa.<br>Várias atividades.</h3><p data-db-description>Agenda e presença são relações separadas. Salvar demonstra interesse; presença registra a leitura válida.</p><div class="note" data-db-rule>Em agenda e presencas, o par pessoa + atividade é único.</div><button class="button light" data-schema="pessoas">Ver todos os campos{icon('arrow-right')}</button></aside></div>
-''','Sete tabelas extraídas de backend/app/modelos.py · SQLite local / PostgreSQL configurado para implantação · PK: chave; FK: referência','', 'fontes/planta-atual-0.svg', 'O banco acompanha a jornada.', 'Pessoas e atividades se conectam pela agenda e pelas presenças. O restante apoia entrada, avisos e localização.')
+slide('api','API documentada','04 / O que já funciona',f"""
+<div class="shot-big reveal">{image('swagger-visao-geral.png','Documentação interativa da API (Swagger)')}</div>
+""",'FastAPI gera o Swagger automaticamente em /api/docs','', 'swagger-visao-geral.png', 'API documentada')
 
-slide('api','FastAPI e Swagger reais','06 / Evidências',f'''
-<div class="api-layout"><div class="swagger-browser reveal"><div class="browser-chrome"><i></i><i></i><i></i><span data-swagger-label>API local / api/docs</span></div><button class="zoom-image" data-zoom aria-label="Ampliar Swagger local"><img data-swagger-image src="{{assets}}/swagger-visao-geral.png" alt="Swagger da API atual do ETAL Connect"></button></div><div class="api-copy reveal" style="--i:1">{badge('Captura autêntica da API local','server','lime')}<h3>O contrato vem<br>do código.</h3><p>As rotas geram o OpenAPI. No Swagger, executamos a verificação de saúde e recebemos uma resposta do servidor.</p><div class="code-snippet"><span class="dim">GET /api/saude</span><br><span class="green">200 OK</span><br>{{ "ok": true }}</div><div class="api-choices"><button data-swagger="swagger-visao-geral.png" aria-pressed="true">Visão geral</button><button data-swagger="swagger-saude.png">GET /saude</button><button data-swagger="swagger-presenca.png">POST /presenca</button></div></div></div>
-''','FastAPI: backend/app/main.py · Swagger: /api/docs · OpenAPI: /api/openapi.json · captura local atualizada, sem dados de produção','', 'swagger-visao-geral.png', 'FastAPI, sem caixa-preta.', 'A documentação interativa da API também faz parte da demonstração.')
-
-slide('organizacao','O outro lado do evento','06 / Evidências',f'''
-<div class="org-layout"><div class="swagger-browser reveal"><div class="browser-chrome"><i></i><i></i><i></i><span>prototipo/admin.html / demonstração</span></div>{image('painel.png','Painel atual da organização com dados demonstrativos')}</div><aside class="org-status reveal" style="--i:1"><div class="line-icon">{icon('bell')}<div><strong>Avisar</strong><small>Avisos e mudanças de sala conectáveis à API.</small></div></div><div class="line-icon">{icon('layers')}<div><strong>Organizar o espaço</strong><small>Planta e numeração das salas.</small></div></div><div class="line-icon">{icon('users')}<div><strong>Ainda demonstrativo</strong><small>Participantes, gráficos e CSV do painel.</small></div></div><div class="note">A API já oferece registros e exportação reais. Conectar todas as partes do painel é uma etapa própria.</div></aside></div>
-''','Painel desktop separado da experiência de participante · rotas /api/org exigem papel de organização','', 'painel.png', 'O evento também tem bastidores.', 'A organização acompanha a programação, publica avisos e ajusta os locais por outro espaço de trabalho.')
-
-slide('luz','O mapa muda com o céu','06 / Evidências',f'''
-<div class="light-layout"><aside class="light-controls reveal"><output data-hour-output>14:00</output><p>O horário muda a luz, as sombras e a noite do campus. Experimente no próprio motor.</p><label for="sky-demo">Horário do céu</label><input id="sky-demo" data-hour type="range" min="5" max="22" step="0.25" value="14"><div class="quality-buttons"><button data-command="quality" data-value="alta">Completo</button><button data-command="quality" data-value="media" aria-pressed="true">Médio</button><button data-command="quality" data-value="leve">Leve</button><button data-command="quality" data-value="simples">2D simples</button></div><p class="micro" style="margin-top:22px">Quatro níveis, um motor.<br>O app mede o aparelho para recomendar a versão.</p></aside><div class="reveal" style="--i:1">{demo('map','mode=campus&hour=14','cena-campus.webp')}</div></div>
-''','Sol: sunAt em campus3d.js, referência de 26/11 em Pau dos Ferros · direção do levantamento e notas das cartas solares da dissertação','dark', 'cena-noite.webp', 'O mesmo lugar. Outra luz.', 'A identidade está nos detalhes — e a qualidade precisa caber no aparelho de quem vai usar.')
-
-slide('verificacao','O que está comprovado','06 / Evidências',f'''
-<div class="verification"><div class="test-metric reveal"><strong>14</strong><span>testes de API passaram.</span><p>Execução local na revisão de 09/11/2026. Um aviso de depreciação no cliente de testes.</p></div><div class="test-grid"><article class="card reveal" style="--i:1">{icon('check')}<h3>Regras exercitadas</h3><p>Agenda, QR, duplicidade, permissões, avisos e exportações.</p></article><article class="card reveal" style="--i:2">{icon('camera')}<h3>Imagens verificáveis</h3><p>App atual, Swagger local e referências usadas para o mapa.</p></article><article class="card reveal" style="--i:3">{icon('flask')}<h3>Homologação pendente</h3><p>SUAP, e-mail, câmera, acessibilidade e operação real do evento.</p></article><article class="card reveal" style="--i:4">{icon('file')}<h3>Escopo honesto</h3><p>Programação, materiais e partes do painel continuam exemplos.</p></article></div></div>
-''','Teste SUAP usa resposta HTTP simulada · testes locais e capturas não constituem homologação oficial do IFRN ou do evento','lime', 'swagger-saude.png', 'Bonito também precisa funcionar.', 'A apresentação mostra o que foi verificado e os limites que ainda precisam de uso real.')
-
-slide('continuidade','O próximo encontro','06 / Evidências',f'''
-<div class="closing"><div><p class="eyebrow reveal">ETAL Connect</p><h2 class="reveal" style="--i:1">Do lugar real<br>ao <span class="accent">encontro<br>real.</span></h2><p class="lede reveal" style="--i:2">A base está construída. O próximo passo é ensaiar os fluxos com quem vai operar.</p><div class="row reveal" style="--i:3"><button class="button lime" data-references>Ver fontes e detalhes{icon('book')}</button><a class="button ghost" href="{{root}}index.html" target="_blank" rel="noopener">Abrir o app{icon('arrow-right')}</a></div></div><div class="closing-steps"><article class="closing-step reveal" style="--i:2"><span>01</span><div><h3>Validar o evento</h3><p>Programação, salas, vagas e regras de presença.</p></div></article><article class="closing-step reveal" style="--i:3"><span>02</span><div><h3>Fechar as conexões</h3><p>SUAP, e-mail, painel e operação do banco.</p></div></article><article class="closing-step reveal" style="--i:4"><span>03</span><div><h3>Testar com pessoas</h3><p>Celulares reais, acessibilidade e rede instável.</p></div></article></div></div>
-''','Projeto independente · proposta 2026 · fontes e limites preservados nas referências · nenhuma publicação é feita ao gerar esta apresentação','dark', 'cena-noite.webp')
+CHECK = [(True,'App publicado em teste'),(True,'Login pelo SUAP'),(True,'Presença por QR e avisos'),(False,'Servidor do IFRN (NADIC)'),(False,'Programação real do ETAL 2026'),(False,'Teste com pessoas no campus')]
+slide('continuidade','Para pôr no ar','04 / O que já funciona',f"""
+<div class="golive"><ul class="golive-list">{''.join(f'<li class="reveal {"ok" if ok else "todo"}" style="--i:{n+1}"><span>{icon("check" if ok else "clock")}</span>{t}</li>' for n,(ok,t) in enumerate(CHECK))}</ul>
+<figure class="golive-qr reveal" style="--i:7"><img src="{{assets}}/qr-app.svg" alt="QR para abrir o app"><figcaption>etal-connect.vercel.app</figcaption></figure></div>
+""",'','dark', 'qr-app.svg', 'Para pôr no ar')
 
 
 def build_app_demo():
@@ -240,6 +246,11 @@ def source_gallery():
 
 
 CHAPTER_ART = {
+    '02': ('fontes/campus-auditorio.webp', ''),
+    '03': ('cena-evento.webp', ''),
+    '04': ('cena-jardim.webp', ''),
+}
+_OLD_ART = {
     '02': ('fontes/campus-auditorio.webp', 'Antes de desenhar, a gente olhou o lugar: fotos, satélite e a planta encontrada numa dissertação de 2012.'),
     '03': ('cena-campus.webp', 'O campus inteiro em 3D, desenhado no navegador: dá para girar, entrar nos andares e seguir uma rota.'),
     '04': ('cena-noite.webp', 'Por que um link em vez de uma loja de apps, e o que continua funcionando quando a rede cai.'),
@@ -258,8 +269,7 @@ def add_dividers():
             seen.add(num); img, kicker = CHAPTER_ART[num]
             inside = [x['title'] for x in SLIDES if x['chapter'].startswith(num + ' ')]
             body = f'''<img class="cap-photo" src="{{assets}}/{img}" alt="" data-depth="0.6"><div class="cap-shade"></div>
-<div class="cap-content"><span class="cap-num reveal" data-depth="1.6">{num}</span><div class="cap-text"><p class="eyebrow reveal" style="--i:1">Capítulo {num}</p><h2 class="cap-title reveal" style="--i:2">{name}</h2><p class="cap-kicker reveal" style="--i:3">{kicker}</p>
-<div class="cap-chips">{''.join(f'<span class="reveal" style="--i:{k+4}">{t}</span>' for k,t in enumerate(inside))}</div></div></div>'''
+<div class="cap-content"><span class="cap-num reveal" data-depth="1.6">{num}</span><div class="cap-text"><p class="eyebrow reveal" style="--i:1">Capítulo {num}</p><h2 class="cap-title reveal" style="--i:2">{name}</h2><div class="cap-chips">{''.join(f'<span class="reveal" style="--i:{k+4}">{t}</span>' for k,t in enumerate(inside))}</div></div></div>'''
             out.append(dict(id=f'cap-{num}', title=name, chapter=item['chapter'], body=body, source='', tone='dark divider', cover=img))
         out.append(item)
     SLIDES[:] = out
