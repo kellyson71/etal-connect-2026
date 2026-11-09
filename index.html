@@ -1507,8 +1507,80 @@ button.teacher{width:100%;text-align:left;padding:8px 10px;margin:0 -2px;border-
 .lg-note{margin:0 0 12px;font-size:13.5px;line-height:1.4;color:var(--muted)}
 .lg-err.ok{color:var(--green-ink,#2f6b1d);background:var(--green-50,#e9f5e1)}
 .lg-err.ok a{font-weight:700;color:inherit}
+/* Câmera de verdade no leitor */
+.scan-cam{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .35s;z-index:1}
+.scan-cam.on{opacity:1}
+.scan-cam.on~.scan-mask,.scan-cam.on~.frame,.scan-cam.on~.scan-top,.scan-cam.on~.scan-hint{z-index:2}
+.cam-dock{padding:16px 22px 28px;text-align:center}
+.cam-dock p{margin:0 0 10px;font-size:14px;line-height:1.4;color:var(--ink-2)}
+.cam-dock.with-demo{padding-bottom:6px}
+.cam-dock.with-demo+.scan-dock{margin-top:0;border-radius:0}
+/* ---------- Mapa na zona do polegar (celular primeiro) ----------
+   Controles numa coluna à direita, abas e busca embaixo, logo acima da barra de abas; a folha do lugar fica por último. */
+.map-bottom{position:absolute;z-index:3;left:0;right:0;bottom:0;display:flex;flex-direction:column;pointer-events:none}
+.map-bottom>*{pointer-events:auto}
+.map-side{position:relative;align-self:flex-end;display:flex;flex-direction:column;align-items:center;gap:8px;margin:0 12px 10px 0;pointer-events:none}
+.map-side>*{pointer-events:auto}
+.map-side .dim{position:relative;left:auto;top:auto;width:46px;grid-template-columns:1fr;grid-template-rows:1fr 1fr}
+.map-side .dim>i{left:3px;right:3px;top:3px;bottom:auto;width:auto;height:calc(50% - 3px);transform:translateY(calc(var(--k)*100%))}
+.map-side .dim button{padding:9px 0}
+.map-side .map-ctrl.cam-ctrl,.map-side .map-ctrl.cam-ctrl.low{position:relative;right:auto;top:auto}
+.map-side .map-cfg{top:auto;bottom:0;right:58px}
+.map-dock{display:flex;flex-direction:column;gap:8px;padding:0 12px 12px}
+.map-dock .seg{border-radius:999px;padding:4px;background:color-mix(in srgb,var(--card) 80%,transparent);backdrop-filter:blur(14px) saturate(1.4);-webkit-backdrop-filter:blur(14px) saturate(1.4);box-shadow:0 8px 22px -12px rgba(20,32,64,.45)}
+.map-dock .seg .seg-ind{top:4px;bottom:4px;border-radius:999px;background:var(--navy);box-shadow:0 6px 14px -6px var(--navy)}
+.map-dock .seg button{padding:8px 0;font-size:13px;font-weight:600;color:var(--ink-2);letter-spacing:.01em}
+.map-dock .seg button.on{color:#fff}
+.map-dock .seg.four{width:min(100%,300px);align-self:center;padding:3px;background:color-mix(in srgb,var(--card) 70%,transparent)}
+.map-dock .seg.four .seg-ind{top:3px;bottom:3px;background:var(--card);box-shadow:0 2px 8px -2px rgba(20,32,64,.3)}
+.map-dock .seg.four button{padding:5px 0;font-size:12px}
+.map-dock .seg.four button.on{color:var(--accent-ink)}
+.map-dock .search{box-shadow:0 8px 22px -12px rgba(20,32,64,.45)}
+.map-bottom .sheet-card{position:relative;left:auto;right:auto;bottom:auto}
+.map-bottom.has-detail .map-dock{display:none}
+/* ---------- Busca colada no teclado ----------
+   --kb é a altura do teclado (visualViewport). Os resultados crescem para cima; o melhor fica junto da barra. */
+.overlay.finder .ov-panel{bottom:var(--kb,0px);transition:transform .45s var(--ease),bottom .18s ease-out}
+.sheet.finder{display:flex;flex-direction:column;padding:6px 14px 16px;border-radius:calc(24px*var(--rk,1)) calc(24px*var(--rk,1)) 0 0}
+.overlay.kb .sheet.finder{padding-bottom:8px}
+.finder .finder-res{height:auto;max-height:min(50vh,calc(100dvh - var(--kb,0px) - 230px));overflow-y:auto;overscroll-behavior:contain;margin:4px 0 2px}
+.sheet.finder:not(.has-res) .finder-res{display:none}
+.finder .finder-res li.fd-h{padding:12px 2px 4px}
+.finder .finder-res li.best{background:color-mix(in srgb,var(--accent-ink) 7%,transparent);border-radius:14px;padding:9px 8px;border-top-color:transparent}
+.finder .fd-route{display:inline-flex;align-items:center;gap:5px;flex:none;padding:7px 12px;border:0;border-radius:999px;background:var(--navy);color:#fff;font:600 13px var(--ui);cursor:pointer}
+.finder .fd-route .i{width:15px;height:15px}
+.finder .fd-chips{display:flex;gap:8px;overflow-x:auto;padding:6px 0 8px;scrollbar-width:none}
+.finder .fd-chips::-webkit-scrollbar{display:none}
+.finder .fd-chips button{flex:none}
+.finder-bar{display:flex;align-items:center;gap:8px}
+.finder-bar .finder-in{flex:1;min-width:0;margin:0}
+.sheet.finder{min-width:0;max-width:100%;overflow:hidden}
+.finder-in input[type=search]::-webkit-search-cancel-button{display:none}
+.fd-acts{display:inline-flex;align-items:center;gap:6px;flex:none;height:46px;padding:0 12px;border:1px solid var(--line);border-radius:calc(15px*var(--rk,1));background:var(--card);font:600 13px var(--ui);color:var(--ink-2);cursor:pointer}
+.fd-acts .i{width:17px;height:17px}
+.fd-acts.on{background:var(--navy);border-color:var(--navy);color:#fff}
+@media (max-width:360px){.fd-acts span{display:none}}
+/* ---------- Produção (com servidor): sem moldura de celular ----------
+   No celular a tela já é inteira; em telas largas o app vira uma coluna na altura toda, sem aparelho falso. */
+html.prod .stage-note,html.prod .stage-sky,html.prod .hw,html.prod .home-ind{display:none}
+@media (min-width:521px){
+  html.prod .stage{padding:0;gap:0;background:var(--bg)}
+  html.prod .device{--w:min(100vw,480px);--h:100vh;--h:100dvh;padding:0;border-radius:0;background:none;box-shadow:0 0 0 1px var(--line)}
+  html.prod .screen{border-radius:0;box-shadow:none}
+  html.prod .statusbar{height:0;padding:0;font-size:0}
+  html.prod .statusbar *{display:none}
+  html.prod .overlay{top:0}
+}
 
 </style>
+<script>/* config.js */
+/* Onde está a API do ETAL Connect.
+   api: null → só dados de exemplo (protótipo, como antes).
+   api: ''   → mesma origem do app (produção, atrás do Caddy; o deploy troca este arquivo).
+   api: 'http://127.0.0.1:8000' → API local em desenvolvimento. */
+window.ETAL_CONFIG = window.ETAL_CONFIG || { api: null };
+
+</script>
 </head>
 <body>
 <main class="stage">
@@ -1535,19 +1607,13 @@ button.teacher{width:100%;text-align:left;padding:8px 10px;margin:0 -2px;border-
   <label class="stage-sky" for="skyr">Horário do céu<input id="skyr" type="range" min="5" max="22" step="0.0834" value="14.03"><output id="skyo">14:02</output></label>
   <p class="stage-note">ETAL Connect · protótipo exportado · sem o servidor local, entre como visitante ou com dados de exemplo</p>
 </main>
-<script>/* config.js */
-/* Onde está a API do ETAL Connect.
-   api: null → só dados de exemplo (protótipo, como antes).
-   api: ''   → mesma origem do app (produção, atrás do Caddy; o deploy troca este arquivo).
-   api: 'http://127.0.0.1:8000' → API local em desenvolvimento. */
-window.ETAL_CONFIG = window.ETAL_CONFIG || { api: null };
-
-</script>
 <script>/* api.js */
 /* Cliente da API do ETAL Connect. Fica nulo (window.ETAL_API = null) quando config.js não aponta para uma API. */
 window.ETAL_API = (() => {
   const cfg = window.ETAL_CONFIG || {};
   if (cfg.api == null) return null;
+  /* Com servidor é o app de verdade: sem moldura de celular nem enfeites de demonstração (ver app.css, html.prod). */
+  document.documentElement.classList.add('prod');
   const base = String(cfg.api).replace(/\/$/, '');
   const url = (p) => base + p;
   async function req(path, opts = {}) {
@@ -1561,6 +1627,24 @@ window.ETAL_API = (() => {
     }
     return j;
   }
+  /* Sem conexão contínua (hospedagem em funções, como a Vercel): consulta a cada 12 s e avisa só do que mudou. */
+  function poll(h) {
+    let seen = null; let rooms = null; const where = {};
+    const tick = async () => {
+      try {
+        const av = await req('/api/avisos');
+        if (seen) av.filter((n) => !seen.has(n.id)).reverse().forEach((n) => h.aviso?.(n));
+        seen = new Set(av.map((n) => n.id));
+        const p = await req('/api/programacao');
+        const r = JSON.stringify(p.rooms || {});
+        if (rooms !== null && r !== rooms) h.numeros?.(p.rooms || {});
+        rooms = r;
+        p.sessions.forEach((x) => { const k = `${x.floor}|${x.zone}|${x.room}`; if (where[x.id] && where[x.id] !== k) h.sala?.({ activity: x.id, floor: x.floor, zone: x.zone, room: x.room }); where[x.id] = k; });
+      } catch (_) { /* sem rede: tenta de novo */ }
+    };
+    tick(); const t = setInterval(() => { if (!document.hidden) tick(); }, 12000);
+    return { close: () => clearInterval(t) };
+  }
   return {
     url,
     get: (p) => req(p),
@@ -1570,6 +1654,7 @@ window.ETAL_API = (() => {
     del: (p) => req(p, { method: 'DELETE' }),
     /* Avisos, trocas de sala, numeração e lotação em tempo real. O navegador reconecta sozinho. */
     live(handlers) {
+      if (cfg.vivo === 'consulta') return poll(handlers);
       const es = new EventSource(url('/api/ao-vivo'), { withCredentials: true });
       Object.entries(handlers).forEach(([k, f]) => es.addEventListener(k, (e) => { try { f(JSON.parse(e.data)); } catch (_) { /* evento malformado */ } }));
       return es;
@@ -1946,6 +2031,9 @@ window.SPRITES = {"trees": [{"radius": 0.36982399225234985, "height": 1.22623991
     cantina: [START, [13, 11], [-23, 8], [-27, -8], [-48, -13], [-52.5, -24]],
     biblioteca: [START, [13, 11], [-23, 8], [-27, -8], [-48, -13], [-49.5, -50], [-50.5, -58.5], [-59, -58.5]],
     anexo: [START, [13, 11], [-23, 8], [-27, -8], [-48, -13], [-49.5, -50], [-50, -68], [-41, -74], [-37.5, -80]],
+    /* Bebedouros: o mesmo caminho do lugar onde ficam, até o ponto. */
+    'bebedouro-anexo': [START, [13, 11], [-23, 8], [-27, -8], [-48, -13], [-49.5, -50], [-50, -68], [-41, -74], [-37.5, -80], [-32.5, -81.5]],
+    'bebedouro-cantina': [START, [13, 11], [-23, 8], [-27, -8], [-48, -13], [-49.5, -50], [-50.5, -58.5], [-61.5, -57.8]],
     coliseu: [START, [13, 11], [-23, 8], [-27, -8], [-48, -13], [-49.5, -50], [-50, -68], [-44.6, -66], [-38.5, -62], [-37.8, -65]],
     auxiliar: [START, [13, 11], [-23, 8], [-27, -8], [-48, -13], [-49.5, -50], [-50, -68], [-44.6, -66], [-39, -61.5], [-28, -61.5], [-22.5, -66]],
     'centro-medico': [START, [-20, 41], [-46, 40], [-84, -38], [-82.5, -36.5]],
@@ -3223,6 +3311,32 @@ window.SPRITES = {"trees": [{"radius": 0.36982399225234985, "height": 1.22623991
       ctx.fillStyle = '#5f9a45'; ctx.beginPath(); ctx.arc(t[0], t[1], Math.max(1.2, cam.z * 0.5), 0, 7); ctx.fill();
     });
   }
+  /* Pátio interno: jardim só no térreo. No 1º e no 2º andar é um vão aberto, com varanda e mureta baixa
+     ligando as salas das pontas; a laje tem o furo, e dá para ver o pátio lá embaixo. */
+  const yardOf = (f) => (f.level > 0 ? f.zones.find((z) => z.kind === 'courtyard') : null);
+  function voidCut(f, b0) {
+    const z = yardOf(f); if (!z) return false;
+    const h = hull([...z.poly.map((q) => P(q[0], q[1], b0 + 0.02)), ...z.poly.map((q) => P(q[0], q[1], b0 - 0.72))]);
+    ctx.save(); ctx.beginPath(); ctx.rect(-1e5, -1e5, 2e5, 2e5);
+    h.forEach((u, i) => (i ? ctx.lineTo(u[0], u[1]) : ctx.moveTo(u[0], u[1]))); ctx.closePath(); ctx.clip('evenodd');
+    return true;
+  }
+  const PARAPET = 1.6; // mureta um pouco exagerada para aparecer na escala do mapa
+  function drawParapets(f, b0, c) {
+    const z = yardOf(f); if (!z) return;
+    const [a, b, d, e] = orderYard(z.poly);
+    /* Um véu escuro no furo: lê como vão (vê-se o andar de baixo através dele), não como piso. */
+    poly(z.poly, b0 - 0.7); ctx.fillStyle = 'rgba(20,32,64,0.09)'; ctx.fill();
+    /* As duas bordas compridas do vão, de ponta a ponta; as pontas encostam nas salas. Primeiro a mais distante. */
+    const sides = [[a, b], [d, e]].sort((p, q) => P(...lerp2(p[0], p[1], 0.5), b0)[1] - P(...lerp2(q[0], q[1], 0.5), b0)[1]);
+    sides.forEach(([u, v]) => {
+      wallQuad(u, v, b0 - 0.7, b0 + PARAPET); ctx.fillStyle = c.slab; ctx.fill(); ctx.fillStyle = 'rgba(20,32,64,0.16)'; ctx.fill();
+      ctx.strokeStyle = c.plateEdge; ctx.lineWidth = 1; ctx.stroke();
+      const s0 = P(u[0], u[1], b0 + PARAPET), s1 = P(v[0], v[1], b0 + PARAPET);
+      ctx.strokeStyle = c.plate; ctx.lineWidth = Math.max(1.2, cam.z * 0.22); ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(s0[0], s0[1]); ctx.lineTo(s1[0], s1[1]); ctx.stroke();
+    });
+  }
   const orderYard = (p) => { const [a, b, d] = [p[0], p[1], p[3]]; return Math.hypot(b[0] - a[0], b[1] - a[1]) >= Math.hypot(d[0] - a[0], d[1] - a[1]) ? p : [p[1], p[2], p[3], p[0]]; };
   /* Corredor da esquerda (no térreo, a passagem do Anexo até a saída do auditório) e o canto aberto que pega sol. */
   function drawFloorMarks(f, b0, c) {
@@ -3247,10 +3361,13 @@ window.SPRITES = {"trees": [{"radius": 0.36982399225234985, "height": 1.22623991
     const b0 = baseOf(f.level), a = alphaOf(f.level);
     if (a < 0.01) return;
     ctx.globalAlpha = a;
+    const cut = voidCut(f, b0);
     drawExtruded(f.outline, b0, c, { base: b0 - 0.7, wall: c.slab, roof: c.plate, edge: c.plateEdge, floors: 0 });
+    if (cut) ctx.restore();
+    drawParapets(f, b0, c);
     f.zones.forEach((z) => {
       if (z.kind !== 'courtyard' && z.kind !== 'ramp') return;
-      if (z.kind === 'courtyard') { drawCourtyard(orderYard(z.poly), b0 + 0.05, c, false); return; }
+      if (z.kind === 'courtyard') { if (f.level === 0) drawCourtyard(orderYard(z.poly), b0 + 0.05, c, false); return; }
       poly(z.poly, b0 + 0.05); ctx.fillStyle = c.rampF; ctx.fill();
     });
     drawFloorMarks(f, b0, c);
@@ -3282,11 +3399,14 @@ window.SPRITES = {"trees": [{"radius": 0.36982399225234985, "height": 1.22623991
     const K = c.kinds;
     const detail = sv.focus > 0.5;
     ctx.globalAlpha = a;
+    const cut = voidCut(f, b0);
     drawExtruded(f.outline, b0, c, { base: b0 - 0.7, wall: c.slab, roof: c.plate, edge: c.plateEdge, floors: 0 });
+    if (cut) ctx.restore();
+    drawParapets(f, b0, c);
     /* itens no plano do piso */
     f.zones.filter((z) => z.kind === 'courtyard' || z.kind === 'ramp').forEach((z) => {
       if (z.kind === 'courtyard') {
-        drawCourtyard(orderYard(z.poly), b0 + 0.05, c, true);
+        if (f.level === 0) drawCourtyard(orderYard(z.poly), b0 + 0.05, c, true);
       } else {
         poly(z.poly, b0 + 0.05); ctx.fillStyle = c.rampF; ctx.fill(); ctx.strokeStyle = c.plateEdge; ctx.lineWidth = 1; ctx.stroke();
         /* Mureta entre as duas pistas: a pessoa sobe por uma, dá a volta no alto e segue pela outra. */
@@ -3919,8 +4039,9 @@ window.SPRITES = {"trees": [{"radius": 0.36982399225234985, "height": 1.22623991
     },
     route(id) {
       routeId = id; routeP = 0; routeStart = performance.now();
-      const b = byId(id);
-      anim(view([...(ROUTES[id] || []), ...b.p], cam.t, 44, 60), 700);
+      const b = byId(id); const poi = POIS.find((p) => p.id === id);
+      if (poi) { poiSel = id; selected = null; }
+      anim(view([...(ROUTES[id] || []), ...(b ? b.p : poi ? [poi.at] : [])], cam.t, 44, 60), 700);
     },
     clearRoute() { routeId = null; schedule(); },
     routeOn: (id) => routeId === id,
@@ -4624,6 +4745,8 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
   const buzz = (p) => { try { navigator.vibrate?.(p); } catch (_) { /* sem suporte */ } };
   const SAVE_KEY = 'etal-perfil';
   const API = window.ETAL_API; // null: só dados de exemplo
+  /* /demo (ou ?demo=1): ferramentas de teste, como os botões que simulam a leitura dos QRs. */
+  const DEMO = /^\/(demo|homologacao)(\/|$)/.test(location.pathname) || new URLSearchParams(location.search).has('demo');
   const DEMO_PERSON = { ...D.person };
   const store = {
     get(k) { try { return JSON.parse(sessionStorage.getItem(k)); } catch (_) { return null; } },
@@ -4803,17 +4926,12 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
   let lgPending = null; let lgPhys = null;
 
   function suapFields() {
-    if (API) return `<form class="login-form" data-form="login" novalidate>
-        <p class="lg-note">Você vai para a página do SUAP, entra lá e volta para cá. A sua senha não passa pelo app.</p>
-        <p class="lg-err" id="lgerr" role="alert" hidden></p>
-        <button class="btn primary big" type="submit"><span>Entrar com o SUAP</span><i class="spin"></i></button>
-      </form>`;
     return `<form class="login-form" data-form="login" novalidate>
         <label class="field" for="mat"><span>Matrícula</span><input id="mat" inputmode="numeric" autocomplete="username" placeholder="Sua matrícula do SUAP" required></label>
         <label class="field" for="pwd"><span>Senha</span><div class="pwd"><input id="pwd" type="password" autocomplete="current-password" placeholder="A mesma senha do SUAP" required><button type="button" class="iconbtn sm" data-act="togglepwd" aria-label="Mostrar senha">${ic('eye')}</button></div></label>
         <p class="lg-err" id="lgerr" role="alert" hidden></p>
         <button class="btn primary big" type="submit"><span>Entrar com o SUAP</span><i class="spin"></i></button>
-        <button class="btn ghost" type="button" id="lgdemo" data-act="demo" hidden>Entrar com dados de exemplo</button>
+        ${API ? `<button class="btn ghost" type="button" data-act="suapoauth">Entrar pela página do SUAP</button>` : '<button class="btn ghost" type="button" id="lgdemo" data-act="demo" hidden>Entrar com dados de exemplo</button>'}
       </form>`;
   }
   function guestFields() {
@@ -5257,7 +5375,9 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
     };
   };
 
-  const searchBtn = () => `<button class="search" data-act="finder">${ic('search')}<span>Buscar sala ou atividade</span></button>`;
+  const searchBtn = () => `<button class="search" data-act="finder">${ic('search')}<span>Buscar sala, atividade, banheiro…</span></button>`;
+  /* Parte de baixo do mapa: controles à direita, abas e busca perto do polegar e, por último, a folha do lugar. */
+  const mapBottom = (sheet, extra = '') => `<div class="map-bottom ${/class="sheet-card[^"]*detail/.test(sheet) ? 'has-detail' : ''}">${camCtrl()}<div class="map-dock">${extra}${viewSeg()}${searchBtn()}</div>${sheet}</div>`;
   const MAP_TABS = [['evento', 'Evento'], ['bloco', 'Andares'], ['campus', 'Campus']];
   const viewSeg = () => `<div class="seg" style="--k:${MAP_TABS.findIndex(([v]) => v === S.mapView)}"><i class="seg-ind"></i>${MAP_TABS.map(([v, t]) => `<button class="${S.mapView === v ? 'on' : ''}" data-act="mapview" data-v="${v}">${t}</button>`).join('')}</div>`;
   const dimToggle = () => { if (!window.Campus3D.canUse3D()) return ''; const f = window.Campus3D.isFlat(); return `<div class="dim" role="group" aria-label="Tipo de vista" style="--k:${f ? 1 : 0}"><i></i><button class="${f ? '' : 'on'}" data-act="dim" data-v="3d" aria-pressed="${!f}">3D</button><button class="${f ? 'on' : ''}" data-act="dim" data-v="2d" aria-pressed="${f}">2D</button></div>`; };
@@ -5266,12 +5386,6 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
 
   function campusSheet() {
     const id = S.campusPlace;
-    if (!id && S.mapView === 'evento') {
-      return `<div class="sheet-card campus-sheet ev-sheet"><i class="grab"></i>
-        <strong>Onde o ETAL acontece</strong>
-        <ul class="ev-grid">${EVENT_PLACES.map((k) => `<li><button data-act="place" data-id="${k}"><i class="ev-dot" style="background:${EVENT_DOT[k]}"></i><span><b>${D.places[k].name}</b><small>${D.places[k].kind}</small></span></button></li>`).join('')}</ul>
-      </div>`;
-    }
     if (!id) return '';
     const p = D.places[id];
     /* Sol nas fachadas (cartas solares da dissertação de 2012) e, com a luz do horário ligada, o sol de agora. */
@@ -5283,7 +5397,7 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
       return lados.length ? `<p class="sh-src">☀ Sol agora no lado ${lados.join(' e no lado ')}.</p>` : '';
     };
     const on = window.Campus3D.routeOn(id);
-    return `<div class="sheet-card campus-sheet"><i class="grab"></i>
+    return `<div class="sheet-card campus-sheet detail"><i class="grab"></i>
       <div class="sh-top"><div><strong>${p.name}</strong></div><button class="iconbtn sm" data-act="placeclose" aria-label="Fechar">${ic('x')}</button></div>
       <p class="sh-text">${p.text}</p>
       ${p.sun ? sunLine() : ''}
@@ -5299,10 +5413,9 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
 
   Screens.campus = () => ({
     html: `<div class="map-screen campus">
-      <div class="map-top">${searchBtn()}${viewSeg()}</div>
       <canvas class="campus3d" tabindex="0" role="application" aria-label="Mapa do campus IFRN Pau dos Ferros, com a área do evento em destaque. Arraste para mover e use os botões para aproximar."></canvas>
-      ${camCtrl()}
-      ${campusSheet()}
+      ${fpsHud()}
+      ${mapBottom(campusSheet())}
     </div>`,
     mount: mountCampus,
   });
@@ -5502,7 +5615,8 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
   }
 
   const FLOOR_DESC = ['Auditório, administração e recepção', 'Salas de aula e laboratórios', 'Laboratórios, professores e coordenação de ADS'];
-  const camCtrl = (cls = '') => `${dimToggle().replace('class="dim"', `class="dim ${cls}"`)}${fpsHud()}<div class="map-ctrl cam-ctrl ${cls}"><button class="iconbtn" data-act="cam" data-v="in" aria-label="Aproximar">${ic('plus')}</button><button class="iconbtn" data-act="cam" data-v="out" aria-label="Afastar">${ic('minus')}</button>${window.Campus3D.isFlat() ? '' : `<button class="iconbtn" data-act="cam" data-v="rot" aria-label="Girar a vista">${ic('rotate')}</button>`}<button class="iconbtn" data-act="cam" data-v="fit" aria-label="Enquadrar">${ic('expand')}</button><button class="iconbtn" data-act="mapcfg" aria-label="Ajustes do mapa" aria-expanded="false">${ic('sliders')}</button></div>${mapCfg(cls)}`;
+  /* Controles do mapa na zona do polegar: coluna à direita, logo acima da busca. */
+  const camCtrl = () => `<div class="map-side">${dimToggle()}<div class="map-ctrl cam-ctrl"><button class="iconbtn" data-act="cam" data-v="in" aria-label="Aproximar">${ic('plus')}</button><button class="iconbtn" data-act="cam" data-v="out" aria-label="Afastar">${ic('minus')}</button>${window.Campus3D.isFlat() ? '' : `<button class="iconbtn" data-act="cam" data-v="rot" aria-label="Girar a vista">${ic('rotate')}</button>`}<button class="iconbtn" data-act="cam" data-v="fit" aria-label="Enquadrar">${ic('expand')}</button><button class="iconbtn" data-act="mapcfg" aria-label="Ajustes do mapa" aria-expanded="false">${ic('sliders')}</button></div>${mapCfg()}</div>`;
   /* Ajustes do mapa, para brincar: hora do dia, nomes, sombras, árvores e carros. */
   const LAYER_NAMES = [['labels', 'Nomes dos lugares'], ['shadows', 'Sombras'], ['trees', 'Árvores'], ['cars', 'Carros']];
   const mapCfg = (cls = '') => `<div class="map-cfg ${cls}" role="dialog" aria-label="Ajustes do mapa">
@@ -5532,7 +5646,7 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
     if (!z) return `<div class="sheet-card campus-sheet"><i class="grab"></i><div class="sh-top"><div><strong>${floorOf(lvl).label}</strong><small>${FLOOR_DESC[lvl]}</small></div></div><p class="sh-text">Toque numa sala para ver o que acontece nela.</p></div>`;
     const acts = D.sessions.filter((x) => x.floor === lvl && x.zone === z.id);
     const walkable = !['stairs', 'ramp', 'courtyard'].includes(z.kind);
-    return `<div class="sheet-card campus-sheet"><i class="grab"></i>
+    return `<div class="sheet-card campus-sheet detail"><i class="grab"></i>
       <div class="sh-top">${z.icon && window.Campus3D?.useIcons?.[z.icon] ? `<span class="sh-ic" aria-hidden="true"><svg viewBox="-12 -12 24 24"><path d="${window.Campus3D.useIcons[z.icon]}"/></svg></span>` : ''}<div><strong>${zoneName(z)}</strong><small>${z.name ? `Sala ${z.roomNumber} · ` : z.roomNumber && z.kind !== 'classroom' ? `${z.useLabel} · ` : ''}${floorOf(lvl).label}</small></div><button class="iconbtn sm" data-act="zoneclose" aria-label="Fechar">${ic('x')}</button></div>
       ${z.info ? `<p class="sh-text">${esc(z.info)}</p>` : ''}
 
@@ -5547,12 +5661,9 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
     const idx = S.mapFloor === null ? 0 : S.mapFloor + 1;
     return {
       html: `<div class="map-screen campus">
-        <div class="map-top">${searchBtn()}${viewSeg()}
-          <div class="seg ${window.Campus3D.canUse3D() ? 'four' : ''}" style="--k:${window.Campus3D.canUse3D() ? idx : idx - 1}"><i class="seg-ind"></i>${window.Campus3D.canUse3D() ? `<button class="${idx === 0 ? 'on' : ''}" data-act="floorsel" data-v="all">Todos</button>` : ''}${[0, 1, 2].map((l) => `<button class="${S.mapFloor === l ? 'on' : ''}" data-act="floorsel" data-v="${l}">${l === 0 ? 'Térreo' : `${l}º`}</button>`).join('')}</div>
-        </div>
         <canvas class="campus3d" tabindex="0" role="application" aria-label="Bloco principal em volume, com os três andares. Toque num andar ou numa sala."></canvas>
-        ${camCtrl('low')}
-        ${blocoSheet()}
+        ${fpsHud()}
+        ${mapBottom(blocoSheet(), `<div class="seg ${window.Campus3D.canUse3D() ? 'four' : ''}" style="--k:${window.Campus3D.canUse3D() ? idx : idx - 1}"><i class="seg-ind"></i>${window.Campus3D.canUse3D() ? `<button class="${idx === 0 ? 'on' : ''}" data-act="floorsel" data-v="all">Todos</button>` : ''}${[0, 1, 2].map((l) => `<button class="${S.mapFloor === l ? 'on' : ''}" data-act="floorsel" data-v="${l}">${l === 0 ? 'Térreo' : `${l}º`}</button>`).join('')}</div>`)}
       </div>`,
       mount: mountCampus,
     };
@@ -5995,6 +6106,7 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
       <div class="scan-view">
         <div class="scene"><svg class="scene-bg" viewBox="0 0 400 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><linearGradient id="wl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9dfe6"/><stop offset=".62" stop-color="#b9c1ca"/><stop offset=".62" stop-color="#7b8590"/><stop offset="1" stop-color="#59626d"/></linearGradient></defs><rect width="400" height="700" fill="url(#wl)"/><path d="M0 0 150 190V470L0 700Z" fill="#a6afb9"/><path d="M400 0 250 190V470L400 700Z" fill="#98a2ad"/><rect x="150" y="190" width="100" height="280" fill="#eef1f4"/><path d="M12 70 22 80V530L12 590Z M60 130 70 140V490L60 530Z" fill="#3a5a9b"/><path d="M388 70 378 80V530L388 590Z M340 130 330 140V490L340 530Z" fill="#4f6270"/><path d="M165 60h70l-8 40h-54Z M120 0h160l-20 30H140Z" fill="#fff"/></svg></div>
         <div class="placard-wrap">${placard(spot)}</div>
+        <video class="scan-cam" playsinline muted aria-label="Imagem da câmera"></video>
         <div class="scan-mask"></div>
         <div class="frame"><i></i><i></i><i></i><i></i><span class="scanline"></span></div>
         <div class="torch-glow"></div>
@@ -6005,7 +6117,8 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
         </div>
         <p class="scan-hint" aria-live="polite"><span>${scanHint(spot)}</span></p>
       </div>
-      <div class="scan-dock">
+      <div class="scan-dock cam-dock ${DEMO ? 'with-demo' : ''}"><p id="camst">Aponte a câmera para o QR da sala ou da recepção.</p><button class="btn soft" data-act="camstart" hidden>Abrir a câmera</button></div>
+      <div class="scan-dock" ${DEMO ? '' : 'hidden'}>
         <p>Simular leitura <em>demonstração</em></p>
         <div class="spots">${Object.entries(SPOTS).map(([k, p]) => `<button class="spot ${k === 'recepcao' && !S.credAt ? 'first' : ''}" data-act="simulate" data-q="${k}"><span>${ic(p.icon)}</span><b>${p.name}</b><small>${p.where}</small></button>`).join('')}</div>
       </div>
@@ -6215,6 +6328,7 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
     device.classList.toggle('ov-dim', kind === 'share' || kind === 'ask' || kind === 'finder');
   }
   function closeOverlay(then, fromHistory = false) {
+    camStop(); kbTrack(false);
     if (ovNav) { ovNav = false; if (!fromHistory) navDrop(); }
     ov.classList.remove('open');
     device.classList.remove('ov-dark', 'ov-light', 'ov-navy', 'ov-dim', 'ov-retro');
@@ -6370,8 +6484,8 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
     startHud(page);
     C.attach(cv, {
       onQuality: (t) => { rerender(); if (t === 'simples') toast('Mapa em 2D para ficar mais fluido'); },
-      top: $('.map-top', page).offsetHeight + 6,
-      bottom: ($('.sheet-card', page)?.offsetHeight || 10) - 10,
+      top: 8,
+      bottom: ($('.map-dock', page)?.offsetHeight || 0) + ($('.sheet-card', page)?.offsetHeight || 0),
       skipGrow: S.pending,
       onPick: (id) => {
         if (id === S.campusPlace) return;
@@ -6397,7 +6511,7 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
         if (kind === 'full' && S.tab === 'map' && S.mapView === 'campus' && !S.campusPlace) {
           /* As abas acompanham a revelação na hora; a folha do evento entra no fim. */
           S.mapView = 'evento';
-          const seg = $('.map-top .seg', page);
+          const seg = $('.map-dock .seg[style*="--k"]:not(.four)', page) || $('.map-dock .seg', page);
           if (seg) { seg.style.setProperty('--k', MAP_TABS.findIndex(([v]) => v === 'evento')); seg.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.v === 'evento')); }
           await C.eventReveal();
           if (S.tab === 'map') rerender();
@@ -6496,19 +6610,51 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
     if (places.length) groups.push([n ? 'Lugares' : 'Lugares do campus', places.slice(0, n ? 5 : 8)]);
     return groups;
   }
-  const finderList = (q) => {
-    const g = finderGroups(q);
-    const chips = !q.trim() ? `<li class="fd-chips">${AMENITIES.slice(0, 4).map((a) => `<button data-act="finderq" data-q="${a.k}"><span class="fd-ic ${a.tone}">${ic(a.icon)}</span>${a.t}</button>`).join('')}</li>` : '';
-    if (!g.length) return `${chips}<li class="none">Nada encontrado. Tente o número da sala, uma atividade ou “banheiro”.</li>`;
-    return chips + g.map(([h, list]) => `<li class="fd-h">${h}</li>${list.map((x) => `<li data-act="findergo" ${x.a}><span class="fd-ic ${x.tone}">${ic(x.i)}</span><div><b>${x.t}</b><small>${x.d}</small></div>${x.live ? '<em class="live">Agora</em>' : x.min ? `<em>${x.min} min</em>` : ''}</li>`).join('')}`).join('');
+  /* Busca no celular: a barra fica colada no teclado e os resultados crescem para cima,
+     com o melhor logo acima da barra (perto do polegar). Enter abre o melhor já com a rota. */
+  const actItemF = (x) => ({ t: x.short, d: `${dayOf(x.day).week} ${x.day} · ${x.time} · ${x.room}`, i: 'cal', tone: 'n', live: isNow(x), a: `data-k="act" data-id="${x.id}"` });
+  function finderActs() {
+    const upcoming = D.sessions.filter((x) => !x.simple && (x.day > D.now.day || (x.day === D.now.day && toMin(x.end) > toMin(D.now.time))));
+    const days = [...new Set(upcoming.map((x) => x.day))].sort((p, q) => p - q);
+    return days.map((d) => [d === D.now.day ? 'Hoje' : `${dayOf(d).week} ${d}`, upcoming.filter((x) => x.day === d).sort((p, q) => toMin(p.time) - toMin(q.time)).map(actItemF)]);
+  }
+  const routable = (x) => /data-k="(room|place)"/.test(x.a) || (/data-k="poi"/.test(x.a) && window.Campus3D.hasRoute((/data-id="([^"]+)"/.exec(x.a) || [])[1])) || (/data-k="act"/.test(x.a) && (() => { const s = byId((/data-id="([^"]+)"/.exec(x.a) || [])[1]); return s && s.floor !== undefined && s.floor !== null; })());
+  const finderList = (q, mode) => {
+    const g = mode === 'acts' ? finderActs() : q.trim() ? finderGroups(q) : [];
+    if (!g.length) return q.trim() ? '<li class="none">Nada encontrado. Tente o número da sala, uma atividade ou “banheiro”.</li>' : '';
+    const best = g[0][1][0];
+    const row = (x) => `<li data-act="findergo" ${x.a} class="${x === best ? 'best' : ''}"><span class="fd-ic ${x.tone}">${ic(x.i)}</span><div><b>${x.t}</b><small>${x.d}</small></div>${x.live ? '<em class="live">Agora</em>' : x.min ? `<em>${x.min} min</em>` : ''}${x === best && routable(x) ? `<button class="fd-route" data-act="findergo" data-route="1" ${x.a} aria-label="Rota até ${esc(x.t)}">${ic('route')}Rota</button>` : ''}</li>`;
+    /* De baixo para cima: o primeiro grupo fica junto da barra, e o melhor item, logo acima dela. */
+    return g.slice().reverse().map(([h, list]) => `<li class="fd-h">${h}</li>${list.slice().reverse().map(row).join('')}`).join('');
   };
-  Overlays.finder = () => `<div class="sheet finder" role="dialog" aria-label="Buscar"><i class="grab"></i>
-      <label class="finder-in" for="fq">${ic('search')}<input id="fq" placeholder="Sala, atividade, banheiro…" autocomplete="off"></label>
-      <ul class="finder-res" id="fres">${finderList('')}</ul></div>`;
+  function finderRender() {
+    const i = $('#fq'); const res = $('#fres'); if (!i || !res) return;
+    res.innerHTML = finderList(i.value, S.finderMode);
+    res.closest('.finder').classList.toggle('has-res', !!res.innerHTML);
+    $('[data-act="finderacts"]')?.classList.toggle('on', S.finderMode === 'acts');
+    res.scrollTop = res.scrollHeight;
+  }
+  Overlays.finder = () => `<div class="sheet finder" role="dialog" aria-label="Buscar">
+      <ul class="finder-res" id="fres" aria-live="polite"></ul>
+      <div class="fd-chips">${AMENITIES.slice(0, 3).map((a) => `<button data-act="finderq" data-q="${a.k}"><span class="fd-ic ${a.tone}">${ic(a.icon)}</span>${a.t}</button>`).join('')}</div>
+      <div class="finder-bar"><label class="finder-in" for="fq">${ic('search')}<input id="fq" type="search" enterkeyhint="go" placeholder="Sala, atividade, banheiro…" autocomplete="off"></label><button class="fd-acts" data-act="finderacts" aria-label="Ver as atividades">${ic('cal')}<span>Atividades</span></button></div></div>`;
+  /* Teclado na tela: a busca sobe junto com ele (visualViewport funciona no Chrome e no Safari). */
+  function kbTrack(on) {
+    const vv = window.visualViewport; if (!vv) return;
+    const f = () => { const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop); ov.style.setProperty('--kb', `${Math.round(kb)}px`); ov.classList.toggle('kb', kb > 60); };
+    if (on) { vv.addEventListener('resize', f); vv.addEventListener('scroll', f); kbTrack.f = f; f(); } else if (kbTrack.f) { vv.removeEventListener('resize', kbTrack.f); vv.removeEventListener('scroll', kbTrack.f); kbTrack.f = null; ov.style.removeProperty('--kb'); ov.classList.remove('kb'); }
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.target.id !== 'fq' || e.key !== 'Enter') return;
+    e.preventDefault();
+    const best = $('#fres li.best'); if (!best) return;
+    e.target.blur();
+    ($('.fd-route', best) || best).click();
+  });
   document.addEventListener('input', (e) => { if (e.target.id === 'mapsky') { cancelAnimationFrame(skyAnim); skyHour = +e.target.value; applySky(); const o = $('#mapskyo'); if (o) o.textContent = skyClock(); } });
   document.addEventListener('input', (e) => { if (e.target.id === 'accentpick') { UI.accent = e.target.value; uiSave(); applyUI(); } });
   document.addEventListener('change', (e) => { if (e.target.id === 'accentpick') rerender(); });
-  document.addEventListener('input', (e) => { if (e.target.id === 'fq') $('#fres').innerHTML = finderList(e.target.value); });
+  document.addEventListener('input', (e) => { if (e.target.id === 'fq') { if (e.target.value.trim()) S.finderMode = null; finderRender(); } });
 
   /* ---------------- ações ---------------- */
   function scanResult(q) {
@@ -6620,7 +6766,9 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
         skyTo(n === undefined ? seq[0] : n);
         break;
       }
-      case 'scan': openOverlay(Overlays.scan(el.dataset.mode || 'ler'), 'scan'); break;
+      case 'scan': openOverlay(Overlays.scan(el.dataset.mode || 'ler'), 'scan'); if ((el.dataset.mode || 'ler') === 'ler') setTimeout(camStart, 350); break;
+      case 'camstart': camStart(); break;
+      case 'suapoauth': el.classList.add('loading'); location.href = API.url('/api/auth/suap'); break;
       case 'scanmode': { const r = $('.scanner', ov); if (r.dataset.busy) break; r.dataset.mode = el.dataset.v; $('.scan-seg', ov).style.setProperty('--k', el.dataset.v === 'meu' ? 1 : 0); break; }
       case 'torch': { const r = $('.scanner', ov); const on = r.classList.toggle('torch'); el.setAttribute('aria-pressed', on); break; }
       case 'flip': el.classList.toggle('flipped'); el.classList.remove('hint'); S.flipSeen = true; buzz(8); break;
@@ -6640,7 +6788,7 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
       case 'ask': openOverlay(Overlays.ask(el.dataset.id), 'ask'); setTimeout(() => $('#qtext')?.focus({ preventScroll: true }), 480); break;
       case 'rate': S.ratings[el.dataset.id] = +el.dataset.n; rerender(); toast('Avaliação enviada'); break;
       case 'closeov': closeOverlay(el.dataset.then ? () => push(el.dataset.then) : null); break;
-      case 'simulate': scanResult(el.dataset.q); break;
+      case 'simulate': if (API && el.dataset.q !== 'colega') demoQr(el.dataset.q); else scanResult(el.dataset.q); break;
       case 'scanopen': scanOpen(el.dataset.q); break;
       case 'scanagain': scanAgain(); break;
       case 'day': S.agendaDay = +el.dataset.day; rerender(); vp.querySelector('.page .agenda-list')?.classList.add('swap'); break;
@@ -6697,13 +6845,17 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
       case 'zoneclose': if (navTag() === 'room') { navBack(); break; } S.mapZone = null; S.mapRoute = false; rerender(); window.Campus3D.room(S.mapFloor, null); break;
       case 'roomroute': navMark('route'); S.mapRoute = true; S.journeying = true; rerender(); runJourney(); break;
       case 'via': S.mapVia = el.dataset.v; S.mapRoute = true; S.journeying = true; rerender(); runJourney(); break;
-      case 'finder': openOverlay(Overlays.finder(), 'finder'); setTimeout(() => $('#fq')?.focus({ preventScroll: true }), 480); break;
-      case 'finderq': { const i = $('#fq'); if (i) { i.value = el.dataset.q; $('#fres').innerHTML = finderList(i.value); } break; }
+      case 'finder': S.finderMode = null; openOverlay(Overlays.finder(), 'finder'); kbTrack(true); setTimeout(() => $('#fq')?.focus({ preventScroll: true }), 480); break;
+      case 'finderq': { const i = $('#fq'); if (i) { i.value = el.dataset.q; S.finderMode = null; finderRender(); } break; }
+      case 'finderacts': { const i = $('#fq'); S.finderMode = S.finderMode === 'acts' ? null : 'acts'; if (i && S.finderMode) i.value = ''; finderRender(); if (S.finderMode) i?.blur(); break; }
       case 'findergo': {
-        const d = el.dataset;
+        if (e.target.closest('.fd-route') && el !== e.target.closest('.fd-route')) break;
+        const d = { ...el.dataset };
+        if (d.k === 'act' && d.route) { const x = byId(d.id); if (x && x.floor !== undefined && x.floor !== null) Object.assign(d, { k: 'room', floor: x.floor, zone: x.zone }); }
         closeOverlay(() => {
           if (d.k === 'act') { openActivity(d.id); return; }
-          if (d.k === 'poi') { S.mapView = 'campus'; S.campusPlace = null; window.Campus3D.setMode('campus'); window.Campus3D.select(null); switchTab('map', true); setTimeout(() => window.Campus3D.focusPoi(d.id), reduce ? 0 : 700); return; }
+          if (d.k === 'place' && d.route) { S.mapView = EVENT_PLACES.includes(d.id) ? 'evento' : 'campus'; window.Campus3D.setMode(S.mapView); S.campusPlace = d.id; window.Campus3D.select(d.id); switchTab('map', true); setTimeout(() => { if (window.Campus3D.hasRoute(d.id)) window.Campus3D.route(d.id); else window.Campus3D.focus(d.id); rerender(); }, reduce ? 0 : 700); return; }
+          if (d.k === 'poi') { S.mapView = 'campus'; S.campusPlace = null; window.Campus3D.setMode('campus'); window.Campus3D.select(null); switchTab('map', true); setTimeout(() => (d.route && window.Campus3D.hasRoute(d.id) ? window.Campus3D.route(d.id) : window.Campus3D.focusPoi(d.id)), reduce ? 0 : 700); return; }
           if (d.k === 'place') { S.mapView = EVENT_PLACES.includes(d.id) ? 'evento' : 'campus'; window.Campus3D.setMode(S.mapView); S.campusPlace = d.id; window.Campus3D.select(d.id); switchTab('map', true); setTimeout(() => window.Campus3D.focus(d.id), reduce ? 0 : 950); return; }
           S.mapView = 'bloco'; S.mapFloor = +d.floor; S.mapZone = d.zone; S.mapRoute = true; S.pending = true; S.journeying = true; switchTab('map', true);
         });
@@ -6794,7 +6946,6 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
     const f = e.target.closest('[data-form="login"]');
     if (!f) return;
     e.preventDefault();
-    if (API) { $('button[type="submit"]', f).classList.add('loading'); location.href = API.url('/api/auth/suap'); return; }
     const btn = $('button[type="submit"]', f);
     const err = $('#lgerr');
     const say = (m) => { err.textContent = m; err.hidden = false; lgShake(); };
@@ -6807,6 +6958,13 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
     const state = $('[data-live="state"]'); if (state) state.textContent = 'Consultando o SUAP…';
     $('.login')?.classList.add('asking');
     try {
+      if (API) {
+        /* Servidor do ETAL: pede o token JWT ao SUAP, lê o perfil e abre a sessão. A senha não fica guardada. */
+        try { await API.post('/api/auth/suap/senha', { matricula: mat, senha: pwd }); } catch (x) { say(x.message); return; }
+        const me = await API.get('/api/eu'); apiState(me);
+        lgFilled(D.person);
+        return;
+      }
       const r = await fetch('api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ matricula: mat, senha: pwd }) });
       const j = await r.json().catch(() => { throw new TypeError('sem servidor'); });
       if (!r.ok) { say(j.erro || 'Não foi possível entrar.'); if (r.status >= 500) $('#lgdemo').hidden = false; return; }
@@ -6887,6 +7045,86 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
       toast(r.alreadyPresent ? 'Presença já estava registrada' : x ? `Presença registrada: ${x.short}` : 'Credenciamento confirmado');
       rerender();
     } catch (x) { toast(x.message); }
+  }
+  /* Câmera de verdade no leitor. Lê com o BarcodeDetector do navegador ou, sem ele (computador, iPhone), com o jsQR.
+     Com o servidor, o QR assinado vai para /api/presenca; sem ele, o app tira a atividade de dentro do QR. */
+  let cam = null;
+  function camStop() {
+    if (!cam) return;
+    cam.stop = true; cam.stream?.getTracks().forEach((t) => t.stop()); cam = null;
+  }
+  let jsqrLoad = null;
+  const loadJsQR = () => jsqrLoad || (jsqrLoad = new Promise((ok, no) => { const sc = document.createElement('script'); sc.src = 'vendor/jsQR.js'; sc.onload = () => ok(window.jsQR); sc.onerror = no; document.head.appendChild(sc); }));
+  async function makeReader(video) {
+    if ('BarcodeDetector' in window) {
+      try {
+        const fm = await window.BarcodeDetector.getSupportedFormats?.();
+        if (!fm || fm.includes('qr_code')) { const det = new window.BarcodeDetector({ formats: ['qr_code'] }); return async () => (await det.detect(video)).map((c) => c.rawValue); }
+      } catch (_) { /* cai no jsQR */ }
+    }
+    const jsQR = await loadJsQR();
+    const cv = document.createElement('canvas'); const cx = cv.getContext('2d', { willReadFrequently: true });
+    return async () => {
+      const w = video.videoWidth; const h = video.videoHeight; if (!w) return [];
+      const k = Math.min(1, 720 / Math.max(w, h)); cv.width = Math.round(w * k); cv.height = Math.round(h * k);
+      cx.drawImage(video, 0, 0, cv.width, cv.height);
+      const r = jsQR(cx.getImageData(0, 0, cv.width, cv.height).data, cv.width, cv.height, { inversionAttempts: 'dontInvert' });
+      return r ? [r.data] : [];
+    };
+  }
+  /* Conteúdo do QR → atividade (sem servidor). Aceita o link /q/<token> e o texto "etal:<atividade>". */
+  function qrActivity(text) {
+    const m = /etal:([\w-]+)/i.exec(text); if (m) return m[1];
+    const t = (/\/q\/([\w.-]+)/.exec(text) || [])[1] || (/^[\w-]+\.[\w-]+$/.test(text) ? text : null);
+    if (!t) return undefined;
+    try { const j = JSON.parse(atob(t.split('.')[0].replace(/-/g, '+').replace(/_/g, '/'))); return j.a || 'recepcao'; } catch (_) { return undefined; }
+  }
+  function demoHit(text) {
+    const q = qrActivity(text); if (q === undefined) return false;
+    const x = byId(q);
+    if (!SPOTS[q]) { if (!x) return false; SPOTS[q] = { name: x.room || 'Sala', sign: x.short, where: floorOf(x.floor ?? 0).label, icon: 'qr', seed: 30 + Object.keys(SPOTS).length * 7 }; }
+    scanResult(q); return true;
+  }
+  let demoQrs = null;
+  async function demoQr(q) {
+    try {
+      demoQrs = demoQrs || await API.get('/api/homologacao/qrs');
+      const it = demoQrs.find((d) => (d.id || 'recepcao') === q) || demoQrs[0];
+      closeOverlay(() => apiQr(it.url));
+    } catch (_) { toast('Os QRs de teste só existem na homologação.'); }
+  }
+  async function camStart() {
+    const st = $('#camst'); const btn = $('[data-act="camstart"]'); const video = $('.scan-cam');
+    const say = (m) => { if (st) st.textContent = m; };
+    if (!video) return;
+    if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) { say('A câmera só abre com o app em HTTPS. Use a câmera do celular: ela abre o ETAL Connect e registra a presença.'); return; }
+    camStop();
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1280 } }, audio: false });
+      if (!$('.scan-cam')) { stream.getTracks().forEach((t) => t.stop()); return; }
+      cam = { stream, stop: false };
+      video.srcObject = stream; await video.play(); video.classList.add('on'); if (btn) btn.hidden = true;
+      say('Aponte para o QR. A leitura é automática.');
+      const read = await makeReader(video);
+      const me = cam; let warned = 0;
+      const tick = async () => {
+        if (me.stop) return;
+        try {
+          const codes = await read();
+          const hit = codes.find((v) => qrActivity(v) !== undefined);
+          if (hit) {
+            buzz([18, 40, 18]);
+            if (API) { camStop(); closeOverlay(() => apiQr(hit)); return; }
+            camStop(); video.classList.remove('on'); if (demoHit(hit)) return;
+          } else if (codes.length && Date.now() - warned > 2500) { warned = Date.now(); say('Esse QR não é do ETAL. Procure o QR da sala ou da recepção.'); }
+        } catch (_) { /* quadro ainda carregando */ }
+        setTimeout(tick, 200);
+      };
+      tick();
+    } catch (x) {
+      say(x && x.name === 'NotAllowedError' ? 'Permita o uso da câmera para ler o QR.' : 'Não foi possível abrir a câmera.');
+      if (btn) btn.hidden = false;
+    }
   }
   async function apiStart() {
     const qs0 = new URLSearchParams(location.search);
