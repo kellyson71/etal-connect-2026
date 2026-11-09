@@ -59,6 +59,10 @@
     mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
     contact: '<circle cx="9" cy="8" r="3.500"/><path d="M3 20a6 6 0 0 1 12 0M18 8v6M15 11h6"/>',
     alarm: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.300 21a1.900 1.900 0 0 0 3.400 0"/>',
+    drop: '<path d="M12 3c4 5 6.500 8.200 6.500 11.500a6.500 6.500 0 0 1-13 0C5.500 11.200 8 8 12 3Z"/>',
+    wc: '<circle cx="7.500" cy="5" r="2"/><path d="M5 22v-7H4l1.500-7h4L11 15h-1v7"/><circle cx="16.500" cy="5" r="2"/><path d="M15 22V9h3v13"/>',
+    sofa: '<path d="M5 11V8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3"/><path d="M3 13a2 2 0 0 1 4 0v2h10v-2a2 2 0 0 1 4 0v5H3Z"/><path d="M6 18v2M18 18v2"/>',
+    sliders: '<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',
     rotate: '<path d="M4 12a8 8 0 0 1 13.700-5.700L20 8.600M20 4v4.600h-4.600"/><path d="M20 12a8 8 0 0 1-13.700 5.700L4 15.400M4 20v-4.600h4.600"/>',
     expand: '<path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/>',
     building: '<path d="M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16M15 10h4a1 1 0 0 1 1 1v10M2 21h20M8 8h3M8 12h3M8 16h3"/>',
@@ -123,10 +127,10 @@
     entardecer: { name: 'Entardecer', desc: 'Céu do fim de tarde', accent: '#55368f', hue: 265 },
   };
   const ACCENTS = ['#22386f', '#1f6fb2', '#0f766e', '#2f7d32', '#8a5300', '#b4372f', '#b0307a', '#55368f'];
-  const UI_DEFAULT = { theme: 'etal', accent: null, mode: 'claro', badge: 'solido', corners: 'suaves', font: 'padrao', text: 'normal', motion: 'completas', sky: true, view: '3d',
+  const UI_DEFAULT = { theme: 'etal', accent: null, mode: 'claro', badge: 'solido', corners: 'suaves', font: 'padrao', text: 'normal', motion: 'completas', sky: true, mapHour: true, layers: { labels: true, shadows: true, trees: true, cars: true }, view: '3d',
     home: { atalhos: true, live: true, colmeia: true, agenda: true, palestrantes: true, campeonatos: true, avisos: true } };
   const HOME_PARTS = [['atalhos', 'Atalhos'], ['live', 'Campus ao vivo'], ['colmeia', 'Sua colmeia'], ['agenda', 'Sua agenda'], ['palestrantes', 'Palestrantes'], ['campeonatos', 'Campeonatos'], ['avisos', 'Avisos']];
-  const uiLoad = () => { try { const v = JSON.parse(localStorage.getItem('etal-ui')); return v ? { ...UI_DEFAULT, ...v, home: { ...UI_DEFAULT.home, ...(v.home || {}) } } : null; } catch (_) { return null; } };
+  const uiLoad = () => { try { const v = JSON.parse(localStorage.getItem('etal-ui')); return v ? { ...UI_DEFAULT, ...v, home: { ...UI_DEFAULT.home, ...(v.home || {}) }, layers: { ...UI_DEFAULT.layers, ...(v.layers || {}) } } : null; } catch (_) { return null; } };
   let UI = uiLoad() || JSON.parse(JSON.stringify(UI_DEFAULT));
   const uiSave = () => { try { localStorage.setItem('etal-ui', JSON.stringify(UI)); } catch (_) { /* opcional */ } };
   /* Cores: tudo é derivado do destaque, garantindo contraste. */
@@ -204,6 +208,19 @@
     reminders: new Set(remSaved()), votes: new Set(), ratings: {}, asked: {}, contacts: [],
   });
   let S = fresh();
+  /* Mapa: na primeira visita, uma entrada de longe que termina no evento; nas próximas, uma aproximação curta
+     até a vista, o modo (Evento ou Campus) e o 3D/2D em que a pessoa estava. Guardado em etal-mapa. */
+  const MAP_KEY = 'etal-mapa';
+  const mapSaved = (() => { try { return JSON.parse(localStorage.getItem(MAP_KEY)) || null; } catch (_) { return null; } })();
+  let mapIntro = mapSaved && mapSaved.seen && !new URLSearchParams(location.search).get('intro') ? 'short' : 'full';
+  if (mapIntro === 'full') S.mapView = 'campus';
+  else if (['evento', 'campus'].includes(mapSaved.mode)) S.mapView = mapSaved.mode;
+  function saveMap() {
+    const C = window.Campus3D; if (!C || S.mapView === 'bloco' || S.journeying || C.inStack?.()) return;
+    try { localStorage.setItem(MAP_KEY, JSON.stringify({ seen: true, mode: S.mapView, flat: C.isFlat(), cam: C.getView() })); } catch (_) { /* opcional */ }
+  }
+  setInterval(() => { if (S.tab === 'map' && !mapIntro) saveMap(); }, 2500);
+  window.addEventListener('pagehide', () => { if (S.tab === 'map' && !mapIntro) saveMap(); });
 
   /* ---------------- QR fictício ---------------- */
   function qr(seed = 11, n = 25) {
@@ -242,12 +259,12 @@
   }
   function focusBox(lvl, id, width = 420, ratio = 0.78) {
     const z = zoneOf(lvl, id);
-    if (!z) return { x: 0, y: 0, w: 900, h: 430 };
+    if (!z) { const [, , w, h] = (P.viewBox || '0 0 900 430').split(' ').map(Number); return { x: 0, y: 0, w, h }; }
     const b = bbox(z);
     const w = Math.max(width, b.w + 80), h = w * ratio;
     return { x: b.x + b.w / 2 - w / 2, y: b.y + b.h / 2 - h / 2, w, h };
   }
-  const zoneName = (z) => z.roomNumber ? `${z.kind === 'laboratory' ? 'Lab' : z.kind === 'staff' ? 'Sala dos professores' : 'Sala'} ${z.kind === 'staff' ? '' : z.roomNumber}`.trim() : z.label;
+  const zoneName = (z) => z.name ? z.name : z.roomNumber ? `${z.kind === 'laboratory' ? 'Lab' : z.kind === 'staff' ? 'Sala dos professores' : 'Sala'} ${z.kind === 'staff' ? '' : z.roomNumber}`.trim() : z.label;
 
   /* ---------------- telas ---------------- */
   const Screens = {};
@@ -263,8 +280,7 @@
      Padrão dos apps de evento: o ingresso é um QR no app (Web Summit) e a conta serve ao credenciamento (Doity). */
   const guestSaved = () => { try { return JSON.parse(localStorage.getItem('etal-visitante')); } catch (_) { return null; } };
   const GUEST_KINDS = [['estudante', 'Estudante'], ['professor', 'Professor(a)'], ['profissional', 'Profissional'], ['comunidade', 'Comunidade']];
-  const pins = '<svg class="pins" viewBox="0 0 60 20" aria-hidden="true"><path d="M8 20V9M30 20V9M52 20V9"/><circle cx="8" cy="5.500" r="3.400"/><circle cx="30" cy="5.500" r="3.400"/><circle cx="52" cy="5.500" r="3.400"/></svg>';
-  let lgPending = null;
+  let lgPending = null; let lgPhys = null;
 
   function suapFields() {
     return `<form class="login-form" data-form="login" novalidate>
@@ -292,14 +308,25 @@
         <button class="btn primary big" type="submit"><span>Criar conta</span><i class="spin"></i></button>
       </form>`;
   }
-  /* Frente preenchida do crachá, igual à do início. */
-  function filledFace(p) {
-    const av = p.photo ? `<span class="lx-photo has"><img src="${p.photo}" alt=""></span>` : `<span class="lx-photo ini">${esc(p.initials)}</span>`;
-    return `<div class="lx-card-top">${mark('mark xs')}<b>etal</b>${pins}</div>
-      <div class="lx-card-id">${av}<span class="lx-filled"><b>${esc(p.name)}</b><span>${esc(p.course)}</span><small>${esc([p.year, p.campus].filter(Boolean).join(' · '))}</small></span></div>
-      <div class="lx-card-qr ok">${qr(7, 25)}<small><b>Seu código</b>${esc(p.id)}</small></div>
-      <div class="lx-card-foot">26 a 28 nov · IFRN Pau dos Ferros</div>`;
+  /* Frente do crachá. Sem perfil, é o cartão em branco que vai se preenchendo enquanto a pessoa digita. */
+  const bxClip = '<svg class="bx-clip" viewBox="0 0 40 44" aria-hidden="true"><circle cx="20" cy="7" r="5.200" fill="none" stroke="#98a2b3" stroke-width="2.800"/><rect x="13" y="11" width="14" height="15" rx="3.500" fill="#c4cbd7"/><rect x="15.500" y="13" width="3.500" height="11" rx="1.750" fill="#eef1f6"/><rect x="4" y="27" width="32" height="12" rx="3.500" fill="rgba(255,255,255,.6)" stroke="rgba(110,125,150,.55)"/></svg>';
+  function badgeFace(p) {
+    const blank = !p;
+    const av = blank ? `<span class="bx-av ph">${ic('user')}</span>` : p.photo ? `<span class="bx-av"><img src="${p.photo}" alt=""></span>` : `<span class="bx-av ini">${esc(p.initials)}</span>`;
+    const role = blank ? ['ph', 'Credencial'] : p.source === 'visitante' ? ['guest', 'Visitante'] : ['', 'Participante'];
+    return `<i class="bx-slot"></i>
+      <div class="bx-head"><span class="bx-ed">IFRN · Pau dos Ferros</span><span class="bx-brand">${mark('mark')}<b>etal</b></span>${blank ? '' : '<i class="bx-holo"></i>'}</div>
+      <span class="bx-photo">${av}</span>
+      <div class="bx-body">
+        ${blank ? `<b class="bx-name ph" data-live="name">Seu nome</b><span class="bx-sub" data-live="sub">${S.lgMode === 'guest' ? 'Visitante' : 'Matrícula do SUAP'}</span>`
+          : `<b class="bx-name">${esc(p.name)}</b><span class="bx-sub">${esc(p.course || '')}</span><small class="bx-sub2">${esc([p.year, p.campus].filter(Boolean).join(' · '))}</small>`}
+        <div class="bx-row">${blank ? `<span class="bx-qr ph">${ic('qr')}</span><small data-live="state">Seu QR aparece aqui depois de entrar</small>`
+          : `<span class="bx-qr">${qr(7, 25)}</span><small><span>Seu código</span><b>${esc(p.id)}</b></small>`}</div>
+      </div>
+      <div class="bx-role ${role[0]}"><b>${role[1]}</b><span>26 a 28 nov</span></div>
+      <i class="bx-sheen"></i>`;
   }
+  const yardText = 'ETAL · CONNECT · '.repeat(16);
 
   Screens.login = () => {
     splashDone = true;
@@ -310,18 +337,10 @@
       html: `<div class="login lx lx-cracha${guest ? ' guest-mode' : ''}">
         <header class="lx-brand dark">${mark('mark xs')}<b>etal</b><span>connect</span></header>
         <div class="lx-hang" id="lxhang">
-          <i class="lx-strap"><span>etal · etal · etal · etal · etal · etal · etal · etal · etal · etal</span></i><i class="lx-clip"></i>
-          <div class="lx-card" aria-hidden="true"><div class="lx-flip">
-            <div class="lx-face blank">
-              <div class="lx-card-top">${mark('mark xs')}<b>etal</b>${pins}</div>
-              <div class="lx-card-id"><span class="lx-photo">${ic('user')}</span><span class="lx-lines"><i class="w1" data-live="name">Seu nome</i><i class="w2" data-live="sub">${guest ? 'Visitante' : 'Matrícula do SUAP'}</i></span></div>
-              <div class="lx-card-qr"><span>${ic('qr')}</span><small data-live="state">Seu QR aparece aqui depois de entrar</small></div>
-              <div class="lx-card-foot">26 a 28 nov · IFRN Pau dos Ferros</div>
-            </div>
-            <div class="lx-face filled"></div>
-          </div></div>
-          <p class="lx-pull" aria-hidden="true">${ic('chev')}<span>Puxe o crachá para entrar</span></p>
+          <svg class="lx-yard" aria-hidden="true">${['lyA', 'lyB'].map((id) => `<g class="ly"><path class="ly-e"/><path class="ly-m" id="${id}"/><text dy="2.600"><textPath href="#${id}">${yardText}</textPath></text></g>`).join('')}</svg>
+          <div class="lx-card" aria-hidden="true"><div class="bx">${bxClip}<div class="bx-flip"><div class="bx-face blank">${badgeFace(null)}</div><div class="bx-face filled"></div></div></div></div>
         </div>
+        <p class="lx-pull" aria-hidden="true"><span class="lx-arrow">${ic('chev')}</span><span class="t1">Puxe o crachá para baixo</span><span class="t2">Solte para abrir</span></p>
         <div class="lx-bottom">
           <div class="lx-start">
             <div class="lx-seg" role="tablist" aria-label="Como você vai entrar">
@@ -332,7 +351,6 @@
           </div>
           <div class="lx-done" role="status">
             <h2 class="lx-q" data-live="hello">Tudo certo!</h2>
-            <p>Puxe o crachá para baixo para abrir o app.</p>
             <button class="btn primary big" data-act="lgenter" type="button">Abrir o app</button>
             <button class="btn ghost" data-act="lgredo" type="button">Não sou eu</button>
           </div>
@@ -340,9 +358,84 @@
       </div>`,
     };
   };
-  /* Dados aparecendo no crachá enquanto a pessoa digita. */
+
+  /* Física do crachá. O cartão pende do cordão como um pêndulo de mola: segue o dedo com resistência elástica,
+     balança com o movimento e volta quicando. Depois de entrar, o cordão tem uma folga; passou dela, o cordão
+     estica e puxa a própria tela, que desce e mostra o app já montado por baixo. */
   function mountBadgeLogin(el) {
-    const live = (k, v) => { const n = $(`[data-live="${k}"]`, el); if (n) { n.textContent = v; n.classList.add('typed'); } };
+    const lg = $('.login', el); const hang = $('#lxhang', el); const piv = $('.lx-card', el); const bx = $('.bx', el);
+    const yard = [...el.querySelectorAll('.ly')].map((g) => [...g.querySelectorAll('path')]);
+    const P = { x: 0, y: 0, a: reduce ? 0 : 0.32, vx: 0, vy: 0, va: 0, cv: 0, vc: 0, drag: null, app: null, going: false, raf: 0, last: 0, until: 0, touch: 0, filledAt: 0, ready: false };
+    lgPhys = P;
+    const SLACK = 64; const OPEN = 120;
+    const rb = (d, c) => c * (1 - 1 / ((d / c) * 0.55 + 1));
+    const rbs = (d, c) => (d < 0 ? -rb(-d, c) : rb(d, c));
+    const live = (k, v) => { const n = $(`[data-live="${k}"]`, el); if (n) { n.textContent = v; n.classList.toggle('typed', true); } };
+
+    function draw() {
+      const W = hang.clientWidth; const L = parseFloat(getComputedStyle(lg).getPropertyValue('--L')) || 46;
+      piv.style.setProperty('--px', `${P.x.toFixed(2)}px`); piv.style.setProperty('--py', `${P.y.toFixed(2)}px`); piv.style.setProperty('--pa', `${P.a.toFixed(4)}rad`);
+      bx.style.setProperty('--tilt', P.a.toFixed(3));
+      const px = W / 2 + P.x; const py = L + P.y; const tp = -110;
+      const ends = [[W / 2 - 46, px - 3.500], [W / 2 + 46, px + 3.500]];
+      yard.forEach(([e, m], i) => { const d = `M${ends[i][0].toFixed(1)} ${tp}L${ends[i][1].toFixed(1)} ${py.toFixed(1)}`; e.setAttribute('d', d); m.setAttribute('d', d); });
+      if (P.app && !P.going) {
+        const k = Math.min(1, P.cv / Math.max(1, el.clientHeight));
+        el.style.transform = P.cv > 0.3 ? `translate3d(0,${P.cv.toFixed(1)}px,0)` : '';
+        P.app.style.transform = `scale(${(0.92 + 0.08 * k).toFixed(4)})`; P.app.style.filter = `brightness(${(0.7 + 0.3 * k).toFixed(3)})`;
+        el.classList.toggle('lx-moving', P.cv > 0.3);
+      }
+    }
+    function step(t) {
+      P.raf = 0; if (!el.isConnected) return;
+      const dt = Math.min(0.033, Math.max(0.001, (t - (P.last || t - 16)) / 1000)); P.last = t;
+      if (!P.drag) {
+        P.vx += (-240 * P.x - 13 * P.vx) * dt; P.vy += (-240 * P.y - 13 * P.vy) * dt;
+        P.x += P.vx * dt; P.y += P.vy * dt;
+        if (P.app && !P.going) { P.vc += (-280 * P.cv - 26 * P.vc) * dt; P.cv += P.vc * dt; if (P.cv < 0) { P.cv = 0; P.vc = 0; } }
+      }
+      /* O cartão atrasa em relação ao ponto de pendurar: quem anda para a direita faz ele girar para a esquerda. */
+      const aT = Math.max(-0.75, Math.min(0.75, -P.vx * 0.00085));
+      P.va += (-70 * (P.a - aT) - 3.2 * P.va) * dt; P.a += P.va * dt;
+      draw();
+      const motion = Math.abs(P.x) + Math.abs(P.y) + Math.abs(P.vx) * 0.05 + Math.abs(P.vy) * 0.05 + Math.abs(P.a) * 200 + Math.abs(P.va) * 60 + P.cv + Math.abs(P.vc) * 0.05;
+      if (motion > 0.25 || P.drag || P.going || t < P.until) wake(); else { P.last = 0; P.x = P.y = P.a = 0; draw(); }
+    }
+    function wake(ms) { if (ms) P.until = Math.max(P.until, performance.now() + ms); if (!P.raf) P.raf = requestAnimationFrame(step); }
+    P.kick = (vx = 0, vy = 0, va = 0, ms = 0) => { if (reduce) { wake(ms); return; } P.vx += vx; P.vy += vy; P.va += va; wake(ms); };
+
+    /* O app é montado por baixo assim que a pessoa começa a puxar; se ela desistir, ele fica lá esperando. */
+    function arm() {
+      if (P.app || !lgPending) return;
+      navReset(); S.auth = true; S.tab = 'home';
+      el.style.animation = 'none'; el.classList.remove('in-fade', 'in-push', 'in-pop');
+      const app = build(top()); app.classList.add('lx-under'); vp.insertBefore(app, el);
+      if (app._mount) app._mount(app);
+      P.app = app; draw();
+    }
+    P.disarm = () => {
+      if (!P.app) return;
+      P.app.remove(); P.app = null; S.auth = false; P.cv = P.vc = 0;
+      el.style.transform = ''; el.classList.remove('lx-moving');
+    };
+    P.commit = (v = 0) => {
+      if (P.going) return;
+      arm(); if (!P.app) return;
+      const prof = lgPending; lgPending = null; P.going = true; S.lgMode = null;
+      const app = P.app; const H = el.clientHeight + 60;
+      const dur = reduce ? 1 : Math.round(Math.max(260, Math.min(600, (H - P.cv) / Math.max(1.5, v / 1000))));
+      setChrome(app);
+      el.classList.add('lx-moving');
+      el.style.transition = `transform ${dur}ms cubic-bezier(.3,.6,.25,1)`;
+      app.style.transition = `transform ${dur}ms cubic-bezier(.2,.7,.2,1), filter ${dur}ms ease-out`;
+      void el.offsetWidth;
+      el.style.transform = `translate3d(0,${H}px,0)`; app.style.transform = 'none'; app.style.filter = 'none';
+      P.kick(0, 420, 0.9);
+      buzz([10, 30, 18]);
+      setTimeout(() => { el.remove(); app.style.transition = app.style.transform = app.style.filter = ''; app.classList.remove('lx-under'); }, dur + 40);
+      if (prof.source === 'visitante') setTimeout(() => notify(`Boas-vindas, ${prof.first}!`, 'Sua conta de visitante está pronta. Mostre o QR do crachá na recepção.'), dur + 350);
+    };
+
     el.addEventListener('input', (e) => {
       const t = e.target;
       if (t.id === 'mat') live('sub', t.value.trim() ? `Matrícula ${t.value.trim()}` : 'Matrícula do SUAP');
@@ -351,48 +444,70 @@
         const kind = (GUEST_KINDS.find(([v]) => v === ($('[name=gkind]:checked', el) || {}).value) || GUEST_KINDS[0])[1];
         live('sub', ['Visitante', kind, $('#gcity', el)?.value.trim()].filter(Boolean).join(' · '));
       }
+      if (/^(mat|gname|gcity)$/.test(t.id) || t.name === 'gkind') P.kick(0, 0, (Math.random() - 0.5) * 0.7);
     });
     el.addEventListener('change', (e) => { if (e.target.name === 'gkind') e.target.dispatchEvent(new Event('input', { bubbles: true })); });
-    /* Puxar o crachá: o cordão estica; passando do ponto, a tela desce e mostra o app. */
-    const hang = $('#lxhang', el); const strap = $('.lx-strap', el); let y0 = null, dy = 0;
-    hang.addEventListener('pointerdown', (e) => { if (!lgPending) return; y0 = e.clientY; dy = 0; hang.setPointerCapture(e.pointerId); $('.login', el).classList.add('pulling'); });
+
+    let samples = [];
+    hang.addEventListener('pointerdown', (e) => {
+      if (P.going || e.button > 0) return;
+      P.drag = { x0: e.clientX, y0: e.clientY, bx: P.x, by: P.y + P.cv, moved: false };
+      samples = [{ t: e.timeStamp, x: e.clientX, y: e.clientY }];
+      P.vc = 0; P.touch = performance.now();
+      hang.setPointerCapture(e.pointerId); lg.classList.add('pulling'); wake();
+    });
     hang.addEventListener('pointermove', (e) => {
-      if (y0 === null) return; dy = Math.max(0, e.clientY - y0);
-      const k = dy < 140 ? dy : 140 + (dy - 140) * 0.35; strap.style.height = `calc(var(--sh) + ${k}px)`;
-      hang.classList.toggle('ready', dy > 110);
+      const d = P.drag; if (!d) return;
+      const dx = e.clientX - d.x0; const dy = e.clientY - d.y0;
+      if (!d.moved && Math.abs(dx) + Math.abs(dy) > 5) d.moved = true;
+      samples.push({ t: e.timeStamp, x: e.clientX, y: e.clientY });
+      while (samples.length > 2 && e.timeStamp - samples[0].t > 90) samples.shift();
+      const s0 = samples[0]; const sdt = Math.max(10, e.timeStamp - s0.t);
+      P.vx = ((e.clientX - s0.x) / sdt) * 1000; P.vy = ((e.clientY - s0.y) / sdt) * 1000;
+      P.x = d.bx + rbs(dx, 70);
+      const yy = d.by + dy;
+      if (lgPending) {
+        if (yy > SLACK * 0.4) arm();
+        if (yy <= SLACK) { P.y = yy < 0 ? -rb(-yy, 28) : yy; P.cv = 0; } else { const ex = yy - SLACK; const st = rb(ex, 22); P.y = SLACK + st; P.cv = ex - st; }
+        const rdy = P.cv > OPEN;
+        if (rdy !== P.ready) { P.ready = rdy; lg.classList.toggle('ready', rdy); buzz(rdy ? 14 : 6); }
+      } else P.y = rbs(yy, yy > 0 ? 80 : 28);
+      P.touch = performance.now();
     });
     const release = () => {
-      if (y0 === null) return; y0 = null; $('.login', el)?.classList.remove('pulling');
-      if (dy > 110) { lgOpenApp(); return; }
-      strap.style.height = ''; hang.classList.remove('ready');
+      const d = P.drag; if (!d) return; P.drag = null; lg.classList.remove('pulling');
+      if (!d.moved) { P.kick(0, 0, (Math.random() < 0.5 ? -1 : 1) * 1.8); return; }
+      if (lgPending && (P.cv > OPEN || (P.vy > 650 && P.cv > 14))) { P.commit(P.vy); return; }
+      if (P.cv > 0) { P.vc = Math.min(0, P.vy) * 0.4; P.vy = 0; }
+      P.ready = false; lg.classList.remove('ready'); wake();
     };
     hang.addEventListener('pointerup', release); hang.addEventListener('pointercancel', release);
+    hang.addEventListener('keydown', (e) => { if (lgPending && (e.key === 'ArrowDown' || e.key === 'Enter')) P.commit(); });
+
+    /* Até a pessoa mexer, o crachá dá um puxãozinho sozinho para mostrar que dá para puxar. */
+    const nudge = setInterval(() => {
+      if (!el.isConnected) { clearInterval(nudge); return; }
+      const now = performance.now();
+      if (lgPending && !P.drag && !P.going && now - P.touch > 2600 && now - P.filledAt > 1500) P.kick(0, 520, 0, 0);
+    }, 2800);
+    new ResizeObserver(() => wake(50)).observe(hang);
+    wake(reduce ? 50 : 400);
   }
   /* Entrou: o cartão vira e mostra o crachá preenchido. */
   function lgFilled(prof) {
     lgPending = prof;
     const lg = $('.login'); if (!lg) return;
-    $('.lx-face.filled', lg).innerHTML = filledFace(prof);
+    $('.bx-face.filled', lg).innerHTML = badgeFace(prof);
     $('[data-live="hello"]', lg).textContent = `Tudo certo, ${prof.first}!`;
     lg.classList.add('filled'); buzz([14, 40, 14]);
+    if (lgPhys) { lgPhys.filledAt = performance.now(); lgPhys.kick(0, 0, 1.3, 1400); }
     setTimeout(() => $('[data-act="lgenter"]', lg)?.focus({ preventScroll: true }), 700);
   }
-  /* A tela de entrada desce como uma cortina e o app aparece por trás. */
-  function lgOpenApp() {
-    if (!lgPending) return;
-    const prof = lgPending; lgPending = null;
-    const lg = $('.login'); const screen = $('.screen');
-    const cover = document.createElement('div'); cover.className = 'lx-cover';
-    if (lg) cover.appendChild(lg);
-    screen.appendChild(cover);
-    navReset(); S.lgMode = null; enterApp();
-    requestAnimationFrame(() => requestAnimationFrame(() => cover.classList.add('go')));
-    setTimeout(() => cover.remove(), reduce ? 50 : 750);
-    if (prof.source === 'visitante') setTimeout(() => notify(`Boas-vindas, ${prof.first}!`, 'Sua conta de visitante está pronta. Mostre o QR do crachá na recepção.'), 900);
-  }
+  /* A tela de entrada desce e o app aparece por trás. */
+  function lgOpenApp() { if (lgPending && lgPhys) lgPhys.commit(0); }
   function lgShake(msg) {
-    const c = $('.lx-card'); if (!c) return;
-    c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake'); buzz(40);
+    lgPhys?.kick(950, 0, 0.6);
+    buzz(40);
     const s = $('[data-live="state"]'); if (s) s.textContent = msg || 'Confira os dados abaixo';
   }
   /* Conta de visitante: só o necessário para o crachá e o certificado. */
@@ -632,18 +747,22 @@
         <ul class="ev-grid">${EVENT_PLACES.map((k) => `<li><button data-act="place" data-id="${k}"><i class="ev-dot" style="background:${EVENT_DOT[k]}"></i><span><b>${D.places[k].name}</b><small>${D.places[k].kind}</small></span></button></li>`).join('')}</ul>
       </div>`;
     }
-    if (!id) {
-      return `<div class="sheet-card campus-sheet"><i class="grab"></i>
-        <div class="sh-top"><div><strong>IFRN Pau dos Ferros</strong><small>Toque num prédio para ver como chegar</small></div></div>
-        <div class="place-chips">${D.placeOrder.map((k) => `<button data-act="place" data-id="${k}">${D.places[k].name}</button>`).join('')}</div>
-      </div>`;
-    }
+    if (!id) return '';
     const p = D.places[id];
-    const sq = Math.round(window.Campus3D.areaOf(id)).toLocaleString('pt-BR');
+    /* Sol nas fachadas (cartas solares da dissertação de 2012) e, com a luz do horário ligada, o sol de agora. */
+    const sunLine = () => {
+      const FAC = { norte: 'do auditório', oeste: 'da frente', leste: 'dos fundos', sul: 'da rampa' };
+      const s = window.Campus3D.sunInfo?.(skyHour);
+      if (!s || !s.up) return '';
+      const lados = Object.keys(s.facades).filter((k) => s.facades[k]).map((k) => FAC[k]);
+      return lados.length ? `<p class="sh-src">☀ Sol agora no lado ${lados.join(' e no lado ')}.</p>` : '';
+    };
     const on = window.Campus3D.routeOn(id);
     return `<div class="sheet-card campus-sheet"><i class="grab"></i>
-      <div class="sh-top"><div><strong>${p.name}</strong><small>${p.noArea ? p.kind : `${p.kind} · cerca de ${sq} m²`}</small></div><button class="iconbtn sm" data-act="placeclose" aria-label="Fechar">${ic('x')}</button></div>
+      <div class="sh-top"><div><strong>${p.name}</strong></div><button class="iconbtn sm" data-act="placeclose" aria-label="Fechar">${ic('x')}</button></div>
       <p class="sh-text">${p.text}</p>
+      ${p.sun ? sunLine() : ''}
+      ${p.projeto ? `<p class="sh-src">${p.projeto}</p>` : ''}
       <div class="sh-btns">
         ${!window.Campus3D.hasRoute(id) ? '' : `<button class="btn ${p.floors || p.link || p.plan ? 'soft' : 'primary'}" data-act="placeroute" data-id="${id}">${ic('route')}${on ? 'Rota no mapa' : 'Como chegar'}</button>`}
         ${p.floors ? `<button class="btn primary" data-act="enterbloco">${ic('building')}Ver os andares</button>` : ''}
@@ -701,16 +820,40 @@
     };
   };
   let combSeen = null;
-  function checkCombs() {
+  /* Favo recém-ganho. Quem mostrar primeiro (tela de resultado ou aviso) consome, para não repetir. */
+  function takeNewComb() {
     const got = combEarned();
-    if (combSeen === null) { combSeen = got; return; }
+    if (combSeen === null) { combSeen = got; return null; }
     const fresh = got.find((g) => !combSeen.includes(g));
     combSeen = got;
-    if (!fresh) return;
+    if (!fresh) return null;
     S.newComb = fresh;
-    const c = D.combs.find((x) => x.id === fresh);
-    setTimeout(() => { notify('Novo favo na sua colmeia', c.title); buzz([12, 30, 12]); }, 900);
-    setTimeout(() => { S.newComb = null; }, 6000);
+    setTimeout(() => { if (S.newComb === fresh) S.newComb = null; }, 6000);
+    return D.combs.find((x) => x.id === fresh);
+  }
+  function checkCombs() { const c = takeNewComb(); if (c) setTimeout(() => combToast(c), 900); }
+  /* Linha "novo favo" dentro das telas de resultado. */
+  function combRow(c) {
+    const n = combEarned().length;
+    return `<div class="res-comb">${comb('rc')}<span><small>Novo favo na colmeia</small><b>${esc(c.title)}</b></span><em><b>${n}</b>/${D.combs.length}</em></div>`;
+  }
+  /* Aviso de favo novo: cai do topo com a colmeia e o favo acendendo. Tocar abre a colmeia. */
+  let combT;
+  function combToast(c) {
+    let n = $('#combtoast');
+    if (!n) {
+      n = document.createElement('button'); n.type = 'button'; n.id = 'combtoast'; n.className = 'combtoast'; n.dataset.go = 'colmeia';
+      n.addEventListener('click', () => n.classList.remove('show'));
+      $('.screen').appendChild(n);
+    }
+    const got = combEarned();
+    n.innerHTML = `<span class="ct-comb">${comb('ct')}</span>
+      <span class="ct-tx"><small>${ic('star')}Novo favo na sua colmeia</small><b>${esc(c.title)}</b>
+      <span class="ct-bar">${D.combs.map((x) => `<i class="${got.includes(x.id) ? 'on' : ''}${x.id === c.id ? ' new' : ''}"></i>`).join('')}</span></span>
+      <span class="ct-n"><b>${got.length}</b>de ${D.combs.length}</span><i class="ct-shine"></i>`;
+    n.classList.remove('show'); void n.offsetWidth; n.classList.add('show');
+    buzz([12, 30, 12]);
+    clearTimeout(combT); combT = setTimeout(() => n.classList.remove('show'), 4800);
   }
 
   /* ---- céu do Alto Oeste: muda com o horário, sem imagem nenhuma ---- */
@@ -724,8 +867,11 @@
   const css = (c) => `rgb(${c.join(',')})`;
   let skyHour = 14 + 2 / 60;
   const skyClock = () => { const m = Math.round(skyHour * 60); return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`; };
+  /* O mapa 3D acompanha o horário do céu (noite, pôr do sol), a menos que a pessoa desligue em Personalizar. */
+  const syncMapHour = () => window.Campus3D?.setHour?.(UI.mapHour ? skyHour : null);
   function applySky() {
     const h = skyHour;
+    syncMapHour();
     let a = SKY_KEYS[0], b = SKY_KEYS[SKY_KEYS.length - 1];
     for (let i = 0; i < SKY_KEYS.length - 1; i++) if (h >= SKY_KEYS[i][0] && h <= SKY_KEYS[i + 1][0]) { a = SKY_KEYS[i]; b = SKY_KEYS[i + 1]; break; }
     const t = b === a ? 0 : Math.max(0, Math.min(1, (h - a[0]) / (b[0] - a[0])));
@@ -777,7 +923,7 @@
       ${clouds}
       <path class="sl-far" d="M-110 50V37C-92 31-76 34-60 36S-28 28-6 32 34 38 70 30V50Z"/>
       ${box(7, 4.8, 'sl-mid')}${box(4, 4.8, 'sl-mid')}${box(1, 4.8, 'sl-mid')}
-      ${box(0, 13.8, 'sl-mid')}<g class="sl-win">${wins(0, 13.8, 3)}</g>
+      ${box(0, 11.7, 'sl-mid')}<g class="sl-win">${wins(0, 11.7, 3)}</g>
       ${box(3, 9.3, 'sl-near')}<g class="sl-win">${wins(3, 9.3, 2)}</g>
       <rect class="sl-near" x="${px0.toFixed(1)}" y="${G - 7.2 * Y}" width="${(px1 - px0).toFixed(1)}" height="1.300"/>${[0, 0.33, 0.66, 1].map((t) => `<rect class="sl-near" x="${(px0 + (px1 - px0) * t - 0.3).toFixed(1)}" y="${G - 7.2 * Y}" width=".6" height="${7.2 * Y + 3}"/>`).join('')}
       ${box(6, 4.8, 'sl-near')}
@@ -830,8 +976,15 @@
     }, 3800);
   }
 
-  const FLOOR_DESC = ['Entrada, recepção e auditório', 'Salas de aula e bebedouro', 'Laboratórios e sala dos professores'];
-  const camCtrl = (cls = '') => `${dimToggle().replace('class="dim"', `class="dim ${cls}"`)}${fpsHud()}<div class="map-ctrl cam-ctrl ${cls}"><button class="iconbtn" data-act="cam" data-v="in" aria-label="Aproximar">${ic('plus')}</button><button class="iconbtn" data-act="cam" data-v="out" aria-label="Afastar">${ic('minus')}</button>${window.Campus3D.isFlat() ? '' : `<button class="iconbtn" data-act="cam" data-v="rot" aria-label="Girar a vista">${ic('rotate')}</button>`}<button class="iconbtn" data-act="cam" data-v="fit" aria-label="Enquadrar">${ic('expand')}</button></div>`;
+  const FLOOR_DESC = ['Auditório, administração e recepção', 'Salas de aula e laboratórios', 'Laboratórios, professores e coordenação de ADS'];
+  const camCtrl = (cls = '') => `${dimToggle().replace('class="dim"', `class="dim ${cls}"`)}${fpsHud()}<div class="map-ctrl cam-ctrl ${cls}"><button class="iconbtn" data-act="cam" data-v="in" aria-label="Aproximar">${ic('plus')}</button><button class="iconbtn" data-act="cam" data-v="out" aria-label="Afastar">${ic('minus')}</button>${window.Campus3D.isFlat() ? '' : `<button class="iconbtn" data-act="cam" data-v="rot" aria-label="Girar a vista">${ic('rotate')}</button>`}<button class="iconbtn" data-act="cam" data-v="fit" aria-label="Enquadrar">${ic('expand')}</button><button class="iconbtn" data-act="mapcfg" aria-label="Ajustes do mapa" aria-expanded="false">${ic('sliders')}</button></div>${mapCfg(cls)}`;
+  /* Ajustes do mapa, para brincar: hora do dia, nomes, sombras, árvores e carros. */
+  const LAYER_NAMES = [['labels', 'Nomes dos lugares'], ['shadows', 'Sombras'], ['trees', 'Árvores'], ['cars', 'Carros']];
+  const mapCfg = (cls = '') => `<div class="map-cfg ${cls}" role="dialog" aria-label="Ajustes do mapa">
+      <label class="mc-hour"><span>Hora</span><input type="range" id="mapsky" min="5" max="22.5" step="0.25" value="${skyHour}"><b id="mapskyo">${skyClock()}</b></label>
+      <button data-act="uimaphour" aria-pressed="${UI.mapHour}" class="${UI.mapHour ? 'on' : ''}"><span>Luz do horário</span><i class="switch"></i></button>
+      ${LAYER_NAMES.map(([k, t]) => `<button data-act="maplayer" data-k="${k}" aria-pressed="${UI.layers[k]}" class="${UI.layers[k] ? 'on' : ''}"><span>${t}</span><i class="switch"></i></button>`).join('')}
+    </div>`;
 
   function routeSteps(lvl, z) {
     const r = window.Campus3D.routeInfo(lvl, z.id, S.mapVia);
@@ -839,7 +992,9 @@
     const label = floorOf(lvl).label;
     const enter = `${lead}${lead ? 'entre' : 'Entre'} pela ${r.entrance}`;
     if (!r.via) return `${enter} e siga pelo corredor até a porta.`;
-    return `${enter}, suba pela ${r.via} ${r.viaWhere} até o ${label} e siga pelo corredor até a porta.`;
+    /* Rampa em duas pistas de cerca de 22 m: uma volta sobe um andar (3,45 m), perto de 8% de inclinação. */
+    const ramp = r.via === 'rampa' ? ` São ${lvl === 1 ? 'cerca de 45 m de rampa, numa volta' : `cerca de ${lvl * 45} m de rampa, em ${lvl} voltas`}, com inclinação suave, perto de 8%.` : '';
+    return `${enter}, suba pela ${r.via} ${r.viaWhere} até o ${label} e siga pelo corredor até a porta.${ramp}`;
   }
 
   function blocoSheet() {
@@ -853,7 +1008,9 @@
     const acts = D.sessions.filter((x) => x.floor === lvl && x.zone === z.id);
     const walkable = !['stairs', 'ramp', 'courtyard'].includes(z.kind);
     return `<div class="sheet-card campus-sheet"><i class="grab"></i>
-      <div class="sh-top"><div><strong>${zoneName(z)}</strong><small>${z.roomNumber && z.kind !== 'classroom' ? `${z.useLabel} · ` : ''}${floorOf(lvl).label}</small></div><button class="iconbtn sm" data-act="zoneclose" aria-label="Fechar">${ic('x')}</button></div>
+      <div class="sh-top">${z.icon && window.Campus3D?.useIcons?.[z.icon] ? `<span class="sh-ic" aria-hidden="true"><svg viewBox="-12 -12 24 24"><path d="${window.Campus3D.useIcons[z.icon]}"/></svg></span>` : ''}<div><strong>${zoneName(z)}</strong><small>${z.name ? `Sala ${z.roomNumber} · ` : z.roomNumber && z.kind !== 'classroom' ? `${z.useLabel} · ` : ''}${floorOf(lvl).label}</small></div><button class="iconbtn sm" data-act="zoneclose" aria-label="Fechar">${ic('x')}</button></div>
+      ${z.info ? `<p class="sh-text">${esc(z.info)}</p>` : ''}
+
       ${acts.length && !S.mapRoute ? `<ul class="sh-acts">${acts.slice(0, 2).map((x) => `<li data-go="activity" data-id="${x.id}"><span><b>${x.short}</b><small>${dayOf(x.day).week} ${x.day} · ${x.time}</small></span>${ic('chev')}</li>`).join('')}</ul>` : ''}
       ${walkable && lvl > 0 && S.mapRoute ? (() => { const v = S.mapVia || window.Campus3D.routeInfo(lvl, z.id, null).via; return `<div class="via" style="--k:${v === 'rampa' ? 1 : 0}"><i></i><button class="${v === 'escada' ? 'on' : ''}" data-act="via" data-v="escada">${ic('stairs')}Escada</button><button class="${v === 'rampa' ? 'on' : ''}" data-act="via" data-v="rampa">${ic('nav')}Rampa</button></div>`; })() : ''}
       ${S.mapRoute && walkable ? `<p class="sh-text steps">${routeSteps(lvl, z)}</p>` : walkable ? `<button class="btn primary" data-act="roomroute">${ic('route')}Como chegar</button>` : ''}
@@ -893,7 +1050,7 @@
         <ul class="ab-list st" ${st(5)}>${n.projects.map(([a, b]) => `<li><b>${a}</b><small>${b}</small></li>`).join('')}</ul>
         <h2 class="h st" ${st(6)}>Contato</h2>
         <ul class="ab-list st" ${st(7)}>
-          <li data-act="nadicmap" class="tap"><b>Prédio do NADIC</b><small>Ver no mapa do campus</small>${ic('chev')}</li>
+          <li data-act="openmap" data-floor="1" data-zone="sala-nadic" class="tap"><b>Sala dos bolsistas</b><small>Bloco principal, 1º andar · ver no mapa</small>${ic('chev')}</li>
           <li><b>Coordenação</b><small>${n.lead}</small></li>
           <li><b>E-mail</b><small class="sel">${n.email}</small></li>
           <li><b>Endereço</b><small>${n.address}</small></li>
@@ -1004,6 +1161,7 @@
         <ul class="cu-opts">
           ${C.canUse3D() ? `<li><span>Vista inicial</span>${uiSeg('view', [['3d', '3D'], ['2d', '2D']])}</li>` : ''}
           <li><span>Qualidade</span><div class="mini-seg wide" role="radiogroup">${[['auto', 'Auto'], ['alta', 'Completo'], ['media', 'Médio'], ['leve', 'Leve'], ['simples', '2D']].map(([v, t]) => `<button class="${q.setting === v ? 'on' : ''}" role="radio" aria-checked="${q.setting === v}" data-act="quality" data-v="${v}">${t}</button>`).join('')}</div><small class="cu-note">Em uso: ${LABEL[q.tier]}${q.setting === 'auto' ? ` · ${q.why}` : ''}. </small></li>
+          <li class="cu-row2"><button data-act="uimaphour" aria-pressed="${UI.mapHour}" class="${UI.mapHour ? 'on' : ''}"><span>Luz do mapa segue o horário</span><i class="switch"></i></button></li>
           <li class="cu-row2"><button data-act="uifps" aria-pressed="${!!UI.fps}" class="${UI.fps ? 'on' : ''}"><span>Mostrar FPS no mapa</span><i class="switch"></i></button></li>
           <li class="cu-row2"><button data-go="perf"><span>Testar desempenho neste aparelho</span>${ic('chev', 'i card-chev')}</button></li>
         </ul>
@@ -1293,9 +1451,14 @@
   };
 
   /* ---------------- overlays ---------------- */
+  /* Selo de confirmação: hexágono que estoura com favos coloridos. */
+  const HX_COLORS = ['#65b32e', '#d6332c', '#f2b230', '#8fdc5c', '#5d86dc'];
+  const hxBurst = (n = 14) => `<span class="hx-burst" aria-hidden="true">${Array.from({ length: n }, (_, i) => `<i style="--a:${Math.round((i / n) * 360 + (i % 3) * 9)}deg;--d:${62 + ((i * 37) % 46)}px;--c:${HX_COLORS[i % 5]};--s:${(0.55 + ((i * 13) % 7) / 10).toFixed(2)};--t:${(i % 4) * 40}ms"></i>`).join('')}</span>`;
+  const hxBadge = (cls = '', inner = '<path class="hx-ck" d="M-17 1l11 11 23-24"/>') => `<div class="hx-badge ${cls}"><i class="hx-ring"></i><i class="hx-ring r2"></i>${hxBurst()}<svg viewBox="-50 -50 100 100" aria-hidden="true"><path class="hx-bg" d="M0-44 38.100-22V22L0 44-38.100 22V-22Z"/>${inner}</svg></div>`;
+  const floorName = (f) => (f ? `${f}º andar` : 'Térreo');
   const SPOTS = {
     recepcao: { name: 'Recepção', sign: 'Credenciamento', where: 'Térreo', icon: 'id', seed: 21 },
-    'react-native': { name: 'Lab 204', sign: 'React Native com Expo', where: '2º andar', icon: 'qr', seed: 34 },
+    'react-native': { name: 'Lab 203', sign: 'React Native com Expo', where: '2º andar', icon: 'qr', seed: 34 },
     'saude-mental': { name: 'Auditório', sign: 'Saúde mental na era da IA', where: 'Térreo', icon: 'mic', seed: 47 },
     colega: { name: 'Colega', sign: 'Crachá de participante', where: 'Trocar contato', icon: 'contact', seed: 58 },
   };
@@ -1318,7 +1481,7 @@
         <p class="scan-hint" aria-live="polite"><span>${scanHint(spot)}</span></p>
       </div>
       <div class="scan-dock">
-        <p>Simular leitura em</p>
+        <p>Simular leitura <em>demonstração</em></p>
         <div class="spots">${Object.entries(SPOTS).map(([k, p]) => `<button class="spot ${k === 'recepcao' && !S.credAt ? 'first' : ''}" data-act="simulate" data-q="${k}"><span>${ic(p.icon)}</span><b>${p.name}</b><small>${p.where}</small></button>`).join('')}</div>
       </div>
       <div class="myqr" aria-hidden="${mode !== 'meu'}">
@@ -1327,13 +1490,54 @@
     </div>`;
   };
 
-  Overlays.welcome = () => `<div class="welcome">
-      <div class="w-burst"><svg viewBox="0 0 120 120" class="w-check" aria-hidden="true"><circle cx="60" cy="60" r="52"/><path d="M38 61l15 15 30-32"/></svg></div>
-      <h1>Participação confirmada</h1>
-      <p>Boas-vindas ao ETAL, ${esc(D.person.first)}.</p>
-      <dl class="facts"><div><dt>Entrada</dt><dd>Qua, 26 nov · ${S.credAt}</dd></div><div><dt>Local</dt><dd>Recepção · térreo</dd></div><div><dt>Atividades salvas</dt><dd>${S.saved.size}</dd></div></dl>
-      <div class="w-actions"><button class="btn primary big" data-act="closeov" data-then="credential">Ver credencial</button><button class="btn ghost" data-act="closeov">Continuar</button></div>
+  Overlays.welcome = (c = null) => `<div class="wl">
+      <div class="w-top">${hxBadge('big')}
+        <p class="w-kick">Credenciamento</p>
+        <h1>Participação confirmada</h1>
+        <p class="w-sub">Boas-vindas ao ETAL, ${esc(D.person.first)}!</p>
+      </div>
+      <div class="w-ticket">
+        <div class="wt-head">${meAv('av')}<span><b>${esc(D.person.name)}</b><small>${esc(D.person.course || '')}</small></span><span class="wt-ok">${ic('check')}Confirmado</span></div>
+        <i class="wt-cut"></i>
+        <dl class="wt-facts"><div><dt>Entrada</dt><dd>${S.credAt}</dd><small>Qua, 26 nov</small></div><div><dt>Local</dt><dd>Recepção</dd><small>Térreo</small></div><div><dt>Na agenda</dt><dd>${S.saved.size}</dd><small>atividades</small></div></dl>
+        ${c ? combRow(c) : ''}
+      </div>
+      <div class="w-actions"><button class="btn big w-main" data-act="closeov" data-then="credential">${ic('id')}Ver credencial</button><button class="btn ghost" data-act="closeov">Continuar</button></div>
     </div>`;
+
+  /* Resultado da leitura: um cartão sobe por cima da câmera. */
+  function scanSheet(html) {
+    const root = $('.scanner', ov); if (!root) return;
+    $('.scan-res', root)?.remove();
+    const d = document.createElement('div'); d.className = 'scan-res'; d.setAttribute('role', 'status');
+    d.innerHTML = `<div class="sr-card"><i class="grab"></i>${html}</div>`;
+    root.appendChild(d); root.classList.add('has-res');
+    requestAnimationFrame(() => requestAnimationFrame(() => d.classList.add('in')));
+  }
+  function scanAgain() {
+    const root = $('.scanner', ov); if (!root) return;
+    const d = $('.scan-res', root); d?.classList.remove('in');
+    root.classList.remove('has-res', 'is-locked'); delete root.dataset.busy;
+    $('.scan-hint span', ov).textContent = 'Aponte para o QR';
+    setTimeout(() => d?.remove(), 400);
+  }
+  function roomResult(q, { again, first, c }) {
+    const s = byId(q);
+    return `<div class="sr-hero">${hxBadge(again ? 'muted' : '')}<div><small class="sr-kick">${again ? 'Presença já registrada' : first ? 'Participação e presença confirmadas' : 'Presença registrada'}</small><h2>${esc(s.short)}</h2><p>${esc(s.room)} · ${floorName(s.floor)} · ${again ? `desde ${S.present[q]}` : `às ${S.present[q]}`}</p></div></div>
+      <ul class="sr-facts"><li>${ic('file')}<span><b>${s.materials.length} materiais</b><small>liberados agora</small></span></li><li>${ic('clock')}<span><b>${s.time} às ${s.end}</b><small>${esc(s.type)}</small></span></li></ul>
+      ${c ? combRow(c) : ''}
+      <div class="sr-actions"><button class="btn primary big" data-act="scanopen" data-q="${q}">Abrir a aula</button><button class="btn soft" data-act="scanagain">${ic('qr')}Ler outro QR</button></div>`;
+  }
+  function peerResult(p, { again, c }) {
+    return `<div class="sr-hero"><span class="sr-peer"><b>${esc(p.initials)}</b><i>${ic('check')}</i></span><div><small class="sr-kick">${again ? 'Vocês já são contatos' : 'Contato adicionado'}</small><h2>${esc(p.name)}</h2><p>${esc(p.course)}</p></div></div>
+      <div class="sr-tags"><span>${ic('star')}Interesse em ${esc(p.interest)}</span><span>${ic('contact')}Contato trocado agora</span></div>
+      ${c ? combRow(c) : ''}
+      <div class="sr-actions"><button class="btn primary big" data-act="scanopen" data-q="colega">Ver meus contatos</button><button class="btn soft" data-act="scanagain">${ic('qr')}Ler outro QR</button></div>`;
+  }
+  function credResult() {
+    return `<div class="sr-hero">${hxBadge('muted')}<div><small class="sr-kick">Tudo certo</small><h2>Você já está credenciado</h2><p>Entrada às ${S.credAt} na recepção</p></div></div>
+      <div class="sr-actions"><button class="btn primary big" data-act="scanopen" data-q="credential">Ver credencial</button><button class="btn soft" data-act="scanagain">${ic('qr')}Ler outro QR</button></div>`;
+  }
 
   Overlays.share = (id) => {
     const s = byId(id);
@@ -1444,6 +1648,22 @@
     setChrome(el);
     if (el._mount) el._mount(el);
   }
+  /* Entre atividades: se uma atividade sua começa em até 10 minutos, o mapa já abre com a rota até a sala.
+     Uma vez por atividade; a primeira visita ao mapa (a entrada completa) tem prioridade. */
+  const soonSeen = new Set();
+  function soonRoute() {
+    if (mapIntro === 'full') return false;
+    const now = Math.round(skyHour * 60);
+    const x = D.sessions.filter((q) => D.enrolled.includes(q.id) && q.day === D.now.day && q.floor !== undefined && !soonSeen.has(q.id))
+      .map((q) => ({ q, left: toMin(q.time) - now })).filter((o) => o.left >= 0 && o.left <= 10).sort((a, b) => a.left - b.left)[0];
+    if (!x) return false;
+    soonSeen.add(x.q.id);
+    const w = walkMin(x.q);
+    S.mapView = 'bloco'; S.mapFloor = x.q.floor; S.mapZone = x.q.zone; S.mapRoute = true; S.pending = true; S.journeying = true;
+    switchTab('map', true);
+    toast(`${x.q.short}: começa ${x.left ? `em ${x.left} min` : 'agora'}${w ? ` · ${w} min a pé` : ''}`);
+    return true;
+  }
   function switchTab(t, reset = false) {
     if (busy) return;
     if (t !== S.tab || reset || S.stacks[t].length > 1) navMark('tab');
@@ -1466,13 +1686,13 @@
     requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add('open')));
     device.classList.toggle('ov-dark', kind === 'scan');
     device.classList.toggle('ov-retro', kind === 'retro');
-    device.classList.toggle('ov-light', kind === 'welcome');
+    device.classList.toggle('ov-navy', kind === 'welcome');
     device.classList.toggle('ov-dim', kind === 'share' || kind === 'ask' || kind === 'finder');
   }
   function closeOverlay(then, fromHistory = false) {
     if (ovNav) { ovNav = false; if (!fromHistory) navDrop(); }
     ov.classList.remove('open');
-    device.classList.remove('ov-dark', 'ov-light', 'ov-dim', 'ov-retro');
+    device.classList.remove('ov-dark', 'ov-light', 'ov-navy', 'ov-dim', 'ov-retro');
     if (retro) { clearTimeout(retro.t); retro = null; }
     setTimeout(() => { ov.innerHTML = ''; ov.className = 'overlay'; if (then) then(); }, reduce ? 0 : 380);
   }
@@ -1594,6 +1814,8 @@
     lg.querySelectorAll('[data-act="lgmode"]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.v === (mode || 'suap'))));
     const box = $('.lx-form', lg); box.innerHTML = mode === 'guest' ? guestFields() : suapFields(); box.classList.remove('swap'); void box.offsetWidth; box.classList.add('swap');
     $('[data-live="name"]', lg).textContent = 'Seu nome'; $('[data-live="sub"]', lg).textContent = mode === 'guest' ? 'Visitante' : 'Matrícula do SUAP';
+    lg.querySelectorAll('.typed').forEach((n) => n.classList.remove('typed'));
+    lgPhys?.kick(0, 0, 0.5, 900);
   }
   function navReset() { const n = navUndo.length; navUndo.length = 0; if (n) { navSkip += 1; history.go(-n); } }
   function enterApp() { S.auth = true; S.tab = 'home'; show(build(top()), 'fade'); }
@@ -1624,7 +1846,7 @@
     C.attach(cv, {
       onQuality: (t) => { rerender(); if (t === 'simples') toast('Mapa em 2D para ficar mais fluido'); },
       top: $('.map-top', page).offsetHeight + 6,
-      bottom: $('.sheet-card', page).offsetHeight - 10,
+      bottom: ($('.sheet-card', page)?.offsetHeight || 10) - 10,
       skipGrow: S.pending,
       onPick: (id) => {
         if (id === S.campusPlace) return;
@@ -1637,6 +1859,28 @@
       onFloor: (l) => { navMark('floor'); S.mapFloor = l; S.mapZone = null; S.mapRoute = false; rerender(); C.goFloor(l); },
       onRoom: (l, id) => { if (id) navMark('room'); S.mapZone = id; S.mapRoute = false; rerender(); C.room(l, id); },
     });
+    if (S.mapView !== 'bloco' && mapIntro) {
+      const kind = mapIntro; mapIntro = null;
+      C.setMode(S.mapView === 'campus' ? 'campus' : 'evento');
+      if (kind === 'short' && mapSaved.cam) C.setView(mapSaved.cam);
+      if (kind === 'full') {
+        /* A entrada é sempre em 3D: o botão 3D/2D acompanha na hora. */
+        const dim = $('.dim', page);
+        if (dim) { dim.style.setProperty('--k', 0); dim.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.v !== '2d')); }
+      }
+      C.intro(kind).then(async () => {
+        if (kind === 'full' && S.tab === 'map' && S.mapView === 'campus' && !S.campusPlace) {
+          /* As abas acompanham a revelação na hora; a folha do evento entra no fim. */
+          S.mapView = 'evento';
+          const seg = $('.map-top .seg', page);
+          if (seg) { seg.style.setProperty('--k', MAP_TABS.findIndex(([v]) => v === 'evento')); seg.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.v === 'evento')); }
+          await C.eventReveal();
+          if (S.tab === 'map') rerender();
+        }
+        saveMap();
+      });
+      return;
+    }
     if (S.mapView !== 'bloco') {
       const changed = C.setMode(S.mapView === 'campus' ? 'campus' : 'evento');
       const sync = S.mapSync; S.mapSync = false;
@@ -1659,22 +1903,84 @@
 
   /* ---------------- busca ---------------- */
   const fold = (t) => String(t).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-  function finderItems(q) {
-    const items = [];
-    D.sessions.filter((x) => x.floor !== undefined).forEach((x) => items.push({ t: x.short, d: whereOf(x), k: `${x.title} ${x.speaker || ''} ${x.room}`, a: `data-k="room" data-floor="${x.floor}" data-zone="${x.zone}"`, i: 'cal', me: D.enrolled.includes(x.id) }));
-    P.floors.forEach((f) => f.zones.filter((z) => !['courtyard', 'water'].includes(z.kind)).forEach((z) => items.push({ t: zoneName(z), d: f.label, k: `${zoneName(z)} ${z.useLabel} ${z.roomNumber}`, a: `data-k="room" data-floor="${f.level}" data-zone="${z.id}"`, i: 'pin' })));
-    D.placeOrder.forEach((id) => items.push({ t: D.places[id].name, d: D.places[id].kind, k: D.places[id].name, a: `data-k="place" data-id="${id}"`, i: 'building', place: true }));
+  /* Comodidades: a busca mostra as mais perto da entrada do campus primeiro. */
+  const AMENITIES = [
+    { k: 'banheiro', t: 'Banheiro', icon: 'wc', tone: 'b', syn: ['banheiro', 'banheiros', 'wc', 'sanitario', 'toalete'] },
+    { k: 'bebedouro', t: 'Bebedouro', icon: 'drop', tone: 'w', syn: ['bebedouro', 'bebedouros', 'agua', 'beber'] },
+    { k: 'descanso', t: 'Descanso', icon: 'sofa', tone: 'g', syn: ['descanso', 'descansar', 'sofa', 'puff', 'sentar', 'relaxar'] },
+    { k: 'recepcao', t: 'Recepção', icon: 'check', tone: 'y', syn: ['recepcao', 'credenciamento', 'credencial'] },
+    { k: 'escada', t: 'Escada', icon: 'stairs', tone: 'n', syn: ['escada', 'escadas', 'subir'] },
+    { k: 'rampa', t: 'Rampa', icon: 'nav', tone: 'n', syn: ['rampa', 'acessivel', 'acessibilidade', 'cadeira'] },
+  ];
+  const minTo = (lvl, zone) => { try { return Math.max(1, Math.round(window.Campus3D.routeInfo(lvl, zone).cost / 75)); } catch (_) { return null; } };
+  function amenityItems(a) {
+    const out = [];
+    const room = (f, z, t, d) => out.push({ t, d, i: a.icon, tone: a.tone, min: minTo(f.level, z.id), a: `data-k="room" data-floor="${f.level}" data-zone="${z.id}"` });
+    P.floors.forEach((f) => f.zones.forEach((z) => {
+      if (a.k === 'banheiro' && z.kind === 'restroom') room(f, z, z.name || 'Banheiros', `Bloco principal · ${f.label}`);
+      if (a.k === 'descanso' && z.kind === 'lounge') room(f, z, z.name, `Bloco principal · ${f.label}`);
+      if (a.k === 'recepcao' && z.kind === 'reception') room(f, z, 'Recepção', `Entrada principal do bloco · ${f.label}`);
+      if (a.k === 'escada' && z.kind === 'stairs' && f.level === 0) room(f, z, 'Escada', 'Bloco principal · ala oeste');
+      if (a.k === 'rampa' && z.kind === 'ramp' && f.level === 0) room(f, z, 'Rampa', 'Bloco principal · lado da entrada');
+    }));
+    if (a.k === 'bebedouro') (window.Campus3D.pois?.() || []).filter((q) => q.kind === 'agua').forEach((q) => out.push({ t: 'Bebedouro', d: q.where, i: a.icon, tone: a.tone, min: q.min, a: `data-k="poi" data-id="${q.id}"` }));
+    return out.sort((x, y) => (x.min ?? 99) - (y.min ?? 99));
+  }
+  /* Temas: a busca por "IA", "web", "dados"… traz as atividades do tema (palavras inteiras, não pedaços). */
+  const SEARCH_TOPICS = {
+    ia: ['inteligencia artificial', 'ia', 'machine learning', 'aprendizado de maquina', 'llm', 'chatgpt', 'redes neurais'],
+    dados: ['dados', 'python', 'analise', 'estatistica', 'pandas'],
+    web: ['web', 'react', 'next', 'frontend', 'front-end', 'html', 'css', 'javascript', 'site'],
+    mobile: ['mobile', 'react native', 'expo', 'aplicativo', 'app', 'android'],
+    design: ['design', 'interface', 'interfaces', 'ux', 'ui', 'figma', 'experiencia'],
+    seguranca: ['seguranca', 'senha', 'hacker', 'privacidade', 'golpe'],
+    carreira: ['carreira', 'mercado', 'emprego', 'estagio', 'interior'],
+    jogos: ['jogos', 'games', 'campeonato', 'mortal kombat', 'fifa'],
+  };
+  const words = (t) => ` ${fold(t).replace(/[^a-z0-9]+/g, ' ')} `;
+  const hasWord = (text, w) => words(text).includes(` ${w} `) || (w.length > 3 && words(text).includes(` ${w}`));
+  const actText = (x) => `${x.title} ${x.short} ${x.type} ${x.description || ''} ${(x.learn || []).join(' ')} ${x.speaker || ''} ${x.role || ''}`;
+  function finderGroups(q) {
     const n = fold(q.trim());
-    const list = n ? items.filter((x) => fold(x.k).includes(n)) : items.filter((x) => x.me || x.place);
-    return list.slice(0, 7);
+    const groups = [];
+    const theme = n && Object.entries(SEARCH_TOPICS).find(([k, syn]) => k === n || syn.includes(n) || (n.length > 3 && k.startsWith(n)));
+    const hits = n ? AMENITIES.filter((a) => a.syn.some((w) => w.startsWith(n) || n.startsWith(w))) : [];
+    if (hits.length) groups.push(['Mais perto da entrada', hits.flatMap(amenityItems).slice(0, 6)]);
+    const actItem = (x) => ({ t: x.short, d: `${dayOf(x.day).week} ${x.day} · ${x.time} · ${x.room}`, i: 'cal', tone: 'n', live: isNow(x), a: `data-k="act" data-id="${x.id}"` });
+    if (theme) {
+      const list = D.sessions.filter((x) => theme[1].some((w) => hasWord(actText(x), w)));
+      if (list.length) groups.push([`Tema: ${theme[0] === 'ia' ? 'IA' : theme[0][0].toUpperCase() + theme[0].slice(1)}`, list.slice(0, 6).map(actItem)]);
+    }
+    const shown = new Set(groups.flatMap(([, l]) => l.map((i) => i.a)));
+    const acts = D.sessions.filter((x) => (!n || (n.length <= 3 ? hasWord(actText(x), n) : fold(actText(x)).includes(n))) && (n || D.enrolled.includes(x.id)))
+      .map(actItem).filter((i) => !shown.has(i.a));
+    if (acts.length) groups.push([n ? 'Atividades' : 'Suas atividades', acts.slice(0, 5)]);
+    if (n && n.length > 2) {
+      const seen = new Set(); const people = [];
+      D.sessions.filter((x) => x.speaker && fold(x.speaker).includes(n)).forEach((x) => { if (!seen.has(x.speaker)) { seen.add(x.speaker); people.push({ t: x.speaker, d: `${x.role || 'Palestrante'} · ${x.short}`, i: 'mic', tone: 'y', a: `data-k="act" data-id="${x.id}"` }); } });
+      if (people.length) groups.unshift(['Palestrantes', people.slice(0, 4)]);
+    }
+    if (n) {
+      const rooms = [];
+      P.floors.forEach((f) => f.zones.filter((z) => !['courtyard', 'water', 'wall', 'ramp', 'stairs', ...(hits.length ? ['restroom', 'lounge', 'reception'] : [])].includes(z.kind)).forEach((z) => {
+        const rt = `${zoneName(z)} ${z.useLabel} ${z.roomNumber} ${z.name || ''}`; if (n.length <= 3 && !/^\d+$/.test(n) ? hasWord(rt, n) : fold(rt).includes(n)) rooms.push({ t: zoneName(z), d: `${z.name && z.roomNumber ? `Sala ${z.roomNumber} · ` : ''}${f.label}`, i: 'pin', tone: 'n', a: `data-k="room" data-floor="${f.level}" data-zone="${z.id}"` });
+      }));
+      if (rooms.length) groups.push(['Salas', rooms.slice(0, 6)]);
+    }
+    const places = D.placeOrder.filter((id) => !n || fold(D.places[id].name).includes(n)).map((id) => ({ t: D.places[id].name, d: D.places[id].kind, i: 'building', tone: 'n', a: `data-k="place" data-id="${id}"` }));
+    if (places.length) groups.push([n ? 'Lugares' : 'Lugares do campus', places.slice(0, n ? 5 : 8)]);
+    return groups;
   }
   const finderList = (q) => {
-    const list = finderItems(q);
-    return list.length ? list.map((x) => `<li data-act="findergo" ${x.a}><span>${ic(x.i)}</span><div><b>${x.t}</b><small>${x.d}</small></div></li>`).join('') : '<li class="none">Nada encontrado. Tente o número da sala ou o nome da atividade.</li>';
+    const g = finderGroups(q);
+    const chips = !q.trim() ? `<li class="fd-chips">${AMENITIES.slice(0, 4).map((a) => `<button data-act="finderq" data-q="${a.k}"><span class="fd-ic ${a.tone}">${ic(a.icon)}</span>${a.t}</button>`).join('')}</li>` : '';
+    if (!g.length) return `${chips}<li class="none">Nada encontrado. Tente o número da sala, uma atividade ou “banheiro”.</li>`;
+    return chips + g.map(([h, list]) => `<li class="fd-h">${h}</li>${list.map((x) => `<li data-act="findergo" ${x.a}><span class="fd-ic ${x.tone}">${ic(x.i)}</span><div><b>${x.t}</b><small>${x.d}</small></div>${x.live ? '<em class="live">Agora</em>' : x.min ? `<em>${x.min} min</em>` : ''}</li>`).join('')}`).join('');
   };
   Overlays.finder = () => `<div class="sheet finder" role="dialog" aria-label="Buscar"><i class="grab"></i>
-      <label class="finder-in" for="fq">${ic('search')}<input id="fq" placeholder="Sala, atividade ou prédio" autocomplete="off"></label>
+      <label class="finder-in" for="fq">${ic('search')}<input id="fq" placeholder="Sala, atividade, banheiro…" autocomplete="off"></label>
       <ul class="finder-res" id="fres">${finderList('')}</ul></div>`;
+  document.addEventListener('input', (e) => { if (e.target.id === 'mapsky') { cancelAnimationFrame(skyAnim); skyHour = +e.target.value; applySky(); const o = $('#mapskyo'); if (o) o.textContent = skyClock(); } });
   document.addEventListener('input', (e) => { if (e.target.id === 'accentpick') { UI.accent = e.target.value; uiSave(); applyUI(); } });
   document.addEventListener('change', (e) => { if (e.target.id === 'accentpick') rerender(); });
   document.addEventListener('input', (e) => { if (e.target.id === 'fq') $('#fres').innerHTML = finderList(e.target.value); });
@@ -1704,27 +2010,38 @@
     setTimeout(() => {
       if (q === 'colega') {
         const peer = D.peers[S.contacts.length % D.peers.length];
-        if (!S.contacts.includes(peer)) S.contacts.unshift(peer);
-        closeOverlay(() => { if (top().s === 'network') rerender(); else push('network'); toast('Contato adicionado'); });
+        const again = S.contacts.includes(peer);
+        if (!again) S.contacts.unshift(peer);
+        const c = takeNewComb();
+        scanSheet(peerResult(peer, { again, c }));
         return;
       }
       if (q === 'recepcao') {
-        if (S.credAt) { closeOverlay(); toast('Seu credenciamento já está confirmado'); return; }
+        if (S.credAt) { scanSheet(credResult()); return; }
         S.credAt = D.now.time;
-        closeOverlay(() => { rerender(); openOverlay(Overlays.welcome(), 'welcome'); });
+        const c = takeNewComb();
+        rerender();
+        openOverlay(Overlays.welcome(c), 'welcome');
         return;
       }
       const first = !S.credAt;
       if (first) S.credAt = D.now.time;
       const again = !!S.present[q];
       if (!again) S.present[q] = D.now.time;
-      closeOverlay(() => {
-        if (S.tab !== 'home' && S.tab !== 'agenda') { S.tab = 'home'; S.stacks.home = [{ s: 'home' }]; show(build(top()), 'none'); }
-        const t = top();
-        if (t.s === 'activity' && t.p && t.p.id === q) rerender(); else push('activity', { id: q });
-        toast(again ? 'Presença já registrada' : first ? 'Participação e presença confirmadas' : 'Presença registrada');
-      });
-    }, reduce ? 60 : 1750);
+      const c = takeNewComb();
+      rerender();
+      scanSheet(roomResult(q, { again, first, c }));
+    }, reduce ? 60 : 1500);
+  }
+  /* Saída do cartão de resultado para a tela certa. */
+  function scanOpen(q) {
+    closeOverlay(() => {
+      if (q === 'colega') { if (top().s === 'network') rerender(); else push('network'); return; }
+      if (q === 'credential') { push('credential'); return; }
+      if (S.tab !== 'home' && S.tab !== 'agenda') { S.tab = 'home'; S.stacks.home = [{ s: 'home' }]; show(build(top()), 'none'); }
+      const t = top();
+      if (t.s === 'activity' && t.p && t.p.id === q) rerender(); else push('activity', { id: q });
+    });
   }
 
   document.addEventListener('click', (e) => {
@@ -1740,7 +2057,7 @@
         if (navTag() === 'screen' || S.stacks[S.tab].length < 2) navBack();
         else if (!busy) { navMark('tab'); S.stacks[S.tab].pop(); show(build(top()), 'pop'); }
         break;
-      case 'tab': switchTab(el.dataset.tab); break;
+      case 'tab': if (el.dataset.tab === 'map' && S.tab !== 'map' && soonRoute()) break; switchTab(el.dataset.tab); break;
       case 'retro': retroOpen(false); break;
       case 'retrodemo': closeOverlay(() => retroOpen(true)); break;
       case 'retroprev': retroShow(retro.i - 1); break;
@@ -1758,6 +2075,9 @@
       case 'theme': UI.theme = el.dataset.v; UI.accent = null; uiSave(); applyUI(); rerender(); break;
       case 'accent': UI.accent = el.dataset.v; uiSave(); applyUI(); rerender(); break;
       case 'uifps': UI.fps = !UI.fps; uiSave(); rerender(); break;
+      case 'uimaphour': UI.mapHour = !UI.mapHour; uiSave(); syncMapHour(); if (el.closest('.map-cfg')) { el.classList.toggle('on', UI.mapHour); el.setAttribute('aria-pressed', UI.mapHour); } else rerender(); break;
+      case 'mapcfg': { const p = el.closest('.map-screen, .page, body').querySelector('.map-cfg'); const open = !p.classList.contains('open'); p.classList.toggle('open', open); el.setAttribute('aria-expanded', open); break; }
+      case 'maplayer': { const k = el.dataset.k; UI.layers[k] = !UI.layers[k]; uiSave(); window.Campus3D.setLayers(UI.layers); el.classList.toggle('on', UI.layers[k]); el.setAttribute('aria-pressed', UI.layers[k]); break; }
       case 'perfrun': perfRun(); break;
       case 'perfuse': window.Campus3D.setQuality(el.dataset.v); rerender(); toast(`Em uso: ${TIER_LABEL[el.dataset.v]}`); break;
       case 'hudcycle': {
@@ -1796,6 +2116,8 @@
       case 'rate': S.ratings[el.dataset.id] = +el.dataset.n; rerender(); toast('Avaliação enviada'); break;
       case 'closeov': closeOverlay(el.dataset.then ? () => push(el.dataset.then) : null); break;
       case 'simulate': scanResult(el.dataset.q); break;
+      case 'scanopen': scanOpen(el.dataset.q); break;
+      case 'scanagain': scanAgain(); break;
       case 'day': S.agendaDay = +el.dataset.day; rerender(); vp.querySelector('.page .agenda-list')?.classList.add('swap'); break;
       case 'filter': S.agendaFilter = el.dataset.f; rerender(); vp.querySelector('.page .agenda-list')?.classList.add('swap'); break;
       case 'save': {
@@ -1850,9 +2172,12 @@
       case 'roomroute': navMark('route'); S.mapRoute = true; S.journeying = true; rerender(); runJourney(); break;
       case 'via': S.mapVia = el.dataset.v; S.mapRoute = true; S.journeying = true; rerender(); runJourney(); break;
       case 'finder': openOverlay(Overlays.finder(), 'finder'); setTimeout(() => $('#fq')?.focus({ preventScroll: true }), 480); break;
+      case 'finderq': { const i = $('#fq'); if (i) { i.value = el.dataset.q; $('#fres').innerHTML = finderList(i.value); } break; }
       case 'findergo': {
         const d = el.dataset;
         closeOverlay(() => {
+          if (d.k === 'act') { openActivity(d.id); return; }
+          if (d.k === 'poi') { S.mapView = 'campus'; S.campusPlace = null; window.Campus3D.setMode('campus'); window.Campus3D.select(null); switchTab('map', true); setTimeout(() => window.Campus3D.focusPoi(d.id), reduce ? 0 : 700); return; }
           if (d.k === 'place') { S.mapView = EVENT_PLACES.includes(d.id) ? 'evento' : 'campus'; window.Campus3D.setMode(S.mapView); S.campusPlace = d.id; window.Campus3D.select(d.id); switchTab('map', true); setTimeout(() => window.Campus3D.focus(d.id), reduce ? 0 : 950); return; }
           S.mapView = 'bloco'; S.mapFloor = +d.floor; S.mapZone = d.zone; S.mapRoute = true; S.pending = true; S.journeying = true; switchTab('map', true);
         });
@@ -1870,7 +2195,7 @@
       case 'toast': toast(el.dataset.msg); break;
       case 'lgmode': if ((el.dataset.v === 'guest') !== (S.lgMode === 'guest')) lgSwap(el.dataset.v === 'guest' ? 'guest' : null); break;
       case 'lgenter': lgOpenApp(); break;
-      case 'lgredo': { lgPending = null; Object.keys(D.person).forEach((k) => delete D.person[k]); Object.assign(D.person, DEMO_PERSON); store.del(SAVE_KEY); $('.login')?.classList.remove('filled'); lgSwap(S.lgMode); break; }
+      case 'lgredo': { lgPhys?.disarm?.(); lgPending = null; Object.keys(D.person).forEach((k) => delete D.person[k]); Object.assign(D.person, DEMO_PERSON); store.del(SAVE_KEY); $('.login')?.classList.remove('filled'); lgSwap(S.lgMode); lgPhys?.kick(0, 0, -1.1, 1200); break; }
       case 'guestresume': { const g = guestSaved(); if (g) { Object.keys(D.person).forEach((k) => delete D.person[k]); applyProfile(g); store.set(SAVE_KEY, g); lgFilled(g); } break; }
       case 'togglepwd': { const i = $('#pwd'); i.type = i.type === 'password' ? 'text' : 'password'; break; }
       case 'logout': { const n = navUndo.length; navUndo.length = 0; if (n) { navSkip += 1; history.go(-n); } } S = fresh(); store.del(SAVE_KEY); Object.keys(D.person).forEach((k) => delete D.person[k]); Object.assign(D.person, DEMO_PERSON); vp.innerHTML = ''; show(build({ s: 'login' }), 'fade'); break;
@@ -1978,9 +2303,25 @@
   const ORG_KEY = 'etal-org'; const orgSeen = new Set();
   const orgRead = () => { try { return { notices: [], moves: {}, creds: {}, ...JSON.parse(localStorage.getItem(ORG_KEY)) }; } catch (_) { return { notices: [], moves: {}, creds: {} }; } };
   function orgWrite(fn) { const o = orgRead(); fn(o); try { localStorage.setItem(ORG_KEY, JSON.stringify(o)); } catch (_) { /* sem armazenamento */ } }
+  /* Números de sala definidos no painel (etal-org.rooms, chave "andar:zona"). Troca na planta, nas atividades e no 3D. */
+  function applyRoomNumbers(rooms) {
+    P.floors.forEach((f) => f.zones.forEach((z) => {
+      if (!z.roomNumber) return;
+      if (z.num0 === undefined) z.num0 = z.roomNumber;
+      const v = (rooms[`${f.level}:${z.id}`] || '').trim(); const n = v || z.num0;
+      z.orgNumber = !!v && v !== z.num0;
+      if (n === z.roomNumber) return;
+      z.roomNumber = n; if (!z.name) z.label = zoneName(z);
+      const re = new RegExp(`(data-num="${f.level}:${z.id}"[^>]*>)[^<]*<`, 'g');
+      f.svg = f.svg.replace(re, `$1${esc(n)}<`); f.svgDark = f.svgDark.replace(re, `$1${esc(n)}<`);
+    }));
+    D.sessions.forEach((x) => { if (x.floor === undefined) return; const z = zoneOf(x.floor, x.zone); if (z && z.roomNumber) x.room = zoneName(z); });
+    window.Campus3D?.syncRooms?.();
+  }
   function orgSync(first) {
     const o = orgRead();
     Object.entries(o.moves).forEach(([id, m]) => { const x = byId(id); if (x) Object.assign(x, m); });
+    applyRoomNumbers(o.rooms || {});
     const fresh = o.notices.filter((n) => !orgSeen.has(n.id));
     fresh.slice().reverse().forEach((n) => { orgSeen.add(n.id); D.notices.unshift({ time: n.time, title: n.title, text: n.text, fresh: true, org: true }); });
     if (!first && fresh.length) { notify(fresh[0].title, fresh[0].text); buzz([20, 40, 20]); if (S.auth && vp.querySelector('.page')) rerender(); }
@@ -2003,8 +2344,10 @@
   if (qs.get('tema')) UI.mode = qs.get('tema') === 'dark' ? 'escuro' : 'claro';
   if (qs.get('paleta')) UI.theme = qs.get('paleta');
   applyUI();
+  syncMapHour();
+  window.Campus3D.setLayers?.(UI.layers);
   matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => { if (UI.mode === 'auto') { applyUI(); rerender(); } });
-  if (UI.view === '2d') window.Campus3D.setFlat(true);
+  if (mapSaved && mapSaved.seen ? mapSaved.flat : UI.view === '2d') window.Campus3D.setFlat(true);
   if (q === 'login') splashDone = true;
   if (!q) {
     const saved = store.get(SAVE_KEY);
@@ -2043,7 +2386,8 @@
     org: () => { ok(); S.tab = 'profile'; S.stacks.profile.push({ s: 'org' }); },
     sobre: () => { S.tab = 'profile'; S.stacks.profile.push({ s: 'sobre' }); },
     materiais: () => { S.stacks.home.push({ s: 'materials' }); },
-    boasvindas: () => { ok(); setTimeout(() => openOverlay(Overlays.welcome(), 'welcome'), 300); },
+    boasvindas: () => { ok(); S.newComb = 'cred'; setTimeout(() => openOverlay(Overlays.welcome(D.combs[0]), 'welcome'), 300); },
+    favo: () => { ok(); S.present['react-native'] = D.now.time; setTimeout(() => { S.newComb = 'react-native'; combToast(D.combs[1]); }, 900); },
     credencial: () => { ok(); S.tab = 'profile'; S.stacks.profile.push({ s: 'credential' }); },
     avisos: () => { S.stacks.home.push({ s: 'notices' }); },
     perfil: () => { S.tab = 'profile'; },
