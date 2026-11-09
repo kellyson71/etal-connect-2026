@@ -15,6 +15,7 @@ Leia `DOCUMENTACAO.html`, `docs/contexto.html`, `docs/mapas.html` e `docs/proxim
 - `app/` é a primeira versão, em React (Vinext). Ficou como legado; o produto é o `prototipo/`, com um motor de mapa só (`campus3d.js`). A exportação antiga continua em `npm run export:html:react`, que precisa de `npm ci`.
 - Depois de mudar arquivos do protótipo, rodar `npm run pwa` para atualizar a versão do cache offline (`prototipo/sw.js`).
 - Atualizar esta exportação local não autoriza alterar compartilhamento ou publicar a versão hospedada. O manifest retido pertence ao Site original.
+- Documentação visual: `npm run docs` gera os 22 slides de `DOCUMENTACAO.html`, `docs/tecnico/documentacao-tecnica.html`, a demo isolada do app e as notas de continuidade. Conteúdo em `scripts/build-documentacao.py`; aparência/movimento em `docs/assets/apresentacao.{css,js}`; notas em `scripts/build-export-docs.py`; referências em `docs/tecnico/*.md` e `scripts/documentacao_base.py`. `npm run docs:pdf` exporta o PDF com Playwright/Chrome locais. Capturas e contratos vêm de `scripts/capturar-documentacao.py` (SQLite temporário); cenas amplas, de `scripts/capturar-cenas-documentacao.py`. Fontes e créditos em `docs/assets/fontes/`. Os iframes usam sandbox, API desligada e armazenamento isolado; não alterar o estado do app do usuário nem incluir documentos no cache PWA. Não apresentar o registro como levantamento formal de requisitos ou homologação oficial; GPS e origem a partir de QR continuam propostas.
 
 ## Protótipo (`prototipo/`)
 
