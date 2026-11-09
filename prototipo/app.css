@@ -1487,3 +1487,7 @@ button.teacher{width:100%;text-align:left;padding:8px 10px;margin:0 -2px;border-
 .dim{border-radius:999px;background:color-mix(in srgb,var(--card) 80%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 8px 22px -12px rgba(20,32,64,.45),inset 0 0 0 1px color-mix(in srgb,var(--line) 70%,transparent)}
 .dim>i{border-radius:999px}
 .map-ctrl.cam-ctrl{border-radius:18px;background:color-mix(in srgb,var(--card) 80%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 8px 22px -12px rgba(20,32,64,.45)}
+/* Entrada com o servidor ligado */
+.lg-note{margin:0 0 12px;font-size:13.5px;line-height:1.4;color:var(--muted)}
+.lg-err.ok{color:var(--green-ink,#2f6b1d);background:var(--green-50,#e9f5e1)}
+.lg-err.ok a{font-weight:700;color:inherit}
