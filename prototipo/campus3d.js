@@ -1327,7 +1327,18 @@
     for (let i = 0; i < n; i++) { const a0 = at(i / n, h - deep), m = at((i + 0.5) / n, h), a1 = at((i + 1) / n, h - deep); ctx.moveTo(a0[0], a0[1]); ctx.lineTo(m[0], m[1]); ctx.lineTo(a1[0], a1[1]); }
     ctx.stroke();
   }
+  /* A cobertura do pátio fica por cima do bloco de entrada azul: ali ela some, como se fosse transparente,
+     para a entrada aparecer no mapa. */
   function drawCover(b, c) {
+    if (b.id !== 'patio') { drawCoverBody(b, c); return; }
+    const q = entryPoly();
+    const sil = hull([...q.map((v) => P(v[0], v[1], 0)), ...q.map((v) => P(v[0], v[1], ENTRY_H))]);
+    ctx.save(); ctx.beginPath(); ctx.rect(-1e5, -1e5, 2e5, 2e5);
+    sil.forEach((u, i) => (i ? ctx.lineTo(u[0], u[1]) : ctx.moveTo(u[0], u[1]))); ctx.closePath(); ctx.clip('evenodd');
+    drawCoverBody(b, c);
+    ctx.restore();
+  }
+  function drawCoverBody(b, c) {
     const p = b.p; const g = growOf(...centroid(p)); const h = Math.max(0.2, b.h * g);
     const sel = selected === b.id;
     /* pilares nos cantos e no meio dos lados maiores */
