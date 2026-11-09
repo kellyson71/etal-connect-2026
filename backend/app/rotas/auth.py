@@ -39,27 +39,12 @@ def suap_inicio(request: Request):
     return resp
 
 
-@rota.get('/suap/retorno')
-def suap_retorno(request: Request, code: str = '', state: str = '', db: Session = Depends(sessao)):
-    c = config()
-    if not code or not state or state != request.cookies.get(ESTADO):
-        return RedirectResponse(f'{publica(request)}/?login=erro', 302)
-    try:
-        with httpx.Client(timeout=15) as h:
-            tok = h.post(c.suap_token_url, data={'grant_type': 'authorization_code', 'code': code,
-                                                 'redirect_uri': f'{publica(request)}/api/auth/suap/retorno',
-                                                 'client_id': c.suap_client_id, 'client_secret': c.suap_client_secret})
-            tok.raise_for_status()
-            eu = h.get(c.suap_userinfo_url, headers={'Authorization': f'Bearer {tok.json()["access_token"]}'})
-            eu.raise_for_status()
-            d = eu.json()
-    except (httpx.HTTPError, KeyError, ValueError) as erro:
-        print(f'login SUAP falhou: {erro!r}', flush=True)  # aparece nos logs da hospedagem
-        return RedirectResponse(f'{publica(request)}/?login=suap-indisponivel', 302)
+def _pessoa_suap(d: dict, db: Session) -> Pessoa | None:
+    """Cria ou atualiza a pessoa a partir dos dados do SUAP (OAuth2 /api/eu/ ou /api/rh/eu/ do JWT)."""
     matricula = str(d.get('identificacao') or d.get('matricula') or '').strip()
     if not matricula:
-        return RedirectResponse(f'{publica(request)}/?login=erro', 302)
-    email = (d.get('email') or d.get('email_preferencial') or '').lower() or None
+        return None
+    email = (d.get('email') or d.get('email_academico') or d.get('email_preferencial') or '').lower() or None
     p = db.scalar(select(Pessoa).where(Pessoa.matricula == matricula))
     if not p:
         p = Pessoa(tipo='suap', matricula=matricula)
@@ -73,10 +58,67 @@ def suap_retorno(request: Request, code: str = '', state: str = '', db: Session 
     p.foto_url = foto or p.foto_url
     p.papel = _papel(matricula, email)
     db.commit()
+    return p
+
+
+@rota.get('/suap/retorno')
+def suap_retorno(request: Request, code: str = '', state: str = '', db: Session = Depends(sessao)):
+    c = config()
+    if not code or not state or state != request.cookies.get(ESTADO):
+        return RedirectResponse(f'{publica(request)}/?login=erro', 302)
+    try:
+        with httpx.Client(timeout=15) as h:
+            tok = h.post(c.suap_token_url, data={'grant_type': 'authorization_code', 'code': code,
+                                                 'redirect_uri': f'{publica(request)}/api/auth/suap/retorno',
+                                                 'client_id': c.suap_client_id, 'client_secret': c.suap_client_secret})
+            tok.raise_for_status()
+            cab = {'Authorization': f'Bearer {tok.json()["access_token"]}'}
+            eu = h.get(c.suap_userinfo_url, headers=cab)
+            if eu.status_code == 404:  # versões novas do SUAP: /api/rh/eu/
+                eu = h.get(f'{c.suap_api_url.rstrip("/")}/api/rh/eu/', headers=cab)
+            eu.raise_for_status()
+            d = eu.json()
+    except (httpx.HTTPError, KeyError, ValueError) as erro:
+        print(f'login SUAP falhou: {erro!r}', flush=True)  # aparece nos logs da hospedagem
+        return RedirectResponse(f'{publica(request)}/?login=suap-indisponivel', 302)
+    p = _pessoa_suap(d, db)
+    if not p:
+        return RedirectResponse(f'{publica(request)}/?login=erro', 302)
     resp = RedirectResponse(f'{publica(request)}/?login=ok', 302)
     resp.delete_cookie(ESTADO, path='/api/auth')
     abrir_sessao(resp, p)
     return resp
+
+
+class LoginSuap(BaseModel):
+    matricula: str = Field(min_length=3, max_length=40)
+    senha: str = Field(min_length=1, max_length=200)
+
+
+@rota.post('/suap/senha', dependencies=[Depends(limitar('suap-senha', 8))])
+def suap_senha(l: LoginSuap, response: Response, db: Session = Depends(sessao)):
+    """Entrada direta com matrícula e senha: pede o token JWT à API do SUAP e lê o perfil.
+    A senha e os tokens só passam por aqui; nada é guardado."""
+    base = config().suap_api_url.rstrip('/')
+    try:
+        with httpx.Client(timeout=20) as h:
+            tok = h.post(f'{base}/api/token/pair', json={'username': l.matricula.strip(), 'password': l.senha})
+            if tok.status_code in (400, 401, 403):
+                raise HTTPException(401, 'Matrícula ou senha incorreta.')
+            tok.raise_for_status()
+            eu = h.get(f'{base}/api/rh/eu/', headers={'Authorization': f'Bearer {tok.json()["access"]}'})
+            eu.raise_for_status()
+            d = eu.json()
+    except HTTPException:
+        raise
+    except (httpx.HTTPError, KeyError, ValueError) as erro:
+        print(f'login SUAP (senha) falhou: {erro!r}', flush=True)
+        raise HTTPException(503, 'O SUAP não respondeu. Tente de novo em instantes.') from None
+    p = _pessoa_suap(d, db)
+    if not p:
+        raise HTTPException(502, 'O SUAP não informou a matrícula.')
+    abrir_sessao(response, p)
+    return {'ok': True}
 
 
 class Visitante(BaseModel):

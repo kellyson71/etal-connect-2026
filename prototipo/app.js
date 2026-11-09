@@ -286,17 +286,12 @@
   let lgPending = null; let lgPhys = null;
 
   function suapFields() {
-    if (API) return `<form class="login-form" data-form="login" novalidate>
-        <p class="lg-note">Você vai para a página do SUAP, entra lá e volta para cá. A sua senha não passa pelo app.</p>
-        <p class="lg-err" id="lgerr" role="alert" hidden></p>
-        <button class="btn primary big" type="submit"><span>Entrar com o SUAP</span><i class="spin"></i></button>
-      </form>`;
     return `<form class="login-form" data-form="login" novalidate>
         <label class="field" for="mat"><span>Matrícula</span><input id="mat" inputmode="numeric" autocomplete="username" placeholder="Sua matrícula do SUAP" required></label>
         <label class="field" for="pwd"><span>Senha</span><div class="pwd"><input id="pwd" type="password" autocomplete="current-password" placeholder="A mesma senha do SUAP" required><button type="button" class="iconbtn sm" data-act="togglepwd" aria-label="Mostrar senha">${ic('eye')}</button></div></label>
         <p class="lg-err" id="lgerr" role="alert" hidden></p>
         <button class="btn primary big" type="submit"><span>Entrar com o SUAP</span><i class="spin"></i></button>
-        <button class="btn ghost" type="button" id="lgdemo" data-act="demo" hidden>Entrar com dados de exemplo</button>
+        ${API ? `<button class="btn ghost" type="button" data-act="suapoauth">Entrar pela página do SUAP</button>` : '<button class="btn ghost" type="button" id="lgdemo" data-act="demo" hidden>Entrar com dados de exemplo</button>'}
       </form>`;
   }
   function guestFields() {
@@ -740,7 +735,9 @@
     };
   };
 
-  const searchBtn = () => `<button class="search" data-act="finder">${ic('search')}<span>Buscar sala ou atividade</span></button>`;
+  const searchBtn = () => `<button class="search" data-act="finder">${ic('search')}<span>Buscar sala, atividade, banheiro…</span></button>`;
+  /* Parte de baixo do mapa: controles à direita, abas e busca perto do polegar e, por último, a folha do lugar. */
+  const mapBottom = (sheet, extra = '') => `<div class="map-bottom ${/class="sheet-card[^"]*detail/.test(sheet) ? 'has-detail' : ''}">${camCtrl()}<div class="map-dock">${extra}${viewSeg()}${searchBtn()}</div>${sheet}</div>`;
   const MAP_TABS = [['evento', 'Evento'], ['bloco', 'Andares'], ['campus', 'Campus']];
   const viewSeg = () => `<div class="seg" style="--k:${MAP_TABS.findIndex(([v]) => v === S.mapView)}"><i class="seg-ind"></i>${MAP_TABS.map(([v, t]) => `<button class="${S.mapView === v ? 'on' : ''}" data-act="mapview" data-v="${v}">${t}</button>`).join('')}</div>`;
   const dimToggle = () => { if (!window.Campus3D.canUse3D()) return ''; const f = window.Campus3D.isFlat(); return `<div class="dim" role="group" aria-label="Tipo de vista" style="--k:${f ? 1 : 0}"><i></i><button class="${f ? '' : 'on'}" data-act="dim" data-v="3d" aria-pressed="${!f}">3D</button><button class="${f ? 'on' : ''}" data-act="dim" data-v="2d" aria-pressed="${f}">2D</button></div>`; };
@@ -749,12 +746,6 @@
 
   function campusSheet() {
     const id = S.campusPlace;
-    if (!id && S.mapView === 'evento') {
-      return `<div class="sheet-card campus-sheet ev-sheet"><i class="grab"></i>
-        <strong>Onde o ETAL acontece</strong>
-        <ul class="ev-grid">${EVENT_PLACES.map((k) => `<li><button data-act="place" data-id="${k}"><i class="ev-dot" style="background:${EVENT_DOT[k]}"></i><span><b>${D.places[k].name}</b><small>${D.places[k].kind}</small></span></button></li>`).join('')}</ul>
-      </div>`;
-    }
     if (!id) return '';
     const p = D.places[id];
     /* Sol nas fachadas (cartas solares da dissertação de 2012) e, com a luz do horário ligada, o sol de agora. */
@@ -766,7 +757,7 @@
       return lados.length ? `<p class="sh-src">☀ Sol agora no lado ${lados.join(' e no lado ')}.</p>` : '';
     };
     const on = window.Campus3D.routeOn(id);
-    return `<div class="sheet-card campus-sheet"><i class="grab"></i>
+    return `<div class="sheet-card campus-sheet detail"><i class="grab"></i>
       <div class="sh-top"><div><strong>${p.name}</strong></div><button class="iconbtn sm" data-act="placeclose" aria-label="Fechar">${ic('x')}</button></div>
       <p class="sh-text">${p.text}</p>
       ${p.sun ? sunLine() : ''}
@@ -782,10 +773,9 @@
 
   Screens.campus = () => ({
     html: `<div class="map-screen campus">
-      <div class="map-top">${searchBtn()}${viewSeg()}</div>
       <canvas class="campus3d" tabindex="0" role="application" aria-label="Mapa do campus IFRN Pau dos Ferros, com a área do evento em destaque. Arraste para mover e use os botões para aproximar."></canvas>
-      ${camCtrl()}
-      ${campusSheet()}
+      ${fpsHud()}
+      ${mapBottom(campusSheet())}
     </div>`,
     mount: mountCampus,
   });
@@ -985,7 +975,8 @@
   }
 
   const FLOOR_DESC = ['Auditório, administração e recepção', 'Salas de aula e laboratórios', 'Laboratórios, professores e coordenação de ADS'];
-  const camCtrl = (cls = '') => `${dimToggle().replace('class="dim"', `class="dim ${cls}"`)}${fpsHud()}<div class="map-ctrl cam-ctrl ${cls}"><button class="iconbtn" data-act="cam" data-v="in" aria-label="Aproximar">${ic('plus')}</button><button class="iconbtn" data-act="cam" data-v="out" aria-label="Afastar">${ic('minus')}</button>${window.Campus3D.isFlat() ? '' : `<button class="iconbtn" data-act="cam" data-v="rot" aria-label="Girar a vista">${ic('rotate')}</button>`}<button class="iconbtn" data-act="cam" data-v="fit" aria-label="Enquadrar">${ic('expand')}</button><button class="iconbtn" data-act="mapcfg" aria-label="Ajustes do mapa" aria-expanded="false">${ic('sliders')}</button></div>${mapCfg(cls)}`;
+  /* Controles do mapa na zona do polegar: coluna à direita, logo acima da busca. */
+  const camCtrl = () => `<div class="map-side">${dimToggle()}<div class="map-ctrl cam-ctrl"><button class="iconbtn" data-act="cam" data-v="in" aria-label="Aproximar">${ic('plus')}</button><button class="iconbtn" data-act="cam" data-v="out" aria-label="Afastar">${ic('minus')}</button>${window.Campus3D.isFlat() ? '' : `<button class="iconbtn" data-act="cam" data-v="rot" aria-label="Girar a vista">${ic('rotate')}</button>`}<button class="iconbtn" data-act="cam" data-v="fit" aria-label="Enquadrar">${ic('expand')}</button><button class="iconbtn" data-act="mapcfg" aria-label="Ajustes do mapa" aria-expanded="false">${ic('sliders')}</button></div>${mapCfg()}</div>`;
   /* Ajustes do mapa, para brincar: hora do dia, nomes, sombras, árvores e carros. */
   const LAYER_NAMES = [['labels', 'Nomes dos lugares'], ['shadows', 'Sombras'], ['trees', 'Árvores'], ['cars', 'Carros']];
   const mapCfg = (cls = '') => `<div class="map-cfg ${cls}" role="dialog" aria-label="Ajustes do mapa">
@@ -1015,7 +1006,7 @@
     if (!z) return `<div class="sheet-card campus-sheet"><i class="grab"></i><div class="sh-top"><div><strong>${floorOf(lvl).label}</strong><small>${FLOOR_DESC[lvl]}</small></div></div><p class="sh-text">Toque numa sala para ver o que acontece nela.</p></div>`;
     const acts = D.sessions.filter((x) => x.floor === lvl && x.zone === z.id);
     const walkable = !['stairs', 'ramp', 'courtyard'].includes(z.kind);
-    return `<div class="sheet-card campus-sheet"><i class="grab"></i>
+    return `<div class="sheet-card campus-sheet detail"><i class="grab"></i>
       <div class="sh-top">${z.icon && window.Campus3D?.useIcons?.[z.icon] ? `<span class="sh-ic" aria-hidden="true"><svg viewBox="-12 -12 24 24"><path d="${window.Campus3D.useIcons[z.icon]}"/></svg></span>` : ''}<div><strong>${zoneName(z)}</strong><small>${z.name ? `Sala ${z.roomNumber} · ` : z.roomNumber && z.kind !== 'classroom' ? `${z.useLabel} · ` : ''}${floorOf(lvl).label}</small></div><button class="iconbtn sm" data-act="zoneclose" aria-label="Fechar">${ic('x')}</button></div>
       ${z.info ? `<p class="sh-text">${esc(z.info)}</p>` : ''}
 
@@ -1030,12 +1021,9 @@
     const idx = S.mapFloor === null ? 0 : S.mapFloor + 1;
     return {
       html: `<div class="map-screen campus">
-        <div class="map-top">${searchBtn()}${viewSeg()}
-          <div class="seg ${window.Campus3D.canUse3D() ? 'four' : ''}" style="--k:${window.Campus3D.canUse3D() ? idx : idx - 1}"><i class="seg-ind"></i>${window.Campus3D.canUse3D() ? `<button class="${idx === 0 ? 'on' : ''}" data-act="floorsel" data-v="all">Todos</button>` : ''}${[0, 1, 2].map((l) => `<button class="${S.mapFloor === l ? 'on' : ''}" data-act="floorsel" data-v="${l}">${l === 0 ? 'Térreo' : `${l}º`}</button>`).join('')}</div>
-        </div>
         <canvas class="campus3d" tabindex="0" role="application" aria-label="Bloco principal em volume, com os três andares. Toque num andar ou numa sala."></canvas>
-        ${camCtrl('low')}
-        ${blocoSheet()}
+        ${fpsHud()}
+        ${mapBottom(blocoSheet(), `<div class="seg ${window.Campus3D.canUse3D() ? 'four' : ''}" style="--k:${window.Campus3D.canUse3D() ? idx : idx - 1}"><i class="seg-ind"></i>${window.Campus3D.canUse3D() ? `<button class="${idx === 0 ? 'on' : ''}" data-act="floorsel" data-v="all">Todos</button>` : ''}${[0, 1, 2].map((l) => `<button class="${S.mapFloor === l ? 'on' : ''}" data-act="floorsel" data-v="${l}">${l === 0 ? 'Térreo' : `${l}º`}</button>`).join('')}</div>`)}
       </div>`,
       mount: mountCampus,
     };
@@ -1700,7 +1688,7 @@
     device.classList.toggle('ov-dim', kind === 'share' || kind === 'ask' || kind === 'finder');
   }
   function closeOverlay(then, fromHistory = false) {
-    camStop();
+    camStop(); kbTrack(false);
     if (ovNav) { ovNav = false; if (!fromHistory) navDrop(); }
     ov.classList.remove('open');
     device.classList.remove('ov-dark', 'ov-light', 'ov-navy', 'ov-dim', 'ov-retro');
@@ -1856,8 +1844,8 @@
     startHud(page);
     C.attach(cv, {
       onQuality: (t) => { rerender(); if (t === 'simples') toast('Mapa em 2D para ficar mais fluido'); },
-      top: $('.map-top', page).offsetHeight + 6,
-      bottom: ($('.sheet-card', page)?.offsetHeight || 10) - 10,
+      top: 8,
+      bottom: ($('.map-dock', page)?.offsetHeight || 0) + ($('.sheet-card', page)?.offsetHeight || 0),
       skipGrow: S.pending,
       onPick: (id) => {
         if (id === S.campusPlace) return;
@@ -1883,7 +1871,7 @@
         if (kind === 'full' && S.tab === 'map' && S.mapView === 'campus' && !S.campusPlace) {
           /* As abas acompanham a revelação na hora; a folha do evento entra no fim. */
           S.mapView = 'evento';
-          const seg = $('.map-top .seg', page);
+          const seg = $('.map-dock .seg[style*="--k"]:not(.four)', page) || $('.map-dock .seg', page);
           if (seg) { seg.style.setProperty('--k', MAP_TABS.findIndex(([v]) => v === 'evento')); seg.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.v === 'evento')); }
           await C.eventReveal();
           if (S.tab === 'map') rerender();
@@ -1982,19 +1970,51 @@
     if (places.length) groups.push([n ? 'Lugares' : 'Lugares do campus', places.slice(0, n ? 5 : 8)]);
     return groups;
   }
-  const finderList = (q) => {
-    const g = finderGroups(q);
-    const chips = !q.trim() ? `<li class="fd-chips">${AMENITIES.slice(0, 4).map((a) => `<button data-act="finderq" data-q="${a.k}"><span class="fd-ic ${a.tone}">${ic(a.icon)}</span>${a.t}</button>`).join('')}</li>` : '';
-    if (!g.length) return `${chips}<li class="none">Nada encontrado. Tente o número da sala, uma atividade ou “banheiro”.</li>`;
-    return chips + g.map(([h, list]) => `<li class="fd-h">${h}</li>${list.map((x) => `<li data-act="findergo" ${x.a}><span class="fd-ic ${x.tone}">${ic(x.i)}</span><div><b>${x.t}</b><small>${x.d}</small></div>${x.live ? '<em class="live">Agora</em>' : x.min ? `<em>${x.min} min</em>` : ''}</li>`).join('')}`).join('');
+  /* Busca no celular: a barra fica colada no teclado e os resultados crescem para cima,
+     com o melhor logo acima da barra (perto do polegar). Enter abre o melhor já com a rota. */
+  const actItemF = (x) => ({ t: x.short, d: `${dayOf(x.day).week} ${x.day} · ${x.time} · ${x.room}`, i: 'cal', tone: 'n', live: isNow(x), a: `data-k="act" data-id="${x.id}"` });
+  function finderActs() {
+    const upcoming = D.sessions.filter((x) => !x.simple && (x.day > D.now.day || (x.day === D.now.day && toMin(x.end) > toMin(D.now.time))));
+    const days = [...new Set(upcoming.map((x) => x.day))].sort((p, q) => p - q);
+    return days.map((d) => [d === D.now.day ? 'Hoje' : `${dayOf(d).week} ${d}`, upcoming.filter((x) => x.day === d).sort((p, q) => toMin(p.time) - toMin(q.time)).map(actItemF)]);
+  }
+  const routable = (x) => /data-k="(room|place)"/.test(x.a) || (/data-k="poi"/.test(x.a) && window.Campus3D.hasRoute((/data-id="([^"]+)"/.exec(x.a) || [])[1])) || (/data-k="act"/.test(x.a) && (() => { const s = byId((/data-id="([^"]+)"/.exec(x.a) || [])[1]); return s && s.floor !== undefined && s.floor !== null; })());
+  const finderList = (q, mode) => {
+    const g = mode === 'acts' ? finderActs() : q.trim() ? finderGroups(q) : [];
+    if (!g.length) return q.trim() ? '<li class="none">Nada encontrado. Tente o número da sala, uma atividade ou “banheiro”.</li>' : '';
+    const best = g[0][1][0];
+    const row = (x) => `<li data-act="findergo" ${x.a} class="${x === best ? 'best' : ''}"><span class="fd-ic ${x.tone}">${ic(x.i)}</span><div><b>${x.t}</b><small>${x.d}</small></div>${x.live ? '<em class="live">Agora</em>' : x.min ? `<em>${x.min} min</em>` : ''}${x === best && routable(x) ? `<button class="fd-route" data-act="findergo" data-route="1" ${x.a} aria-label="Rota até ${esc(x.t)}">${ic('route')}Rota</button>` : ''}</li>`;
+    /* De baixo para cima: o primeiro grupo fica junto da barra, e o melhor item, logo acima dela. */
+    return g.slice().reverse().map(([h, list]) => `<li class="fd-h">${h}</li>${list.slice().reverse().map(row).join('')}`).join('');
   };
-  Overlays.finder = () => `<div class="sheet finder" role="dialog" aria-label="Buscar"><i class="grab"></i>
-      <label class="finder-in" for="fq">${ic('search')}<input id="fq" placeholder="Sala, atividade, banheiro…" autocomplete="off"></label>
-      <ul class="finder-res" id="fres">${finderList('')}</ul></div>`;
+  function finderRender() {
+    const i = $('#fq'); const res = $('#fres'); if (!i || !res) return;
+    res.innerHTML = finderList(i.value, S.finderMode);
+    res.closest('.finder').classList.toggle('has-res', !!res.innerHTML);
+    $('[data-act="finderacts"]')?.classList.toggle('on', S.finderMode === 'acts');
+    res.scrollTop = res.scrollHeight;
+  }
+  Overlays.finder = () => `<div class="sheet finder" role="dialog" aria-label="Buscar">
+      <ul class="finder-res" id="fres" aria-live="polite"></ul>
+      <div class="fd-chips">${AMENITIES.slice(0, 3).map((a) => `<button data-act="finderq" data-q="${a.k}"><span class="fd-ic ${a.tone}">${ic(a.icon)}</span>${a.t}</button>`).join('')}</div>
+      <div class="finder-bar"><label class="finder-in" for="fq">${ic('search')}<input id="fq" type="search" enterkeyhint="go" placeholder="Sala, atividade, banheiro…" autocomplete="off"></label><button class="fd-acts" data-act="finderacts" aria-label="Ver as atividades">${ic('cal')}<span>Atividades</span></button></div></div>`;
+  /* Teclado na tela: a busca sobe junto com ele (visualViewport funciona no Chrome e no Safari). */
+  function kbTrack(on) {
+    const vv = window.visualViewport; if (!vv) return;
+    const f = () => { const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop); ov.style.setProperty('--kb', `${Math.round(kb)}px`); ov.classList.toggle('kb', kb > 60); };
+    if (on) { vv.addEventListener('resize', f); vv.addEventListener('scroll', f); kbTrack.f = f; f(); } else if (kbTrack.f) { vv.removeEventListener('resize', kbTrack.f); vv.removeEventListener('scroll', kbTrack.f); kbTrack.f = null; ov.style.removeProperty('--kb'); ov.classList.remove('kb'); }
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.target.id !== 'fq' || e.key !== 'Enter') return;
+    e.preventDefault();
+    const best = $('#fres li.best'); if (!best) return;
+    e.target.blur();
+    ($('.fd-route', best) || best).click();
+  });
   document.addEventListener('input', (e) => { if (e.target.id === 'mapsky') { cancelAnimationFrame(skyAnim); skyHour = +e.target.value; applySky(); const o = $('#mapskyo'); if (o) o.textContent = skyClock(); } });
   document.addEventListener('input', (e) => { if (e.target.id === 'accentpick') { UI.accent = e.target.value; uiSave(); applyUI(); } });
   document.addEventListener('change', (e) => { if (e.target.id === 'accentpick') rerender(); });
-  document.addEventListener('input', (e) => { if (e.target.id === 'fq') $('#fres').innerHTML = finderList(e.target.value); });
+  document.addEventListener('input', (e) => { if (e.target.id === 'fq') { if (e.target.value.trim()) S.finderMode = null; finderRender(); } });
 
   /* ---------------- ações ---------------- */
   function scanResult(q) {
@@ -2108,6 +2128,7 @@
       }
       case 'scan': openOverlay(Overlays.scan(el.dataset.mode || 'ler'), 'scan'); if ((el.dataset.mode || 'ler') === 'ler') setTimeout(camStart, 350); break;
       case 'camstart': camStart(); break;
+      case 'suapoauth': el.classList.add('loading'); location.href = API.url('/api/auth/suap'); break;
       case 'scanmode': { const r = $('.scanner', ov); if (r.dataset.busy) break; r.dataset.mode = el.dataset.v; $('.scan-seg', ov).style.setProperty('--k', el.dataset.v === 'meu' ? 1 : 0); break; }
       case 'torch': { const r = $('.scanner', ov); const on = r.classList.toggle('torch'); el.setAttribute('aria-pressed', on); break; }
       case 'flip': el.classList.toggle('flipped'); el.classList.remove('hint'); S.flipSeen = true; buzz(8); break;
@@ -2184,13 +2205,17 @@
       case 'zoneclose': if (navTag() === 'room') { navBack(); break; } S.mapZone = null; S.mapRoute = false; rerender(); window.Campus3D.room(S.mapFloor, null); break;
       case 'roomroute': navMark('route'); S.mapRoute = true; S.journeying = true; rerender(); runJourney(); break;
       case 'via': S.mapVia = el.dataset.v; S.mapRoute = true; S.journeying = true; rerender(); runJourney(); break;
-      case 'finder': openOverlay(Overlays.finder(), 'finder'); setTimeout(() => $('#fq')?.focus({ preventScroll: true }), 480); break;
-      case 'finderq': { const i = $('#fq'); if (i) { i.value = el.dataset.q; $('#fres').innerHTML = finderList(i.value); } break; }
+      case 'finder': S.finderMode = null; openOverlay(Overlays.finder(), 'finder'); kbTrack(true); setTimeout(() => $('#fq')?.focus({ preventScroll: true }), 480); break;
+      case 'finderq': { const i = $('#fq'); if (i) { i.value = el.dataset.q; S.finderMode = null; finderRender(); } break; }
+      case 'finderacts': { const i = $('#fq'); S.finderMode = S.finderMode === 'acts' ? null : 'acts'; if (i && S.finderMode) i.value = ''; finderRender(); if (S.finderMode) i?.blur(); break; }
       case 'findergo': {
-        const d = el.dataset;
+        if (e.target.closest('.fd-route') && el !== e.target.closest('.fd-route')) break;
+        const d = { ...el.dataset };
+        if (d.k === 'act' && d.route) { const x = byId(d.id); if (x && x.floor !== undefined && x.floor !== null) Object.assign(d, { k: 'room', floor: x.floor, zone: x.zone }); }
         closeOverlay(() => {
           if (d.k === 'act') { openActivity(d.id); return; }
-          if (d.k === 'poi') { S.mapView = 'campus'; S.campusPlace = null; window.Campus3D.setMode('campus'); window.Campus3D.select(null); switchTab('map', true); setTimeout(() => window.Campus3D.focusPoi(d.id), reduce ? 0 : 700); return; }
+          if (d.k === 'place' && d.route) { S.mapView = EVENT_PLACES.includes(d.id) ? 'evento' : 'campus'; window.Campus3D.setMode(S.mapView); S.campusPlace = d.id; window.Campus3D.select(d.id); switchTab('map', true); setTimeout(() => { if (window.Campus3D.hasRoute(d.id)) window.Campus3D.route(d.id); else window.Campus3D.focus(d.id); rerender(); }, reduce ? 0 : 700); return; }
+          if (d.k === 'poi') { S.mapView = 'campus'; S.campusPlace = null; window.Campus3D.setMode('campus'); window.Campus3D.select(null); switchTab('map', true); setTimeout(() => (d.route && window.Campus3D.hasRoute(d.id) ? window.Campus3D.route(d.id) : window.Campus3D.focusPoi(d.id)), reduce ? 0 : 700); return; }
           if (d.k === 'place') { S.mapView = EVENT_PLACES.includes(d.id) ? 'evento' : 'campus'; window.Campus3D.setMode(S.mapView); S.campusPlace = d.id; window.Campus3D.select(d.id); switchTab('map', true); setTimeout(() => window.Campus3D.focus(d.id), reduce ? 0 : 950); return; }
           S.mapView = 'bloco'; S.mapFloor = +d.floor; S.mapZone = d.zone; S.mapRoute = true; S.pending = true; S.journeying = true; switchTab('map', true);
         });
@@ -2281,7 +2306,6 @@
     const f = e.target.closest('[data-form="login"]');
     if (!f) return;
     e.preventDefault();
-    if (API) { $('button[type="submit"]', f).classList.add('loading'); location.href = API.url('/api/auth/suap'); return; }
     const btn = $('button[type="submit"]', f);
     const err = $('#lgerr');
     const say = (m) => { err.textContent = m; err.hidden = false; lgShake(); };
@@ -2294,6 +2318,13 @@
     const state = $('[data-live="state"]'); if (state) state.textContent = 'Consultando o SUAP…';
     $('.login')?.classList.add('asking');
     try {
+      if (API) {
+        /* Servidor do ETAL: pede o token JWT ao SUAP, lê o perfil e abre a sessão. A senha não fica guardada. */
+        try { await API.post('/api/auth/suap/senha', { matricula: mat, senha: pwd }); } catch (x) { say(x.message); return; }
+        const me = await API.get('/api/eu'); apiState(me);
+        lgFilled(D.person);
+        return;
+      }
       const r = await fetch('api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ matricula: mat, senha: pwd }) });
       const j = await r.json().catch(() => { throw new TypeError('sem servidor'); });
       if (!r.ok) { say(j.erro || 'Não foi possível entrar.'); if (r.status >= 500) $('#lgdemo').hidden = false; return; }

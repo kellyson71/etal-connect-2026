@@ -1499,3 +1499,59 @@ button.teacher{width:100%;text-align:left;padding:8px 10px;margin:0 -2px;border-
 .cam-dock p{margin:0 0 10px;font-size:14px;line-height:1.4;color:var(--ink-2)}
 .cam-dock.with-demo{padding-bottom:6px}
 .cam-dock.with-demo+.scan-dock{margin-top:0;border-radius:0}
+/* ---------- Mapa na zona do polegar (celular primeiro) ----------
+   Controles numa coluna à direita, abas e busca embaixo, logo acima da barra de abas; a folha do lugar fica por último. */
+.map-bottom{position:absolute;z-index:3;left:0;right:0;bottom:0;display:flex;flex-direction:column;pointer-events:none}
+.map-bottom>*{pointer-events:auto}
+.map-side{position:relative;align-self:flex-end;display:flex;flex-direction:column;align-items:center;gap:8px;margin:0 12px 10px 0;pointer-events:none}
+.map-side>*{pointer-events:auto}
+.map-side .dim{position:relative;left:auto;top:auto;width:46px;grid-template-columns:1fr;grid-template-rows:1fr 1fr}
+.map-side .dim>i{left:3px;right:3px;top:3px;bottom:auto;width:auto;height:calc(50% - 3px);transform:translateY(calc(var(--k)*100%))}
+.map-side .dim button{padding:9px 0}
+.map-side .map-ctrl.cam-ctrl,.map-side .map-ctrl.cam-ctrl.low{position:relative;right:auto;top:auto}
+.map-side .map-cfg{top:auto;bottom:0;right:58px}
+.map-dock{display:flex;flex-direction:column;gap:8px;padding:0 12px 12px}
+.map-dock .seg{border-radius:999px;padding:4px;background:color-mix(in srgb,var(--card) 80%,transparent);backdrop-filter:blur(14px) saturate(1.4);-webkit-backdrop-filter:blur(14px) saturate(1.4);box-shadow:0 8px 22px -12px rgba(20,32,64,.45)}
+.map-dock .seg .seg-ind{top:4px;bottom:4px;border-radius:999px;background:var(--navy);box-shadow:0 6px 14px -6px var(--navy)}
+.map-dock .seg button{padding:8px 0;font-size:13px;font-weight:600;color:var(--ink-2);letter-spacing:.01em}
+.map-dock .seg button.on{color:#fff}
+.map-dock .seg.four{width:min(100%,300px);align-self:center;padding:3px;background:color-mix(in srgb,var(--card) 70%,transparent)}
+.map-dock .seg.four .seg-ind{top:3px;bottom:3px;background:var(--card);box-shadow:0 2px 8px -2px rgba(20,32,64,.3)}
+.map-dock .seg.four button{padding:5px 0;font-size:12px}
+.map-dock .seg.four button.on{color:var(--accent-ink)}
+.map-dock .search{box-shadow:0 8px 22px -12px rgba(20,32,64,.45)}
+.map-bottom .sheet-card{position:relative;left:auto;right:auto;bottom:auto}
+.map-bottom.has-detail .map-dock{display:none}
+/* ---------- Busca colada no teclado ----------
+   --kb é a altura do teclado (visualViewport). Os resultados crescem para cima; o melhor fica junto da barra. */
+.overlay.finder .ov-panel{bottom:var(--kb,0px);transition:transform .45s var(--ease),bottom .18s ease-out}
+.sheet.finder{display:flex;flex-direction:column;padding:6px 14px 16px;border-radius:calc(24px*var(--rk,1)) calc(24px*var(--rk,1)) 0 0}
+.overlay.kb .sheet.finder{padding-bottom:8px}
+.finder .finder-res{height:auto;max-height:min(50vh,calc(100dvh - var(--kb,0px) - 230px));overflow-y:auto;overscroll-behavior:contain;margin:4px 0 2px}
+.sheet.finder:not(.has-res) .finder-res{display:none}
+.finder .finder-res li.fd-h{padding:12px 2px 4px}
+.finder .finder-res li.best{background:color-mix(in srgb,var(--accent-ink) 7%,transparent);border-radius:14px;padding:9px 8px;border-top-color:transparent}
+.finder .fd-route{display:inline-flex;align-items:center;gap:5px;flex:none;padding:7px 12px;border:0;border-radius:999px;background:var(--navy);color:#fff;font:600 13px var(--ui);cursor:pointer}
+.finder .fd-route .i{width:15px;height:15px}
+.finder .fd-chips{display:flex;gap:8px;overflow-x:auto;padding:6px 0 8px;scrollbar-width:none}
+.finder .fd-chips::-webkit-scrollbar{display:none}
+.finder .fd-chips button{flex:none}
+.finder-bar{display:flex;align-items:center;gap:8px}
+.finder-bar .finder-in{flex:1;min-width:0;margin:0}
+.sheet.finder{min-width:0;max-width:100%;overflow:hidden}
+.finder-in input[type=search]::-webkit-search-cancel-button{display:none}
+.fd-acts{display:inline-flex;align-items:center;gap:6px;flex:none;height:46px;padding:0 12px;border:1px solid var(--line);border-radius:calc(15px*var(--rk,1));background:var(--card);font:600 13px var(--ui);color:var(--ink-2);cursor:pointer}
+.fd-acts .i{width:17px;height:17px}
+.fd-acts.on{background:var(--navy);border-color:var(--navy);color:#fff}
+@media (max-width:360px){.fd-acts span{display:none}}
+/* ---------- Produção (com servidor): sem moldura de celular ----------
+   No celular a tela já é inteira; em telas largas o app vira uma coluna na altura toda, sem aparelho falso. */
+html.prod .stage-note,html.prod .stage-sky,html.prod .hw,html.prod .home-ind{display:none}
+@media (min-width:521px){
+  html.prod .stage{padding:0;gap:0;background:var(--bg)}
+  html.prod .device{--w:min(100vw,480px);--h:100vh;--h:100dvh;padding:0;border-radius:0;background:none;box-shadow:0 0 0 1px var(--line)}
+  html.prod .screen{border-radius:0;box-shadow:none}
+  html.prod .statusbar{height:0;padding:0;font-size:0}
+  html.prod .statusbar *{display:none}
+  html.prod .overlay{top:0}
+}

@@ -10,5 +10,5 @@ done
 cp -r assets vendor ../publico/
 cd ..
 # Na Vercel a API fica na mesma origem e os avisos chegam por consulta periódica.
-echo "window.ETAL_CONFIG = { api: '', vivo: 'consulta' };" > publico/config.js
+echo "window.ETAL_CONFIG = { api: '', vivo: 'consulta' }; document.documentElement.classList.add('prod');" > publico/config.js
 echo "site em publico/: $(ls publico | wc -l) itens"
