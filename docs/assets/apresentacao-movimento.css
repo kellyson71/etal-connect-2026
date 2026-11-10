@@ -452,3 +452,20 @@
 .dec .icon{width:26px;height:26px;stroke:var(--mint)}
 .dec b{font:700 23px/1.2 Manrope,system-ui,sans-serif;color:#fff}
 .app-points.num{counter-reset:n}
+
+/* Telas do participante: um passo por slide, o celular em destaque */
+.destaque{flex:1;display:grid;grid-template-columns:1fr auto;align-items:center;gap:70px;padding:0 40px 0 30px;min-height:0}
+.d-num{display:block;font:800 150px/.8 Manrope,system-ui,sans-serif;letter-spacing:-6px;color:var(--navy);margin-bottom:22px}
+.d-txt h3{font:800 54px/1.06 Manrope,system-ui,sans-serif;letter-spacing:-1.6px;color:var(--ink);max-width:620px;margin:0 0 42px}
+.d-trilha{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.d-trilha li{display:flex;align-items:center;gap:14px;font:600 19px/1.2 Manrope,system-ui,sans-serif;color:color-mix(in srgb,var(--ink) 38%,transparent)}
+.d-trilha li span{width:30px;height:30px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:14px;font-weight:800;border:2px solid currentColor}
+.d-trilha li.done{color:color-mix(in srgb,var(--ink) 58%,transparent)}
+.d-trilha li.on{color:var(--ink);font-weight:800}
+.d-trilha li.on span{background:var(--navy);border-color:var(--navy);color:var(--mint)}
+.d-phone{position:relative;display:grid;place-items:center}
+.d-phone::before{content:"";position:absolute;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--mint) 38%,transparent),transparent 68%);z-index:0}
+.phone-frame.lg{position:relative;z-index:1;width:282px;height:612px;border-radius:44px;padding:9px}
+.phone-frame.lg video{border-radius:36px}
+.slide.active .d-phone .phone-frame.lg{animation:d-sobe .9s cubic-bezier(.2,.8,.2,1) both}
+@keyframes d-sobe{from{transform:translateY(40px) scale(.96);opacity:0}to{transform:none;opacity:1}}
