@@ -4,15 +4,19 @@ Rodar depois de mudar qualquer arquivo do protótipo: a versão é um hash do co
 então o celular percebe a mudança e oferece "Atualizar".
 Uso: python3 scripts/build-pwa.py
 """
+import subprocess
+import sys
 import hashlib
 import json
 import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1] / 'prototipo'
+subprocess.run([sys.executable, str(ROOT.parent / 'scripts/empacotar-mapa3d.py')], check=True)
 PAGES = ['./', 'index.html', 'manifest.webmanifest', 'config.js', 'api.js', 'vendor/jsQR.js', 'app.js', 'app.css', 'data.js', 'plan-data.js', 'campus-data.js',
-         'campus-fundo.js', 'campus-limpo.js', 'campus-entorno.js', 'sprites.js', 'campus3d.js']
+         'campus-fundo.js', 'campus-limpo.js', 'campus-entorno.js', 'campus-verde.js', 'sprites.js', 'campus3d.js']
 ASSETS = sorted(str(p.relative_to(ROOT)) for p in (ROOT / 'assets').rglob('*') if p.suffix in ('.svg', '.png', '.jpg', '.webp') and 'ref2012' not in p.parts)  # plantas de 2012: só o painel
+ASSETS += sorted(str(p.relative_to(ROOT)) for p in (ROOT / 'mapa3d').rglob('*') if p.suffix in ('.js', '.css', '.html', '.glb'))
 files = PAGES[1:] + ASSETS
 digest = hashlib.sha256()
 for f in files:
