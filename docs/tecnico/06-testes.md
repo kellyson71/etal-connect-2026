@@ -19,7 +19,7 @@ Na revisão documental de 09/11/2026, a execução local de .venv/bin/python -m 
 | test_suap_sem_configuracao | Comportamento sem aplicação OAuth2 configurada |
 | test_homologacao | Código de teste e QRs do ambiente de homologação |
 | test_atividade_sem_sala_sem_andar | Atividade sem localização não inventa andar |
-| test_login_suap_com_senha | Entrada direta e erro de senha, com cliente HTTP simulado |
+| test_login_suap_com_senha | `POST /api/auth/suap/senha` com cliente HTTP simulado: senha errada responde 401; senha certa responde 200, abre a sessão (`/api/eu` traz o nome) e a foto relativa vira URL completa do SUAP |
 
 Os testes usam SQLite de teste, programação de exemplo e sessões de desenvolvimento. O teste SUAP não faz chamadas a uma conta real. Não há cobertura automatizada completa das telas do app.
 

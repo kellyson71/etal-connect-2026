@@ -17,7 +17,7 @@ async def ciclo(_app: FastAPI):
     yield
 
 
-app = FastAPI(title='ETAL Connect', version='0.3.0', lifespan=ciclo, docs_url='/api/docs', openapi_url='/api/openapi.json')
+app = FastAPI(title='ETAL Connect', version='0.5.0', lifespan=ciclo, docs_url='/api/docs', openapi_url='/api/openapi.json')
 app.add_middleware(CORSMiddleware, allow_origins=[o.strip() for o in config().origens.split(',') if o.strip()],
                    allow_credentials=True, allow_methods=['*'], allow_headers=['*'])
 for r in (auth.rota, eu.rota, publico.rota, org.rota, homologacao.rota):

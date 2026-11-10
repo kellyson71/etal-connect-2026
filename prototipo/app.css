@@ -1555,3 +1555,5 @@ html.prod .stage-note,html.prod .stage-sky,html.prod .hw,html.prod .home-ind{dis
   html.prod .statusbar *{display:none}
   html.prod .overlay{top:0}
 }
+/* Sem a dica "Puxe o crachá para baixo": o botão "Abrir o app" basta (o gesto continua funcionando). */
+.filled .lx-pull{display:none!important}

@@ -55,7 +55,7 @@
    "role": "Desenvolvedor mobile",
    "floor": 2,
    "zone": "labs-norte-2",
-   "room": "Lab 203",
+   "room": "Lab 210",
    "description": "Da ideia ao primeiro app. Explore componentes, navegação e as primeiras telas de um aplicativo com React Native e Expo.",
    "requirements": "Notebook com Node.js instalado e conhecimentos básicos de JavaScript.",
    "learn": [
@@ -104,7 +104,7 @@
    "role": "Desenvolvedor backend",
    "floor": 2,
    "zone": "labs-norte",
-   "room": "Lab 201",
+   "room": "Lab 209",
    "description": "Crie sua primeira API com Python e FastAPI. Entenda rotas, validação de dados e documentação interativa.",
    "requirements": "Notebook com Python instalado e noções básicas de programação.",
    "learn": [
@@ -241,7 +241,7 @@
    "role": "Desenvolvedor web",
    "floor": 1,
    "zone": "sala-interna-norte-1",
-   "room": "Sala 105",
+   "room": "Sala 107",
    "description": "Explore componentes e rotas na construção de uma aplicação web com React e Next.js.",
    "requirements": "Notebook com Node.js e noções de JavaScript.",
    "learn": [

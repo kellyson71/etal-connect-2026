@@ -11,14 +11,25 @@ Protótipo → experimentar telas → ajustar com o usuário → implementar flu
 | Parte | Evidência no código | Limite atual |
 |---|---|---|
 | App de participante | Telas, navegação, crachá, agenda, leitor de QR e personalização em prototipo/ | O modo padrão usa api: null, com dados de exemplo |
-| Identificação | Simulação local SuaPy; API com OAuth2, entrada direta SUAP e link de visitante | OAuth2 e e-mail dependem de configuração; autenticar não credencia |
+| Identificação | Simulação local SuaPy; API com OAuth2 (se `/api/eu/` der 404, tenta `/api/rh/eu/`), entrada direta com matrícula e senha (`POST /api/auth/suap/senha`, 8 por minuto) e link de visitante | OAuth2 e e-mail dependem de configuração; autenticar não credencia |
 | Programação e agenda | API de consulta e de atividades salvas, com verificação de vagas | Programação embutida e seed são demonstrativas, baseadas em 2025 |
 | Presença | API valida QR assinado e janela; credencia e registra atividade sem duplicar | Não grava presença no SUAP nem emite certificado oficial |
-| Mapa | Campus, três andares, busca e rota no Canvas | Sem localização GPS interna; números e alocações demonstrativos |
+| Mapa | Campus, três andares, busca e rota no Canvas; pátio interno só com jardim no térreo (vão aberto com mureta nos andares de cima); bloco de entrada azul no modelo do campus | Sem localização GPS interna; números e alocações demonstrativos |
 | Avisos e salas | API de avisos, troca de sala e numeração; cliente SSE / consulta | SSE usa memória de um processo; consulta periódica na configuração Vercel |
 | Organização | Painel desktop e rotas /api/org | Participantes, gráficos, credenciamento e CSV do painel ainda usam simulação |
 | PWA | Manifest e service worker guardam o app e o mapa | API e QR não entram no cache; não existe fila de presença offline |
 | Materiais e certificados | Telas e dados de demonstração | Entrega acadêmica e certificação oficial não estão integradas |
+
+## Requisitos de uso observados no código
+
+Usabilidade no celular (RNF), versão 0.4.2:
+
+| Id | Requisito | Situação |
+|---|---|---|
+| RNF-U1 | Uso com uma mão: no Mapa, as abas Evento, Andares e Campus e a busca ficam embaixo, na zona do polegar; os controles (3D/2D, zoom, girar, enquadrar, ajustes) ficam numa coluna à direita. O cartão "Onde o ETAL acontece" saiu. | feito |
+| RNF-U2 | Busca colada no teclado (`visualViewport`), com atalhos Banheiro, Bebedouro e Descanso e o botão Atividades. Os resultados crescem para cima, com o melhor junto da barra. Enter abre o melhor já com a rota (salas, lugares, atividades com sala e bebedouros, que têm rota desde a portaria). | feito |
+| RNF-U3 | Com servidor (API ligada), o app roda em `html.prod`, sem moldura de celular nem enfeites de demonstração. Em telas largas, é uma coluna de até 480 px na altura toda. | feito |
+| RNF-U4 | Leitor de QR com a câmera em todos os modos (`BarcodeDetector` ou `jsQR`). | feito |
 
 ## Decisões que precisam de conversa com a organização
 
