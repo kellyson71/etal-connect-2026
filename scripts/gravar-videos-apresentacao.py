@@ -1,9 +1,14 @@
 """Grava os vídeos curtos da apresentação com o motor real do mapa e do app (dados de exemplo).
 
-Uso: python3 scripts/gravar-videos-apresentacao.py   (precisa de Playwright, Chrome e ffmpeg; serve a pasta do repositório)
+Uso: python3 scripts/gravar-videos-apresentacao.py [nomes]   (precisa de Playwright, Chrome e ffmpeg; serve a pasta do repositório)
 Saída: docs/assets/videos/*.mp4 e um quadro de capa .webp de cada um.
+
+Os vídeos p-* (entrar, agenda, presença, aviso) usam a API de verdade com uma conta do SUAP:
+  ETAL_API=http://127.0.0.1:8011 ETAL_MATRICULA=... ETAL_SENHA=... ETAL_CAMERA=camera.y4m python3 scripts/gravar-videos-apresentacao.py p-entrar p-agenda p-presenca p-aviso
+A API local precisa de ETAL_ORIGENS=http://127.0.0.1:8771, ETAL_JANELA_PRESENCA=0 e da matrícula em ETAL_ORGANIZACAO (para o aviso).
+ETAL_CAMERA é um vídeo .y4m em pé com o QR assinado de uma atividade: vira a câmera do Chrome. A senha não é gravada em lugar nenhum.
 """
-import http.server, shutil, socketserver, subprocess, sys, tempfile, threading
+import http.server, os, shutil, socketserver, subprocess, sys, tempfile, threading
 from functools import partial
 from pathlib import Path
 from playwright.sync_api import sync_playwright
@@ -15,19 +20,25 @@ CHROME = '/usr/bin/google-chrome-stable'
 ARGS = ['--headless=new', '--use-gl=angle', '--enable-unsafe-swiftshader', '--disable-gpu-vsync']
 ISOLA = "try{localStorage.clear();localStorage.setItem('etal-mapa',JSON.stringify({seen:true,mode:'evento',flat:false}))}catch(e){}"
 
+API = os.environ.get('ETAL_API', '').rstrip('/')
+
+socketserver.TCPServer.allow_reuse_address = True
+
 def servir():
     h = partial(http.server.SimpleHTTPRequestHandler, directory=str(ROOT))
     h.log_message = lambda *a: None
-    s = socketserver.ThreadingTCPServer(('127.0.0.1', 0), h); threading.Thread(target=s.serve_forever, daemon=True).start()
+    s = socketserver.ThreadingTCPServer(('127.0.0.1', 8771 if API else 0), h); threading.Thread(target=s.serve_forever, daemon=True).start()
     return s, f'http://127.0.0.1:{s.server_address[1]}'
 
-def gravar(p, nome, url, roteiro, tam=(1440, 810), corte=1.2, dpr=1):
+def gravar(p, nome, url, roteiro, tam=(1440, 810), corte=1.2, dpr=1, estado=None, salvar=None, args=(), init=''):
     tmp = Path(tempfile.mkdtemp())
-    b = p.chromium.launch(executable_path=CHROME, args=ARGS)
-    ctx = b.new_context(viewport={'width': tam[0], 'height': tam[1]}, device_scale_factor=dpr, record_video_dir=str(tmp), record_video_size={'width': tam[0], 'height': tam[1]})
-    ctx.add_init_script(ISOLA)
+    b = p.chromium.launch(executable_path=CHROME, args=ARGS + list(args))
+    ctx = b.new_context(viewport={'width': tam[0], 'height': tam[1]}, device_scale_factor=dpr, record_video_dir=str(tmp), record_video_size={'width': tam[0], 'height': tam[1]},
+                        storage_state=estado if estado and Path(estado).exists() else None)
+    ctx.add_init_script(ISOLA + init)
     pg = ctx.new_page(); pg.goto(url); pg.wait_for_timeout(1200)
     roteiro(pg)
+    if salvar: ctx.storage_state(path=salvar)
     video = pg.video.path(); ctx.close(); b.close()
     mp4 = OUT / f'{nome}.mp4'
     subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-ss', str(corte), '-i', str(video), '-c:v', 'libx264', '-preset', 'slow', '-crf', '24', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-an', str(mp4)], check=True)
@@ -35,11 +46,58 @@ def gravar(p, nome, url, roteiro, tam=(1440, 810), corte=1.2, dpr=1):
     shutil.rmtree(tmp, ignore_errors=True)
     print(nome, round(float(subprocess.run(['ffprobe','-v','error','-show_entries','format=duration','-of','csv=p=0',str(mp4)],capture_output=True,text=True).stdout or 0),1), 's', round(mp4.stat().st_size / 1e6, 1), 'MB')
 
+def real(p, base, quer):
+    """Telas do participante com a API e o SUAP de verdade: entra, monta a agenda, lê o QR com a câmera e recebe um aviso."""
+    app = base + '/prototipo/index.html'
+    sessao = Path(tempfile.gettempdir()) / 'etal-gravacao-sessao.json'
+    F = dict(tam=(430, 932), corte=1.4, estado=str(sessao), init=f"window.ETAL_CONFIG={{api:'{API}'}};")
+    def clicar(pg, sel, ms=900):
+        el = pg.locator(sel).first
+        if el.count(): el.click()
+        pg.wait_for_timeout(ms)
+    def entrar(pg):
+        pg.wait_for_selector('#mat', timeout=15000); pg.wait_for_timeout(900)
+        pg.click('#mat'); pg.keyboard.type(os.environ['ETAL_MATRICULA'], delay=55); pg.wait_for_timeout(300)
+        pg.click('#pwd'); pg.keyboard.type(os.environ['ETAL_SENHA'], delay=70); pg.wait_for_timeout(500)
+        pg.click('[data-form=login] button[type=submit]')
+        pg.wait_for_selector('.filled', timeout=20000); pg.wait_for_timeout(3600)
+        clicar(pg, 'text=Abrir o app', 3000)
+    if quer('p-entrar'):
+        sessao.unlink(missing_ok=True)
+        gravar(p, 'p-entrar', app, entrar, **{**F, 'estado': None}, salvar=str(sessao))
+    def agenda(pg):
+        pg.wait_for_timeout(1600)
+        clicar(pg, '[data-act=tab][data-tab=agenda]', 1500)
+        clicar(pg, '.page [data-act=save]:not(.on)', 1500)
+        clicar(pg, '.page [data-act=save]:not(.on)', 1500)
+        clicar(pg, '[data-act=filter][data-f=saved]', 2800)
+    if quer('p-agenda'): gravar(p, 'p-agenda', app, agenda, **F)
+    def presenca(pg):
+        pg.wait_for_timeout(1600)
+        clicar(pg, '#tabbar [data-act=scan]', 300)
+        pg.wait_for_selector('.scan-res.in', timeout=15000); pg.wait_for_timeout(3400)
+        clicar(pg, '.scan-res [data-act=scanopen]', 2600)
+        pg.mouse.move(215, 600); pg.mouse.wheel(0, 420); pg.wait_for_timeout(1800)
+    if quer('p-presenca'):
+        cam = ['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream', '--use-file-for-fake-video-capture=' + os.environ['ETAL_CAMERA']]
+        gravar(p, 'p-presenca', app, presenca, **F, args=cam)
+    def aviso(pg):
+        pg.wait_for_timeout(1500)
+        clicar(pg, '[data-act=tab][data-tab=agenda]', 1800)
+        pg.evaluate("""async (api) => fetch(api + '/api/org/atividades/react-native/sala', { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ andar: 2, zona: 'lab-sul-1', sala: 'Lab 213' }) })""", API)
+        pg.wait_for_timeout(2600)
+        pg.evaluate("document.getElementById('notif')?.click()"); pg.wait_for_timeout(4200)
+    if quer('p-aviso'): gravar(p, 'p-aviso', app, aviso, **F)
+
 def main(base):
     demo = base + '/docs/demos/campus.html?clean&qualidade=alta'
     with sync_playwright() as p:
         so = set(sys.argv[1:])
         quer = lambda n: not so or n in so
+
+        if API:
+            real(p, base, quer); return
 
         def capa(pg):
             pg.evaluate('window.Campus3D.setLayers({ ...window.Campus3D.layers(), labels: false })')
