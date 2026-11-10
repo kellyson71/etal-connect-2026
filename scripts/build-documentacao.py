@@ -92,8 +92,8 @@ def slide(id, title, chapter, body, source='', tone='', cover='cena-campus.webp'
     SLIDES.append(dict(id=id,title=title,chapter=chapter,body=head+body,source=source,tone=tone,cover=cover))
 
 
-def vid(name, cls=''):
-    return f'<video class="auto-video {cls}" src="{{assets}}/videos/{name}.mp4" poster="{{assets}}/videos/{name}.webp" muted loop playsinline preload="metadata"></video>'
+def vid(name, cls='', loop=True):
+    return f'<video class="auto-video {cls}" src="{{assets}}/videos/{name}.mp4" poster="{{assets}}/videos/{name}.webp" muted {"loop " if loop else ""}playsinline preload="metadata"></video>'
 
 
 def full(name, title, extra=''):
@@ -114,20 +114,18 @@ slide('chegada','Chegar ao evento','01 / Abertura',f"""
 <div class="question-tags big"><span class="reveal" style="--i:1">{icon('clock')}Já começou?</span><span class="reveal" style="--i:2">{icon('pin')}Onde é a sala?</span><span class="reveal" style="--i:3">{icon('qr')}Como confirmo a presença?</span></div>
 """,'','dark','fontes/campus-fachada.webp')
 
-TIMELINE = [('15 out', 'Campus em KML', 'globe', ''), ('06–07 nov', 'Protótipo', 'spark', 'v0.1.0'), ('09 nov', 'Planta de 2012', 'file', ''),
-            ('09 nov', 'Campus de hoje', 'map', 'v0.2.0'), ('09 nov', 'Servidor e QR', 'layers', 'v0.3.0'), ('09 nov', 'Teste em produção', 'shield', 'v0.4')]
-slide('pedido','O pedido','01 / Abertura',f"""
-<div class="ask">{''.join(f'<div class="ask-card reveal" style="--i:{n+1}"><span>{icon(ic)}</span><b>{t}</b></div>' for n,(ic,t) in enumerate([('qr','Escanear o QR'),('file','Ver os materiais do curso'),('users','Interagir com o evento')]))}</div>
-<p class="ask-ref reveal" style="--i:5">{icon('phone')}No estilo dos apps de evento que já existem</p>
-""",'','', 'app-home.png', 'O pedido')
-
 # ---------------- 02 · Para o participante ----------------
 def tela(nome, legenda, n):
     return f'<figure class="tela reveal" style="--i:{n}"><div class="phone-frame sm">{vid(nome)}</div><figcaption><span>{n}</span>{legenda}</figcaption></figure>'
 
-slide('participante','Para o participante','02 / Para o participante',f"""
-<div class="telas">{tela('t-cracha','Entra e recebe o crachá',1)}{tela('t-salvar','Monta a agenda',2)}{tela('t-materiais','Lê o QR e confirma a presença',3)}{tela('t-aviso','Recebe lembretes e avisos',4)}</div>
-""",'Gravações do app atual com dados de exemplo','', 'videos/t-cracha.webp', 'Para o participante')
+PASSOS = [('p-entrar', 'Entra com o SUAP e recebe o crachá', 'id'), ('p-agenda', 'Monta a agenda', 'calendar'),
+          ('p-presenca', 'Lê o QR da sala e confirma a presença', 'qr'), ('p-aviso', 'Recebe a troca de sala na hora', 'bell')]
+for n, (nome, legenda, ic) in enumerate(PASSOS):
+    trilha = ''.join(f'<li class="{"on" if k == n else "done" if k < n else ""}"><span>{k + 1}</span>{t}</li>' for k, (_, t, _) in enumerate(PASSOS))
+    slide(f'participante-{n + 1}', legenda, '02 / Para o participante', f"""
+<div class="destaque"><div class="d-txt"><b class="d-num reveal" style="--i:1">{n + 1}</b><h3 class="reveal" style="--i:2">{legenda}</h3><ol class="d-trilha reveal" style="--i:3">{trilha}</ol></div>
+<div class="d-phone reveal" style="--i:1"><div class="phone-frame lg">{vid(nome, loop=False)}</div></div></div>
+""", 'Gravado no app com uma conta real do SUAP' if n == 0 else '', '', f'videos/{nome}.webp', 'Para o participante' if n == 0 else None)
 
 slide('materiais','Materiais depois da presença','02 / Para o participante',f"""
 <div class="app-show"><div class="phone-frame reveal">{vid('t-materiais')}</div>
@@ -193,19 +191,6 @@ def wipe(base, top, l, r):
 
 slide('planta','Da planta de 2012 ao mapa','04 / Próximos passos', wipe('fontes/planta-2012-0.webp','fontes/planta-atual-0.svg','Dissertação · 2012','Hoje, no app'),
       'Souza, L. L. · Padronização e flexibilidade · UFRN, 2012','', 'fontes/planta-2012-0.webp', 'Da planta de 2012 ao mapa')
-
-READY = ['Entrada pelo SUAP e de visitante', 'Programação e agenda', 'Presença por QR assinado', 'Avisos e troca de sala ao vivo', 'Painel: avisos e salas', 'Teste publicado na internet']
-DEMO = ['Materiais dos minicursos', 'Conquistas e contatos', 'Certificados', 'Gráficos e lista do painel', 'Números das salas', 'Programação do ETAL 2026']
-slide('maturidade','O que já funciona','04 / Próximos passos',f"""
-<div class="mat"><div class="mat-col ok reveal" style="--i:1"><h3>{icon('check')}Funciona de verdade</h3><ul>{''.join(f'<li>{t}</li>' for t in READY)}</ul></div>
-<div class="mat-col demo reveal" style="--i:2"><h3>{icon('clock')}Ainda é exemplo</h3><ul>{''.join(f'<li>{t}</li>' for t in DEMO)}</ul></div></div>
-""",'','', 'painel.png', 'O que já funciona')
-
-DECIDE = [('qr','Como registrar presença'),('file','Quem envia os materiais'),('shield','Certificados pelo SUAP'),('calendar','Programação e salas reais'),('server','Servidor do IFRN'),('users','Dados de menores (LGPD)')]
-slide('decisoes','O que precisamos de vocês','04 / Próximos passos',f"""
-<div class="golive"><div class="dec-grid">{''.join(f'<div class="dec reveal" style="--i:{n+1}"><span>{icon(ic)}</span><b>{t}</b></div>' for n,(ic,t) in enumerate(DECIDE))}</div>
-<figure class="golive-qr reveal" style="--i:8"><img src="{{assets}}/qr-app.svg" alt="QR para abrir o app"><figcaption>Teste agora · etal-connect.vercel.app</figcaption></figure></div>
-""",'','dark', 'qr-app.svg', 'O que precisamos de vocês')
 
 # ---------------- 05 · Apêndice técnico ----------------
 slide('arquitetura','Como as peças se ligam','05 / Apêndice técnico',f"""
