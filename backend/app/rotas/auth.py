@@ -39,6 +39,14 @@ def suap_inicio(request: Request):
     return resp
 
 
+_MINUSCULAS = {'de', 'da', 'do', 'das', 'dos', 'e'}
+
+
+def _nome_bonito(nome: str) -> str:
+    """O SUAP às vezes devolve o nome usual em minúsculas ("kellyson Silva"): sobe a primeira letra de cada parte."""
+    return ' '.join(w if w in _MINUSCULAS or not w[:1].islower() else w[:1].upper() + w[1:] for w in str(nome).split())
+
+
 def _pessoa_suap(d: dict, db: Session) -> Pessoa | None:
     """Cria ou atualiza a pessoa a partir dos dados do SUAP (OAuth2 /api/eu/ ou /api/rh/eu/ do JWT)."""
     matricula = str(d.get('identificacao') or d.get('matricula') or '').strip()
@@ -49,7 +57,7 @@ def _pessoa_suap(d: dict, db: Session) -> Pessoa | None:
     if not p:
         p = Pessoa(tipo='suap', matricula=matricula)
         db.add(p)
-    p.nome = d.get('nome_usual') or d.get('nome') or matricula
+    p.nome = _nome_bonito(d.get('nome_usual') or d.get('nome') or matricula)
     p.email = p.email or (email if email and not db.scalar(select(Pessoa).where(Pessoa.email == email, Pessoa.id != p.id)) else None)
     p.campus = d.get('campus') or p.campus
     foto = d.get('foto') or d.get('url_foto_150x200') or ''

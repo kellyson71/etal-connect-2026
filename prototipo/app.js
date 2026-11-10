@@ -1518,6 +1518,7 @@
     root.classList.remove('has-res', 'is-locked'); delete root.dataset.busy;
     $('.scan-hint span', ov).textContent = 'Aponte para o QR';
     setTimeout(() => d?.remove(), 400);
+    if (API && root.dataset.mode !== 'meu') setTimeout(camStart, 300);
   }
   function roomResult(q, { again, first, c }) {
     const s = byId(q);
@@ -2406,6 +2407,31 @@
       rerender();
     } catch (x) { toast(x.message); }
   }
+  /* Para a câmera e deixa o último quadro na tela, atrás do cartão de confirmação. */
+  function freezeCam() {
+    const v = $('.scan-cam');
+    if (v && v.videoWidth) { try { const cv = document.createElement('canvas'); cv.width = v.videoWidth; cv.height = v.videoHeight; cv.getContext('2d').drawImage(v, 0, 0); v.poster = cv.toDataURL('image/jpeg', 0.8); } catch (_) { /* sem quadro */ } }
+    camStop(); if (v) v.srcObject = null;
+  }
+  /* QR lido pela câmera com o servidor: trava o leitor, registra no servidor e mostra o mesmo cartão de confirmação. */
+  async function apiScan(hit) {
+    const root = $('.scanner', ov); const hint = $('.scan-hint span', ov);
+    if (root) { root.dataset.busy = '1'; root.classList.add('is-locked'); }
+    if (hint) hint.innerHTML = `${ic('check')}QR reconhecido`;
+    freezeCam();
+    let r;
+    try { r = await API.post('/api/presenca', { qr: hit }); } catch (x) { camStop(); closeOverlay(() => toast(x.message)); return; }
+    const first = !S.credAt; if (first) S.credAt = r.time;
+    const q = r.activity && byId(r.activity) ? r.activity : null;
+    if (!q) {
+      const c = takeNewComb(); rerender();
+      if (first) closeOverlay(() => openOverlay(Overlays.welcome(c), 'welcome')); else scanSheet(credResult());
+      return;
+    }
+    const again = !!r.alreadyPresent; S.present[q] = S.present[q] || r.time;
+    const c = takeNewComb(); rerender();
+    scanSheet(roomResult(q, { again, first, c }));
+  }
   /* Câmera de verdade no leitor. Lê com o BarcodeDetector do navegador ou, sem ele (computador, iPhone), com o jsQR.
      Com o servidor, o QR assinado vai para /api/presenca; sem ele, o app tira a atividade de dentro do QR. */
   let cam = null;
@@ -2474,7 +2500,7 @@
           const hit = codes.find((v) => qrActivity(v) !== undefined);
           if (hit) {
             buzz([18, 40, 18]);
-            if (API) { camStop(); closeOverlay(() => apiQr(hit)); return; }
+            if (API) { apiScan(hit); return; }
             camStop(); video.classList.remove('on'); if (demoHit(hit)) return;
           } else if (codes.length && Date.now() - warned > 2500) { warned = Date.now(); say('Esse QR não é do ETAL. Procure o QR da sala ou da recepção.'); }
         } catch (_) { /* quadro ainda carregando */ }
