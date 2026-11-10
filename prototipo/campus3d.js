@@ -1327,17 +1327,8 @@
     for (let i = 0; i < n; i++) { const a0 = at(i / n, h - deep), m = at((i + 0.5) / n, h), a1 = at((i + 1) / n, h - deep); ctx.moveTo(a0[0], a0[1]); ctx.lineTo(m[0], m[1]); ctx.lineTo(a1[0], a1[1]); }
     ctx.stroke();
   }
-  /* A cobertura do pátio fica por cima do bloco de entrada azul: ali ela some, como se fosse transparente,
-     para a entrada aparecer no mapa. */
-  function drawCover(b, c) {
-    if (b.id !== 'patio') { drawCoverBody(b, c); return; }
-    const q = entryPoly();
-    const sil = hull([...q.map((v) => P(v[0], v[1], 0)), ...q.map((v) => P(v[0], v[1], ENTRY_H))]);
-    ctx.save(); ctx.beginPath(); ctx.rect(-1e5, -1e5, 2e5, 2e5);
-    sil.forEach((u, i) => (i ? ctx.lineTo(u[0], u[1]) : ctx.moveTo(u[0], u[1]))); ctx.closePath(); ctx.clip('evenodd');
-    drawCoverBody(b, c);
-    ctx.restore();
-  }
+  /* O bloco de entrada azul fica embaixo da cobertura do pátio (7,2 m): de cima se vê o telhado, como no lugar. */
+  const drawCover = (b, c) => drawCoverBody(b, c);
   function drawCoverBody(b, c) {
     const p = b.p; const g = growOf(...centroid(p)); const h = Math.max(0.2, b.h * g);
     const sel = selected === b.id;
@@ -2689,6 +2680,9 @@
       room = { level, id: zone };
       await Promise.all([trail(1, 950), anim({ rise: 1.2, ...viewRoom(level, zone, plan.pts) }, 800)]);
     },
+    /* Geometria da rota (mundo, com o andar em z) e dos andares: usada pela apresentação para animar escada × rampa. */
+    routeGeo: (level, zone, via = null) => { const q = planFor(level, zone, via); return { via: q.via, entrance: q.entrance, cost: Math.round(q.cost), campus: q.campus, path: q.path }; },
+    floorsGeo: () => FLOORS.map((f) => ({ level: f.level, outline: f.outline, zones: f.zones.map((z) => ({ kind: z.kind, poly: z.poly })) })),
     routeInfo: (level, zone, via = null) => { const q = planFor(level, zone, via); return { via: q.via, viaWhere: q.viaWhere, entrance: q.entrance, cost: Math.round(q.cost) }; },
     reframe(level, zone) { return anim({ rise: zone ? 1.2 : 0, ...(zone ? viewRoom(level, zone, floorRoute?.pts) : viewFloor(level)) }, 480); },
     /* volta ao campus: o prédio se fecha e a câmera recua */

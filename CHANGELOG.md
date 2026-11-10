@@ -2,6 +2,16 @@
 
 O projeto segue o git flow: `main` tem só versões publicadas, `develop` junta as funcionalidades e cada uma nasce num ramo `feature/*`.
 
+## 0.5.0 (2026-11-09)
+
+- Leitor de QR com o servidor: a câmera trava no código, registra a presença e mostra o cartão de confirmação com a última imagem atrás; "Ler outro QR" reabre a câmera.
+- Nome vindo do SUAP com as iniciais em maiúscula.
+- Salas da programação de exemplo iguais à planta (React Native no Lab 210, FastAPI no Lab 209).
+- O bloco de entrada fica sob a cobertura do pátio, como no lugar.
+- Crachá preenchido sem a dica "Puxe o crachá para baixo".
+- Servidor do protótipo com `ETAL_API` para usar a API local.
+- Apresentação como proposta para a organização: telas do participante gravadas com o SUAP de verdade, um passo por slide.
+
 ## 0.4.2 (2026-11-09)
 
 - Bloco de entrada do bloco principal no modelo do campus: o volume que sai do térreo, com pastilha azul, painel de boas-vindas, letreiro e porta de vidro, visível através da cobertura do pátio.
