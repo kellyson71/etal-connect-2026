@@ -4,6 +4,7 @@
 A senha só passa pela memória deste processo durante o login: não é gravada nem registrada.
 O navegador recebe apenas os campos que a interface usa (sem CPF, e-mail ou tokens).
 Uso: .venv/bin/python server.py   (porta padrão 8770; mude com PORT=...)
+Com ETAL_API=http://127.0.0.1:8011 o app usa a API de verdade (backend/) em vez dos dados de exemplo.
 """
 import base64
 import json
@@ -21,6 +22,7 @@ HOSTS = {f'127.0.0.1:{PORT}', f'localhost:{PORT}'}
 REDE = os.environ.get('REDE', '').strip()
 if REDE:
     HOSTS.add(f'{REDE}:{PORT}')
+API = os.environ.get('ETAL_API', '').strip().rstrip('/')
 TYPES = {'.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
          '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp',
          '.webmanifest': 'application/manifest+json'}
@@ -109,6 +111,8 @@ class Handler(BaseHTTPRequestHandler):
         rel = {'demo': 'index.html', 'homologacao': 'homologacao.html'}.get(rel.rstrip('/'), rel)
         is_asset = rel.startswith('assets/') and '..' not in rel and Path(rel).suffix in ('.svg', '.png', '.jpg', '.webp')
         file = ROOT / rel
+        if rel == 'config.js' and API:
+            return self._send(200, f"window.ETAL_CONFIG = {{ api: {json.dumps(API)} }};".encode(), TYPES['.js'])
         if (rel in PUBLIC or is_asset) and file.is_file():
             return self._send(200, file.read_bytes(), TYPES[file.suffix])
         self._json(404, {'erro': 'Não encontrado.'})
