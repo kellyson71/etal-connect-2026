@@ -5682,7 +5682,8 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
       const frame = page.querySelector('iframe'); if (!frame) return;
       /* rota pedida por "Como chegar" (atividade ou sala) vai junto, uma vez */
       const pedida = S.mapRoute && Number.isInteger(S.mapFloor) && S.mapZone ? { floor: S.mapFloor, zone: S.mapZone } : {}; S.mapRoute = false;
-      const dados = (type) => ({ type, ...pedida, origem: origemAgora(), hour: skyHour, reduced: reduce, sessions: D.sessions.map((x) => ({ id: x.id, title: x.title, time: x.time, floor: x.floor, zone: x.zone })), rooms: Object.fromEntries(P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => [`${f.level}:${z.id}`, z.roomNumber]))) });
+      /* foto do SUAP e nome: vão para o rosto do personagem no passeio */
+      const dados = (type) => ({ type, ...pedida, origem: origemAgora(), foto: D.person.photo || null, nome: D.person.name || '', hour: skyHour, reduced: reduce, sessions: D.sessions.map((x) => ({ id: x.id, title: x.title, time: x.time, floor: x.floor, zone: x.zone })), rooms: Object.fromEntries(P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => [`${f.level}:${z.id}`, z.roomNumber]))) });
       const ouvir = (e) => {
         if (!frame.isConnected) { window.removeEventListener('message', ouvir); return; }
         if (e.origin === location.origin && e.source === frame.contentWindow && e.data?.type === 'etal:mapa:pronto') frame.contentWindow.postMessage(dados('etal:mapa:abrir'), location.origin);
@@ -6808,7 +6809,7 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
     const light = document.createElement('button'); light.className = 'mapa-novo-leve'; light.textContent = 'Mapa leve';
     const previous = document.activeElement;
     const close = () => { clearTimeout(timer); clearInterval(sync); window.removeEventListener('message', receive); document.removeEventListener('keydown', key); host.remove(); vp.inert = false; tabbar.inert = false; previous?.focus?.(); };
-    const payload = () => ({type:'etal:mapa:abrir', floor, zone, origem: origemAgora(), via:S.mapVia || null, hour:skyHour, reduced:reduce, sessions:D.sessions.map(x=>({id:x.id,title:x.title,time:x.time,floor:x.floor,zone:x.zone})), rooms:Object.fromEntries(P.floors.flatMap(f=>f.zones.filter(z=>z.roomNumber).map(z=>[`${f.level}:${z.id}`,z.roomNumber]))) });
+    const payload = () => ({type:'etal:mapa:abrir', floor, zone, origem: origemAgora(), foto: D.person.photo || null, nome: D.person.name || '', via:S.mapVia || null, hour:skyHour, reduced:reduce, sessions:D.sessions.map(x=>({id:x.id,title:x.title,time:x.time,floor:x.floor,zone:x.zone})), rooms:Object.fromEntries(P.floors.flatMap(f=>f.zones.filter(z=>z.roomNumber).map(z=>[`${f.level}:${z.id}`,z.roomNumber]))) });
     let ready = false, lastSync = '';
     const receive = e => { if(e.origin!==location.origin || e.source!==frame.contentWindow) return; if(e.data?.type==='etal:mapa:pronto'){ ready=true;clearTimeout(timer);frame.contentWindow.postMessage(payload(),location.origin);light.textContent='Mapa leve'; } if(e.data?.type==='etal:mapa:fechar')navBack();if(e.data?.type==='etal:mapa:leve')useLight(); };
     const useLight = () => { navBack(); setTimeout(fallback, 100); };

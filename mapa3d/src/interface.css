@@ -24,3 +24,16 @@ body.em-viagem #rotulos{display:none}
 /* durante a viagem: só o essencial */
 body.em-viagem #legenda,body.em-viagem #modos{display:none}
 #cartao.recolhido .detalhe{display:block}#cartao.recolhido .detalhe>*:not(.acoes):not(#etapa-atual){display:none}#cartao.recolhido #descricao{display:none}#cartao.recolhido h1{font-size:16px;margin:2px 0}#cartao.recolhido .acoes{margin-top:6px}#cartao.recolhido .acoes button{min-height:36px;padding:6px 12px}
+
+/* passeio: personagem e carros */
+body.passeando #cartao,body.passeando #legenda,body.passeando #andares,body.passeando #busca-wrap,body.passeando #rotulos,body.passeando #ajustes-btn{display:none!important}
+#passeio{position:fixed;inset:0;pointer-events:none;z-index:4}#passeio>*{pointer-events:auto}
+#p-sair{position:fixed;right:16px;top:max(14px,env(safe-area-inset-top));box-shadow:0 5px 25px #233d3518}
+#joy{position:fixed;left:24px;bottom:max(28px,env(safe-area-inset-bottom));width:132px;height:132px;border-radius:50%;background:#ffffffb8;border:1px solid var(--line);box-shadow:0 8px 30px #233d3522;touch-action:none;backdrop-filter:blur(6px)}
+#joy i{position:absolute;left:50%;top:50%;width:56px;height:56px;margin:-28px;border-radius:50%;background:var(--accent);box-shadow:0 4px 14px #22386f55;transition:transform .08s}
+.p-botoes{position:fixed;right:20px;bottom:max(28px,env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px;align-items:flex-end}
+.p-botoes button{min-width:96px;min-height:52px;border-radius:18px;font-weight:650;box-shadow:0 6px 22px #233d3520}
+#p-acao{background:#3f8f1a;color:#fff;border-color:#3f8f1a}#p-correr[aria-pressed=true]{background:var(--accent);color:#fff}
+#p-dica{position:fixed;left:50%;transform:translateX(-50%);bottom:max(14px,env(safe-area-inset-bottom));margin:0;font-size:12px;color:var(--muted);background:#ffffffc8;padding:6px 12px;border-radius:12px;white-space:nowrap}
+@media(max-width:700px),(pointer:coarse){#p-dica{display:none}}
+@media(max-width:700px){body.passeando #modos{display:none}}
