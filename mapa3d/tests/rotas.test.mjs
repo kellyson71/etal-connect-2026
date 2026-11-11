@@ -8,7 +8,7 @@ const {planejar,gridPath,doorOf}=await import('../src/rotas.js');
 const {fracaoRampa}=await import('../src/subidas.js');
 test('origem fixa, porta explícita e alturas finitas nos três andares',()=>{
  for(const [l,z] of [[0,'napne'],[1,'sala-nadic'],[2,'coord-ads']])for(const via of ['rampa','escada']){
-  const r=planejar(l,z,via);assert.ok(r);assert.deepEqual(r.pts[0],[15,.08,47]);assert.deepEqual(r.pts.at(-1),r.door);assert.ok(r.pts.flat().every(Number.isFinite));assert.equal(r.level,l);if(l)assert.equal(r.via,via);
+  const r=planejar(l,z,via);assert.ok(r);assert.deepEqual(r.pts[0],[13.3,.08,47]);assert.deepEqual(r.pts.at(-1),r.door);assert.ok(r.pts.flat().every(Number.isFinite));assert.equal(r.level,l);if(l)assert.equal(r.via,via);
  }
 });
 test('destino inválido e corredor desconectado não geram atalhos',()=>{

@@ -41,6 +41,7 @@ const sc = sol.shadow.camera; sc.left = -200; sc.right = 130; sc.top = 170; sc.b
 scene.add(sol); scene.add(sol.target);
 
 let principal = null; let interfaceMapa = null; let abertura = null;
+let pronta = false; // a cena é montada em etapas; antes do fim não há o que desenhar
 /* o céu também clareia quando o bloco se isola */
 const ceuBase = new THREE.Color(0xbcd9f2);
 function fundoCeu() { scene.background = ceuBase.clone().lerp(FUNDO.value, ISO.value * 0.9); if (scene.fog) scene.fog.color.copy(scene.background); }
@@ -54,25 +55,32 @@ function hora(h) {
   /* noite: luar azulado e fraco, vindo do alto, para o campus continuar legível; janelas acesas e poças dos postes */
   if (noite > 0.98) { sol.position.set(-140, 420, 60); sol.color.set(0x8ea6d8); sol.intensity = 0.42; }
   ceu.intensity = 1.05 - 0.55 * noite; ceu.color.set(0xdfeeff).lerp(new THREE.Color(0x6f86b8), noite); ceu.groundColor.set(0x9a8f78).lerp(new THREE.Color(0x2a2f3c), noite);
-  M.vidroAceso.emissiveIntensity = noite * 1.15; M.poca.opacity = noite * 0.85; if (principal) principal.acesos.forEach((m) => { m.emissiveIntensity = noite * 1.15; });
+  M.vidroAceso.emissiveIntensity = noite * 1.15; M.poca.opacity = noite * 0.85; if (principal) principal.acesos.forEach((m) => { m.emissiveIntensity = noite * 1.15; }); if (principal) principal.luzes.forEach((m) => m.color.set(0xd6e9fb).lerp(new THREE.Color(0xf2c896), baixo * (1 - noite) * 0.7).lerp(new THREE.Color(0x101829), noite));
   M.globo.color.set(0xfbfbf6).lerp(new THREE.Color(0xffe2a8), noite);
   const dia = new THREE.Color(0xbcd9f2), tarde = new THREE.Color(0xf0c9a0), esc = new THREE.Color(0x0e1626);
   ceuBase.copy(dia).lerp(tarde, baixo * (1 - noite)).lerp(esc, noite); fundoCeu();
   renderer.shadowMap.needsUpdate = true; pedir();
 }
 
+/* Carregamento: a cena é montada em etapas, com uma pausa entre elas para a barra andar na tela. */
+const etapa = (texto, parte) => { const t = $('#carga-tx'), b = $('#carga-barra'); if (t) t.textContent = texto; if (b) b.style.width = Math.round(parte * 100) + '%'; return new Promise((ok) => setTimeout(ok, 40)); };
+await etapa('Preparando as texturas…', 0.12);
 const T = criarTexturas(); const M = criarMateriais(T); materiaisPrincipal(M, T);
 let pedido = false, quadros = 0, soma = 0, anterior = 0;
 const estilo = criarEstilo();
 
 /* cena */
 const t0 = performance.now();
+await etapa('Abrindo o terreno…', 0.26);
 const terreno = construirTerreno(M); scene.add(terreno);
+await etapa('Levantando os prédios…', 0.4);
 /* um grupo por prédio: a cantina precisa de materiais só dela para receber a cor do evento */
 const gPredios = new THREE.Group(); gPredios.name = 'predios';
 BUILDINGS.filter((b) => b.id !== 'principal').forEach((b, i) => { const g = new THREE.Group(); g.name = b.id; const L = new Lote(); construirPredios(L, (q) => q.id === b.id, i === 0); L.build(g, M, { name: b.id }); gPredios.add(g); });
 scene.add(gPredios);
+await etapa('Montando o bloco principal…', 0.55);
 principal = construirPrincipal(M); scene.add(principal.grupo);
+await etapa('Portaria, pátio e detalhes…', 0.7);
 const det = construirDetalhes(M); scene.add(det.grupo);
 /* partes do evento: véu de cor por cima do material real (o bloco já tem materiais próprios) */
 ['casca', 'tetos-baixos'].forEach((n) => estilo.destacar(principal.grupo.getObjectByName(n), 'azul', { clonar: false, isolado: true }));
@@ -81,8 +89,10 @@ estilo.destacar(gPredios.getObjectByName('cantina'), 'laranja');
 estilo.destacar(det.grupo.getObjectByName('patio'), 'patio');
 /* o resto do campus pode perder a cor e desbotar */
 Object.values(M).forEach((m) => { if (m !== M.poca) desaturavel(m); });
+await etapa('Plantando as árvores…', 0.8);
 const veg = construirVegetacao(M, { vasos: principal.vasos, flores: det.flores, pronto: () => { renderer.shadowMap.needsUpdate = true; pedir(); } }); scene.add(veg);
 const entorno = construirEntorno(M, () => pedir()); scene.add(entorno);
+await etapa('Arrumando o entorno…', 0.9);
 const interior = criarInterior(); scene.add(interior.grupo); interior.grupo.traverse((o) => o.layers.set(1));
 ceu.layers.enable(1); sol.layers.enable(1);
 scene.fog = new THREE.Fog(0xbcd9f2, 500, 3600);
@@ -99,14 +109,16 @@ try { const s = JSON.parse(sessionStorage.getItem('mapa3d-cam')); if (s && !new 
 controls.addEventListener('change', () => { pedir(); clearTimeout(irPara.t); irPara.t = setTimeout(() => sessionStorage.setItem('mapa3d-cam', JSON.stringify({ p: camera.position.toArray(), t: controls.target.toArray() })), 300); });
 
 const palco = criarPalco({ principal, interior, estilo, camera, controls, pedir });
-const passeio = criarPasseio({ scene, camera, controls, renderer, chao: terreno, pedir });
+/* computador (mouse, sem toque) abrindo o mapa direto: entra já no passeio, com o mouse na câmera */
+const noPC = matchMedia('(pointer: fine)').matches && !matchMedia('(any-pointer: coarse)').matches;
+const passeio = criarPasseio({ scene, camera, controls, renderer, chao: terreno, pedir, partes: [gPredios, det.grupo, veg, entorno], principal, setCorte: (h) => palco.set({ corte: h }), desktop: noPC, cones: det.cones, hora });
 const viagem = criarViagem({ scene, camera, controls, interior, palco, pedir, ficha: $('#ficha'), passos: $('#passos') });
 
 /* desenha só quando algo muda */
 let isoAntes = -1;
 function pedir() { if (!pedido) { pedido = true; requestAnimationFrame(quadro); } }
 function quadro(now) {
-  pedido = false; const passeando = passeio.tick(now); const viajando = !passeando && viagem.tick(now); const abrindo = !viajando && !!abertura?.tick(now); const animando = !viajando && !abrindo && palco.tick(now); const mexeu = passeando || viajando || animando || abrindo ? false : controls.update();
+  pedido = false; if (!pronta) return; const passeando = passeio.tick(now); const viajando = !passeando && viagem.tick(now); const abrindo = !viajando && !!abertura?.tick(now); const animando = !viajando && !abrindo && palco.tick(now); const mexeu = passeando || viajando || animando || abrindo ? false : controls.update();
   if (ISO.value !== isoAntes) { isoAntes = ISO.value; fundoCeu(); }
   interior.virar(daCamera(camera, controls).a);
   /* Com o bloco aberto, a maquete e a rota são desenhadas numa segunda passada, por cima do campus desbotado:
@@ -136,5 +148,12 @@ window.MAPA3D.interface = interfaceMapa;
 abertura = criarAbertura({ camera, controls, renderer, pedir, fim: () => interfaceMapa.poseEvento(), ocupado: () => viagem.ativa(), aoTerminar: () => estilo.setMode(estilo.mode()),
   partes: [{ grupo: principal.grupo, cores: ['verde', 'azul'] }, { grupo: gPredios.getObjectByName('cantina'), cores: ['laranja'] }, { grupo: det.grupo.getObjectByName('patio'), cores: ['patio'] }, { grupo: det.grupo.getObjectByName('obelisco'), cores: [] }] });
 window.MAPA3D.abertura = abertura;
-palco.parar(); abertura.rodar();
+const q0 = new URLSearchParams(location.search);
+/* passeio=1 força o passeio (o app usa no computador, com o mapa em tela grande ao lado) */
+if (q0.get('passeio') === '1' || (noPC && parent === window && q0.get('passeio') !== '0' && !q0.has('sala') && !q0.has('intro'))) { palco.parar(); interfaceMapa.api.setMode('passear'); }
+else { palco.parar(); abertura.rodar(); }
+pronta = true;
+/* o primeiro quadro é o mais demorado (a placa compila tudo): ele é desenhado ainda debaixo da tela de carregamento */
+await etapa('Preparando a imagem…', 0.96); quadro(performance.now());
 window.MAPA3D.ready = true;
+await etapa('Pronto', 1); pedir(); setTimeout(() => { const c = $('#carga'); if (c) { c.classList.add('fim'); setTimeout(() => c.remove(), 700); } }, 180);
