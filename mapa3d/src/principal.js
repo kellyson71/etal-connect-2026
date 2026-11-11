@@ -233,7 +233,11 @@ export function construirPrincipal(M) {
   const gCasca = mk('casca'), gTetosBaixos = mk('tetos-baixos'), gCobertura = mk('cobertura');
   const gNiveis = [0, 1, 2].map((k) => mk('nivel-' + k));
   const gSubidas = [0, 1].map((k) => mk('subida-' + k)); const gParedes = [];
-  const vasos = []; const rotulos = []; const portas = []; const tampas = [{}, {}, {}];
+  const vasos = []; const vasosDentro = []; const rotulos = []; const portas = []; const tampas = [{}, {}, {}];
+  /* Recheio de cada andar (móveis, portas das salas, cartazes, armários, o que há nos corredores e as janelas vistas de
+     dentro): fica num grupo à parte, fora da cena, até alguém pedir (modo Campus ou passeio). No modo Evento o bloco
+     é só a maquete das salas, e o mapa abre mais rápido. */
+  const gDet = [0, 1, 2].map((k) => { const g = new THREE.Group(); g.name = 'detalhe-' + k; return g; }); const lotesDet = [];
   const zEsc = PLAN.floors[1].zones.find((z) => z.kind === 'stairs');
 
   const court = zonePoly(PLAN.floors[0].zones.find((z) => z.kind === 'courtyard'));
@@ -243,7 +247,7 @@ export function construirPrincipal(M) {
 
   /* ---------- andares ---------- */
   PLAN.floors.forEach((f, k) => {
-    const L = new Lote(); const z = k * FH + 0.03; const topo = k === 2 ? 3 * FH : z + FH - 0.03 + 0.03;
+    const L = new Lote(); const D = new Lote(); lotesDet[k] = D; const z = k * FH + 0.03; const topo = k === 2 ? 3 * FH : z + FH - 0.03 + 0.03;
     const R = rng(101 + k * 37);
     /* laje e piso */
     const contorno = WP(k === 0 ? f.outlinePts : MAIN);
@@ -262,7 +266,7 @@ export function construirPrincipal(M) {
       const nf = normalDe(a, b); const ai = [a[0] - nf[0] * 0.06, a[1] - nf[1] * 0.06], bi = [b[0] - nf[0] * 0.06, b[1] - nf[1] * 0.06];
       paredeVaos(L, 'corredor', bi, ai, z, topo, z, vaos.map(([s0, s1]) => [len0 - s1, len0 - s0]), o.vao ? o.vao.h : 0);
       /* janelas vistas de dentro: claras de dia (a cor muda com a hora) */
-      if (!o.semJanela) { const w = o.w ?? 1.5, hj = o.hj ?? 1.1, sill = o.sill ?? 1.15, passo = o.passo ?? 3.5; for (let u = 1 + passo / 2; u < len0 - 1 - w / 2; u += passo) { if (o.pula && o.pula(toPlanX(lerp2(a, b, u / len0)[0]))) continue; painel(L, 'caixilho', bi, ai, len0 - u - w / 2 - 0.05, len0 - u + w / 2 + 0.05, z + sill - 0.05, z + sill + hj + 0.05, 0.015); painel(L, 'janelaLuz', bi, ai, len0 - u - w / 2, len0 - u + w / 2, z + sill, z + sill + hj, 0.03); } }
+      if (!o.semJanela) { const w = o.w ?? 1.5, hj = o.hj ?? 1.1, sill = o.sill ?? 1.15, passo = o.passo ?? 3.5; for (let u = 1 + passo / 2; u < len0 - 1 - w / 2; u += passo) { if (o.pula && o.pula(toPlanX(lerp2(a, b, u / len0)[0]))) continue; painel(D, 'caixilho', bi, ai, len0 - u - w / 2 - 0.05, len0 - u + w / 2 + 0.05, z + sill - 0.05, z + sill + hj + 0.05, 0.015); painel(D, 'janelaLuz', bi, ai, len0 - u - w / 2, len0 - u + w / 2, z + sill, z + sill + hj, 0.03); } }
       if (o.vao) { /* marco e duas folhas de vidro */
         const P = (u) => lerp2(a, b, u / len0); const dx = (b[0] - a[0]) / len0, dy = (b[1] - a[1]) / len0, lf = o.vao.folhas === 1 ? o.vao.w - 0.03 : o.vao.w / 2 - 0.02;
         [uv - o.vao.w / 2 - 0.05, uv + o.vao.w / 2 + 0.05].forEach((u) => { const q = P(u); L.box('preto', q[0] - nf[0] * 0.03, q[1] - nf[1] * 0.03, 0.1, 0.16, z, z + o.vao.h + 0.08); }); { const q = P(uv); L.box('preto', q[0] - nf[0] * 0.03, q[1] - nf[1] * 0.03, o.vao.w + 0.2, 0.16, z + o.vao.h, z + o.vao.h + 0.1); }
@@ -309,23 +313,23 @@ export function construirPrincipal(M) {
       if (zona.kind === 'lounge') {
         const pw = WP(zonePoly(zona)); L.top('pisoLounge', insetPoly(pw, 0.1), z + 0.015);
         const c = centroid(pw); const larg = Math.abs(pw[1][0] - pw[0][0]), prof = Math.abs(pw[2][1] - pw[1][1]);
-        if (larg > prof) [-0.3, 0.3].forEach((t) => { L.box('sofa', c[0] + t * larg, c[1], 1.3, 0.75, z, z + 0.42); L.box('sofa', c[0] + t * larg, c[1] - 0.3, 1.3, 0.16, z + 0.42, z + 0.8); });
-        else { L.box('sofa', c[0], c[1] + prof * 0.25, 0.75, 1.5, z, z + 0.42); L.box('cinza', c[0] + 0.3, c[1] - prof * 0.25, 0.5, 1.6, z, z + 1.8); }
+        if (larg > prof) [-0.3, 0.3].forEach((t) => { D.box('sofa', c[0] + t * larg, c[1], 1.3, 0.75, z, z + 0.42); D.box('sofa', c[0] + t * larg, c[1] - 0.3, 1.3, 0.16, z + 0.42, z + 0.8); });
+        else { D.box('sofa', c[0], c[1] + prof * 0.25, 0.75, 1.5, z, z + 0.42); D.box('cinza', c[0] + 0.3, c[1] - prof * 0.25, 0.5, 1.6, z, z + 1.8); }
         return;
       }
       if (zona.kind === 'auditorium') {
         /* porta dupla do auditório, para o hall */
         const pa = wp([118, 302]); const inn = sala(L, z, zona, AUD_H - 1.9, true, [pa], null, 1.8);
-        [[-0.89, 1], [0.89, -1]].forEach(([u, sg]) => portas.push(folhaPorta(gNiveis[0], M, { x: pa[0] + u, y: pa[1] - 0.195, z, ux: sg, uy: 0, larg: 0.88, alt: 2.09, k: 0 })));
+        [[-0.89, 1], [0.89, -1]].forEach(([u, sg]) => portas.push(folhaPorta(gDet[0], M, { x: pa[0] + u, y: pa[1] - 0.195, z, ux: sg, uy: 0, larg: 0.88, alt: 2.09, k: 0 })));
         const xs = inn.map((q) => q[0]), ys = inn.map((q) => q[1]); const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
         L.box('palco', (x0 + x1) / 2, y0 + 2.2, x1 - x0 - 0.4, 4.2, z, z + 0.85);
         const n = 11, passo = (y1 - y0 - 7.2) / n;
-        for (let i = 0; i < n; i++) [-1, 1].forEach((s) => { const w = (x1 - x0) / 2 - 1.3; L.box('poltrona', (x0 + x1) / 2 + s * (w / 2 + 0.6), y0 + 6 + i * passo, w, 0.55, z, z + 0.45 + i * 0.05); L.box('poltrona', (x0 + x1) / 2 + s * (w / 2 + 0.6), y0 + 6.3 + i * passo, w, 0.12, z + 0.45, z + 0.95 + i * 0.05); });
+        for (let i = 0; i < n; i++) [-1, 1].forEach((s) => { const w = (x1 - x0) / 2 - 1.3; D.box('poltrona', (x0 + x1) / 2 + s * (w / 2 + 0.6), y0 + 6 + i * passo, w, 0.55, z, z + 0.45 + i * 0.05); D.box('poltrona', (x0 + x1) / 2 + s * (w / 2 + 0.6), y0 + 6.3 + i * passo, w, 0.12, z + 0.45, z + 0.95 + i * 0.05); });
         return;
       }
       /* a recepção é o hall da entrada: piso aberto com o balcão (abaixo), sem paredes nem tampa */
       if (zona.kind === 'reception') { L.top('pisoAdm', insetPoly(WP(zonePoly(zona)), 0.05), z + 0.015); return; }
-      const dentroSala = sala(L, z, zona, ALT_SALA, false, centros, feitas); mobiliar(L, zona, dentroSala, z, centros);
+      const dentroSala = sala(L, z, zona, ALT_SALA, false, centros, feitas); mobiliar(D, zona, dentroSala, z, centros);
       /* número e nome curto em cima da tampa, de frente para quem olha da entrada */
       const pw = WP(zonePoly(zona)); const c = centroid(pw); const xs = pw.map((q) => q[0]), ys = pw.map((q) => q[1]); const lw = Math.min(6.4, Math.max(...xs) - Math.min(...xs) - 0.8), lh = lw / 2.6;
       if (zona.roomNumber || zona.word) rotulos.push({ zona, k, x: c[0], y: c[1] + (zona.kind === 'restroom' ? 1 : 0), z: z + ALT_SALA + 0.03, w: lw, h: lh, num: zona.roomNumber || '', nome: zona.word || (zona.kind === 'classroom' ? 'SALA' : zona.kind === 'laboratory' ? 'LAB' : '') });
@@ -341,8 +345,8 @@ export function construirPrincipal(M) {
       cx(-0.5, 0.195, 0.08, 0.24, z, z + 2.5, 'batente'); cx(0.5, 0.195, 0.08, 0.24, z, z + 2.5, 'batente'); cx(0, 0.195, 1.08, 0.24, z + 2.1, z + 2.18, 'batente'); cx(0, 0.195, 1.08, 0.24, z + 2.46, z + 2.54, 'batente');
       cx(0, 0.195, 0.92, 0.19, z + 2.18, z + 2.46, 'vidro');
       /* a folha é uma peça solta, presa pela dobradiça: no passeio ela abre quando alguém empurra */
-      { const dob = at(-0.45, 0.195); portas.push(folhaPorta(gNiveis[k], M, { x: dob[0], y: dob[1], z, ux: h ? 1 : 0, uy: h ? 0 : 1, larg: 0.9, alt: 2.09, k })); }
-      cx(0, -0.32, 0.8, 0.5, z, z + 0.02, 'capacho');
+      { const dob = at(-0.45, 0.195); portas.push(folhaPorta(gDet[k], M, { x: dob[0], y: dob[1], z, ux: h ? 1 : 0, uy: h ? 0 : 1, larg: 0.9, alt: 2.09, k })); }
+      { const q = at(0, -0.32); D.box('capacho', q[0], q[1], 0.8, 0.5, z, z + 0.02, ang); }
     });
     /* cartazes ao lado das portas das salas, na face da parede que dá para o corredor */
     {
@@ -365,7 +369,7 @@ export function construirPrincipal(M) {
       });
       if (pos.length) {
         const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.computeVertexNormals();
-        const m = new THREE.Mesh(g, cartazes()); m.name = 'cartazes-' + k; gNiveis[k].add(m);
+        const m = new THREE.Mesh(g, cartazes()); m.name = 'cartazes-' + k; gDet[k].add(m);
       }
     }
     /* 1º andar: armários dos alunos, cinzas, encostados na parede da sala 108 (de frente para a 112). Dois têm
@@ -380,9 +384,9 @@ export function construirPrincipal(M) {
         for (let x = s108.x + 5; x + larg <= s108.x + s108.w - 5; x += larg) {
           const xm = x + larg / 2; if (portas.some((o) => Math.abs(o.x - xm) < 0.9 / WORLD.sx)) continue;
           const c = wp([xm, yC]); const mat = n % 2 ? 'armarioA' : 'armarioB';
-          L.box(mat, c[0], c[1], 0.38, 0.42, z, z + 0.88); L.box(mat, c[0], c[1], 0.38, 0.42, z + 0.9, z + 1.82);
-          const fr = wp([xm, yFrente]); [0.62, 1.64].forEach((hh) => L.box('cinzaEscuro', fr[0] + 0.12, fr[1], 0.03, 0.02, z + hh - 0.08, z + hh));
-          [0.25, 1.27].forEach((hh) => L.box('cinzaEscuro', fr[0], fr[1], 0.22, 0.012, z + hh, z + hh + 0.012));
+          D.box(mat, c[0], c[1], 0.38, 0.42, z, z + 0.88); D.box(mat, c[0], c[1], 0.38, 0.42, z + 0.9, z + 1.82);
+          const fr = wp([xm, yFrente]); [0.62, 1.64].forEach((hh) => D.box('cinzaEscuro', fr[0] + 0.12, fr[1], 0.03, 0.02, z + hh - 0.08, z + hh));
+          [0.25, 1.27].forEach((hh) => D.box('cinzaEscuro', fr[0], fr[1], 0.22, 0.012, z + hh, z + hh + 0.012));
           if (n === 3 || n === 11) adesivos.push([fr, n === 3 ? 0 : 1, z + (n === 3 ? 1.15 : 0.32)]);
           n++;
         }
@@ -395,7 +399,7 @@ export function construirPrincipal(M) {
           const mAd = new THREE.MeshLambertMaterial({ map: tx, transparent: true, alphaTest: 0.3 });
           adesivos.forEach(([fr, cel, h0]) => {
             const geo = new THREE.PlaneGeometry(0.3, 0.3); const uv = geo.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setX(i, uv.getX(i) * 0.5 + cel * 0.5);
-            const m = new THREE.Mesh(geo, mAd); m.position.set(fr[0], h0 + 0.15, fr[1] + dir * 0.004); if (dir < 0) m.rotation.y = Math.PI; m.name = 'adesivo'; gNiveis[k].add(m);
+            const m = new THREE.Mesh(geo, mAd); m.position.set(fr[0], h0 + 0.15, fr[1] + dir * 0.004); if (dir < 0) m.rotation.y = Math.PI; m.name = 'adesivo'; gDet[k].add(m);
           });
         }
       }
@@ -406,15 +410,15 @@ export function construirPrincipal(M) {
     if (rec) { const pw = WP(zonePoly(rec)); const c = centroid(pw); L.box('madeira', pw[1][0] - 0.75, c[1], 0.6, 2.2, z, z + 1.05); }
     if (k === 0) {
       /* quadro de avisos na parede da direita de quem entra, logo depois do balcão (informado pelo usuário) */
-      const q = wp([922, 560]); quadroParede(L, 'quadroAvisos', [q[0] - 0.05, q[1]], [-1, 0], 2.3, z + 0.95, z + 2.1); L.box('madeira', q[0] - 0.025, q[1], 0.05, 2.42, z + 0.89, z + 2.16);
+      const q = wp([922, 560]); quadroParede(D, 'quadroAvisos', [q[0] - 0.05, q[1]], [-1, 0], 2.3, z + 0.95, z + 2.1); D.box('madeira', q[0] - 0.025, q[1], 0.05, 2.42, z + 0.89, z + 2.16);
       /* banco de espera do outro lado do hall */
-      const e = wp([860, 560]); banco(L, e[0] + 0.45, e[1], Math.PI / 2, z);
+      const e = wp([860, 560]); banco(D, e[0] + 0.45, e[1], Math.PI / 2, z);
     }
     /* bebedouro do 1º andar, no canto de baixo à esquerda do patamar da rampa */
     if (k === 1) { const q = wp([861, 534]); L.box('aco', q[0], q[1], 0.42, 0.36, z, z + 1.02, -0.4, 'cinza'); L.box('cinzaEscuro', q[0], q[1], 0.2, 0.14, z + 1.02, z + 1.14, -0.4); }
     /* último andar: a rampa e a escada não seguem para cima; o vão fica cercado por parede */
     if (k === 2) { paredesRampa(L, z, z + ALT_SALA, 'cima'); paredesEscada(L, z, zEscada, z + ALT_SALA, 'cima'); }
-    adornos(L, f, k, z, salas, vasos);
+    adornos(D, f, k, z, salas, vasosDentro);
     /* subida */
     /* a subida de cada andar fica num grupo à parte: vendo o 1º andar aparece a rampa que chega nele, não a que segue para o 2º por cima */
     /* as paredes da rampa vão junto com a subida: na abertura em escada elas se inclinam com a rampa */
@@ -511,15 +515,27 @@ export function construirPrincipal(M) {
   /* Cada andar tem também um plano de corte só dele, logo acima das salas: assim, com os andares afastados em escada,
      cada um aparece aberto por cima (paredes, portas, piso e cartazes à mostra). */
   const planos = [0, 1, 2].map(() => new THREE.Plane(new THREE.Vector3(0, -1, 0), 99));
+  /* todos os materiais do bloco com dois planos (o segundo nunca corta): um tipo de programa a menos para compilar */
+  const NUNCA = new THREE.Plane(new THREE.Vector3(0, -1, 0), 1e5);
   const matsNivel = [[], [], []], matsSubida = [[], []];
-  grupo.traverse((o) => {
-    if (!o.isMesh) return; const era = o.material; o.material = o.material.clone(); o.material.clippingPlanes = [plano]; if (era === M.vidroAceso) acesos.push(o.material);
+  const preparar = (raiz) => raiz.traverse((o) => {
+    if (!o.isMesh) return; const era = o.material; o.material = o.material.clone(); o.material.clippingPlanes = [plano, NUNCA]; if (era === M.vidroAceso) acesos.push(o.material);
     for (let k = 0; k < 3; k++) { let p = o; while (p && p !== gNiveis[k] && p !== gSubidas[k]) p = p.parent; if (p === gNiveis[k]) { o.material.clippingPlanes = [plano, planos[k]]; matsNivel[k].push(o.material); }
       /* paredes de dentro vistas dos dois lados: cortadas pelo plano, o miolo delas não fica vazado. O azulejo de fora
          fica de um lado só (dos dois lados ele brigava com a face de dentro e piscava). */
       if (p && [M.corredor, M.sala, M.corredorLiso].includes(era)) o.material.side = THREE.DoubleSide;
       if (era === M.janelaLuz) luzes.push(o.material); else if (p && k < 2 && p === gSubidas[k]) matsSubida[k].push(o.material); }
   });
+  preparar(grupo);
+  /* monta o recheio dos andares (uma vez só) e devolve os grupos novos; depois disso, verDetalhes liga e desliga */
+  let detalhado = false;
+  function detalhar() {
+    if (detalhado) return []; detalhado = true;
+    gDet.forEach((g, k) => { lotesDet[k].build(g, M, { name: 'd' + k }); gNiveis[k].add(g); });
+    gDet.forEach((g) => { preparar(g); g.traverse((o) => { if (o.isMesh && o.matrixAutoUpdate === false) o.updateMatrix(); }); });
+    return gDet;
+  }
+  function verDetalhes(on) { gDet.forEach((g) => { g.visible = !!on && detalhado; }); }
   gSubidas.forEach((g) => { g.matrixAutoUpdate = false; });
   const ALTO = 14; const corteDe = (n) => (n === 'tudo' ? ALTO : (n + 1) * FH - 0.22);
   let nivelAtual = 'tudo';
@@ -566,7 +582,7 @@ export function construirPrincipal(M) {
     }));
     return mexeu;
   }
-  return { grupo, mostrar, abrir, separar, fatiar, escalonar, corteDe, ALTO, syncRooms, vasos, acesos, altoSala: ALT_SALA, nivel: () => nivelAtual, portas, salaEm, destampar, luzes };
+  return { grupo, mostrar, abrir, separar, fatiar, escalonar, corteDe, ALTO, syncRooms, vasos, vasosDentro, detalhar, verDetalhes, detalhado: () => detalhado, acesos, altoSala: ALT_SALA, nivel: () => nivelAtual, portas, salaEm, destampar, luzes };
 }
 
 /* Materiais que só o bloco principal usa. */

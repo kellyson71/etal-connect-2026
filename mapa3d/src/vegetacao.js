@@ -65,8 +65,10 @@ export async function modelo(nome) {
   return { folhas: f, madeira: m };
 }
 
-export function construirVegetacao(M, { vasos = [], flores = [], pronto = () => {} } = {}) {
+export function construirVegetacao(M, { vasos = [], vasosDentro = [], flores = [], pronto = () => {} } = {}) {
   const grupo = new THREE.Group(); grupo.name = 'vegetacao';
+  /* vasos dos corredores do bloco: só aparecem com o recheio do bloco (modo Campus e passeio) */
+  const gDentro = new THREE.Group(); gDentro.name = 'vasos-dentro'; gDentro.visible = false; grupo.add(gDentro);
   const R = rng(12); const muro = pts(22);
   /* Correções do usuário: nada de árvore no caminho da entrada (elas ficam à esquerda, sombreando as motos);
      na calçada da frente, só as que ficam junto ao muro; no pátio entre os blocos não são tão grandes. */
@@ -88,8 +90,8 @@ export function construirVegetacao(M, { vasos = [], flores = [], pronto = () => 
     const corMat = desaturavel(new THREE.MeshLambertMaterial({ vertexColors: true }));
     grupo.add(instanciar(copaGeo(9, [[0, 0, 0, 1]]), corMat, flores.map(([x, z, y, s], i) => ({ x, y, z, s, sy: s * 0.45, rot: i, cor: i % 3 === 0 ? '#d6508c' : i % 3 === 1 ? '#5f9a44' : '#e06a9a' }))));
   }
-  const potes = vasos.map(([x, y, z]) => ({ x, y, z, s: 1 }));
-  if (potes.length) { const g = new THREE.CylinderGeometry(0.42, 0.3, 0.6, 10); g.translate(0, 0.3, 0); grupo.add(instanciar(g, M.brancoPuro, potes)); }
+  const geoPote = new THREE.CylinderGeometry(0.42, 0.3, 0.6, 10); geoPote.translate(0, 0.3, 0);
+  [[vasos, grupo], [vasosDentro, gDentro]].forEach(([l, g]) => { if (l.length) g.add(instanciar(geoPote, M.brancoPuro, l.map(([x, y, z]) => ({ x, y, z, s: 1 })))); });
 
   (async () => {
     /* copas: nim e outras árvores de sombra do campus, em três formas */
@@ -105,8 +107,8 @@ export function construirVegetacao(M, { vasos = [], flores = [], pronto = () => 
     /* palmeiras: nos vasos do pátio interno e nos canteiros junto ao bloco (fotos 04, 07, 13 e 18) */
     const [alta, baixa] = await Promise.all(['tree_palmDetailedTall', 'tree_palmDetailedShort'].map(modelo));
     const chao = [[-33.5, -18.2, 2.6], [-26.6, -17.4, 2.3], [-22.6, -13.5, 2.1], [-22.4, 2.5, 2.4], [-22.6, 7.5, 2], [22.6, 12.6, 2.2], [-9, 12.4, 2.1], [3, 12.4, 1.9], [-16, 12.6, 2.3], [-15, -15.6, 1.5], [-8, -15.6, 1.7], [-1, -15.6, 1.4], [6, -15.6, 1.6], [12, -15.6, 1.5]].map(([x, y, s]) => ({ x, y, s, sy: s * 1.15, rot: R() * 6, cor: '#5e9a48' }));
-    const emVaso = vasos.map(([x, y, z]) => ({ x, y, z: z + 0.5, s: 1.05, sy: 1.25, rot: R() * 6, cor: '#62a04c' }));
-    [[alta, chao], [baixa, emVaso]].forEach(([m, l]) => { if (!l.length) return; grupo.add(instanciar(m.folhas, palmMat, l)); if (m.madeira) { const tr = instanciar(m.madeira, casca, l.map((t) => ({ ...t, cor: null }))); tr.userData.tronco = 0.22; grupo.add(tr); } });
+    const emVaso = (l) => l.map(([x, y, z]) => ({ x, y, z: z + 0.5, s: 1.05, sy: 1.25, rot: R() * 6, cor: '#62a04c' }));
+    [[alta, chao, grupo], [baixa, emVaso(vasos), grupo], [baixa, emVaso(vasosDentro), gDentro]].forEach(([m, l, g]) => { if (!l.length) return; g.add(instanciar(m.folhas, palmMat, l)); if (m.madeira) { const tr = instanciar(m.madeira, casca, l.map((t) => ({ ...t, cor: null }))); tr.userData.tronco = 0.22; g.add(tr); } });
     pronto();
   })().catch((e) => console.error('vegetação:', e));
   return grupo;
