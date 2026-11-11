@@ -12,7 +12,7 @@ const nomeAndar = (l) => (l ? `${l}º andar` : 'Térreo');
 const ler = (k, padrao) => { try { return JSON.parse(localStorage.getItem(k)) ?? padrao; } catch { return padrao; } };
 
 export function iniciarInterface(ctx) {
-  const { scene, camera, controls, renderer, principal, interior, palco, estilo, viagem, passeio, veg, entorno, sol, pedir, hora } = ctx;
+  const { scene, camera, controls, renderer, principal, interior, palco, estilo, viagem, passeio, veg, entorno, sol, pedir, hora, prepararCampus, verCampus, predios, detalhes } = ctx;
   let andarReal = null; // andar visto por dentro no prédio real (modos Evento e Campus)
   let selecionado = null, modo = 'evento', andarFoco = null, plano2d = false, percurso = null, ultimoQuadro = 0, amostras = [], autoNivel = 0;
   let sessoes = window.DATA?.sessions || []; let origem = null; // { level, zonaId, titulo }
@@ -22,7 +22,11 @@ export function iniciarInterface(ctx) {
   const ms = (n) => ($('#reduzir').checked ? 0 : n);
 
   /* ---------- vistas ---------- */
-  const campusPose = () => enquadrar(camera, [[-75, -100], [40, -100], [40, 48], [-75, 48]].map(([x, z]) => new THREE.Vector3(x, 0, z)), { e: 48, min: 60 });
+  /* Campus: mais baixo e mais aberto que o Evento (a 48° a vista ficava alta demais e mostrava pouco do campus): o campus
+     inteiro em perspectiva, da rodovia, com o horizonte perto do alto da tela. */
+  const campusPose = () => (innerWidth < innerHeight
+    ? enquadrar(camera, [[-54, -122], [34, -122], [34, 50], [-54, 50]].map(([x, z]) => new THREE.Vector3(x, 0, z)), { e: 31, min: 60, folga: 0.92 }) // em pé: o miolo do campus, da quadra à rodovia
+    : enquadrar(camera, [[-95, -150], [55, -150], [55, 60], [-95, 60]].map(([x, z]) => new THREE.Vector3(x, 0, z)), { e: 28, min: 60, folga: 0.96 }));
   const eventoPose = () => enquadrar(camera, [[-70, -60], [32, -55], [32, 48], [-60, 30]].map(([x, z]) => new THREE.Vector3(x, 0, z)), { e: 50, min: 50 });
   const andaresPose = (foco = null) => foco == null
     ? enquadrar(camera, [0, 1, 2].flatMap((l) => interior.contorno(l, 1)), { e: 42, min: 40, folga: 1.04 })
@@ -69,6 +73,9 @@ export function iniciarInterface(ctx) {
     if (modo === 'passear' && m !== 'passear') { passeio.desligar(); document.body.classList.remove('passeando'); $('#passeio').hidden = true; levantar(); if (parent !== window) parent.postMessage({ type: 'etal:mapa:passeio', on: false }, location.origin); }
     if (m === 'passear') { modo = m; document.querySelectorAll('[data-modo]').forEach((b) => { b.classList.toggle('on', b.dataset.modo === m); b.setAttribute('aria-pressed', b.dataset.modo === m); }); deitar(); passear(); return; }
     modo = m; estilo.setMode(m === 'campus' ? 'campus' : 'evento');
+    /* o modo Campus mostra tudo (entorno e o recheio do bloco), montado na primeira vez; Evento e Andares ficam só com o campus */
+    if (m === 'campus') { const pronto = prepararCampus(); let ok = false; pronto.then(() => { ok = true; if (modo === 'campus') verCampus(true); }); setTimeout(() => { if (!ok && modo === 'campus') aviso('Montando o campus inteiro…'); }, 120); }
+    else verCampus(false);
     document.querySelectorAll('[data-modo]').forEach((b) => { b.classList.toggle('on', b.dataset.modo === m); b.setAttribute('aria-pressed', b.dataset.modo === m); });
     if (m === 'andares') abrirAndares(selecionado?.level ?? null); else fecharAndares(m === 'campus' ? campusPose() : eventoPose());
     marcarAndar(); pedir();
@@ -88,14 +95,14 @@ export function iniciarInterface(ctx) {
     $('#trocar-origem').hidden = !origemAtividade; $('#trocar-origem').textContent = origem ? 'sair da portaria' : 'sair da minha atividade';
   }
   let origemAtividade = null;
-  function select(it) {
+  function select(it, { voar = true } = {}) {
     selecionado = it; percurso = null; viagem.limpar(); $('#resultados').hidden = true; $('#busca').blur();
     if (it.kind === 'perto') { const r = maisPerto('bebedouro', origem); if (!r) { aviso('Nenhum bebedouro com caminho.'); return; } return select({ kind: 'ponto', id: r.ponto.id, title: 'Bebedouro', sub: r.ponto.onde }); }
     $('#titulo').textContent = it.title; $('#descricao').textContent = it.sub; $('#limpar').hidden = false;
     ['pular', 'repetir', 'etapas', 'etapas-texto'].forEach((id) => ($('#' + id).hidden = true)); $('#etapa-atual').textContent = '';
     if (it.kind === 'place') {
       $('#ir').disabled = true; $('#via-wrap').hidden = true; $('#meta').textContent = 'No campus';
-      const p = centroid(it.building.p); palco.ir({}, enquadrar(camera, it.building.p.map((q) => new THREE.Vector3(q[0], 0, q[1])), { e: 50, min: 34 }), ms(900)); return;
+      if (voar) palco.ir({}, enquadrar(camera, it.building.p.map((q) => new THREE.Vector3(q[0], 0, q[1])), { e: 50, min: 34 }), ms(900)); return;
     }
     const mesma = origem && it.kind !== 'ponto' && origem.level === it.level && origem.zonaId === it.id;
     const r = rota(destinoDe(it), mesma ? null : origem, $('#via').value || null); $('#ir').disabled = !r; $('#via-wrap').hidden = !r || !r.via;
@@ -108,7 +115,7 @@ export function iniciarInterface(ctx) {
     const mesma = origem && selecionado.kind !== 'ponto' && origem.level === selecionado.level && origem.zonaId === selecionado.id;
     percurso = viagem.ir(destinoDe(selecionado), { origem: mesma ? null : origem, forcar: $('#via').value || null });
     if (!percurso) { aviso('Não há um caminho confirmado para este destino.'); return false; }
-    if (modo !== 'evento' && modo !== 'andares') { modo = 'evento'; estilo.setMode('evento'); }
+    if (modo !== 'evento' && modo !== 'andares') { modo = 'evento'; estilo.setMode('evento'); verCampus(false); document.querySelectorAll('[data-modo]').forEach((b) => { b.classList.toggle('on', b.dataset.modo === 'evento'); b.setAttribute('aria-pressed', b.dataset.modo === 'evento'); }); }
     andarFoco = null; plano2d = false; marcarAndar();
     /* no celular o cartão recolhe durante a viagem, para o mapa ficar com a tela */
     if (innerWidth < 700) { $('#cartao').classList.add('recolhido'); $('#recolher').setAttribute('aria-expanded', 'false'); }
@@ -128,6 +135,8 @@ export function iniciarInterface(ctx) {
   $('#busca').addEventListener('input', () => {
     const q = norm($('#busca').value).trim(); $('#resultados').replaceChildren(); $('#resultados').hidden = !q; if (!q) return;
     const lista = catalogo().filter((x) => norm(x.title + ' ' + x.sub).includes(q)).slice(0, 14);
+    /* segredo: quem digita "passear" acha o passeio */
+    if (/^passe(ar|io)$/.test(q)) { const b = document.createElement('button'); b.type = 'button'; b.textContent = 'Passear pelo campus'; const sm = document.createElement('small'); sm.textContent = 'um segredo do mapa'; b.append(sm); b.onclick = () => { $('#busca').value = ''; $('#resultados').hidden = true; $('#busca').blur(); setMode('passear'); }; $('#resultados').append(b); if (!lista.length) return; }
     for (const it of lista) { const b = document.createElement('button'); b.type = 'button'; b.textContent = it.title; const s = document.createElement('small'); s.textContent = it.sub; b.append(s); b.onclick = () => select(it); $('#resultados').append(b); }
     if (!lista.length) $('#resultados').textContent = 'Nada encontrado. Tente o número da sala ou o nome do setor.';
   });
@@ -208,11 +217,32 @@ export function iniciarInterface(ctx) {
   $('#tela').addEventListener('pointerdown', (e) => { toque = { x: e.clientX, y: e.clientY, t: performance.now() }; });
   $('#tela').addEventListener('pointerup', (e) => {
     if (!toque || Math.hypot(e.clientX - toque.x, e.clientY - toque.y) > 6 || performance.now() - toque.t > 500) return; toque = null;
-    if (viagem.estado() && !viagem.estado().fim) return; if (palco.estado().abre < 0.9) return;
+    if (viagem.estado() && !viagem.estado().fim) return;
+    if (palco.estado().abre < 0.9) { if (modo !== 'passear') tocarLugar(e); return; }
     const r = $('#tela').getBoundingClientRect(); raio.setFromCamera(new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, (-(e.clientY - r.top) / r.height) * 2 + 1), camera);
     const foco = modo === 'andares' ? andarFoco : andarReal; const hits = raio.intersectObjects(interior.rooms.filter((m) => palco.estado().ops[m.userData.level] > 0.3 && (foco == null || m.userData.level === foco)), false);
     if (hits.length) { const { zone: z, level } = hits[0].object.userData; if (!z.roomNumber && z.kind !== 'restroom') return; if (z.closed) { aviso('Interditado.'); return; } interior.select(level, z.id); select({ kind: 'room', level, id: z.id, title: z.roomNumber ? 'Sala ' + z.roomNumber : z.label, sub: (z.name || z.label) + ' · ' + nomeAndar(level), zone: z }); }
   });
+
+  /* ---------- tocar num prédio: mostra o nome e aproxima ----------
+     O obelisco esconde o passeio: cinco toques seguidos nele. */
+  const raioLugar = new THREE.Raycaster(); const LUGARES = Object.fromEntries([...BUILDINGS, ...COVERS, ...FLATS].filter((b) => b.label).map((b) => [b.id, b]));
+  let obelisco = { n: 0, t: 0 };
+  function tocarLugar(e) {
+    if (window.MAPA3D?.abertura?.ativa()) return;
+    const r = $('#tela').getBoundingClientRect(); raioLugar.setFromCamera(new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, (-(e.clientY - r.top) / r.height) * 2 + 1), camera);
+    const alvos = [predios, principal.grupo, detalhes].filter(Boolean); const hit = raioLugar.intersectObjects(alvos, true).find((h) => h.object.visible);
+    let o = hit?.object; while (o && !LUGARES[o.name] && !(o === principal.grupo)) o = o.parent;
+    const id = o === principal.grupo ? 'principal' : o?.name; if (!id || !LUGARES[id]) return;
+    if (id === 'obelisco') {
+      const agora = performance.now(); obelisco = agora - obelisco.t < 2000 ? { n: obelisco.n + 1, t: agora } : { n: 1, t: agora };
+      if (obelisco.n >= 5) { obelisco = { n: 0, t: 0 }; aviso('Você achou um segredo!'); setMode('passear'); return; }
+      if (obelisco.n >= 3) aviso(`Mais ${5 - obelisco.n}…`);
+      if (obelisco.n > 1) return;
+    }
+    if (selecionado?.kind === 'place' && selecionado.id === id) return;
+    const b = LUGARES[id]; select({ kind: 'place', id, title: b.label, sub: 'Campus', building: b }, { voar: id !== 'obelisco' }); // o obelisco fica parado: é nele que se toca de novo
+  }
 
   /* ---------- integração com o app ---------- */
   addEventListener('keydown', (e) => { if (e.key !== 'Escape') return; if (modo === 'passear') setMode('evento'); else $('#voltar').click(); });

@@ -437,7 +437,7 @@
       el.style.transform = `translate3d(0,${H}px,0)`; app.style.transform = 'none'; app.style.filter = 'none';
       P.kick(0, 420, 0.9);
       buzz([10, 30, 18]);
-      setTimeout(() => { el.remove(); app.style.transition = app.style.transform = app.style.filter = ''; app.classList.remove('lx-under'); }, dur + 40);
+      setTimeout(() => { el.remove(); app.style.transition = app.style.transform = app.style.filter = ''; app.classList.remove('lx-under'); qrPendente(); }, dur + 40);
       if (prof.source === 'visitante') setTimeout(() => notify(`Boas-vindas, ${prof.first}!`, 'Sua conta de visitante está pronta. Mostre o QR do crachá na recepção.'), dur + 350);
     };
 
@@ -774,8 +774,8 @@
      (index.html da raiz) e a qualidade "2D" usam sempre o clássico. */
   const mapaEscolhido = () => { const q = new URLSearchParams(location.search).get('mapa'); return q === 'novo' || q === 'classico' ? q : UI.mapa || 'novo'; };
   const mapaNovoOn = () => !window.ASSET_DATA && mapaEscolhido() === 'novo' && window.Campus3D?.quality?.().setting !== 'simples';
-  /* ---- computador: sem moldura de celular. O app fica numa coluna à esquerda e o mapa ocupa o resto da tela, já no
-     passeio (mouse e teclado). "Ver como celular" volta para a moldura; a escolha fica em etal-moldura. ---- */
+  /* ---- computador: sem moldura de celular. O app fica numa coluna à esquerda e o mapa ocupa o resto da tela, no modo
+     Evento (o passeio virou segredo do mapa). "Ver como celular" volta para a moldura; a escolha fica em etal-moldura. ---- */
   const wideMq = matchMedia('(min-width: 1000px) and (pointer: fine)');
   let palcoFrame = null, palcoPronto = false, palcoFila = null;
   const dadosMapa = (extra = {}) => ({ type: 'etal:mapa:abrir', ...extra, origem: origemAgora(), foto: D.person.photo || null, nome: D.person.name || '', hour: skyHour, reduced: reduce, sessions: D.sessions.map((x) => ({ id: x.id, title: x.title, time: x.time, floor: x.floor, zone: x.zone })), rooms: Object.fromEntries(P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => [`${f.level}:${z.id}`, z.roomNumber]))) });
@@ -788,7 +788,7 @@
     const host = $('#palco'), bt = $('#moldura-btn');
     if (bt) { bt.hidden = !wideMq.matches; bt.textContent = on ? 'Ver como celular' : 'Usar a tela toda'; bt.onclick = () => { localStorage.setItem('etal-moldura', on ? '1' : '0'); location.reload(); }; }
     if (!host) return;
-    if (on && !palcoFrame) { palcoFrame = document.createElement('iframe'); palcoFrame.title = 'Mapa do campus em tela grande'; palcoFrame.allow = 'fullscreen'; palcoFrame.src = 'mapa3d/index.html?aba=1&passeio=1'; host.append(palcoFrame); host.hidden = false; }
+    if (on && !palcoFrame) { palcoFrame = document.createElement('iframe'); palcoFrame.title = 'Mapa do campus em tela grande'; palcoFrame.allow = 'fullscreen'; palcoFrame.src = 'mapa3d/index.html?aba=1'; host.append(palcoFrame); host.hidden = false; }
     if (!on && palcoFrame) { palcoFrame.remove(); palcoFrame = null; palcoPronto = false; host.hidden = true; }
   }
   /* o mapa avisa quando entra e sai do passeio: no celular ele fica com a tela toda */
@@ -801,8 +801,8 @@
   const telaMapaAoLado = () => ({
     html: `${header('Mapa')}<div class="pad stack lado-mapa">
       <p class="lado-tx st" ${st(0)}>O mapa está aberto ao lado, em tela grande. Escolha como quer ver:</p>
-      <button class="lado-op st" ${st(1)} data-act="palco" data-mode="passear">${ic('pin')}<span><b>Passear pelo campus</b><small>Ande com o mouse e o teclado, entre no bloco, dirija e voe</small></span>${ic('chev')}</button>
-      <button class="lado-op st" ${st(2)} data-act="palco" data-mode="evento">${ic('map')}<span><b>Ver o evento e buscar salas</b><small>Busca, rotas e as partes do evento em cores</small></span>${ic('chev')}</button>
+      <button class="lado-op st" ${st(1)} data-act="palco" data-mode="evento">${ic('map')}<span><b>Ver o evento e buscar salas</b><small>Busca, rotas e as partes do evento em cores</small></span>${ic('chev')}</button>
+      <button class="lado-op st" ${st(2)} data-act="palco" data-mode="campus">${ic('pin')}<span><b>Campus inteiro</b><small>Todos os prédios, o bairro e o bloco por dentro</small></span>${ic('chev')}</button>
       <button class="lado-op st" ${st(3)} data-act="palco" data-mode="andares">${ic('building')}<span><b>Andares do bloco principal</b><small>O prédio aberto, andar por andar</small></span>${ic('chev')}</button>
       <div class="sec st" ${st(4)}><h2>Como chegar</h2></div>
       <ul class="next st" ${st(5)}>${D.sessions.filter((x) => Number.isInteger(x.floor) && x.zone && D.enrolled.includes(x.id)).slice(0, 4).map((n) => `<li data-act="openmap" data-floor="${n.floor}" data-zone="${n.zone}"><span class="date"><small>${dayOf(n.day).week}</small><b>${n.day}</b></span><span class="next-tx"><b>${n.short}</b><small>${n.time} · ${n.room}</small></span>${ic('chev')}</li>`).join('')}</ul>
@@ -1971,7 +1971,7 @@
     lgPhys?.kick(0, 0, 0.5, 900);
   }
   function navReset() { const n = navUndo.length; navUndo.length = 0; if (n) { navSkip += 1; history.go(-n); } }
-  function enterApp() { S.auth = true; S.tab = 'home'; show(build(top()), 'fade'); }
+  function enterApp() { S.auth = true; S.tab = 'home'; show(build(top()), 'fade'); qrPendente(); }
 
   /* ---------------- campus ---------------- */
   let mapCanvas = null;
@@ -2677,6 +2677,14 @@
     if (!SPOTS[q]) { if (!x) return false; SPOTS[q] = { name: x.room || 'Sala', sign: x.short, where: floorOf(x.floor ?? 0).label, icon: 'qr', seed: 30 + Object.keys(SPOTS).length * 7 }; }
     scanResult(q); return true;
   }
+  /* QR lido pela câmera do celular, sem servidor (página qrs.html): o link abre o app com ?qr=etal:<atividade>. O login
+     vem primeiro; depois dele o leitor abre e a leitura acontece como se fosse na sala. */
+  function qrPendente() {
+    let t = null; try { t = sessionStorage.getItem('etal-qr-demo'); } catch (_) { /* sem armazenamento */ }
+    if (!t || !S.auth || API) return;
+    try { sessionStorage.removeItem('etal-qr-demo'); } catch (_) { /* opcional */ }
+    setTimeout(() => { openOverlay(Overlays.scan(), 'scan'); setTimeout(() => { if (!demoHit(t)) toast('Esse QR não é de uma atividade do ETAL.'); }, 650); }, 500);
+  }
   let demoQrs = null;
   async function demoQr(q) {
     try {
@@ -2767,9 +2775,13 @@
   if (mapSaved && mapSaved.seen ? mapSaved.flat : UI.view === '2d') window.Campus3D.setFlat(true);
   if (q === 'login') splashDone = true;
   if (!q && API) { apiStart(); return; }
+  if (!API && qs.get('qr')) {
+    if (qrActivity(qs.get('qr')) !== undefined) try { sessionStorage.setItem('etal-qr-demo', qs.get('qr')); } catch (_) { /* opcional */ }
+    history.replaceState(history.state, '', location.pathname);
+  }
   if (!q) {
     const saved = store.get(SAVE_KEY);
-    if (saved) { applyProfile(saved); splashDone = true; S.auth = true; show(build(top()), 'fade'); return; }
+    if (saved) { applyProfile(saved); splashDone = true; S.auth = true; telaGrande(); show(build(top()), 'fade'); qrPendente(); return; }
     show(build({ s: 'login' }), 'fade');
     return;
   }
