@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { desaturavel } from './texturas.js';
-import { listaArvores, rng, inPoly, pts, CANTEIROS_ANEXO, altura } from './dados.js';
+import { listaArvores, rng, inPoly, pts, CANTEIROS_ANEXO, altura, REDES } from './dados.js';
 
 /* Copa: esferas de poucas faces, amassadas e com a parte de baixo mais escura. */
 function copaGeo(seed, blobs) {
@@ -77,6 +77,9 @@ export function construirVegetacao(M, { vasos = [], flores = [], pronto = () => 
   arvores.push({ x: 20.6, y: -23.5, r: 2.9, tone: 2 }); // cajarana da área dos servidores, atrás do murinho
   for (let x = -22; x <= 48; x += 8.5) if (!(x > 0 && x < 20)) arvores.push({ x, y: 63.7, r: 1.7, tone: Math.abs(Math.round(x)) % 3 }); // ilha gramada junto à rodovia: árvores menores
   [-33.5, -29.5, -18.8, -0.4, 13, 25.8, 32.5, 42, 48].forEach((x, i) => arvores.push({ x, y: 52.2, r: 2.3 + (i % 3) * 0.25, tone: i % 3 })); // nos canteiros junto ao muro
+  /* calçada dos fundos do bloco, na saída da porta de vidro: quatro árvores em fila, com as redes entre elas */
+  for (let i = arvores.length - 1; i >= 0; i--) { const t = arvores[i]; if (t.x > -30 && t.x < -5 && t.y > -59 && t.y < -50.6) arvores.splice(i, 1); }
+  REDES.forEach(([x, y], i) => arvores.push({ x, y, r: 2.3, tone: i % 3 }));
   const folha = desaturavel(new THREE.MeshLambertMaterial({ color: 0xffffff })); const casca = desaturavel(new THREE.MeshLambertMaterial({ color: 0x7a6248 }));
   const palmMat = desaturavel(new THREE.MeshLambertMaterial({ color: 0xffffff, side: THREE.DoubleSide }));
 
@@ -97,13 +100,13 @@ export function construirVegetacao(M, { vasos = [], flores = [], pronto = () => 
       const cores = dentro ? VERDES : (R() > 0.45 ? SECOS : VERDES);
       const e = dentro ? 0.88 : 1.05; itens[k].push({ x: t.x, y: t.y, z: altura(t.x, t.y), s: t.r * e, sy: t.r * (0.8 + R() * 0.25), rot: R() * 6.28, cor: cores[(t.tone + k) % cores.length] });
     });
-    mods.forEach((m, k) => { if (!itens[k].length) return; grupo.add(instanciar(m.folhas, folha, itens[k])); if (m.madeira) grupo.add(instanciar(m.madeira, casca, itens[k].map((t) => ({ ...t, s: t.s * 0.5, cor: null })))); });
+    mods.forEach((m, k) => { if (!itens[k].length) return; grupo.add(instanciar(m.folhas, folha, itens[k])); if (m.madeira) { const tr = instanciar(m.madeira, casca, itens[k].map((t) => ({ ...t, s: t.s * 0.5, cor: null }))); tr.userData.tronco = 0.32; grupo.add(tr); } });
 
     /* palmeiras: nos vasos do pátio interno e nos canteiros junto ao bloco (fotos 04, 07, 13 e 18) */
     const [alta, baixa] = await Promise.all(['tree_palmDetailedTall', 'tree_palmDetailedShort'].map(modelo));
     const chao = [[-33.5, -18.2, 2.6], [-26.6, -17.4, 2.3], [-22.6, -13.5, 2.1], [-22.4, 2.5, 2.4], [-22.6, 7.5, 2], [22.6, 12.6, 2.2], [-9, 12.4, 2.1], [3, 12.4, 1.9], [-16, 12.6, 2.3], [-15, -15.6, 1.5], [-8, -15.6, 1.7], [-1, -15.6, 1.4], [6, -15.6, 1.6], [12, -15.6, 1.5]].map(([x, y, s]) => ({ x, y, s, sy: s * 1.15, rot: R() * 6, cor: '#5e9a48' }));
     const emVaso = vasos.map(([x, y, z]) => ({ x, y, z: z + 0.5, s: 1.05, sy: 1.25, rot: R() * 6, cor: '#62a04c' }));
-    [[alta, chao], [baixa, emVaso]].forEach(([m, l]) => { if (!l.length) return; grupo.add(instanciar(m.folhas, palmMat, l)); if (m.madeira) grupo.add(instanciar(m.madeira, casca, l.map((t) => ({ ...t, cor: null })))); });
+    [[alta, chao], [baixa, emVaso]].forEach(([m, l]) => { if (!l.length) return; grupo.add(instanciar(m.folhas, palmMat, l)); if (m.madeira) { const tr = instanciar(m.madeira, casca, l.map((t) => ({ ...t, cor: null }))); tr.userData.tronco = 0.22; grupo.add(tr); } });
     pronto();
   })().catch((e) => console.error('vegetação:', e));
   return grupo;

@@ -1,4 +1,4 @@
-import { fracaoRampa } from './subidas.js';
+import { fracaoRampa, ESC, escadaPlanta, RAMPA_PAREDES } from './subidas.js';
 /* Bloco principal, feito a partir da planta de 2012 já conferida (prototipo/plan-data.js): cada sala, corredor,
    porta, a rampa, a escada e o pátio interno ficam onde a planta diz. O que entra de novo vem das fotos:
    azulejo amarelo, platibanda de pastilha azul, janelas e condensadoras no pátio interno, corredores de azulejo
@@ -28,44 +28,112 @@ function face(aP, bP, refP) {
 }
 const PISO = { classroom: 'pisoSala', laboratory: 'pisoLab', office: 'pisoAdm', staff: 'pisoAdm', reception: 'pisoAdm', restroom: 'pisoWc', auditorium: 'pisoAud' };
 
-/* Sala fechada: paredes para o corredor e uma tampa lisa na cor do uso, com o número em cima. Vista de cima, a sala
-   aberta parecia vazia (comentário do usuário); fechada, o andar se lê como uma planta em relevo. */
+/* Parede de a até b com vãos (trechos [u0, u1] ao longo dela) abertos do chão até hv. */
+function paredeVaos(L, mat, a, b, h0, h1, vBase, vaos, hv) {
+  const len = dist(a, b); const P = (u) => lerp2(a, b, u / len); let u = 0;
+  vaos.slice().sort((p, q) => p[0] - q[0]).forEach(([s, e]) => { if (s > u) L.wall(mat, P(u), P(s), h0, h1, u, vBase); L.wall(mat, P(s), P(e), h0 + hv, h1, s, vBase); u = e; });
+  if (u < len) L.wall(mat, P(u), P(len), h0, h1, u, vBase);
+}
+/* Paredes em volta de um contorno, abertas onde há porta (centros das portas em metros). */
+function wallsVaos(L, mat, poly, h0, h1, fora, vBase, portas, larg = 0.92, hv = 2.1) {
+  const area = poly.reduce((t, q, i) => { const n = poly[(i + 1) % poly.length]; return t + q[0] * n[1] - n[0] * q[1]; }, 0);
+  const p = (area > 0) === fora ? poly.slice().reverse() : poly;
+  p.forEach((a, i) => {
+    const b = p[(i + 1) % p.length], len = dist(a, b); if (len < 1e-6) return; const dx = (b[0] - a[0]) / len, dy = (b[1] - a[1]) / len; const vaos = [];
+    portas.forEach((c) => { const t = (c[0] - a[0]) * dx + (c[1] - a[1]) * dy, d = Math.abs((c[0] - a[0]) * dy - (c[1] - a[1]) * dx); if (d < 0.45 && t > larg / 2 + 0.05 && t < len - larg / 2 - 0.05) vaos.push([t - larg / 2, t + larg / 2]); });
+    paredeVaos(L, mat, a, b, h0, h1, vBase, vaos, hv);
+  });
+}
+/* Parede fina solta (15 cm), de a até b, com as duas faces e a tampa. */
+function muro(L, aP, bP, h0, h1, mat = 'corredor', esp = 0.075) {
+  const a = wp(aP), b = wp(bP), n = normalDe(a, b); const q = [[a[0] - n[0] * esp, a[1] - n[1] * esp], [b[0] - n[0] * esp, b[1] - n[1] * esp], [b[0] + n[0] * esp, b[1] + n[1] * esp], [a[0] + n[0] * esp, a[1] + n[1] * esp]];
+  L.walls(mat, q, h0, h1, true, h0); L.top('branco', q, h1);
+}
+/* Sala: paredes para o corredor (com o vão de cada porta) e por dentro; a tampa lisa na cor do uso, com o número em
+   cima, é uma malha à parte (some quando a pessoa entra na sala no passeio). Vista de cima, a sala aberta parecia vazia
+   (comentário do usuário); fechada, o andar se lê como uma planta em relevo. */
 const TETO = { classroom: 'tetoAula', laboratory: 'tetoLab', office: 'tetoAdm', staff: 'tetoAdm', reception: 'tetoRec', restroom: 'tetoWc' };
-function sala(L, z, zona, alt, aberta) {
+function sala(L, z, zona, alt, aberta, portas = [], tampas = null, larg = 0.92) {
   const pw = WP(zonePoly(zona)); const out = insetPoly(pw, 0.12), inn = insetPoly(pw, 0.27);
-  L.walls('corredor', out, z, z + alt, true, z);
-  if (aberta) { L.walls('sala', inn, z, z + alt, false); L.top('branco', out, z + alt, [inn]); L.top(PISO[zona.kind] || 'pisoAdm', inn, z + 0.015); }
-  else L.top(TETO[zona.kind] || 'tetoAdm', out, z + alt);
+  wallsVaos(L, 'corredor', out, z, z + alt, true, z, portas, larg);
+  wallsVaos(L, 'sala', inn, z, z + alt, false, z, portas, larg);
+  if (aberta) { L.top('branco', out, z + alt, [inn]); L.top(PISO[zona.kind] || 'pisoAdm', inn, z + 0.015); }
+  else { L.top(PISO[zona.kind] || 'pisoAdm', inn, z + 0.012); tampas?.push({ zona, out, h: z + alt, mat: TETO[zona.kind] || 'tetoAdm' }); }
   return inn;
 }
 
-function escada(L, z, zona) {
-  const [a, , c] = WP(zonePoly(zona)); const x0 = a[0] + 0.15, x1 = c[0] - 0.15, y0 = a[1] + 0.15, y1 = c[1] - 0.15;
-  const meio = (x0 + x1) / 2, larg = (x1 - x0) / 2 - 0.06, pat = 1.25, n = 10, r = FH / (2 * n), t = (y1 - y0 - pat - 0.3) / n;
+/* Móveis simples dentro das salas, para quem entra no passeio: carteiras e quadro nas salas de aula, bancadas com
+   monitores nos laboratórios, mesas e armário nos setores. Ficam longe das portas. */
+function mobiliar(L, zona, inn, z, portas) {
+  const xs = inn.map((q) => q[0]), ys = inn.map((q) => q[1]); const x0 = Math.min(...xs) + 0.35, x1 = Math.max(...xs) - 0.35, y0 = Math.min(...ys) + 0.35, y1 = Math.max(...ys) - 0.35;
+  if (x1 - x0 < 2 || y1 - y0 < 2) return;
+  const cabe = (x, y, r = 0.45) => [[-r, -r], [r, -r], [r, r], [-r, r]].every(([a, c]) => inPoly(x + a, y + c, inn)) && !portas.some((c) => dist(c, [x, y]) < 1.5);
+  const cadeira = (x, y, dx) => { L.box('cadeira', x, y, 0.42, 0.42, z + 0.4, z + 0.45); L.box('cadeira', x + dx * 0.2, y, 0.05, 0.42, z + 0.45, z + 0.86); L.box('cinzaEscuro', x, y, 0.06, 0.06, z, z + 0.4); };
+  if (zona.kind === 'classroom') {
+    /* quadro branco na parede oeste, mesa de quem dá a aula e carteiras em colunas com corredor entre elas */
+    L.box('quadroBranco', x0 - 0.3, (y0 + y1) / 2, 0.05, Math.min(4.2, y1 - y0 - 1), z + 0.95, z + 2.15, 0, 'cinza');
+    if (cabe(x0 + 1.1, (y0 + y1) / 2, 0.7)) { L.box('carteira', x0 + 1.1, (y0 + y1) / 2, 0.6, 1.3, z + 0.7, z + 0.75); L.box('cinzaEscuro', x0 + 1.1, (y0 + y1) / 2, 0.5, 1.1, z, z + 0.7); }
+    for (let x = x0 + 2.6; x < x1 - 0.5; x += 1.4) for (let y = y0 + 0.55; y < y1 - 0.2; y += 1.42) {
+      if (!cabe(x + 0.25, y, 0.5)) continue;
+      L.box('carteira', x, y, 0.42, 0.6, z + 0.7, z + 0.74); L.box('cinzaEscuro', x, y, 0.05, 0.05, z, z + 0.7); cadeira(x + 0.5, y, 1);
+    }
+  } else if (zona.kind === 'laboratory') {
+    /* bancadas compridas com monitores, três fileiras */
+    const n = Math.max(1, Math.min(4, Math.floor((x1 - x0) / 2.6)));
+    for (let i = 0; i < n; i++) {
+      const x = x0 + ((i + 0.5) * (x1 - x0)) / n; const ya = y0 + 0.5, yb = y1 - 1.3; if (yb - ya < 1.5) continue;
+      if (!cabe(x, ya + 0.5, 0.5) || !cabe(x, yb - 0.5, 0.5) || !cabe(x, (ya + yb) / 2, 0.5)) continue;
+      L.box('bancada', x, (ya + yb) / 2, 0.7, yb - ya, z + 0.72, z + 0.78); L.box('cinzaEscuro', x, (ya + yb) / 2, 0.5, yb - ya - 0.2, z, z + 0.72);
+      for (let y = ya + 0.6; y < yb - 0.3; y += 1.1) { L.box('tela', x - 0.12, y, 0.04, 0.5, z + 0.86, z + 1.2); L.box('cinzaEscuro', x - 0.12, y, 0.06, 0.12, z + 0.78, z + 0.88); }
+    }
+    L.box('quadroBranco', (x0 + x1) / 2, y0 - 0.3, Math.min(3.6, x1 - x0 - 1), 0.05, z + 0.95, z + 2.15, 0, 'cinza');
+  } else if (zona.kind === 'office' || zona.kind === 'staff') {
+    /* mesas de trabalho com monitor e cadeira; armário no fundo */
+    const R = rng(zona.id.length * 131 + Math.round(x0 * 7 + y0 * 13));
+    for (let x = x0 + 1.1; x < x1 - 0.8; x += 2.5) for (let y = y0 + 0.9; y < y1 - 0.8; y += 2.6) {
+      if (R() < 0.3 || !cabe(x, y, 0.95)) continue;
+      L.box('carteira', x, y, 1.3, 0.65, z + 0.72, z + 0.76); L.box('cinzaEscuro', x, y - 0.25, 1.2, 0.05, z, z + 0.72);
+      L.box('tela', x, y - 0.18, 0.5, 0.04, z + 0.84, z + 1.16); cadeira(x, y + 0.55, 0);
+    }
+    if (cabe(x1 - 0.3, y0 + 0.9, 0.3)) L.box('armarioA', x1 - 0.05, y0 + 0.9, 0.45, 1.6, z, z + 1.85);
+  }
+}
+
+function escada(L, z, zona, k) {
+  const [a, , c] = WP(zonePoly(zona)); const x0 = a[0] + 0.1, x1 = c[0] - 0.1, y0 = a[1] + 0.15, yF = c[1] - ESC.faixa;
+  const meio = (x0 + x1) / 2, larg = (x1 - x0) / 2 - 0.06, pat = ESC.pat, n = 10, r = FH / (2 * n), t = (yF - y0 - pat) / n;
   for (let i = 0; i < n; i++) {
-    L.box('concreto', (x0 + meio) / 2, y1 - 0.3 - (i + 0.5) * t, larg, t, z + i * r - 0.1, z + (i + 1) * r, 0, 'cimento');
+    L.box('concreto', (x0 + meio) / 2, yF - (i + 0.5) * t, larg, t, z + i * r - 0.1, z + (i + 1) * r, 0, 'cimento');
     L.box('concreto', (meio + x1) / 2, y0 + pat + (i + 0.5) * t, larg, t, z + FH / 2 + i * r - 0.1, z + FH / 2 + (i + 1) * r, 0, 'cimento');
   }
   L.box('concreto', meio, y0 + pat / 2, x1 - x0, pat, z + FH / 2 - 0.15, z + FH / 2, 0, 'cimento');
-  /* corrimão no meio */
-  /* entre os dois lances há uma parede inteira, não corrimão: quem sobe não vê quem desce (informado pelo usuário) */
-  L.box('corredorLiso', meio, (y0 + pat + y1) / 2, 0.12, y1 - y0 - pat, z, z + FH - 0.3, 0, 'branco');
+}
+/* Paredes da caixa da escada: entre os dois lances há uma parede inteira, não corrimão (quem sobe não vê quem desce,
+   informado pelo usuário); do lado da circulação a parede vai até a faixa de piso, por onde se entra. No térreo, o vão
+   debaixo do lance que chega do patamar é fechado; no último andar, o lance que subiria não existe e vira parede. */
+function paredesEscada(L, z, zona, topo, fecho) {
+  const E = escadaPlanta(zona, WORLD.sy); const xm = zona.x + zona.w / 2, xl = zona.x + zona.w, pat = zona.y + ESC.pat / WORLD.sy;
+  muro(L, [xm, pat], [xm, E.ys], z, topo, 'corredorLiso', 0.06);
+  muro(L, [xl - 1, zona.y], [xl - 1, E.ys], z, topo);
+  if (fecho === 'baixo') muro(L, [xm, E.ys], [xl - 1, E.ys], z, topo);
+  if (fecho === 'cima') { muro(L, [zona.x + 1, E.ys], [xm, E.ys], z, topo); muro(L, [zona.x + 1, zona.y], [zona.x + 1, E.ys], z, topo); }
 }
 
 /* A rampa é fechada por paredes: uma no meio, entre a pista que sobe e a que volta, e outra do lado da circulação.
    Quem sobe não vê quem desce. O piso é de borracha preta (informado pelo usuário). */
-function paredesRampa(L, z) {
-  const topo = z + FH - 0.3;
-  const m0 = wp([752.5, 190]), m1 = wp([876, 498]); const n = normalDe(m0, m1); const q = [[m0[0] - n[0] * 0.07, m0[1] - n[1] * 0.07], [m1[0] - n[0] * 0.07, m1[1] - n[1] * 0.07], [m1[0] + n[0] * 0.07, m1[1] + n[1] * 0.07], [m0[0] + n[0] * 0.07, m0[1] + n[1] * 0.07]];
-  L.walls('corredor', q, z, topo, true, z); L.top('branco', q, topo);
-  const a = wp([705, 165]), b = wp([841, 505]); const k = normalDe(a, b); const p = [[a[0] - k[0] * 0.07, a[1] - k[1] * 0.07], [b[0] - k[0] * 0.07, b[1] - k[1] * 0.07], [b[0] + k[0] * 0.07, b[1] + k[1] * 0.07], [a[0] + k[0] * 0.07, a[1] + k[1] * 0.07]];
-  L.walls('corredor', p, z, topo, true, z); L.top('branco', p, topo);
+function paredesRampa(L, z, topo, fecho) {
+  const R = RAMPA_PAREDES;
+  muro(L, R.meio[0], R.meio[1], z, topo); muro(L, R.oeste[0], R.oeste[1], z, topo); muro(L, R.norte[0], R.norte[1], z, topo); // a volta da rampa também é fechada
+  /* térreo: a pista da direita está lá em cima, chegando no 1º andar; embaixo dela é parede (informado pelo usuário) */
+  if (fecho === 'baixo') muro(L, R.fechoLeste[0], R.fechoLeste[1], z, topo);
+  /* último andar: a pista da esquerda não sobe mais; fechada para ninguém cair no vão */
+  if (fecho === 'cima') muro(L, R.fechoOeste[0], R.fechoOeste[1], z, topo);
 }
 
 function rampa(L, z) {
   const P = []; PLAN.rampLoop.forEach((q) => { const w = wp(q); if (!P.length || dist(P[P.length - 1], w) > 0.05) P.push(w); });
   const acc = [0]; for (let i = 1; i < P.length; i++) acc.push(acc[i - 1] + dist(P[i - 1], P[i]));
-  const total = acc[acc.length - 1], hw = 1.12;
+  const total = acc[acc.length - 1], hw = 1.27; // de parede a parede, sem fresta dos lados
   const sec = P.map((p, i) => {
     const a = P[Math.max(0, i - 1)], b = P[Math.min(P.length - 1, i + 1)]; const L_ = dist(a, b) || 1; const n = [-(b[1] - a[1]) / L_, (b[0] - a[0]) / L_];
     const sourceIndex = i === P.length - 1 ? PLAN.rampLoop.length - 1 : PLAN.rampLoop.findIndex(q => dist(wp(q), p) < 0.001);
@@ -120,13 +188,53 @@ function cartazes() {
   return atlasCartaz;
 }
 
+/* Quadro preso à parede: centro p (x, y do mapa), normal n para onde ele olha. */
+function quadroParede(L, mat, p, n, larg, h0, h1) {
+  const r = [n[1], -n[0]]; const A = [p[0] - r[0] * larg / 2, p[1] - r[1] * larg / 2], B = [p[0] + r[0] * larg / 2, p[1] + r[1] * larg / 2];
+  L.quad(mat, [A[0], h0, A[1]], [B[0], h0, B[1]], [B[0], h1, B[1]], [A[0], h1, A[1]], [[0, 0], [1, 0], [1, 1], [0, 1]]);
+}
+
+/* Folha de porta solta, girando na dobradiça (x, y); fechada, ela vai na direção (ux, uy). O passeio mexe em ang. */
+let geoFolha = null;
+function folhaPorta(grupo, M, { x, y, z, ux, uy, larg, alt, k, vidro = false }) {
+  geoFolha ??= new THREE.BoxGeometry(1, 1, 1).translate(0.5, 0.5, 0);
+  const piv = new THREE.Group(); piv.position.set(x, z, y); const base = Math.atan2(-uy, ux); piv.rotation.y = base;
+  const m = new THREE.Mesh(geoFolha, vidro ? M.folhaVidro : M.folhaPorta); m.scale.set(larg, alt, vidro ? 0.05 : 0.045); m.userData.dinamico = true; m.castShadow = !vidro; m.receiveShadow = true; m.name = 'folha';
+  piv.add(m); grupo.add(piv);
+  return { piv, mesh: m, x, y, ux, uy, larg, k, base, ang: 0, w: 0, vidro };
+}
+
+/* O que há nos corredores: bancos, murais, lixeiras, extintores e vasos encostados nas paredes das salas, sempre longe
+   das portas e dos cruzamentos. Posições de ambientação, não levantamento. */
+function adornos(L, f, k, z, salas, vasos) {
+  /* luminárias no forro, ao longo dos corredores */
+  [[131.5, 250, 650, 'x'], [435.5, 250, 760, 'x'], [359.5, 160, 410, 'y']].forEach(([fixo, de, ate, eixo]) => { for (let v = de; v <= ate; v += 62) { const c = eixo === 'x' ? wp([v, fixo]) : wp([fixo, v]); L.box('lampada', c[0], c[1], eixo === 'x' ? 1.2 : 0.16, eixo === 'x' ? 0.16 : 1.2, z + 3.06, z + 3.11); } });
+  const R = rng(733 + k * 91); const tipos = ['banco', 'mural', 'lixeira', 'extintor', 'mural', 'planta', 'banco', 'nada', 'nada'];
+  [[113, 1], [150, -1], [417, 1], [454, -1]].forEach(([py, s]) => {
+    let ultimo = -99;
+    for (let px = 252; px < 655; px += 11) {
+      if (px > 328 && px < 392) continue; // cruzamento com a circulação
+      if (!salas.some((pl) => inPoly(px, py - s * 8, pl)) || !salas.some((pl) => inPoly(px - 14, py - s * 8, pl)) || !salas.some((pl) => inPoly(px + 14, py - s * 8, pl))) continue;
+      if (f.doors.some((d) => Math.abs(d.y - py) < 40 && Math.abs(d.x - px) < 30) || px - ultimo < 44) continue;
+      const tipo = tipos[Math.floor(R() * tipos.length)]; if (tipo === 'nada' || (tipo === 'planta' && k > 0)) continue; ultimo = px;
+      const c = wp([px, py]); const face = c[1] - s * 0.12, x = c[0];
+      if (tipo === 'banco') banco(L, x, face + s * 0.4, s > 0 ? Math.PI : 0, z);
+      else if (tipo === 'mural') { quadroParede(L, 'mural', [x, face + s * 0.045], [0, s], 1.5, z + 1.05, z + 2.0); L.box('madeira', x, face + s * 0.02, 1.6, 0.04, z + 1.0, z + 2.05); }
+      else if (tipo === 'lixeira') L.box('cinzaEscuro', x, face + s * 0.24, 0.36, 0.36, z, z + 0.72, 0, 'preto');
+      else if (tipo === 'extintor') { L.box('vermelho', x, face + s * 0.1, 0.17, 0.17, z + 0.5, z + 1.02); L.box('preto', x, face + s * 0.1, 0.06, 0.06, z + 1.02, z + 1.12); quadroParede(L, 'vermelho', [x, face + s * 0.01], [0, s], 0.24, z + 1.5, z + 1.74); }
+      else if (tipo === 'planta') vasos.push([x, face + s * 0.42, z]);
+    }
+  });
+}
+
 export function construirPrincipal(M) {
   const grupo = new THREE.Group(); grupo.name = 'principal';
   const mk = (n) => { const g = new THREE.Group(); g.name = n; grupo.add(g); return g; };
   const gCasca = mk('casca'), gTetosBaixos = mk('tetos-baixos'), gCobertura = mk('cobertura');
   const gNiveis = [0, 1, 2].map((k) => mk('nivel-' + k));
-  const gSubidas = [0, 1].map((k) => mk('subida-' + k));
-  const vasos = []; const rotulos = [];
+  const gSubidas = [0, 1].map((k) => mk('subida-' + k)); const gParedes = [];
+  const vasos = []; const rotulos = []; const portas = []; const tampas = [{}, {}, {}];
+  const zEsc = PLAN.floors[1].zones.find((z) => z.kind === 'stairs');
 
   const court = zonePoly(PLAN.floors[0].zones.find((z) => z.kind === 'courtyard'));
   const courtW = WP(court);
@@ -139,21 +247,36 @@ export function construirPrincipal(M) {
     const R = rng(101 + k * 37);
     /* laje e piso */
     const contorno = WP(k === 0 ? f.outlinePts : MAIN);
-    const furos = [courtW]; if (k > 0) { furos.push(insetPoly(WP(zRampa), 0.06)); furos.push(WP(zonePoly(zEscada))); }
+    const furos = [courtW]; if (k > 0) { furos.push(insetPoly(WP(zRampa), 0.06)); furos.push(WP(escadaPlanta(zEscada, WORLD.sy).furo)); }
     L.top('piso', contorno, z, furos);
     if (k > 0) { L.top('laje', contorno, z - 0.3, furos, false); furos.forEach((h) => L.walls('branco', h, z - 0.3, z, false)); }
 
     /* fachadas de fora, com janelas */
     const fach = (aP, bP, refP, o = {}) => {
-      const [a, b] = face(aP, bP, refP); L.wall('azulejo', a, b, z - 0.03, topo, 0, 0);
+      const [a, b] = face(aP, bP, refP); const len0 = dist(a, b);
+      /* vão de porta (o.vao: ponto da planta, largura, altura) aberto na parede de fora e na de dentro */
+      const uv = o.vao ? dist(a, wp(o.vao.p)) : 0; const vaos = o.vao ? [[uv - o.vao.w / 2, uv + o.vao.w / 2]] : [];
+      paredeVaos(L, 'azulejo', a, b, z - 0.03, topo, 0, vaos, o.vao ? o.vao.h + 0.03 : 0);
+      /* por dentro, a mesma parede com o azulejo branco dos corredores, 6 cm para dentro: no mesmo plano da de fora as duas
+         disputavam o desenho e o amarelo piscava em branco */
+      const nf = normalDe(a, b); const ai = [a[0] - nf[0] * 0.06, a[1] - nf[1] * 0.06], bi = [b[0] - nf[0] * 0.06, b[1] - nf[1] * 0.06];
+      paredeVaos(L, 'corredor', bi, ai, z, topo, z, vaos.map(([s0, s1]) => [len0 - s1, len0 - s0]), o.vao ? o.vao.h : 0);
+      /* janelas vistas de dentro: claras de dia (a cor muda com a hora) */
+      if (!o.semJanela) { const w = o.w ?? 1.5, hj = o.hj ?? 1.1, sill = o.sill ?? 1.15, passo = o.passo ?? 3.5; for (let u = 1 + passo / 2; u < len0 - 1 - w / 2; u += passo) { if (o.pula && o.pula(toPlanX(lerp2(a, b, u / len0)[0]))) continue; painel(L, 'caixilho', bi, ai, len0 - u - w / 2 - 0.05, len0 - u + w / 2 + 0.05, z + sill - 0.05, z + sill + hj + 0.05, 0.015); painel(L, 'janelaLuz', bi, ai, len0 - u - w / 2, len0 - u + w / 2, z + sill, z + sill + hj, 0.03); } }
+      if (o.vao) { /* marco e duas folhas de vidro */
+        const P = (u) => lerp2(a, b, u / len0); const dx = (b[0] - a[0]) / len0, dy = (b[1] - a[1]) / len0, lf = o.vao.folhas === 1 ? o.vao.w - 0.03 : o.vao.w / 2 - 0.02;
+        [uv - o.vao.w / 2 - 0.05, uv + o.vao.w / 2 + 0.05].forEach((u) => { const q = P(u); L.box('preto', q[0] - nf[0] * 0.03, q[1] - nf[1] * 0.03, 0.1, 0.16, z, z + o.vao.h + 0.08); }); { const q = P(uv); L.box('preto', q[0] - nf[0] * 0.03, q[1] - nf[1] * 0.03, o.vao.w + 0.2, 0.16, z + o.vao.h, z + o.vao.h + 0.1); }
+        (o.vao.folhas === 1 ? [[uv - o.vao.w / 2 + 0.01, 1]] : [[uv - o.vao.w / 2 + 0.01, 1], [uv + o.vao.w / 2 - 0.01, -1]]).forEach(([u, sg]) => { const q = P(u); portas.push(folhaPorta(gNiveis[k], M, { x: q[0] - nf[0] * 0.03, y: q[1] - nf[1] * 0.03, z, ux: dx * sg, uy: dy * sg, larg: lf, alt: o.vao.h - 0.04, k, vidro: true })); });
+      }
       if (o.semJanela) return [a, b];
       janelasNaAresta(L, a, b, { acesas: 0.05, floors: 1, fh: FH, base: z, R, w: o.w ?? 1.5, hj: o.hj ?? 1.1, sill: o.sill ?? 1.15, passo: o.passo ?? 3.5, ar: o.ar ?? 0.28, margem: 1, pula: o.pula && ((ff, u, len) => o.pula(toPlanX(lerp2(a, b, u / len)[0]), u, len)) });
       return [a, b];
     };
     const dentro = [500, 300];
     /* norte: no térreo, a porta de vidro no fim da circulação da esquerda */
-    const [na, nb] = fach([235, 24], [727.6, 24], dentro, { pula: k === 0 ? (x) => x > 330 && x < 390 : null });
-    if (k === 0) { const u = dist(na, wp([359.5, 24])); portaVidro(L, na, nb, u, 2); }
+    /* a porta de vidro do fim da circulação é de verdade: uma folha só, de vidro, que abre quando empurrada e dá na
+       calçada dos fundos (informado pelo usuário: porta normal, não dupla) */
+    fach([235, 24], [727.6, 24], dentro, { pula: k === 0 ? (x) => x > 330 && x < 390 : null, vao: k === 0 ? { p: [359.5, 24], w: 1, h: 2.2, folhas: 1 } : null });
     /* leste (inclinada): banheiros e rampa, janelas menores e altas */
     fach([727.6, 24], [934.8, 542], dentro, { w: 1.1, hj: 0.7, sill: 1.7, passo: 4.4, ar: 0 });
     /* sul: de frente para o pátio coberto. No térreo abre para o hall de entrada. */
@@ -179,6 +302,7 @@ export function construirPrincipal(M) {
     }
 
     /* salas, banheiros, áreas de descanso */
+    const centros = f.doors.map((d) => wp([d.x, d.y])); const feitas = [];
     f.zones.forEach((zona) => {
       if (zona.kind === 'courtyard' || zona.kind === 'ramp' || zona.kind === 'stairs') return;
       if (zona.kind === 'wall') { L.prism('corredor', 'branco', WP(zonePoly(zona)), z, z + ALT_SALA, z); return; }
@@ -190,14 +314,18 @@ export function construirPrincipal(M) {
         return;
       }
       if (zona.kind === 'auditorium') {
-        const inn = sala(L, z, zona, AUD_H - 1.9, true);
+        /* porta dupla do auditório, para o hall */
+        const pa = wp([118, 302]); const inn = sala(L, z, zona, AUD_H - 1.9, true, [pa], null, 1.8);
+        [[-0.89, 1], [0.89, -1]].forEach(([u, sg]) => portas.push(folhaPorta(gNiveis[0], M, { x: pa[0] + u, y: pa[1] - 0.195, z, ux: sg, uy: 0, larg: 0.88, alt: 2.09, k: 0 })));
         const xs = inn.map((q) => q[0]), ys = inn.map((q) => q[1]); const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
         L.box('palco', (x0 + x1) / 2, y0 + 2.2, x1 - x0 - 0.4, 4.2, z, z + 0.85);
         const n = 11, passo = (y1 - y0 - 7.2) / n;
         for (let i = 0; i < n; i++) [-1, 1].forEach((s) => { const w = (x1 - x0) / 2 - 1.3; L.box('poltrona', (x0 + x1) / 2 + s * (w / 2 + 0.6), y0 + 6 + i * passo, w, 0.55, z, z + 0.45 + i * 0.05); L.box('poltrona', (x0 + x1) / 2 + s * (w / 2 + 0.6), y0 + 6.3 + i * passo, w, 0.12, z + 0.45, z + 0.95 + i * 0.05); });
         return;
       }
-      sala(L, z, zona, ALT_SALA);
+      /* a recepção é o hall da entrada: piso aberto com o balcão (abaixo), sem paredes nem tampa */
+      if (zona.kind === 'reception') { L.top('pisoAdm', insetPoly(WP(zonePoly(zona)), 0.05), z + 0.015); return; }
+      const dentroSala = sala(L, z, zona, ALT_SALA, false, centros, feitas); mobiliar(L, zona, dentroSala, z, centros);
       /* número e nome curto em cima da tampa, de frente para quem olha da entrada */
       const pw = WP(zonePoly(zona)); const c = centroid(pw); const xs = pw.map((q) => q[0]), ys = pw.map((q) => q[1]); const lw = Math.min(6.4, Math.max(...xs) - Math.min(...xs) - 0.8), lh = lw / 2.6;
       if (zona.roomNumber || zona.word) rotulos.push({ zona, k, x: c[0], y: c[1] + (zona.kind === 'restroom' ? 1 : 0), z: z + ALT_SALA + 0.03, w: lw, h: lh, num: zona.roomNumber || '', nome: zona.word || (zona.kind === 'classroom' ? 'SALA' : zona.kind === 'laboratory' ? 'LAB' : '') });
@@ -211,8 +339,9 @@ export function construirPrincipal(M) {
       const c = wp([d.x, d.y]); const ang = h ? 0 : Math.PI / 2; const at = (u, v) => (h ? [c[0] + u, c[1] + v * lado] : [c[0] + v * lado, c[1] + u]);
       const cx = (u, v, w, dd, h0, h1, mat) => { const q = at(u, v); L.box(mat, q[0], q[1], w, dd, h0, h1, ang); };
       cx(-0.5, 0.195, 0.08, 0.24, z, z + 2.5, 'batente'); cx(0.5, 0.195, 0.08, 0.24, z, z + 2.5, 'batente'); cx(0, 0.195, 1.08, 0.24, z + 2.1, z + 2.18, 'batente'); cx(0, 0.195, 1.08, 0.24, z + 2.46, z + 2.54, 'batente');
-      cx(0, 0.195, 0.92, 0.21, z, z + 2.1, 'portaFolha'); cx(0, 0.195, 0.92, 0.19, z + 2.18, z + 2.46, 'vidro');
-      cx(0.2, 0.195, 0.2, 0.225, z + 1.35, z + 1.8, 'vidro'); cx(-0.36, 0.195, 0.05, 0.3, z + 0.98, z + 1.06, 'cinzaEscuro');
+      cx(0, 0.195, 0.92, 0.19, z + 2.18, z + 2.46, 'vidro');
+      /* a folha é uma peça solta, presa pela dobradiça: no passeio ela abre quando alguém empurra */
+      { const dob = at(-0.45, 0.195); portas.push(folhaPorta(gNiveis[k], M, { x: dob[0], y: dob[1], z, ux: h ? 1 : 0, uy: h ? 0 : 1, larg: 0.9, alt: 2.09, k })); }
       cx(0, -0.32, 0.8, 0.5, z, z + 0.02, 'capacho');
     });
     /* cartazes ao lado das portas das salas, na face da parede que dá para o corredor */
@@ -273,12 +402,31 @@ export function construirPrincipal(M) {
     }
     /* recepção: balcão */
     const rec = f.zones.find((q) => q.kind === 'reception');
-    if (rec) { const pw = WP(zonePoly(rec)); const c = centroid(pw); L.box('madeira', c[0], pw[0][1] + 0.5, 2.6, 0.6, z, z + 1.05); }
+    /* balcão encostado na parede do lado, deixando a passagem da porta para dentro do bloco livre */
+    if (rec) { const pw = WP(zonePoly(rec)); const c = centroid(pw); L.box('madeira', pw[1][0] - 0.75, c[1], 0.6, 2.2, z, z + 1.05); }
+    if (k === 0) {
+      /* quadro de avisos na parede da direita de quem entra, logo depois do balcão (informado pelo usuário) */
+      const q = wp([922, 560]); quadroParede(L, 'quadroAvisos', [q[0] - 0.05, q[1]], [-1, 0], 2.3, z + 0.95, z + 2.1); L.box('madeira', q[0] - 0.025, q[1], 0.05, 2.42, z + 0.89, z + 2.16);
+      /* banco de espera do outro lado do hall */
+      const e = wp([860, 560]); banco(L, e[0] + 0.45, e[1], Math.PI / 2, z);
+    }
+    /* bebedouro do 1º andar, no canto de baixo à esquerda do patamar da rampa */
+    if (k === 1) { const q = wp([861, 534]); L.box('aco', q[0], q[1], 0.42, 0.36, z, z + 1.02, -0.4, 'cinza'); L.box('cinzaEscuro', q[0], q[1], 0.2, 0.14, z + 1.02, z + 1.14, -0.4); }
+    /* último andar: a rampa e a escada não seguem para cima; o vão fica cercado por parede */
+    if (k === 2) { paredesRampa(L, z, z + ALT_SALA, 'cima'); paredesEscada(L, z, zEscada, z + ALT_SALA, 'cima'); }
+    adornos(L, f, k, z, salas, vasos);
     /* subida */
     /* a subida de cada andar fica num grupo à parte: vendo o 1º andar aparece a rampa que chega nele, não a que segue para o 2º por cima */
     /* as paredes da rampa vão junto com a subida: na abertura em escada elas se inclinam com a rampa */
-    if (k < 2) { const S = new Lote(); escada(S, z, zEscada); rampa(S, z); paredesRampa(S, z); S.build(gSubidas[k], M, { name: 'sobe' + k }); }
+    if (k < 2) {
+      const S = new Lote(); escada(S, z, zEscada, k); rampa(S, z); S.build(gSubidas[k], M, { name: 'sobe' + k });
+      /* as paredes ficam num grupo à parte: com os andares em escadinha elas esticariam junto com a rampa, então somem */
+      const W = new Lote(); paredesEscada(W, z, zEscada, z + FH - 0.3, k === 0 ? 'baixo' : ''); paredesRampa(W, z, z + FH - 0.3, k === 0 ? 'baixo' : '');
+      const gp = new THREE.Group(); gp.name = 'paredes-' + k; gSubidas[k].add(gp); W.build(gp, M, { name: 'par' + k }); gParedes[k] = gp;
+    }
     L.build(gNiveis[k], M, { name: 'n' + k });
+    /* tampas das salas: uma malha por sala */
+    feitas.forEach((t) => { const T = new Lote(); T.top(t.mat, t.out, t.h); const [m] = T.build(gNiveis[k], M, { name: 'tampa' }); m.userData.zona = t.zona.id; tampas[k][t.zona.id] = { mesh: m, poly: zonePoly(t.zona), alfa: 1, alvo: 1 }; });
   });
 
   /* ---------- auditório e entrada (casca sempre visível) ---------- */
@@ -289,24 +437,36 @@ export function construirPrincipal(M) {
       const bP = AUD[(i + 1) % AUD.length];
       if (aP[0] === 235 && bP[0] === 235) return; // divisa com o bloco de três andares
       const [a, b] = face(aP, bP, ref); const len = dist(a, b);
-      L.wall('azulejo', a, b, 0, base, 0, 0);
+      /* a saída do hall do auditório para o pátio é porta de verdade (duas folhas de vidro) */
+      /* fica no trecho curvo, de frente para o caminho calçado que chega do pátio (informado pelo usuário: a planta de 2012
+         é antiga; a porta se alinha com o caminho) */
+      const saida = aP[0] === 197 && bP[0] === 147; const us = saida ? dist(a, wp([181, 490.7])) : 0; const vs = saida ? [[us - 0.8, us + 0.8]] : [];
+      paredeVaos(L, 'azulejo', a, b, 0, base, 0, vs, 2.3);
+      { const nf = normalDe(a, b), ai = [a[0] - nf[0] * 0.06, a[1] - nf[1] * 0.06], bi = [b[0] - nf[0] * 0.06, b[1] - nf[1] * 0.06]; paredeVaos(L, 'corredor', bi, ai, 0.03, base, 0.03, vs.map(([s0, s1]) => [len - s1, len - s0]), 2.27);
+        if (saida) { const P = (u) => lerp2(a, b, u / len), dx = (b[0] - a[0]) / len, dy = (b[1] - a[1]) / len; [[us - 0.79, 1], [us + 0.79, -1]].forEach(([u, sg]) => { const q = P(u); portas.push(folhaPorta(gNiveis[0], M, { x: q[0] - nf[0] * 0.03, y: q[1] - nf[1] * 0.03, z: 0.03, ux: dx * sg, uy: dy * sg, larg: 0.77, alt: 2.26, k: 0, vidro: true })); }); } }
       const curva = i >= 3 && i <= 10;
       if (curva && len > 1.5) {
         /* janelas altas e estreitas, com moldura saliente de azulejo (foto 07) */
         const n = Math.max(1, Math.floor(len / 2.4));
         for (let j = 0; j < n; j++) { const u = (len * (j + 0.5)) / n; saliencia(L, 'moldura', a, b, u - 0.5, u + 0.5, 0.75, 3.75, 0, 0.09); painel(L, 'caixilho', a, b, u - 0.36, u + 0.36, 0.95, 3.55, 0.1); painel(L, 'vidro', a, b, u - 0.31, u + 0.31, 1, 3.5, 0.11); painel(L, 'caixilho', a, b, u - 0.02, u + 0.02, 1, 3.5, 0.12); }
       }
-      if (aP[1] === 492 && bP[1] === 492) portaVidro(L, a, b, dist(a, wp([220, 492])), 1.9);
       if (aP[1] === 24 && bP[1] === 24) portaVidro(L, a, b, dist(a, wp([225, 24])), 1.5);
       if (aP[0] === 20 && bP[0] === 20) janelasNaAresta(L, a, b, { floors: 1, fh: 5, base: 0, R, w: 1.2, hj: 0.7, sill: 4.2, passo: 5, ar: 0.5 });
     });
     /* entrada: volume de pastilha azul, com porta larga e o letreiro (foto 06) */
     const ent = WP(ENTRY);
     [[[860, 542], [860, 614]], [[860, 614], [922, 614]], [[922, 614], [922, 542]]].forEach(([aP, bP], i) => {
-      const [a, b] = face(aP, bP, [891, 560]); L.wall('pastilha', a, b, 0, ENTRY_H, 0, 0);
+      const [a, b] = face(aP, bP, [891, 560]);
+      if (i !== 1) { L.wall('pastilha', a, b, 0, ENTRY_H, 0, 0); L.wall('corredor', b, a, 0.03, ENTRY_H, 0, 0.03); }
       if (i === 1) {
-        const len = dist(a, b);
-        painel(L, 'preto', a, b, len * 0.22, len * 0.78, 0, 2.6, 0.03); painel(L, 'vidro', a, b, len * 0.25, len * 0.75, 0.05, 2.5, 0.05); painel(L, 'caixilho', a, b, len * 0.495, len * 0.505, 0.05, 2.5, 0.06);
+        /* porta de verdade: vão aberto na parede, marco preto e duas folhas de vidro que abrem quando empurradas */
+        const len = dist(a, b), u0 = len * 0.25, u1 = len * 0.75, hv = 2.55;
+        paredeVaos(L, 'pastilha', a, b, 0, ENTRY_H, 0, [[u0, u1]], hv); paredeVaos(L, 'corredor', b, a, 0.03, ENTRY_H, 0.03, [[len - u1, len - u0]], hv - 0.03);
+        const P = (u) => lerp2(a, b, u / len), n = normalDe(a, b);
+        [u0 - 0.06, u1 + 0.06].forEach((u) => { const q = P(u); L.box('preto', q[0], q[1], 0.12, 0.2, 0, hv + 0.1); }); { const q = P(len / 2); L.box('preto', q[0], q[1], u1 - u0 + 0.24, 0.2, hv, hv + 0.12); }
+        const dx = (b[0] - a[0]) / len, dy = (b[1] - a[1]) / len; const lf = (u1 - u0) / 2 - 0.02;
+        [[u0 + 0.01, 1], [u1 - 0.01, -1]].forEach(([u, sg]) => { const q = P(u); portas.push(folhaPorta(gNiveis[0], M, { x: q[0], y: q[1], z: 0.03, ux: dx * sg, uy: dy * sg, larg: lf, alt: hv - 0.06, k: 0, vidro: true })); });
+        void n;
         painel(L, 'placaEntrada', a, b, len * 0.06, len * 0.94, 2.9, 5.2, 0.05, [[0, 0], [1, 0], [1, 1], [0, 1]]);
       }
     });
@@ -318,7 +478,7 @@ export function construirPrincipal(M) {
     T.top('laje', WP(AUD), AUD_H - 0.72);
     /* caixa da escada/reservatório que sobe acima do telhado do auditório */
     const torre = paraFora(WP(STAIR_TOWER)); T.walls('azulejo', torre, AUD_H - 0.7, H_TOTAL - BAND, true); platibanda(T, torre, H_TOTAL, { bandH: BAND, over: 0.25 });
-    T.top('laje', ent, ENTRY_H - 0.02); T.walls('branco', insetPoly(ent, -0.06), ENTRY_H - 0.02, ENTRY_H + 0.18, true); T.top('branco', insetPoly(ent, -0.06), ENTRY_H + 0.18);
+    T.top('laje', ent, ENTRY_H - 0.02); T.top('branco', ent, 3.3, [], false); // forro do hall T.walls('branco', insetPoly(ent, -0.06), ENTRY_H - 0.02, ENTRY_H + 0.18, true); T.top('branco', insetPoly(ent, -0.06), ENTRY_H + 0.18);
     T.build(gTetosBaixos, M, { name: 'tetos' });
   }
 
@@ -332,6 +492,8 @@ export function construirPrincipal(M) {
     duasAguas(L, 'fibro', insetPoly(WP([[235, 327], [xe(327), 327], [xe(542), 542], [235, 542]]), 0.3), hB, 0.55, 0);
     L.top('fibro', insetPoly(WP([[235, 238], [378, 238], [378, 327], [235, 327]]), 0.25), hB + 0.02);
     L.top('fibro', insetPoly(WP([[692, 238], [xe(238), 238], [xe(327), 327], [729.3, 327]]), 0.25), hB + 0.02);
+    /* forro do último andar, para quem olha para cima lá de dentro */
+    L.top('laje', WP(MAIN), 3 * FH - 0.04, [courtW, insetPoly(WP(zRampa), 0.06), WP(escadaPlanta(zEscada, WORLD.sy).furo)], false);
     L.build(gCobertura, M, { name: 'cobertura' });
   }
 
@@ -339,20 +501,24 @@ export function construirPrincipal(M) {
   rotulos.forEach((r) => {
     const tx = placa(256, 98, (g, w, h) => { g.clearRect(0, 0, w, h); g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#1f2f57'; g.font = '800 54px system-ui, sans-serif'; g.fillText(r.num, w / 2, r.nome ? 34 : 50); g.fillStyle = '#56627e'; g.font = '700 21px system-ui, sans-serif'; if (r.nome) g.fillText(r.nome, w / 2, r.num ? 78 : 50); });
     const geo = new THREE.PlaneGeometry(r.w, r.h); geo.rotateX(-Math.PI / 2); geo.translate(r.x, r.z, r.y);
-    const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: tx, transparent: true, depthWrite: false })); m.renderOrder = 3; m.matrixAutoUpdate = false; gNiveis[r.k].add(m); r.mesh = m;
+    const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: tx, transparent: true, depthWrite: false })); m.renderOrder = 3; m.matrixAutoUpdate = false; gNiveis[r.k].add(m); r.mesh = m; if (tampas[r.k][r.zona.id]) tampas[r.k][r.zona.id].rotulo = m;
   });
 
   /* O bloco tem materiais só dele. Todos são cortados por um plano horizontal: baixar esse plano "fatia" o prédio de
      cima para baixo, até o andar que se quer ver, sem peças sumindo de repente. Também é por isso que o resto do campus
      pode perder a cor sem que o bloco perca. */
-  const plano = new THREE.Plane(new THREE.Vector3(0, -1, 0), 40); const acesos = [];
+  const plano = new THREE.Plane(new THREE.Vector3(0, -1, 0), 40); const acesos = []; const luzes = [];
   /* Cada andar tem também um plano de corte só dele, logo acima das salas: assim, com os andares afastados em escada,
      cada um aparece aberto por cima (paredes, portas, piso e cartazes à mostra). */
   const planos = [0, 1, 2].map(() => new THREE.Plane(new THREE.Vector3(0, -1, 0), 99));
   const matsNivel = [[], [], []], matsSubida = [[], []];
   grupo.traverse((o) => {
     if (!o.isMesh) return; const era = o.material; o.material = o.material.clone(); o.material.clippingPlanes = [plano]; if (era === M.vidroAceso) acesos.push(o.material);
-    for (let k = 0; k < 3; k++) { let p = o; while (p && p !== gNiveis[k] && p !== gSubidas[k]) p = p.parent; if (p === gNiveis[k]) { o.material.clippingPlanes = [plano, planos[k]]; matsNivel[k].push(o.material); } else if (p && k < 2 && p === gSubidas[k]) matsSubida[k].push(o.material); }
+    for (let k = 0; k < 3; k++) { let p = o; while (p && p !== gNiveis[k] && p !== gSubidas[k]) p = p.parent; if (p === gNiveis[k]) { o.material.clippingPlanes = [plano, planos[k]]; matsNivel[k].push(o.material); }
+      /* paredes de dentro vistas dos dois lados: cortadas pelo plano, o miolo delas não fica vazado. O azulejo de fora
+         fica de um lado só (dos dois lados ele brigava com a face de dentro e piscava). */
+      if (p && [M.corredor, M.sala, M.corredorLiso].includes(era)) o.material.side = THREE.DoubleSide;
+      if (era === M.janelaLuz) luzes.push(o.material); else if (p && k < 2 && p === gSubidas[k]) matsSubida[k].push(o.material); }
   });
   gSubidas.forEach((g) => { g.matrixAutoUpdate = false; });
   const ALTO = 14; const corteDe = (n) => (n === 'tudo' ? ALTO : (n + 1) * FH - 0.22);
@@ -377,7 +543,7 @@ export function construirPrincipal(M) {
      corte: plano geral (desce do telhado na abertura); t: quanto da escada; ops/elos: opacidade de cada andar e de cada
      subida; plano2d: achata os andares para a vista de cima. */
   const M4 = new THREE.Matrix4();
-  const opacidade = (lista, a) => lista.forEach((m) => { m.userData.tr0 ??= { t: m.transparent, d: m.depthWrite }; const tr = a < 0.999 || m.userData.tr0.t; if (m.transparent !== tr) { m.transparent = tr; m.needsUpdate = true; } m.opacity = a; m.depthWrite = a < 0.999 ? a > 0.6 : m.userData.tr0.d; });
+  const opacidade = (lista, a) => lista.forEach((m) => { m.userData.tr0 ??= { t: m.transparent, d: m.depthWrite }; const b = a * (m.userData.alfa ?? 1) * (m.userData.op0 ?? 1); const tr = b < 0.999 || m.userData.tr0.t; if (m.transparent !== tr) { m.transparent = tr; m.needsUpdate = true; } m.opacity = b; m.depthWrite = b < 0.999 ? b > 0.6 && !m.userData.vidro : m.userData.tr0.d; });
   function escalonar({ corte = 99, aberto = false, t = 0, ops = [1, 1, 1], elos = [1, 1], plano2d = 0 }) {
     const gy = FH + (GAP_Y - FH) * t, gb = BACK * t, s = 1 - 0.88 * plano2d;
     grupo.visible = true; cortar(corte); gCobertura.visible = !aberto;
@@ -386,9 +552,21 @@ export function construirPrincipal(M) {
       planos[k].constant = aberto ? Math.max(k * gy + (FH - 0.22) * s, corte) : 99;
     });
     M4.set(1, 0, 0, 0, 0, gy / FH, 0, 0, 0, -gb / FH, 1, 0, 0, 0, 0, 1);
-    gSubidas.forEach((g, k) => { g.matrix.copy(M4); g.matrixWorldNeedsUpdate = true; g.visible = elos[k] > 0.001 && plano2d < 0.5; opacidade(matsSubida[k], elos[k]); });
+    gSubidas.forEach((g, k) => { g.matrix.copy(M4); g.matrixWorldNeedsUpdate = true; g.visible = elos[k] > 0.001 && plano2d < 0.5; opacidade(matsSubida[k], elos[k]); if (gParedes[k]) gParedes[k].visible = t < 0.02; });
   }
-  return { grupo, mostrar, abrir, separar, fatiar, escalonar, corteDe, ALTO, syncRooms, vasos, acesos, altoSala: ALT_SALA, nivel: () => nivelAtual };
+  /* passeio: a sala em que a pessoa entrou perde a tampa (e o número) para se ver lá dentro */
+  const FECHADAS = ['courtyard', 'ramp', 'stairs', 'lounge', 'wall', 'reception', 'auditorium'];
+  function salaEm(k, x, zz) { const px = (x - WORLD.x0) / WORLD.sx, py = (zz - WORLD.y0) / WORLD.sy; const zona = PLAN.floors[k]?.zones.find((q) => !FECHADAS.includes(q.kind) && inPoly(px, py, zonePoly(q))); return zona ? zona.id : null; }
+  function destampar(k, id, dt) {
+    let mexeu = false;
+    tampas.forEach((mapa, n) => Object.entries(mapa).forEach(([zid, t]) => {
+      t.alvo = n === k && zid === id ? 0 : 1; if (Math.abs(t.alvo - t.alfa) < 0.001) return; mexeu = true;
+      t.alfa += Math.sign(t.alvo - t.alfa) * Math.min(Math.abs(t.alvo - t.alfa), dt * 3.5);
+      [t.mesh, t.rotulo].forEach((m) => { if (!m) return; m.material.userData.alfa = t.alfa; m.visible = t.alfa > 0.02; });
+    }));
+    return mexeu;
+  }
+  return { grupo, mostrar, abrir, separar, fatiar, escalonar, corteDe, ALTO, syncRooms, vasos, acesos, altoSala: ALT_SALA, nivel: () => nivelAtual, portas, salaEm, destampar, luzes };
 }
 
 /* Materiais que só o bloco principal usa. */
@@ -404,6 +582,28 @@ export function materiaisPrincipal(M, T) {
   M.corredorLiso = new THREE.MeshLambertMaterial({ map: T.corredor });
   M.borracha = new THREE.MeshLambertMaterial({ map: T.borracha });
   M.poltrona = new THREE.MeshLambertMaterial({ color: 0x8c2f2a });
+  M.carteira = new THREE.MeshLambertMaterial({ color: 0xd8c7a0 }); M.cadeira = new THREE.MeshLambertMaterial({ color: 0x3f5f93 });
+  M.bancada = new THREE.MeshLambertMaterial({ color: 0xe6e4dc }); M.tela = new THREE.MeshLambertMaterial({ color: 0x1b222c });
+  M.quadroBranco = new THREE.MeshLambertMaterial({ color: 0xf6f7f4 });
+  /* luz: lâmpadas do forro e o vidro das janelas visto de dentro (não dependem do sol) */
+  M.lampada = new THREE.MeshBasicMaterial({ color: 0xfff8e2 }); M.janelaLuz = new THREE.MeshBasicMaterial({ color: 0xd6e9fb });
+  /* folha das portas das salas: cinza-azulada, com visor e puxador (foto do corredor) */
+  M.folhaPorta = new THREE.MeshLambertMaterial({ map: placa(128, 256, (g, w, h) => {
+    g.fillStyle = '#6f7f8c'; g.fillRect(0, 0, w, h); g.strokeStyle = '#5c6a76'; g.lineWidth = 4; g.strokeRect(2, 2, w - 4, h - 4);
+    g.fillStyle = '#1c2733'; g.fillRect(w * 0.6, h * 0.14, w * 0.24, h * 0.22); g.fillStyle = '#9fb4c4'; g.fillRect(w * 0.62, h * 0.15, w * 0.2, h * 0.2);
+    g.fillStyle = '#2b3138'; g.fillRect(w * 0.78, h * 0.5, w * 0.12, h * 0.035);
+  }) });
+  /* folha de vidro da entrada: caixilho escuro e vidro quase transparente */
+  M.folhaVidro = new THREE.MeshLambertMaterial({ transparent: true, depthWrite: false, map: placa(128, 256, (g, w, h) => {
+    g.clearRect(0, 0, w, h); g.fillStyle = 'rgba(150,190,215,0.34)'; g.fillRect(0, 0, w, h); g.strokeStyle = '#161a1f'; g.lineWidth = 10; g.strokeRect(5, 5, w - 10, h - 10);
+    g.fillStyle = '#161a1f'; g.fillRect(0, h * 0.5 - 3, w, 6); g.fillStyle = '#c8ced4'; g.fillRect(w * 0.8, h * 0.4, 7, h * 0.2);
+  }) }); M.folhaVidro.userData.vidro = true;
+  const papeis = (g, w, h, n, R) => { const cores = ['#fdfcf5', '#fff3b8', '#d9ecff', '#ffd9d2', '#dff5d8', '#ffffff']; for (let i = 0; i < n; i++) { const pw = w * (0.1 + R() * 0.1), ph = pw * (1.1 + R() * 0.5), x = w * 0.04 + R() * (w * 0.92 - pw), y = h * 0.2 + R() * (h * 0.76 - ph); g.save(); g.translate(x + pw / 2, y + ph / 2); g.rotate((R() - 0.5) * 0.16); g.fillStyle = 'rgba(0,0,0,.18)'; g.fillRect(-pw / 2 + 2, -ph / 2 + 3, pw, ph); g.fillStyle = cores[Math.floor(R() * cores.length)]; g.fillRect(-pw / 2, -ph / 2, pw, ph); g.fillStyle = '#39445c'; for (let l = 0; l < 5; l++) g.fillRect(-pw / 2 + 5, -ph / 2 + 8 + l * (ph / 7), (pw - 10) * (l === 0 ? 0.6 : l === 4 ? 0.5 : 1), l === 0 ? 5 : 2.5); g.fillStyle = '#d0402b'; g.beginPath(); g.arc(0, -ph / 2 + 4, 3, 0, 7); g.fill(); g.restore(); } };
+  M.mural = new THREE.MeshLambertMaterial({ map: placa(384, 256, (g, w, h) => { g.fillStyle = '#b98a54'; g.fillRect(0, 0, w, h); const R = rng(17); g.fillStyle = 'rgba(90,60,25,.25)'; for (let i = 0; i < 900; i++) g.fillRect(R() * w, R() * h, 2, 2); papeis(g, w, h * 0.9, 9, R); }) });
+  M.quadroAvisos = new THREE.MeshLambertMaterial({ map: placa(512, 256, (g, w, h) => {
+    g.fillStyle = '#2c6b4a'; g.fillRect(0, 0, w, h); g.fillStyle = '#f4f6f8'; g.fillRect(0, 0, w, 38); g.fillStyle = '#1f2f57'; g.font = '800 24px system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('QUADRO DE AVISOS', w / 2, 20);
+    papeis(g, w, h, 13, rng(29));
+  }) });
   M.placaEntrada = new THREE.MeshLambertMaterial({ map: placa(512, 128, (g, w, h) => {
     /* placa branca com a marca e o "Bem-vindo (a)!"; embaixo, letras brancas sobre a pastilha (foto da entrada) */
     g.fillStyle = '#27338f'; g.fillRect(0, 0, w, h); g.fillStyle = '#f4f6f8'; g.fillRect(w * 0.14, 0, w * 0.72, h * 0.66);

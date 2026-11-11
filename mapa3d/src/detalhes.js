@@ -1,11 +1,11 @@
 /* O que dá cara ao campus nas fotos: a cobertura metálica do pátio (treliça espacial branca sobre pilares),
    o pergolado de madeira, o totem do IFRN, a portaria vermelha, sebes floridas, postes e bancos. */
 import * as THREE from 'three';
-import { pts, byId, GARDEN, HEDGES, ROAD_Y0, lerp2, dist, insetPoly, signedArea, rect } from './dados.js';
+import { pts, byId, GARDEN, HEDGES, GUARITA, PEDESTRE, ROAD_Y0, lerp2, dist, insetPoly, signedArea, rect, altura, CALCADA_FUNDOS, REDES } from './dados.js';
 
 import { Lote } from './geo.js';
 import { painel, paraFora, duasAguas } from './predios.js';
-import { placa } from './texturas.js';
+import { placa, desaturavel } from './texturas.js';
 
 function coberturaPatio(L) {
   const b = byId('patio'); const xs = b.p.map((q) => q[0]), ys = b.p.map((q) => q[1]);
@@ -33,7 +33,9 @@ function coberturaPatio(L) {
   });
   /* pilares brancos quadrados, com capitel de quatro mãos-francesas */
   /* os pilares ficam nas pontas da cobertura, não recuados para o meio (corrigido pelo usuário) */
-  [x0 + 0.5 * dx, x0 + 7 * dx, x1 - 0.5 * dx].forEach((x) => [y0 + 0.5 * dy, y1 - 0.5 * dy].forEach((y) => {
+  [x0 + 0.5 * dx, x0 + 7 * dx, x1 - 0.5 * dx].forEach((x0p) => [y0 + 0.5 * dy, y1 - 0.5 * dy].forEach((y) => {
+    /* o pilar do canto da entrada do bloco caía dentro do hall: fica do lado de fora, rente à parede da entrada */
+    const x = x0p > 18 && y < -12 ? 15.9 : x0p;
     const hb = zt(y) - D; L.box('branco', x, y, 0.6, 0.6, 0, hb - 1.2);
     [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach(([a, c]) => L.tube('aco', [x, hb - 1.2, y], [x + a * dx / 2, zt(y + c * dy / 2) - D, y + c * dy / 2], 0.07));
   }));
@@ -95,18 +97,22 @@ function totem(L, M) {
    à esquerda e o portão vermelho duplo à direita. O portão de veículos é um portão comum; por dentro, uma fileira de
    blocos amarelos sai dele e faz a curva para a esquerda, separando o estacionamento. */
 function portaria(L) {
-  const b = byId('portaria'); const xs = b.p.map((q) => q[0]), ys = b.p.map((q) => q[1]);
-  const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys), H = 2.9, WY = 48.335;
-  const xg = x0 + (x1 - x0) * 0.58; // divisa entre a sala do porteiro e o vão do portão
+  /* A guarita (sala do porteiro) ocupa o trecho de muro entre o portão de veículos e o de pedestres, com a janelinha
+     preta para a rua e uma portinha de lado, na passagem de pedestres. O vão do portão de pedestres fica de frente para
+     a passarela da entrada (pts 9, x 11,5–15,0), que chega direto nele (corrigido pelo usuário em 11/11/2026). */
+  const b = byId('portaria'); const ys = b.p.map((q) => q[1]);
+  const x0 = GUARITA[0], xg = GUARITA[1], x1 = GUARITA[2], y0 = Math.min(...ys), y1 = Math.max(...ys), H = 2.9, WY = 48.335;
   const sala = rect(x0, y0 + 0.6, xg, y1 - 0.3);
   L.walls('muro', sala, 0, H, true); L.walls('vermelho', insetPoly(sala, -0.02), 0.15, 0.4, true);
   painel(L, 'cinzaEscuro', [xg, y1 - 0.3], [x0, y1 - 0.3], 0.5, 2.3, 1, 2.1, 0.03); painel(L, 'vidroAceso', [xg, y1 - 0.3], [x0, y1 - 0.3], 0.6, 2.2, 1.08, 2.02, 0.05);
   painel(L, 'vidro', [x0, y0 + 0.6], [xg, y0 + 0.6], 0.6, 2.2, 1.08, 2.02, 0.04);
+  /* portinha da guarita, no lado da passagem de pedestres */
+  painel(L, 'cinzaEscuro', [xg, y0 + 0.6], [xg, y1 - 0.3], 0.6, 1.4, 0, 2.05, 0.03);
   [xg, x1].forEach((x) => L.box('muro', x, WY, 0.35, 0.5, 0, H));
   const folha = (x, dir, len, y = WY) => { const a = [x, y], e = [x + dir * len * 0.25, y - len * 0.97]; L.quad2('grade', [a[0], 0.12, a[1]], [e[0], 0.12, e[1]], [e[0], 2.2, e[1]], [a[0], 2.2, a[1]]); [0.12, 1.15, 2.2].forEach((h) => L.tube('acoVermelho', [a[0], h, a[1]], [e[0], h, e[1]], 0.04)); [a, e].forEach((q) => L.tube('acoVermelho', [q[0], 0, q[1]], [q[0], 2.25, q[1]], 0.05)); };
   const vao = x1 - xg - 0.35; folha(xg + 0.2, 1, vao / 2); folha(x1 - 0.2, -1, vao / 2);
   duasAguas(L, 'telha', rect(x0, y0 + 0.3, x1, y1), H, 0.75, 0.45);
-  L.top('branco', rect(x0, y0 + 0.6, x1, y1 - 0.3), H, [], false);
+  L.top('branco', rect(x0, y0 + 0.6, xg, y1 - 0.3), H, [], false);
   /* portão de veículos */
   const v = byId('portao-veiculos'); const vx0 = 1.5, vx1 = 8.5;
   [vx0, vx1].forEach((x) => L.box('muro', x, WY, 0.45, 0.45, 0, v.h));
@@ -119,8 +125,7 @@ function portaria(L) {
   for (let i = 0; i < linha.length - 1; i++) { const a = linha[i], e = linha[i + 1]; const len = dist(a, e); const ang = Math.atan2(e[1] - a[1], e[0] - a[0]); for (let d = resto; d < len; d += 0.75) { const q = lerp2(a, e, d / len); L.box('meioFio', q[0], q[1], 0.55, 0.3, 0, 0.22, ang); } resto = (resto + Math.ceil((len - resto) / 0.75) * 0.75) - len; }
   /* fileiras de blocos onde os carros param de frente, debaixo das árvores do estacionamento */
   [[-27, 1, 34.3], [-23.5, 7, 21.6]].forEach(([xa, xb, y]) => { for (let x = xa; x <= xb; x += 0.75) L.box('meioFio', x, y, 0.55, 0.3, 0, 0.22); });
-  /* cones na rua, na direção da faixa de pedestres */
-  [[5, 58.5], [5, 56], [5, 53.5], [5, 51], [13.4, 60.5], [15, 60.5], [16.6, 60.5]].forEach(([x, y]) => { const c = (r) => Array.from({ length: 8 }, (_, i) => [x + Math.cos(i / 8 * 6.283) * r, y + Math.sin(i / 8 * 6.283) * r]); L.prism('laranja', 'laranja', c(0.2), 0, 0.12); L.prism('laranja', 'brancoPuro', c(0.1), 0.12, 0.7); });
+  /* os cones da rua são peças soltas (ver cones(), mais abaixo): no passeio dá para empurrar e derrubar */
 }
 
 function sebes(L) {
@@ -165,7 +170,19 @@ function postes(L, luzes) {
   [[2, 40], [-18, 28], [-40, 40]].forEach(([x, y]) => { L.tube('branco', [x, 0, y], [x, 8, y], 0.09, 5); L.box('globo', x, y, 0.5, 0.5, 8, 8.2); luzes.push([x, y, 13, 0.02]); });
   /* pátio coberto bem iluminado, portaria, entrada do bloco, pergolado e a Elétrica */
   [[-13, -9], [0, -9], [13, -9], [-13, 4], [0, 4], [13, 4]].forEach(([x, y]) => luzes.push([x, y, 10, 0.16]));
-  luzes.push([15, 47, 7, 0.02], [18.4, -11, 6, 0.14], [-48.5, -39, 9, 0.02], [20, 131, 12, 0.06], [-37, -86, 8, 0.02]);
+  luzes.push([13.3, 47, 7, 0.02], [18.4, -11, 6, 0.14], [-48.5, -39, 9, 0.02], [20, 131, 12, 0.06], [-37, -86, 8, 0.02]);
+}
+
+/* Cones na rua, na direção da faixa de pedestres: uma malha por cone, com a faixa branca pintada nos vértices. */
+const CONES = [[5, 58.5], [5, 56], [5, 53.5], [5, 51], [13.4, 60.5], [15, 60.5], [16.6, 60.5]];
+function cones(grupo) {
+  const perfil = [[0, 0], [0.2, 0], [0.2, 0.035], [0.135, 0.04], [0.098, 0.3], [0.097, 0.305], [0.077, 0.45], [0.076, 0.455], [0.04, 0.7], [0, 0.7]];
+  const geo = new THREE.LatheGeometry(perfil.map(([r, y]) => new THREE.Vector2(r, y)), 10); const pos = geo.attributes.position, cor = new Float32Array(pos.count * 3);
+  const laranja = new THREE.Color(0xf26a1b), branco = new THREE.Color(0xf7f7f2);
+  for (let i = 0; i < pos.count; i++) { const y = pos.getY(i); (y > 0.302 && y < 0.453 ? branco : laranja).toArray(cor, i * 3); }
+  geo.setAttribute('color', new THREE.BufferAttribute(cor, 3)); geo.computeVertexNormals();
+  const mat = new THREE.MeshLambertMaterial({ vertexColors: true }); desaturavel(mat);
+  return CONES.map(([x, y]) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, altura(x, y), y); m.castShadow = true; m.userData.dinamico = true; m.name = 'cone'; grupo.add(m); return { mesh: m, x, z: y, y: altura(x, y), vx: 0, vz: 0, cai: false, tomba: 0, rola: 0, qx: 1, qz: 0 }; });
 }
 
 export function construirDetalhes(M) {
@@ -179,5 +196,15 @@ export function construirDetalhes(M) {
   /* poças de luz no chão, somadas à cena: só aparecem à noite */
   const P = new Lote(); luzes.forEach(([x, y, r, h]) => P.quad('poca', [x - r, h, y + r], [x + r, h, y + r], [x + r, h, y - r], [x - r, h, y - r], [[0, 0], [1, 0], [1, 1], [0, 1]]));
   P.build(grupo, M, { cast: false, receive: false, order: 5, name: 'pocas' });
-  return { grupo, flores };
+  /* fundos do bloco: calçada de uns 3,8 m na saída da porta de vidro, com faixa tátil, e as redes entre as árvores */
+  { const F = new Lote(); F.prism('concreto', 'calcadaChao', CALCADA_FUNDOS, 0, 0.05);
+    F.top('faixaAmarelaChao', [[-27, -54.2], [-8.5, -54.2], [-8.5, -53.9], [-27, -53.9]], 0.055);
+    for (let i = 0; i < REDES.length - 1; i++) {
+      const [ax, ay] = REDES[i], [bx, by] = REDES[i + 1]; const x0 = ax + 0.35, x1 = bx - 0.35, n = 10, cor = ['redeA', 'redeB', 'redeC'][i % 3];
+      const pt = (t) => { const x = x0 + (x1 - x0) * t, s = 4 * t * (1 - t); return { x, h: 1.35 - 0.62 * s, w: 0.06 + 0.5 * Math.sin(Math.PI * Math.min(1, Math.max(0, (t - 0.12) / 0.76))) }; };
+      for (let j = 0; j < n; j++) { const p = pt(j / n), q = pt((j + 1) / n); F.quad2(cor, [p.x, p.h, ay - p.w], [q.x, q.h, by - q.w], [q.x, q.h + 0.02, by + q.w], [p.x, p.h + 0.02, ay + p.w]); }
+      F.tube('cinzaEscuro', [ax, 1.5, ay], [x0, 1.35, ay], 0.012); F.tube('cinzaEscuro', [bx, 1.5, by], [x1, 1.35, by], 0.012);
+    }
+    F.build(grupo, M, { name: 'fundos' }).forEach((m) => { m.userData.dinamico = true; }); }
+  return { grupo, flores, cones: cones(grupo) };
 }

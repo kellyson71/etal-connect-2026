@@ -29,6 +29,25 @@ Abrir: `python3 mapa3d/servir.py` e depois http://127.0.0.1:8772/mapa3d/ (a pág
 - Andares (11/11): o próprio prédio real se abre em escada (`principal.escalonar`): cada andar tem um plano de corte logo acima das salas e as subidas (rampa com as paredes, escada) são inclinadas pela mesma matriz da abertura. Da maquete (`src/interior.js`) fica só a sala escolhida, que sobe verde na chegada. Os botões de andar fazem a mesma animação nos modos Evento e Campus (no Campus o entorno esmaece menos).
 - Abertura (`src/abertura.js`): na primeira visita, voo contínuo por pontos-chave (de cima com o horizonte, aproximação, passagem baixa pela Elétrica, vista do evento) e depois as partes do evento sobem do chão com um salto, uma de cada vez, ganhando a cor (`VEUS` por parte). Nas próximas, aproximação curta. `?intro=1` repete; `?intro=0` pula.
 
+## Passeio (ramo feature/passeio-campus, 11/11/2026)
+
+- Modo **Passear** (`src/passeio.js`): personagem e carro do Sketchbook (swift502, MIT; `assets/sketchbook/`). O papel com o rosto na textura do personagem é redesenhado com a foto do perfil (o app manda `foto` e `nome` em `etal:mapa:abrir`; sem foto, as iniciais). Andar, correr e pular em terceira pessoa; não atravessa os prédios nem o muro (os três portões da frente ficam abertos); o chão vem do terreno por raio, com cache.
+- Carros: quatro em cada faixa da BR-405, em mão dupla, mantendo distância e parando para quem estiver na pista; nove estacionados de frente para os blocos amarelos do estacionamento, de cores diferentes. Nos estacionados dá para entrar (anda até a porta, abre, senta, fecha), dirigir e sair parado; o carro fica onde foi deixado.
+- Teclado: WASD/setas, Shift corre, Espaço pula (no carro, freio de mão), E entra/sai, Esc sai do passeio. Celular: controle redondo e botões Correr, Pular e Entrar/Sair. Arrastar gira a câmera; roda ou pinça aproxima.
+- Física (`src/colisao.js`): grade de obstáculos de 25 cm feita da própria geometria (faces quase verticais na faixa do corpo, 0,42–1,9 m acima do chão): cones, sebes, bancos, mesas, postes, portões, muro, guarita, prédios e paredes do bloco barram; meio-fio e degrau baixo dá para subir. Troncos das árvores entram como círculos. Uma grade para o chão e uma por andar do bloco; a entrada principal e a porta de vidro do Anexo são abertas na grade.
+- Dentro do bloco: altura pela planta (andar × 3,45 m) e, na rampa e na escada, pela fração da subida, sem saltos entre os andares. O prédio é cortado acima do andar (e da cabeça) e a câmera sobe para ver por cima. A recepção virou hall aberto, com o balcão encostado na parede.
+- Voar (F ou botão Voar): decola com impulso; para a frente é para onde a câmera olha (olhar para cima sobe, para baixo mergulha); Espaço sobe, C desce; Shift dá o turbo, que sobe aos poucos de 26 até 70 m/s. Efeitos de velocidade: riscos de vento mais longos, rastro fino atrás do corpo, lente que abre até 74°, bordas da tela riscadas, tremida leve e um anel de estrondo ao passar de 45 m/s. Pose medida nos ossos do modelo (braços para trás no voo normal e parado no ar, acima da cabeça só acima de 15 m/s; a troca passa por baixo, pela frente do corpo), corpo inclina com a velocidade e nas curvas; riscos de vento, lente que abre com a velocidade e câmera que inclina nas curvas. Prédios mais altos que quem voa barram. F de novo pousa (cai e amortece com a animação de queda).
+- Computador (mouse, sem toque) abrindo `mapa3d/` direto: começa no passeio, sem os botões de tela; clicar no mapa trava o mouse na câmera (Esc solta). `?passeio=0` abre o mapa normal.
+- Portaria: a guarita fica entre o portão de veículos e o de pedestres (`GUARITA` em `src/dados.js`), com janelinha preta para a rua e portinha para a passagem; o vão de pedestres fica de frente para a passarela. As rotas saem desse vão.
+
+## Interior do bloco (revisão de 11/11/2026)
+
+- Rampa fechada por paredes também no fim da volta; no térreo, parede debaixo da pista que chega do 1º andar; no 2º andar o vão é cercado. Escada com faixa de piso no lado sul de cada andar (entrada pela circulação), medidas em `src/subidas.js`.
+- Portas de verdade: vão na parede e folha solta que gira quando empurrada (`src/moveis.js`). Entrada principal com duas folhas de vidro. Salas com móveis simples e tampa por sala; no passeio o prédio é cortado logo acima da cabeça.
+- Corredores com bancos, murais, lixeiras, extintores e vasos; quadro de avisos na parede da direita do hall; bebedouro no patamar do 1º andar. Tudo isso é ambientação, não levantamento.
+- Cones da rua são peças soltas: empurrados e derrubados pela pessoa e pelos carros.
+- Abertura: interface escondida durante o voo; tocar pula.
+
 Verificação:
 ```
 node --test mapa3d/tests/rotas.test.mjs
