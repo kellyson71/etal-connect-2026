@@ -2,6 +2,13 @@
 
 O projeto segue o git flow: `main` tem só versões publicadas, `develop` junta as funcionalidades e cada uma nasce num ramo `feature/*`.
 
+## Em desenvolvimento
+
+- O mapa novo (`mapa3d/`) passa a ser o padrão do app. O mapa anterior (`prototipo/campus3d.js`) fica guardado como **mapa clássico**: Perfil → Personalizar → Mapa, ou `?mapa=classico`.
+- Abertura do mapa no estilo da original, com voo contínuo e as partes do evento subindo do chão, cada uma com a sua cor.
+- Andares do prédio real (paredes, portas, piso, cartazes e armários) abertos em escada; botões de andar animados em todos os modos.
+- Rota pela rampa e pela escada sem saltos: os andares descem até a altura real e a câmera acompanha a subida.
+
 ## 0.5.0 (2026-11-09)
 
 - Leitor de QR com o servidor: a câmera trava no código, registra a presença e mostra o cartão de confirmação com a última imagem atrás; "Ler outro QR" reabre a câmera.
