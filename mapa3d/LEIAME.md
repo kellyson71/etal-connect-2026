@@ -29,6 +29,13 @@ Abrir: `python3 mapa3d/servir.py` e depois http://127.0.0.1:8772/mapa3d/ (a pág
 - Andares (11/11): o próprio prédio real se abre em escada (`principal.escalonar`): cada andar tem um plano de corte logo acima das salas e as subidas (rampa com as paredes, escada) são inclinadas pela mesma matriz da abertura. Da maquete (`src/interior.js`) fica só a sala escolhida, que sobe verde na chegada. Os botões de andar fazem a mesma animação nos modos Evento e Campus (no Campus o entorno esmaece menos).
 - Abertura (`src/abertura.js`): na primeira visita, voo contínuo por pontos-chave (de cima com o horizonte, aproximação, passagem baixa pela Elétrica, vista do evento) e depois as partes do evento sobem do chão com um salto, uma de cada vez, ganhando a cor (`VEUS` por parte). Nas próximas, aproximação curta. `?intro=1` repete; `?intro=0` pula.
 
+## Passeio (ramo feature/passeio-campus, 11/11/2026)
+
+- Modo **Passear** (`src/passeio.js`): personagem e carro do Sketchbook (swift502, MIT; `assets/sketchbook/`). O papel com o rosto na textura do personagem é redesenhado com a foto do perfil (o app manda `foto` e `nome` em `etal:mapa:abrir`; sem foto, as iniciais). Andar, correr e pular em terceira pessoa; não atravessa os prédios nem o muro (os três portões da frente ficam abertos); o chão vem do terreno por raio, com cache.
+- Carros: quatro em cada faixa da BR-405, em mão dupla, mantendo distância e parando para quem estiver na pista; nove estacionados de frente para os blocos amarelos do estacionamento, de cores diferentes. Nos estacionados dá para entrar (anda até a porta, abre, senta, fecha), dirigir e sair parado; o carro fica onde foi deixado.
+- Teclado: WASD/setas, Shift corre, Espaço pula (no carro, freio de mão), E entra/sai, Esc sai do passeio. Celular: controle redondo e botões Correr, Pular e Entrar/Sair. Arrastar gira a câmera; roda ou pinça aproxima.
+- Sem motor de física: colisão em círculos contra os polígonos do levantamento; o carro é um modelo de bicicleta simples. Não há interior dos prédios no passeio.
+
 Verificação:
 ```
 node --test mapa3d/tests/rotas.test.mjs

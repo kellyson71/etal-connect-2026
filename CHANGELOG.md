@@ -2,6 +2,10 @@
 
 O projeto segue o git flow: `main` tem só versões publicadas, `develop` junta as funcionalidades e cada uma nasce num ramo `feature/*`.
 
+## Em desenvolvimento
+
+- Modo Passear no mapa: personagem com a foto do SUAP no rosto, carros passando na BR-405 e estacionados que dá para dirigir (modelos do Sketchbook, MIT).
+
 ## 0.6.0 (2026-11-11)
 
 Reformulação completa do mapa.
