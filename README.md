@@ -1,5 +1,7 @@
 # ETAL Connect
 
+**[QR Codes de teste →](prototipo/qrs.html)** — todos os QRs do app (recepção, cada atividade e crachá de colega) numa página só. Com o protótipo rodando, abra http://127.0.0.1:8770/qrs.html e aponte a câmera do celular: o link abre o app e faz a leitura depois da entrada.
+
 **[Documentação visual do projeto →](DOCUMENTACAO.html)** — 22 slides dinâmicos com plantas e referências reais, app e mapa interativos, fluxos, PWA, arquitetura, banco e Swagger. Os detalhes ficam nas referências ao final; para regenerar, `npm run docs`.
 
 Proposta de aplicativo para o **ETAL**, o Encontro de Tecnologia do Alto Oeste Potiguar, no IFRN Campus Pau dos Ferros. O NADIC desenvolve o app em parceria com o IFRN e o ETAL. A referência de funcionamento é o app do GO!RN: crachá, programação, presença, mapa e avisos num lugar só.
@@ -18,7 +20,8 @@ Proposta de aplicativo para o **ETAL**, o Encontro de Tecnologia do Alto Oeste P
 - **Programação.** Três dias de evento, com filtros, atividades salvas, palestrantes e materiais liberados depois da presença.
 - **Mapa do campus em 3D.** O campus inteiro foi feito a partir de um levantamento no Google Earth e de fotos. O modo Evento destaca o bloco principal, o auditório, a cantina, o pátio e o obelisco. "Como chegar" traça a rota da portaria (ou da sala da atividade em que você está) até a porta da sala e escolhe a entrada e a escada ou rampa mais rápidas.
   - **Mapa padrão: o novo (`mapa3d/`, WebGL com three.js).** Prédios com textura das fotos, interior do bloco principal fiel às plantas, andares que se abrem em escada, abertura animada e rota que sobe de verdade pela rampa e pela escada.
-  - **Passear pelo campus.** Um personagem com a foto do SUAP no rosto anda pelo campus, os carros passam na BR-405 e os do estacionamento podem ser dirigidos. Personagem e carro são do [Sketchbook](https://github.com/swift502/Sketchbook) (swift502, licença MIT).
+  - **Modo Evento e modo Campus.** O Evento mostra só o campus, com as partes do evento em cores, e abre mais rápido. O Campus mostra tudo: o bairro em volta, o bloco por dentro (móveis, portas, cartazes) e uma vista mais baixa e aberta; tocar num prédio mostra o nome dele.
+  - **Um segredo.** O mapa esconde um passeio pelo campus (personagem com a foto do SUAP, carros na BR-405, dirigir e voar). Fica para quem achar; quem só quer testar usa `mapa3d/?passeio=1`. Personagem e carro são do [Sketchbook](https://github.com/swift502/Sketchbook) (swift502, licença MIT).
   - **Mapa clássico guardado (`prototipo/campus3d.js`, Canvas).** É o mapa que o app usava até 11/11/2026. Continua no código e funcionando: Perfil → Personalizar → Mapa → *Clássico*, ou `?mapa=classico`. A exportação em arquivo único (`index.html` da raiz) e a qualidade *2D* usam sempre o clássico. `modelo-3d/` é uma cópia ainda mais antiga, de antes das otimizações.
 - **Quatro versões do 3D.** Completo, médio, leve e 2D. O app mede o aparelho e escolhe a versão; o teste de desempenho em Perfil → Personalizar mostra os quadros por segundo de cada uma.
 - **Lembretes.** Dez minutos antes da atividade, o app avisa com a sala, o andar e quantos minutos a pé ela fica da entrada, também como notificação do sistema.
@@ -71,6 +74,8 @@ REDE=192.168.0.10 sh prototipo/rodar.sh   # troque pelo IP do computador
 Pelo Wi-Fi a conexão é HTTP, sem criptografia. Use só contas de teste. A instalação e o uso sem internet exigem HTTPS ou o endereço 127.0.0.1.
 
 **Sem servidor:** `npm run export:html` gera o `index.html` da raiz, um arquivo único que abre por duplo clique. Nele o login do SUAP não funciona, mas dá para entrar como visitante ou com dados de exemplo.
+
+**QR Codes de teste:** http://127.0.0.1:8770/qrs.html (ou pelo IP da rede, para o celular). Cada QR é um link `?qr=etal:<atividade>`: a câmera do celular abre o app, e o leitor do app também reconhece o código. Sem a API, a leitura é de exemplo; com a API, os QRs assinados ficam em `homologacao.html`.
 
 **Atalhos de teste:** `?tela=` abre direto numa tela (`home`, `agenda`, `atividade`, `mapa`, `bloco`, `campus`, `rota`, `org`, `sobre`, `visitante`, `perf`, `retro`…). Também há `?qualidade=alta|media|leve|simples`, `?fps=1`, `?tema=dark`, `?mapa=classico|novo` (escolhe o mapa) e `?intro=1` (repete a abertura do mapa novo).
 

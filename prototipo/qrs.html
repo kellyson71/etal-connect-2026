@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QR Codes de teste · ETAL Connect</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geologica:wght@500;600;700&family=Onest:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#f2f5fa;--card:#fff;--ink:#1f2f57;--ink-2:#3d4b6b;--muted:#66738f;--line:#e2e7f0;--brand:#2453c9;--brand-50:#e8eefc;--warn:#8a5a00;--warn-50:#fff4dc;--ok:#2f7a3b;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1524;--card:#18203a;--ink:#e6ebf7;--ink-2:#c3cbe0;--muted:#8d98b5;--line:#28324f;--brand:#7aa2ff;--brand-50:#1e2a4d;--warn:#ffcf7a;--warn-50:#3a2c12;--ok:#7fd08b;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Onest,system-ui,sans-serif}
+main{max-width:1080px;margin:0 auto;padding:28px 16px 64px}
+h1,h2{font-family:Geologica,system-ui,sans-serif;letter-spacing:-.01em;margin:0}
+h1{font-size:26px}h2{font-size:18px;margin:28px 0 12px}
+.sub{color:var(--muted);margin:6px 0 0;max-width:68ch}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-top:16px}
+.aviso{background:var(--warn-50);color:var(--warn);border-color:transparent}
+.aviso a{color:inherit;font-weight:600}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+label{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:600;color:var(--ink-2);flex:1 1 320px}
+input{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0;width:100%}
+.btn{font:600 14px Onest,system-ui,sans-serif;border:0;border-radius:10px;padding:11px 16px;cursor:pointer;background:var(--brand);color:#fff;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn.soft{background:var(--brand-50);color:var(--brand)}
+.dica{font-size:13px;color:var(--muted);margin:10px 0 0}
+.dica code{font-size:12.5px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:1px 5px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.qr{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px;break-inside:avoid}
+.qr .img{background:#fff;border-radius:10px;padding:4px;display:grid;place-items:center;aspect-ratio:1}
+.qr .img svg{width:100%;height:auto;display:block}
+.qr b{font-size:14.5px;line-height:1.3}
+.qr small{color:var(--muted);font-size:13px}
+.qr .tag{align-self:flex-start;font-size:11.5px;font-weight:600;color:var(--brand);background:var(--brand-50);border-radius:99px;padding:2px 8px}
+.qr a{font-size:13px;color:var(--brand);font-weight:600;text-decoration:none;margin-top:auto;padding-top:4px;word-break:break-all}
+.qr a:hover{text-decoration:underline}
+@media print{
+  body{background:#fff;color:#000}
+  .card,.no-print{display:none!important}
+  main{padding:0}
+  .grid{grid-template-columns:repeat(3,1fr)}
+  .qr{border-color:#bbb}
+  .qr a{color:#333}
+}
+</style>
+</head>
+<body>
+<main>
+  <h1>QR Codes de teste</h1>
+  <p class="sub">Todos os QRs do protótipo num lugar só. Aponte a câmera do celular para um deles: o link abre o ETAL Connect e, depois da entrada, faz a leitura como se fosse na sala. No app, o leitor (Presença → Ler QR) também reconhece estes códigos quando a câmera abre (HTTPS ou 127.0.0.1).</p>
+
+  <section class="card aviso" id="com-api" hidden>
+    Este app está ligado à API. Lá a presença usa QRs assinados pelo servidor, que ficam na <a href="homologacao.html">página de homologação</a>. Os códigos abaixo só valem no protótipo com dados de exemplo.
+  </section>
+
+  <section class="card no-print">
+    <div class="row">
+      <label>Endereço do app que os QRs abrem
+        <input id="base" type="url" inputmode="url" autocomplete="off" spellcheck="false">
+      </label>
+      <button class="btn soft" id="padrao" type="button">Usar este endereço</button>
+      <button class="btn" id="imprimir" type="button">Imprimir</button>
+    </div>
+    <p class="dica" id="dica-local" hidden>O celular não abre <code>127.0.0.1</code>. Para testar pelo Wi-Fi, rode <code>REDE=192.168.0.10 sh prototipo/rodar.sh</code> (com o IP do computador), abra esta página por esse IP ou troque o endereço acima.</p>
+    <p class="dica">Exemplo do protótipo: nenhuma presença é oficial e nada vai para o SUAP.</p>
+  </section>
+
+  <div id="lista"></div>
+</main>
+<script src="config.js"></script>
+<script src="plan-data.js"></script>
+<script src="data.js"></script>
+<script src="vendor/qrcode.js"></script>
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const D = window.DATA;
+  if (window.ETAL_CONFIG && window.ETAL_CONFIG.api !== null) $('#com-api').hidden = false;
+
+  /* endereço do app: a pasta desta página; dá para trocar (IP do computador na rede) e fica guardado */
+  const aqui = location.origin + location.pathname.replace(/[^/]*$/, '');
+  const ler = () => { try { return localStorage.getItem('etal-qrs-base'); } catch (_) { return null; } };
+  const salvar = (v) => { try { localStorage.setItem('etal-qrs-base', v); } catch (_) { /* opcional */ } };
+  $('#base').value = ler() || aqui;
+  const local = () => /\/\/(127\.0\.0\.1|localhost)[:/]/.test($('#base').value);
+
+  const andar = (f) => (f ? `${f}º andar` : 'Térreo');
+  const dia = (d) => (D.days.find((x) => x.day === d) || {}).long || `Dia ${d}`;
+  const itens = () => {
+    const lista = [{ grupo: 'Credenciamento', id: 'recepcao', titulo: 'Recepção', onde: 'Hall de entrada · Térreo', quando: 'Leia primeiro: faz o credenciamento', tag: '' }];
+    D.sessions.filter((s) => Number.isInteger(s.floor) && s.zone && s.id !== 'credenciamento')
+      .forEach((s) => lista.push({ grupo: dia(s.day), id: s.id, titulo: s.short || s.title, onde: `${s.room} · ${andar(s.floor)}`, quando: `${s.time}${s.end ? '–' + s.end : ''}`, tag: s.demo ? 'Exemplo' : '' }));
+    lista.push({ grupo: 'Contato', id: 'colega', titulo: 'Crachá de um colega', onde: 'Troca de contato', quando: 'Leia pelo leitor do app', tag: '' });
+    return lista;
+  };
+  const link = (id) => { let b = $('#base').value.trim() || aqui; if (!b.endsWith('/')) b += '/'; return `${b}?qr=etal:${id}`; };
+
+  function pintar() {
+    $('#dica-local').hidden = !local();
+    const grupos = new Map(); itens().forEach((it) => { if (!grupos.has(it.grupo)) grupos.set(it.grupo, []); grupos.get(it.grupo).push(it); });
+    $('#lista').innerHTML = [...grupos].map(([g, l]) => `<h2>${esc(g)}</h2><div class="grid">${l.map((it) => {
+      const url = link(it.id);
+      return `<article class="qr"><div class="img">${QRCode.svg(url, { margin: 1 })}</div>${it.tag ? `<span class="tag">${esc(it.tag)}</span>` : ''}<b>${esc(it.titulo)}</b><small>${esc(it.onde)}</small><small>${esc(it.quando)}</small><a href="${esc(url)}">${esc(url.replace(/^https?:\/\//, ''))}</a></article>`;
+    }).join('')}</div>`).join('');
+  }
+  $('#base').addEventListener('input', () => { salvar($('#base').value.trim()); pintar(); });
+  $('#padrao').onclick = () => { $('#base').value = aqui; salvar(aqui); pintar(); };
+  $('#imprimir').onclick = () => print();
+  pintar();
+})();
+</script>
+</body>
+</html>
