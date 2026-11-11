@@ -30,6 +30,10 @@ export function sunAt(h) {
 }
 
 export const ROAD_Y0 = 66.2, ROAD_Y1 = 76.6, ROAD_MID = 71.4;
+/* Portaria (x): guarita de 8,9 a 11,5, entre o portão de veículos (1,5–8,5) e o de pedestres (11,5–15,05), que fica de
+   frente para a passarela da entrada. PEDESTRE é o vão no muro (guarita + portão). */
+export const GUARITA = [8.9, 11.5, 15.05];
+export const PEDESTRE = [8.7, 15.05];
 export const CROSS_X = 14, CROSS_W = 4;
 export const APTO = [[14.2, 95.6], [34.6, 95.6], [34.6, 120.6], [14.2, 120.6]];
 export const FH = 3.45; // altura de um pavimento do bloco principal (pé-direito de 3,00 m + laje)
@@ -169,3 +173,7 @@ export function listaArvores() {
   }
   return trees;
 }
+
+/* Fundos do bloco principal (informado pelo usuário): calçada larga na saída da porta de vidro e quatro árvores com redes. */
+export const CALCADA_FUNDOS = [[-27, -54.4], [-8.5, -54.4], [-8.5, -50.62], [-27, -50.62]];
+export const REDES = [[-24.6, -56.2], [-20.2, -56.2], [-15.8, -56.2], [-11.4, -56.2]];
