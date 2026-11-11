@@ -2,6 +2,26 @@
 
 O projeto segue o git flow: `main` tem só versões publicadas, `develop` junta as funcionalidades e cada uma nasce num ramo `feature/*`.
 
+## Em desenvolvimento
+
+- Modo Passear no mapa: personagem com a foto do SUAP no rosto, carros passando na BR-405 e estacionados que dá para dirigir (modelos do Sketchbook, MIT).
+- Física no passeio a partir da geometria do mapa, entrada no bloco principal pela porta, rampa e escada, e voo com câmera própria. No computador, o mapa abre direto no passeio, com mouse e teclado.
+- Portão de pedestres de frente para a passarela, com a guarita entre ele e o portão de veículos.
+- Por dentro do bloco no passeio: portas que abrem quando empurradas (entrada de vidro e portas das salas), salas com móveis, corredores com bancos, murais, lixeiras e extintores, quadro de avisos no hall e bebedouro no patamar do 1º andar.
+- Rampa e escada corrigidas: parede debaixo da pista que chega do andar de cima, vão cercado no último andar, escada com faixa de piso por onde se entra. Paredes de fora agora existem também por dentro.
+- Cones da rua soltos: dá para empurrar e derrubar, a pé ou de carro.
+- Primeira pessoa dentro do bloco principal: a câmera entra nos olhos do personagem ao passar pela porta e sai ao deixar o prédio, com balanço de passo; V (ou o botão) troca para a vista de cima.
+- Home mais leve: cenário do campus em camadas (serras, névoa, fachada com janelas, carnaúbas, sol sem anéis, pássaros), atalhos numa fileira de pílulas, "Ao vivo" numa linha, seções que entram ao rolar.
+- Colmeia redesenhada: favos com relevo de mel, brilho e um desenho próprio para cada conquista; lista com favo por linha.
+- Mapa no celular ao alcance do dedão: busca, cartão, modos e andares numa doca embaixo; teclado numérico "123" acha a sala a cada dígito.
+- Passeio no celular: tela cheia e deitada, controle em formato de gamepad com ícones; os botões respondem no toque, então dá para andar e pular (ou voar) ao mesmo tempo.
+- Computador: sem moldura de celular. O app fica numa coluna e o mapa ocupa o resto da tela, já no passeio; "Ver como celular" volta para a moldura.
+- Mapa: tela de carregamento com barra e etapas; o voo de entrada roda a cada vez que o app é aberto e não é mais pulado em aparelho lento; a rota sai da portaria; na subida fica um pouco da escadinha e a câmera acompanha a ponta da linha; com um andar em foco a escadinha continua montada.
+- Bloco principal: porta de vidro dos fundos (Anexo), saída do hall do auditório e porta do auditório abrem de verdade; luzes no forro, janelas claras por dentro e luz junto de quem anda; paredes de fora não piscam mais; rampa de parede a parede e deslize em paredes inclinadas.
+- Passeio: três marchas no voo (normal, rápido, muito rápido), troca da hora do dia (T ou o botão do sol).
+- App: sem moldura em qualquer aparelho de toque (também deitado); Agenda em linha do tempo com cor por tipo; Perfil só com o essencial e o resto em "Mais opções"; home sem "Programação de hoje", Campeonatos e Avisos.
+- Abertura sem a interface por cima (tocar pula) e ajustes no celular: legenda inteira, cartão menor sem destino, botões da rota numa linha.
+
 ## 0.6.0 (2026-11-11)
 
 Reformulação completa do mapa.

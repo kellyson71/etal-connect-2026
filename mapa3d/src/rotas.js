@@ -1,10 +1,10 @@
-import { fracaoRampa } from './subidas.js';
+import { fracaoRampa, escadaPlanta } from './subidas.js';
 /* Rotas até uma sala do bloco principal. É a mesma lógica do protótipo (planFor, gridPath, doorOf em
    prototipo/campus3d.js): escolhe a combinação mais rápida de entrada e de escada ou rampa, anda pelo meio dos
    corredores e devolve o trajeto inteiro desde a portaria. Aqui o resultado já sai em 3D, em metros. */
 import { PLAN, wp, FH, zonePoly, inPoly } from './dados.js';
 
-const START = [15, 47];
+const START = [13.3, 47]; // vão do portão de pedestres, de frente para a passarela
 const [VB_W, VB_H] = PLAN.viewBox.split(' ').slice(2).map(Number);
 const SCALE = (PLAN.world.sx + PLAN.world.sy) / 2;
 const polyLen = (L) => L.slice(1).reduce((n, q, i) => n + Math.hypot(q[0] - L[i][0], q[1] - L[i][1]), 0);
@@ -64,15 +64,15 @@ export function doorOf(level, z) {
 }
 const ENTRANCES = {
   principal: { name: 'entrada principal', plan: PLAN.entrances.principal, campus: [START, [13.3, 11], [15, -4], [18.4, -11.5]] },
-  auditorio: { name: 'entrada do auditório', plan: PLAN.entrances.auditorio, campus: [START, [13.3, 11], [-23, 8], [-27, -8], [-27.3, -19]] },
+  auditorio: { name: 'entrada do auditório', plan: [181, 482], // a porta fica de frente para o caminho calçado, no trecho curvo
+    campus: [START, [13.3, 11], [-23, 8], [-27, -8], [-30, -19.4]] },
   anexo: { name: 'entrada do Anexo', plan: PLAN.entrances.anexo, campus: [START, [13.3, 11], [-23, 8], [-27, -8], [-48, -13], [-49.5, -50], [-50, -68], [-44.6, -66], [-39, -61.5], [-27, -60], [-20, -56], [-17.8, -52]] }, // porta de vidro norte do bloco
 };
 const VERTS = (() => {
-  const f = PLAN.floors[1]; const st = f.zones.find((q) => q.kind === 'stairs');
-  const footS = [st.x + st.w + 8, st.y + st.h - 8]; const xw = st.x + st.w * 0.27, xe = st.x + st.w * 0.73, ys = st.y + st.h - 6, yn = st.y + 10;
+  const f = PLAN.floors[1]; const st = f.zones.find((q) => q.kind === 'stairs'); const E = escadaPlanta(st, PLAN.world.sy);
   return {
-    /* escada do modelo novo: sobe pelo lance da esquerda, vira no patamar e volta pelo da direita */
-    escada: { where: 'da ala oeste', foot: footS, enter: [footS, [xw, ys]], loop: [[xw, ys], [xw, yn], [xe, yn], [xe, ys]], exit: [footS], weight: 1.6 },
+    /* escada: entra pela faixa de piso do lado sul, sobe pelo lance da esquerda, vira no patamar e volta pelo da direita */
+    escada: { where: 'da ala oeste', foot: E.pe, enter: [E.pe, [E.xw, E.meio]], loop: E.loop, exit: [[E.xe, E.meio], E.pe], weight: 1.6 },
     rampa: { where: 'do lado leste', foot: PLAN.rampFoot, enter: [PLAN.rampFoot], loop: PLAN.rampLoop, exit: [], weight: 1 },
   };
 })();
@@ -101,7 +101,7 @@ function cadeiaDePortas(level, z, prof = 0) {
    sempre sair da portaria. */
 const CAMINHOS = [
   [START, [13, 11], [15, -4], [18.4, -11.5]], [START, [13, 11], [6, 3]], [START, [13, 11], [19, 3]], [START, [13, 11], [-24, 11], [-30, 9]],
-  [START, [13, 11], [-23, 8], [-27, -8], [-27.3, -19]], [[-27, -8], [-48, -13], [-52.5, -24]],
+  [START, [13, 11], [-23, 8], [-27, -8], [-30, -19.4]], [[-27, -8], [-48, -13], [-52.5, -24]],
   [[-48, -13], [-49.5, -50], [-50.5, -58.5], [-59, -58.5]], [[-49.5, -50], [-50, -68], [-41, -74], [-37.5, -80], [-32.5, -81.5]],
   [[-50.5, -58.5], [-61.5, -57.8]], [[-50, -68], [-44.6, -66], [-38.5, -62], [-37.8, -65]], [[-44.6, -66], [-39, -61.5], [-28, -61.5], [-22.5, -66]],
   [[-39, -61.5], [-27, -60], [-20, -56], [-17.8, -52]], [START, [13, 30], [12.6, 16]],

@@ -172,7 +172,7 @@ def ground():
                           (553, 609, 'coord-ti', 'office', 'Coordenação de TI', 'COORD. TI'),
                           (609, 662, 'servico-social', 'office', 'Serviço Social', 'S. SOCIAL')], I2[1])
     f.zone('sala-projetos', TRAP_I2(662), 'office', 'Sala de Projetos', 'PROJETOS', door=(690, I2[1], 'h'))
-    row(f, S0, S1, [(216, 288, 'protocolo', 'office', 'Protocolo', 'PROTOCOLO'),
+    row(f, S0, S1, [(235, 288, 'protocolo', 'office', 'Protocolo', 'PROTOCOLO'),
                     (288, 377, 'manut-informatica', 'office', 'Manutenção de Informática', 'MANUT. INFO.'),
                     (377, 431, 'napne', 'office', 'NAPNE', 'NAPNE'),
                     (431, 520, 'almoxarifado', 'office', 'Almoxarifado', 'ALMOXARIFADO'),

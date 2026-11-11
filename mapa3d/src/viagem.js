@@ -41,6 +41,8 @@ export function criarViagem({ scene, camera, controls, interior, palco, pedir, f
   const mBorda = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, fog: false });
   const mRaioX = new THREE.MeshBasicMaterial({ color: COR, side: THREE.DoubleSide, transparent: true, opacity: 0.32, depthWrite: false, depthFunc: THREE.GreaterDepth, fog: false });
   let st = null, ultimo = null;
+  /* na subida os andares não voltam para dentro do prédio: fica um pouco da escadinha, para se ver em que andar a linha está */
+  const ES = 0.42;
   const reduzir = () => document.querySelector('#reduzir')?.checked;
 
   /* Com dentro = true os pontos são os reais (altura de verdade) e a linha acompanha a maquete: a cada quadro eles são
@@ -74,10 +76,10 @@ export function criarViagem({ scene, camera, controls, interior, palco, pedir, f
     s.A = enquadrar(camera, [...(s.fora ? s.fora.P : []), ...pe0], { e: 50, min: 40 });
     s.S = enquadrar(camera, andares, { e: 42, min: 36, folga: 1.06 });
     /* com subida, a partir dela os andares ficam na altura real (t = 0), "rentes ao prédio" */
-    const tF = q.via ? 0 : 1; s.tF = tF;
+    const tF = q.via ? ES : 1; s.tF = tF;
     if (q.via) {
       /* subida: a câmera chega perto da escada ou da rampa, com um pedaço dos dois andares em volta */
-      const sub = s.dentro.R.filter((p, i) => { const f = s.dentro.fr(p); return f >= s.fS - 0.04 && f <= s.fC + 0.04; }).map((p) => V3(mapear([p.x, p.y, p.z], 0)));
+      const sub = s.dentro.R.filter((p, i) => { const f = s.dentro.fr(p); return f >= s.fS - 0.04 && f <= s.fC + 0.04; }).map((p) => V3(mapear([p.x, p.y, p.z], ES)));
       s.C = enquadrar(camera, sub, { e: 40, min: 24, folga: 1.35 });
     }
     s.F = enquadrar(camera, interior.contorno(L, tF), { e: 55, min: 32, folga: 1.04 });
@@ -156,19 +158,19 @@ export function criarViagem({ scene, camera, controls, interior, palco, pedir, f
       if (ato === 4) {
         /* 30%: os andares descem até a altura real e a câmera vem para perto da subida; 70%: a linha sobe (ou desce) */
         const kd = suave(clamp(k / 0.3)), ks = clamp((k - 0.3) / 0.7), ls = ks * ks * (3 - 2 * ks);
-        faixa(1); esc = 1 - kd; f = s.fS + (s.fC - s.fS) * ls;
+        faixa(1); esc = 1 - kd * (1 - ES); f = s.fS + (s.fC - s.fS) * ls;
         /* a câmera acompanha um pouco a ponta da linha enquanto ela sobe */
-        const c = s.C; const alvo = V3(mapear(s.dentro.real(f).toArray(), 0));
+        const c = s.C; const alvo = V3(mapear(s.dentro.real(f).toArray(), ES));
         const segue = { t: c.t.clone().lerp(alvo, 0.35 * ks), d: c.d, e: c.e, a: c.a + 0.18 * (ls - 0.5) };
         p = mistura(s.S, segue, kd);
       }
       if (ato === 5) {
-        const kk = suave(clamp(k * 1.4)); faixa(1); esc = q.via ? 0 : 1;
+        const kk = suave(clamp(k * 1.4)); faixa(1); esc = q.via ? ES : 1;
         p = mistura(q.via ? { ...s.C, a: s.C.a + 0.09 } : s.S, s.F, kk);
         for (let l = 0; l < 3; l++) if (l !== L) ops[l] *= 1 - 0.85 * kk; elos[0] *= 1 - 0.8 * kk; elos[1] *= 1 - 0.8 * kk; f = s.fC + (1 - s.fC) * lin;
       }
-      if (ato === 6) { esc = q.via ? 0 : 1; p = mistura(s.F, s.R, e); ops[L] = 1; for (let l = 0; l < 3; l++) if (l !== L && (l < Math.max(lo, L) && l >= Math.min(lo, L))) ops[l] = 0.15; f = 1; chegada = e; }
-      if (q.via && ato >= 3) fantasmas(ops, s.dentro.real(f).y, 1 - esc);
+      if (ato === 6) { esc = q.via ? ES : 1; p = mistura(s.F, s.R, e); ops[L] = 1; for (let l = 0; l < 3; l++) if (l !== L && (l < Math.max(lo, L) && l >= Math.min(lo, L))) ops[l] = 0.15; f = 1; chegada = e; }
+      if (q.via && ato >= 3) fantasmas(ops, s.dentro.real(f).y, (1 - esc) * 0.6);
       palco.set({ abre, ops, elos, chegada, plano: 0, iso: 0, esc });
       /* a linha segue a abertura que o palco acabou de aplicar */
       const tAb = interior.abertura(); [s.dentro, s.antes, s.depois].forEach((l) => l?.ajustar(tAb));
@@ -180,6 +182,9 @@ export function criarViagem({ scene, camera, controls, interior, palco, pedir, f
       } else { s.dentro.show(0); if (s.antes) { s.antes.show(0); s.depois.show(0); } }
       if (ato < 3 && !cab) cab = s.fora ? s.fora.at(ato >= 1 ? 1 : 0) : s.dentro.at(0);
     }
+    /* enquanto a linha anda (campus, andar de saída, corredor do destino), a câmera chega mais perto e acompanha a
+       ponta dela; nas trocas de ato ela volta ao enquadramento geral, então nada pula */
+    if (cab && !q.externo && (ato === 1 || ato === 3 || ato === 5)) { const kA = clamp((t - s.limites[ato]) / Math.max(1, s.tempos[ato])); const w = suave(clamp(kA / 0.3)) * suave(clamp((1 - kA) / 0.3)); p = { ...p, t: p.t.clone().lerp(cab, 0.55 * w), d: p.d * (1 - 0.24 * w) }; }
     if (cab) { s.ponto.position.copy(cab); s.ponto.position.y += 0.8; } s.ponto.visible = !!cab && t < s.dur - 1;
     aplicar(camera, controls, p);
     const et = s.rot[ato];

@@ -19,8 +19,10 @@ const P = (x, z, d, e, a) => ({ t: new THREE.Vector3(x, 0, z), d, e: THREE.MathU
 
 export function criarAbertura({ camera, controls, renderer, pedir, partes, fim, ocupado, aoTerminar }) {
   let st = null;
-  const ler = () => { try { return localStorage.getItem(CHAVE) === '1'; } catch { return false; } };
-  const marcar = () => { try { localStorage.setItem(CHAVE, '1'); } catch {} };
+  /* o voo completo roda uma vez a cada vez que o app é aberto (sessão), não uma vez só na vida: o usuário quer ver a
+     chegada pelo alto, passando pela Elétrica, sempre que entra; nas voltas à aba, a aproximação curta */
+  const ler = () => { try { return sessionStorage.getItem(CHAVE) === '1'; } catch { return false; } };
+  const marcar = () => { try { sessionStorage.setItem(CHAVE, '1'); } catch {} };
   const reduzir = () => document.querySelector('#reduzir')?.checked;
 
   function cores(desat, veus) { DESAT.value = desat; VEU.value = 0.42; partes.forEach((p, i) => p.cores.forEach((c) => { VEUS[c].value = veus[i]; })); }
@@ -37,17 +39,22 @@ export function criarAbertura({ camera, controls, renderer, pedir, partes, fim, 
     K.forEach((k) => { k.ld = Math.log(k.d); });
     for (let i = 1; i < K.length; i++) { let d = K[i].a - K[i - 1].a; d = ((d + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI; K[i].a = K[i - 1].a + d; }
     st = { tipo: 'completa', t0: null, K, T: [0, 0.4, 0.7, 1], voo: 5400, revela: 4500, sobe: [0, 260, 480, 660], dur: 4500 + 660 + 1000 };
+    /* durante o voo a interface fica guardada; ela entra junto com as cores do evento. Tocar (ou o botão Pular) encerra. */
+    document.body.classList.add('abertura'); const pular = () => { if (st) terminar(); };
+    renderer.domElement.addEventListener('pointerdown', pular, { once: true }); document.querySelector('#pular-abertura')?.addEventListener('click', pular, { once: true });
     controls.enabled = false; cores(0, partes.map(() => 0)); alturas(partes.map(() => 0)); aplicar(camera, controls, K[0]); pedir(); return true;
   }
   function terminar() {
-    if (!st) return; st = null; cores(0.42, partes.map(() => 1)); alturas(partes.map(() => 1)); aplicar(camera, controls, fim()); marcar();
+    if (!st) return; st = null; document.body.classList.remove('abertura'); cores(0.42, partes.map(() => 1)); alturas(partes.map(() => 1)); aplicar(camera, controls, fim()); marcar();
     controls.enabled = true; controls.update(); aoTerminar?.(); pedir();
   }
   function tick(now) {
     if (!st) return false;
     if (ocupado()) { st.fim = true; const keep = daCamera(camera, controls); terminar(); aplicar(camera, controls, keep); return false; }
-    st.t0 ??= now; /* o relógio começa no primeiro quadro desenhado, não durante a montagem da cena */
-    const t = st.pausa ?? now - st.t0;
+    /* relógio por quadro, com passo de no máximo 50 ms: em aparelho lento os primeiros quadros demoram (a placa ainda
+       está preparando a imagem) e, pelo relógio de parede, o voo inteiro era pulado */
+    st.t = (st.t ?? 0) + Math.min(50, Math.max(0, now - (st.ant ?? now))); st.ant = now;
+    const t = st.pausa ?? st.t;
     if (st.tipo === 'curta') { const k = clamp(t / st.ms); aplicar(camera, controls, mistura(st.de, st.E, suave(k))); if (k >= 1) { terminar(); return false; } return true; }
     /* voo */
     const kv = clamp(t / st.voo), e = 0.5 - Math.cos(Math.PI * kv) / 2, { K, T } = st;
@@ -58,7 +65,7 @@ export function criarAbertura({ camera, controls, renderer, pedir, partes, fim, 
     const r = t - st.revela;
     const hs = st.sobe.map((d) => (r - d <= 0 ? 0 : r - d >= 900 ? 1 : salto(clamp((r - d) / 900))));
     const vs = st.sobe.map((d) => suave(clamp((r - d - 250) / 650)));
-    cores(0.42 * suave(clamp(r / 900)), vs); alturas(hs);
+    cores(0.42 * suave(clamp(r / 900)), vs); alturas(hs); if (r > 1100) document.body.classList.remove('abertura');
     if (t >= st.dur) { terminar(); return false; }
     return true;
   }
