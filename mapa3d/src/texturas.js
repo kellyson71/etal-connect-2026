@@ -47,24 +47,23 @@ const FIM = `
  float cz = dot(gl_FragColor.rgb, vec3(0.3, 0.59, 0.11));
  gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(cz * 0.82 + 0.16), max(uDesat, uIso));
  gl_FragColor.rgb = mix(gl_FragColor.rgb, uFundo, uIso * 0.72);`;
-export function desaturavel(m) {
+/* Um shader só para o campus inteiro: desbotar (modo Evento), esmaecer para o fundo e o véu de cor das partes do evento.
+   O código é o mesmo em todos os materiais; o que muda são os valores (uniforms) de cada um. Com uma chave de programa
+   única, a placa compila um programa por tipo de material, e não um por cor de véu (era o que mais pesava no primeiro
+   quadro do mapa, principalmente no celular). */
+const SEM_VEU = { value: 0 };
+function injetar(m, u) {
   m.onBeforeCompile = (sh) => {
-    Object.assign(sh.uniforms, { uDesat: DESAT, uIso: ISO, uFundo: FUNDO });
-    sh.fragmentShader = 'uniform float uDesat; uniform float uIso; uniform vec3 uFundo;\n' + sh.fragmentShader.replace('#include <dithering_fragment>', '#include <dithering_fragment>' + FIM);
-  };
-  m.customProgramCacheKey = () => 'desat'; return m;
-}
-/* Véu de cor: o mesmo material, com a cor do lugar por cima. Só isola, nunca desbota pelo modo Evento. */
-export function comVeu(m, cor, parte = { value: 1 }, iso = ISO) {
-  const uCor = { value: new THREE.Color(cor) };
-  m.onBeforeCompile = (sh) => {
-    Object.assign(sh.uniforms, { uDesat: { value: 0 }, uIso: iso, uFundo: FUNDO, uVeu: VEU, uParte: parte, uCor });
+    Object.assign(sh.uniforms, u);
     sh.fragmentShader = 'uniform float uDesat; uniform float uIso; uniform vec3 uFundo; uniform float uVeu; uniform float uParte; uniform vec3 uCor;\n' + sh.fragmentShader.replace('#include <dithering_fragment>', `#include <dithering_fragment>
  float lz = dot(gl_FragColor.rgb, vec3(0.3, 0.59, 0.11));
  gl_FragColor.rgb = mix(gl_FragColor.rgb, uCor * (0.5 + 0.75 * lz), uVeu * uParte);` + FIM);
   };
-  m.customProgramCacheKey = () => 'veu' + uCor.value.getHexString() + (iso === ISO ? '' : 'p'); m.needsUpdate = true; return m;
+  m.customProgramCacheKey = () => 'etal'; m.needsUpdate = true; return m;
 }
+export function desaturavel(m) { return injetar(m, { uDesat: DESAT, uIso: ISO, uFundo: FUNDO, uVeu: SEM_VEU, uParte: SEM_VEU, uCor: { value: new THREE.Color() } }); }
+/* Véu de cor: o mesmo material, com a cor do lugar por cima. Só isola, nunca desbota pelo modo Evento. */
+export function comVeu(m, cor, parte = { value: 1 }, iso = ISO) { return injetar(m, { uDesat: { value: 0 }, uIso: iso, uFundo: FUNDO, uVeu: VEU, uParte: parte, uCor: { value: new THREE.Color(cor) } }); }
 
 /* Textura com texto, para placas e letreiros. */
 export function placa(w, h, draw) {
