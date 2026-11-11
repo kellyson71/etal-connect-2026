@@ -797,10 +797,6 @@ a.btn{text-decoration:none}
 .hm-skyline{position:absolute;left:0;right:0;bottom:-1px;width:100%;height:auto;aspect-ratio:162/50;display:block;pointer-events:none}
 .sl-far{fill:var(--sil-far)}.sl-mid{fill:var(--sil-mid)}.sl-near{fill:var(--sil-near)}
 .device .sl-win rect{fill:#ffd67e;opacity:calc(.1 + var(--night) * .85)}
-.sl-cloud path{fill:#fff;opacity:calc(.5 - var(--night) * .42)}
-.sl-cloud{animation:cloud 60s linear infinite alternate}
-.sl-cloud.two{animation-duration:84s;animation-direction:alternate-reverse}
-@keyframes cloud{from{transform:translateX(-5px)}to{transform:translateX(14px)}}
 .wm.on-sky b,.wm.on-sky>span{color:#fff}
 .wm.on-sky>span{opacity:.88}
 .iconbtn.on-sky{color:#fff}
@@ -1557,3 +1553,141 @@ html.prod .stage-note,html.prod .stage-sky,html.prod .hw,html.prod .home-ind{dis
 }
 /* Sem a dica "Puxe o crachá para baixo": o botão "Abrir o app" basta (o gesto continua funcionando). */
 .filled .lx-pull{display:none!important}
+
+/* ---- campeonatos: situação, inscrição e chave com resultados ---- */
+.games-lead{margin:0;color:var(--muted);font-size:14px}
+.t-chip{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(255,255,255,.16);color:#fff;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.t-chip.open{background:#e9f7dc;color:#2b5c12}
+.t-chip.me{background:#fff;color:#1f2f57}
+.t-chip.me .i{width:13px;height:13px}
+.t-chip.done{background:rgba(255,255,255,.2)}
+.t-chip.live{background:#ffe2d9;color:#8f2412}
+.t-chip.live i{width:7px;height:7px;border-radius:50%;background:#d6332c;animation:tPulse 1.4s ease-in-out infinite}
+@keyframes tPulse{50%{opacity:.25}}
+.poster{height:216px}
+.poster-chip{position:absolute;left:18px;bottom:46px;display:flex}
+.tour-title .t-chip{margin-top:10px}
+.tour-hero{height:auto;min-height:250px}
+.t-actions{display:flex;flex-direction:column;gap:10px;margin:4px 20px 14px}
+.t-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tour .btn{height:48px;border-radius:calc(15px*var(--rk,1));font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.tour .btn .i{width:18px;height:18px}
+.t-cta{width:100%;color:#fff}
+.mk .t-cta{background:linear-gradient(180deg,#ff6a3a,#e23d14);box-shadow:0 10px 22px -10px #ff5a2a}
+.fifa .t-cta{background:linear-gradient(180deg,#5d86ff,#2f5be0);box-shadow:0 10px 22px -10px #4a78ff}
+.t-ghost{background:rgba(255,255,255,.09);color:#fff;border:1px solid rgba(255,255,255,.12);font-size:13.5px}
+.t-ghost.on{background:rgba(255,255,255,.2)}
+.t-in{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:calc(16px*var(--rk,1));background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16)}
+.t-in>span{flex:1;min-width:0;display:flex;flex-direction:column}
+.t-in b{font-size:14.5px}.t-in small{font-size:12.5px;opacity:.7}
+.t-in-ok{width:30px;height:30px;padding:6px;border-radius:50%;background:#4f9e22;color:#fff;flex:none}
+.t-in button{font-size:13px;font-weight:700;color:#fff;opacity:.75;padding:8px 4px}
+.t-form{margin:4px 20px 16px;padding:16px;border-radius:calc(20px*var(--rk,1));background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);display:flex;flex-direction:column;gap:14px}
+.t-form h3{margin:0;font:400 22px 'Anton',Impact,sans-serif;text-transform:uppercase;letter-spacing:.02em}
+.t-field{display:flex;flex-direction:column;gap:7px}
+.t-field>span{font-size:12.5px;font-weight:600;opacity:.7}
+.t-field input{height:46px;border-radius:calc(13px*var(--rk,1));border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.25);color:#fff;padding:0 14px;font:600 16px var(--body,inherit)}
+.t-field input:focus{outline:2px solid rgba(255,255,255,.55);outline-offset:1px}
+.t-chips{display:flex;flex-wrap:wrap;gap:7px}
+.t-chips button{padding:8px 12px;border-radius:999px;font-size:13px;font-weight:600;color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14)}
+.t-chips button.on{background:#fff;color:#141018;border-color:#fff}
+.t-note{margin:0;font-size:12.5px;opacity:.65}
+.pl{position:relative}
+.pl.win b{font-weight:800}.pl.lose{opacity:.42}.pl.lose b{text-decoration:line-through}
+.pl .pl-ok{width:15px;height:15px;margin-left:auto;color:#8fdc5c}
+.pl.me b::after{content:"você";margin-left:6px;font-size:10px;font-weight:700;padding:2px 6px;border-radius:999px;background:#fff;color:#141018;vertical-align:middle}
+.pl.open i{background:none !important;border:1.5px dashed rgba(255,255,255,.3)}.pl.open b{opacity:.5;font-weight:500}
+.match.final{border-color:rgba(255,214,120,.5);background:rgba(255,214,120,.09)}
+.bk-hint{margin:10px 20px 0;font-size:12px;opacity:.5}
+.champ{display:flex;align-items:center;gap:14px;margin:0 20px 16px;padding:14px 16px;border-radius:calc(18px*var(--rk,1));background:linear-gradient(120deg,rgba(255,214,120,.26),rgba(255,214,120,.08));border:1px solid rgba(255,214,120,.5)}
+.champ>.i{width:34px;height:34px;color:#ffd678;flex:none}
+.champ span{display:flex;flex-direction:column}
+.champ small{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#ffd678}
+.champ b{font:400 26px/1.05 'Anton',Impact,sans-serif;text-transform:uppercase}
+.champ em{font-style:normal;font-size:12.5px;opacity:.7}
+.players li{position:relative}
+.players li em{font-style:normal;font-size:12px;font-weight:600;margin-top:6px;padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.1);align-self:flex-start}
+.players li u{position:absolute;right:12px;top:12px;text-decoration:none;font-size:10.5px;font-weight:700;padding:3px 7px;border-radius:999px;background:#fff;color:#141018}
+.players li.me{outline:1.5px solid rgba(255,255,255,.6)}
+.players li.open{background:none;border:1.5px dashed rgba(255,255,255,.22)}
+.players li.open i{background:rgba(255,255,255,.1) !important;color:#fff !important;font-size:18px}
+.players li.open b{opacity:.75}
+.players li.open button{display:flex;flex-direction:column;gap:2px;text-align:left;color:#fff;width:100%}
+
+/* ---- céu da tela inicial: nuvens em camadas próprias (só transform), brilho do sol e mais profundidade ---- */
+.hm-cloud{position:absolute;left:0;top:0;height:22px;border-radius:999px;background:#fff;opacity:calc(.62 - var(--night) * .5);will-change:transform;pointer-events:none;animation:hmCloud 70s linear infinite alternate}
+.hm-cloud::before,.hm-cloud::after{content:"";position:absolute;bottom:40%;border-radius:50%;background:inherit}
+.hm-cloud::before{left:16%;width:38%;aspect-ratio:1}
+.hm-cloud::after{left:44%;width:44%;aspect-ratio:1;bottom:30%}
+.hm-cloud.c1{width:64px;--cx:6%;--cy:66px}
+.hm-cloud.c2{width:78px;height:24px;--cx:52%;--cy:62px;animation-duration:96s;animation-direction:alternate-reverse}
+.hm-cloud.c3{width:44px;height:15px;--cx:42%;--cy:104px;opacity:calc(.38 - var(--night) * .3);animation-duration:120s}
+.hm-cloud{transform:translate3d(0,var(--cy),0);margin-left:var(--cx)}
+@keyframes hmCloud{from{transform:translate3d(-14px,var(--cy),0)}to{transform:translate3d(30px,var(--cy),0)}}
+.hm-glow{position:absolute;left:var(--sun-x);top:var(--sun-y);width:190px;height:190px;margin:-95px 0 0 -95px;border-radius:50%;background:radial-gradient(circle,var(--sun-c) 0%,transparent 62%);opacity:calc(var(--sun-o) * .38);pointer-events:none}
+.hm-sun{box-shadow:0 0 0 7px rgba(255,255,255,.14),0 0 0 16px rgba(255,255,255,.07)}
+.hm-bg::after{content:"";position:absolute;left:0;right:0;bottom:0;height:70px;background:linear-gradient(180deg,transparent,rgba(255,255,255,calc(.2 - var(--night) * .2)));pointer-events:none}
+.sl-hill{fill:var(--sil-far);opacity:.5}
+.sl-mark{fill:#7fd14f}
+@media (prefers-reduced-motion:reduce){.hm-cloud{animation:none}}
+html[data-perf="simples"] .hm-cloud{animation:none}
+/* a tela do campeonato cresce com o conteúdo: sem isto, o fundo escuro acabava na altura da tela */
+.page>.tour{flex:0 0 auto;min-height:100%;height:auto}
+
+/* ---- campeonato, segunda versão: fatos em blocos, abas sublinhadas e chave inteira na tela ---- */
+.tour-hero{min-height:236px}
+.tour-title .t-chip{margin:0 0 12px}
+.tour-title .p-logo{width:250px}
+.tour-meta{font-size:13.5px;opacity:.78;margin-top:4px}
+.t-facts{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin:2px 20px 14px;border-radius:calc(18px*var(--rk,1));overflow:hidden;background:rgba(255,255,255,.1)}
+.t-facts div{padding:11px 12px 12px;background:rgba(255,255,255,.055)}
+.mk .t-facts div{background:#1f1216}.fifa .t-facts div{background:#0c1740}
+.t-facts dt{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;opacity:.55}
+.t-facts dd{margin:3px 0 0;font:400 21px/1.1 'Anton',Impact,sans-serif;letter-spacing:.01em;text-transform:uppercase}
+.t-facts dd small{display:block;margin-top:3px;font:600 12px/1.2 var(--body,system-ui);text-transform:none;letter-spacing:0;opacity:.65}
+.t-actions{margin:0 20px 6px}
+.tour .btn{height:50px}
+.tour .t-ghost{height:44px;border-radius:calc(13px*var(--rk,1))}
+.tour-tabs{display:flex;gap:22px;margin:14px 20px 0;padding:0;border-radius:0;background:none;border-bottom:1px solid rgba(255,255,255,.12)}
+.tour-tabs .seg-ind{display:none}
+.tour-tabs button{padding:10px 0 11px;font-size:14.5px;font-weight:700;color:rgba(255,255,255,.5);border-bottom:2.5px solid transparent;margin-bottom:-1px}
+.tour .tour-tabs button.on{color:#fff}
+.mk .tour-tabs button.on{border-bottom-color:#ff5a2a}.fifa .tour-tabs button.on{border-bottom-color:#6f95ff}
+.tour-body{padding:16px 0 34px}
+.bk3{--g:14px;--ln:rgba(255,255,255,.22);display:grid;grid-template-columns:minmax(0,1.18fr) minmax(0,1fr) minmax(0,1fr);column-gap:var(--g);row-gap:8px;padding:0 20px}
+.bk3 h3{grid-row:1;margin:0 0 2px;font:400 13px 'Anton',Impact,sans-serif;text-transform:uppercase;letter-spacing:.06em;opacity:.55}
+.bk-cell{position:relative;display:flex;flex-direction:column;justify-content:center;min-width:0}
+.bk-cell.q{grid-column:1}.bk-cell.s{grid-column:2}.bk-cell.f{grid-column:3}
+/* ligações: cada quartas solta um traço; semifinal e final recebem um colchete que une as duas partidas anteriores */
+.bk-cell.q::after{content:"";position:absolute;left:100%;top:50%;width:calc(var(--g)/2);border-top:1.5px solid var(--ln)}
+.bk-cell.s::before,.bk-cell.f::before{content:"";position:absolute;right:100%;top:25%;bottom:25%;width:calc(var(--g)/2);border:1.5px solid var(--ln);border-left:0;border-radius:0 6px 6px 0}
+.bk-cell.s::after{content:"";position:absolute;left:100%;top:50%;width:calc(var(--g)/2);border-top:1.5px solid var(--ln)}
+.bk3 .match{padding:6px 8px;border-radius:calc(13px*var(--rk,1));min-width:0}
+.bk3 .match::after{display:none}
+.bk3 .match time{font-size:10.5px;margin-bottom:1px}
+.bk3 .pl{gap:7px;padding:3px 0;min-width:0}
+.bk3 .pl i{width:21px;height:21px;border-radius:calc(7px*var(--rk,1));font-size:9px}
+.bk3 .pl b{font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bk3 .pl .pl-ok{width:13px;height:13px;flex:none}
+.bk3 .pl.me b::after{display:none}
+.bk3 .pl.me i{outline:2px solid #fff;outline-offset:1px}
+.bk3 .pl.open b{font-size:12px}
+.bk3 .match.done{background:rgba(255,255,255,.1)}
+.bk-cup{align-self:center;margin-top:10px;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:rgba(255,214,120,.1);color:rgba(255,214,120,.55);border:1px solid rgba(255,214,120,.3)}
+.bk-cup .i{width:22px;height:22px}
+.bk-cup.on{background:#ffd678;color:#3d2700;border-color:#ffd678}
+.players{gap:8px}
+.players li{flex-direction:row;flex-wrap:wrap;align-items:center;column-gap:10px;padding:12px}
+.players li i{margin:0;grid-row:span 2}
+.players li b{flex:1;min-width:0;font-size:18px}
+.players li small{flex-basis:100%;margin-top:6px}
+.players li em{margin-top:6px}
+.players li.open button{flex-direction:row;flex-wrap:wrap;align-items:center;column-gap:10px}
+.players li.open button small{flex-basis:100%;margin-top:6px}
+
+/* Modelo novo: dentro do celular, sem perder a tela de origem. */
+.mapa-novo{position:absolute;inset:0;z-index:110;background:#edf0e5;overflow:hidden;border-radius:inherit}
+.mapa-novo iframe{border:0;width:100%;height:100%;display:block}
+.mapa-novo-leve{position:absolute;right:14px;bottom:0;border:0;border-radius:7px 7px 0 0;padding:3px 9px;background:#fffef9;color:#526b5b;font:11px system-ui;cursor:pointer}
+
+.map-screen.mapa-aba iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
