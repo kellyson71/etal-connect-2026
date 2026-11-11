@@ -1,7 +1,7 @@
 /* Chão do campus e do entorno, na mesma ordem de camadas do protótipo (drawGround em campus3d.js).
    Cada camada é uma malha desenhada em ordem, sem gravar profundidade: nada pisca quando a câmera se afasta. */
 import * as THREE from 'three';
-import { inPoly, CANTEIROS_ANEXO, BAIXO, BAIXO_H, CALCADAS, CALCADA_L, noAnexo, byId, pts, F, XT, ENT, FLATS, GARDEN, ROAD_Y0, ROAD_Y1, ROAD_MID, CROSS_X, CROSS_W, rect, lerp2, dist, insetPoly, signedArea, rng } from './dados.js';
+import { inPoly, CANTEIROS_ANEXO, BAIXO, BAIXO_H, CALCADAS, CALCADA_L, noAnexo, byId, pts, F, XT, ENT, FLATS, GARDEN, ROAD_Y0, ROAD_Y1, ROAD_MID, CROSS_X, CROSS_W, GUARITA, PEDESTRE, rect, lerp2, dist, insetPoly, signedArea, rng } from './dados.js';
 import { Lote } from './geo.js';
 import { duasAguas, painel } from './predios.js';
 
@@ -85,7 +85,7 @@ export function construirTerreno(M) {
   camada((L) => {
     L.top('paraleloChao', rect(1.5, 61, 8.5, ROAD_Y0), 0);
     /* Calçada em frente ao portão de pedestres, até a faixa: outra textura, quase no nível do chão. */
-    L.top('calcadaChao', rect(11.8, 50.4, 18.3, ROAD_Y0), 0);
+    L.top('calcadaChao', rect(GUARITA[1], 50.4, GUARITA[2], ROAD_Y0), 0);
     /* Canteiros em forma de pílula junto ao muro, com borda de tijolo e grama: é neles que ficam as árvores da frente. */
     const pilula = (cx, cy, meio, r) => { const p = []; for (let i = 0; i <= 8; i++) { const a = -Math.PI / 2 + (i / 8) * Math.PI; p.push([cx + meio + Math.cos(a) * r, cy + Math.sin(a) * r]); } for (let i = 0; i <= 8; i++) { const a = Math.PI / 2 + (i / 8) * Math.PI; p.push([cx - meio + Math.cos(a) * r, cy + Math.sin(a) * r]); } return p; };
     [[-31.6, 5], [-18.8, 2.5], [-0.4, 2.5], [25.8, 2.5], [32.5, 2.5], [45, 6]].forEach(([x, m]) => { L.top('tijoloChao', pilula(x, 52.2, m, 1.6), 0); });
@@ -134,7 +134,7 @@ export function construirTerreno(M) {
   }
   /* Ilha gramada entre a calçada da frente e a rodovia: mureta baixa de tijolo em volta, aberta nos dois portões. */
   { const q = pts(25); const xa = Math.min(...q.map((p) => p[0])), xb = Math.max(...q.map((p) => p[0])), ya = Math.min(...q.map((p) => p[1])), yb = Math.max(...q.map((p) => p[1]));
-    [[xa, 1.5], [8.5, 11.8], [18.3, xb]].forEach(([x0, x1]) => { const r = rect(x0, ya, x1, yb), d = insetPoly(r, 0.22); S.walls('tijolo', r, 0, 0.28, true); S.walls('tijolo', d, 0.18, 0.28, false); S.top('tijolo', r, 0.28, [d]); S.top('grama', d, 0.18); }); }
+    [[xa, 1.5], [8.5, GUARITA[1]], [GUARITA[2], xb]].forEach(([x0, x1]) => { const r = rect(x0, ya, x1, yb), d = insetPoly(r, 0.22); S.walls('tijolo', r, 0, 0.28, true); S.walls('tijolo', d, 0.18, 0.28, false); S.top('tijolo', r, 0.28, [d]); S.top('grama', d, 0.18); }); }
   /* Quadra de vôlei: caixa de areia elevada, com a mureta em volta, postes e rede. */
   { const v = FLATS.find((b) => b.id === 'volei'); if (v) { const d = insetPoly(v.p, 0.25); S.walls('concreto', v.p, 0, 0.4, true); S.walls('concreto', d, 0.3, 0.4, false); S.top('concreto', v.p, 0.4, [d]); S.top('areia', d, 0.3);
     const q = dist(v.p[0], v.p[1]) >= dist(v.p[1], v.p[2]) ? v.p : [v.p[1], v.p[2], v.p[3], v.p[0]]; const a = quadAt(q, 0.5, 0.08), e = quadAt(q, 0.5, 0.92);
@@ -168,7 +168,7 @@ export function construirTerreno(M) {
     if (!frente) return trecho(a, b, false);
     const [l, r] = a[0] < b[0] ? [a, b] : [b, a]; let x = l[0];
     /* três vãos: o portão dos ônibus na ponta esquerda, o de veículos e o de pedestres */
-    [[-48.4, -41.4], [1.5, 8.5], [11.8, 18.3]].forEach(([g0, g1]) => { trecho([x, l[1]], [g0, l[1]], true); x = g1; });
+    [[-48.4, -41.4], [1.5, 8.5], PEDESTRE].forEach(([g0, g1]) => { trecho([x, l[1]], [g0, l[1]], true); x = g1; });
     trecho([x, l[1]], [r[0], l[1]], true);
   });
   void s;

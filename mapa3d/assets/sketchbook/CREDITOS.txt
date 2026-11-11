@@ -1,0 +1,2 @@
+Personagem (boxman.glb) e carro (car.glb): Sketchbook, de swift502 (github.com/swift502/Sketchbook), licença MIT (LICENSE.txt).
+No passeio, o papel com o rosto na textura do personagem é trocado pela foto do perfil; os carros recebem cores diferentes.

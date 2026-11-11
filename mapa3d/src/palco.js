@@ -12,8 +12,9 @@ export function criarPalco({ principal, interior, estilo, camera, controls, pedi
   function aplicarEstado(s = st) {
     /* 0 a 0,4: o telhado sai e o prédio é cortado de cima até o teto das salas do último andar;
        0,4 a 1: cada andar fica cortado logo acima das salas e eles se afastam em escada. */
-    const fc = suave(clamp(s.abre / 0.4)), escada = suave(clamp((s.abre - 0.4) / 0.6)) * s.esc, aberto = s.abre > 0.001;
-    const topo = 3 * 3.45 - 0.22, corte = s.abre < 0.4 ? principal.ALTO - (principal.ALTO - topo) * fc : 99;
+    const fc = suave(clamp(s.abre / 0.4)), escada = suave(clamp((s.abre - 0.4) / 0.6)) * s.esc, aberto = s.abre > 0.001 || s.corte < 50;
+    /* s.corte: corte pedido de fora (o passeio corta o bloco acima do andar em que a pessoa está) */
+    const topo = 3 * 3.45 - 0.22, corte = Math.min(s.abre < 0.4 ? principal.ALTO - (principal.ALTO - topo) * fc : 99, s.corte);
     estilo.isolate(Math.max(s.iso, suave(clamp(s.abre / 0.5))) * s.isoMax);
     estilo.veuDentro(1 - 0.8 * suave(clamp(s.abre / 0.6)));
     principal.escalonar({ corte, aberto, t: escada, ops: s.ops, elos: s.elos, plano2d: s.plano });

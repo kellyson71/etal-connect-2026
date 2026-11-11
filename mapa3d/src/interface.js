@@ -12,7 +12,7 @@ const nomeAndar = (l) => (l ? `${l}º andar` : 'Térreo');
 const ler = (k, padrao) => { try { return JSON.parse(localStorage.getItem(k)) ?? padrao; } catch { return padrao; } };
 
 export function iniciarInterface(ctx) {
-  const { scene, camera, controls, renderer, principal, interior, palco, estilo, viagem, veg, entorno, sol, pedir, hora } = ctx;
+  const { scene, camera, controls, renderer, principal, interior, palco, estilo, viagem, passeio, veg, entorno, sol, pedir, hora } = ctx;
   let andarReal = null; // andar visto por dentro no prédio real (modos Evento e Campus)
   let selecionado = null, modo = 'evento', andarFoco = null, plano2d = false, percurso = null, ultimoQuadro = 0, amostras = [], autoNivel = 0;
   let sessoes = window.DATA?.sessions || []; let origem = null; // { level, zonaId, titulo }
@@ -26,11 +26,12 @@ export function iniciarInterface(ctx) {
   const eventoPose = () => enquadrar(camera, [[-70, -60], [32, -55], [32, 48], [-60, 30]].map(([x, z]) => new THREE.Vector3(x, 0, z)), { e: 50, min: 50 });
   const andaresPose = (foco = null) => foco == null
     ? enquadrar(camera, [0, 1, 2].flatMap((l) => interior.contorno(l, 1)), { e: 42, min: 40, folga: 1.04 })
-    : enquadrar(camera, interior.contorno(foco, 0), { e: 54, min: 34, folga: 1.04 });
+    : enquadrar(camera, interior.contorno(foco, 1), { e: 48, min: 34, folga: 1.22 }); // o andar na posição dele na escadinha, com os vizinhos em volta
   const planoPose = (l) => { const pts = interior.contorno(l, 0); return enquadrar(camera, pts, { e: 89, a: 0, min: 34, folga: 1.02 }); };
   /* Com um andar em foco, ele desce até a altura real dentro do prédio (escada desfeita); os de baixo ficam fantasmas
      e os de cima somem. Sem foco, os três se abrem em escada. */
-  const opsDe = (foco) => [0, 1, 2].map((l) => (foco == null || l === foco ? 1 : l < foco ? 0.14 : 0));
+  /* com um andar em foco a escadinha continua montada: ele fica inteiro e os outros dois esmaecem */
+  const opsDe = (foco) => [0, 1, 2].map((l) => (foco == null || l === foco ? 1 : 0.4));
   async function abrirAndares(foco = null, achatar = false, real = false) {
     viagem.limpar(); if (!real) { andarFoco = foco; andarReal = null; } plano2d = achatar && foco != null;
     marcarAndar();
@@ -39,7 +40,7 @@ export function iniciarInterface(ctx) {
     palco.set({ isoMax: modo === 'campus' ? 0.55 : 1 });
     /* vindo do prédio fechado, primeiro ele se abre em escada (os três andares) e só depois o andar escolhido desce */
     if (foco != null && palco.estado().abre < 0.9 && !$('#reduzir').checked) await palco.ir({ abre: 1, esc: 1, corte: 99, ops: [1, 1, 1], elos: [1, 1], plano: 0, chegada: 0 }, andaresPose(null), 1300);
-    await palco.ir({ abre: 1, esc: foco == null ? 1 : 0, corte: 99, ops, elos: plano2d || foco != null ? [0, 0] : [1, 1], plano: plano2d ? 1 : 0, chegada: sala ? 1 : 0 }, plano2d ? planoPose(foco) : andaresPose(foco), ms(palco.estado().abre > 0.9 ? 750 : 1300));
+    await palco.ir({ abre: 1, esc: plano2d ? 0 : 1, corte: 99, ops, elos: plano2d ? [0, 0] : foco == null ? [1, 1] : [0.4, 0.4], plano: plano2d ? 1 : 0, chegada: sala ? 1 : 0 }, plano2d ? planoPose(foco) : andaresPose(foco), ms(palco.estado().abre > 0.9 ? 750 : 1300));
   }
   async function fecharAndares(p) { viagem.limpar(); andarFoco = null; andarReal = null; plano2d = false; marcarAndar(); await palco.ir({ abre: 0, esc: 1, corte: 99, ops: [1, 1, 1], elos: [1, 1], plano: 0, chegada: 0 }, p, ms(1100)); }
   /* Por dentro, sem maquete: o prédio real é cortado logo acima das salas do andar (salas, portas, piso dos corredores,
@@ -53,7 +54,20 @@ export function iniciarInterface(ctx) {
     $('#flat').setAttribute('aria-pressed', plano2d); $('#flat').textContent = plano2d ? '3D' : '2D'; $('#flat').hidden = modo !== 'andares';
     $('#andares').hidden = false; $('#legenda').hidden = modo !== 'evento';
   }
+  /* Passear: personagem com a foto do perfil, carros na rodovia e no estacionamento (passeio.js) */
+  /* celular: o passeio abre em tela cheia e deitado, como um jogo; ao sair, a tela volta ao normal */
+  const tocavel = matchMedia('(pointer: coarse)').matches;
+  function deitar() { if (!tocavel) return; const el = document.documentElement; Promise.resolve(el.requestFullscreen?.({ navigationUI: 'hide' })).catch(() => {}).then(() => screen.orientation?.lock?.('landscape')).catch(() => {}); }
+  function levantar() { if (!tocavel) return; try { screen.orientation?.unlock?.(); } catch { /* sem suporte */ } if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {}); }
+  async function passear() {
+    viagem.limpar(); andarFoco = null; andarReal = null; palco.parar(); palco.set({ abre: 0, esc: 1, corte: 99, ops: [1, 1, 1], elos: [1, 1], plano: 0, chegada: 0, iso: 0 });
+    if (parent !== window) parent.postMessage({ type: 'etal:mapa:passeio', on: true }, location.origin);
+    estilo.setMode('campus'); document.body.classList.add('passeando'); $('#passeio').hidden = false; aviso('Carregando o personagem e os carros…');
+    try { await passeio.ligar({ aviso }); $('#toast').hidden = true; } catch { aviso('Não foi possível abrir o passeio neste aparelho.'); setMode('evento'); }
+  }
   function setMode(m) {
+    if (modo === 'passear' && m !== 'passear') { passeio.desligar(); document.body.classList.remove('passeando'); $('#passeio').hidden = true; levantar(); if (parent !== window) parent.postMessage({ type: 'etal:mapa:passeio', on: false }, location.origin); }
+    if (m === 'passear') { modo = m; document.querySelectorAll('[data-modo]').forEach((b) => { b.classList.toggle('on', b.dataset.modo === m); b.setAttribute('aria-pressed', b.dataset.modo === m); }); deitar(); passear(); return; }
     modo = m; estilo.setMode(m === 'campus' ? 'campus' : 'evento');
     document.querySelectorAll('[data-modo]').forEach((b) => { b.classList.toggle('on', b.dataset.modo === m); b.setAttribute('aria-pressed', b.dataset.modo === m); });
     if (m === 'andares') abrirAndares(selecionado?.level ?? null); else fecharAndares(m === 'campus' ? campusPose() : eventoPose());
@@ -97,7 +111,7 @@ export function iniciarInterface(ctx) {
     if (modo !== 'evento' && modo !== 'andares') { modo = 'evento'; estilo.setMode('evento'); }
     andarFoco = null; plano2d = false; marcarAndar();
     /* no celular o cartão recolhe durante a viagem, para o mapa ficar com a tela */
-    if (innerWidth < 700) { $('#cartao').classList.add('recolhido'); $('#recolher').textContent = '⌃'; $('#recolher').setAttribute('aria-expanded', 'false'); }
+    if (innerWidth < 700) { $('#cartao').classList.add('recolhido'); $('#recolher').setAttribute('aria-expanded', 'false'); }
     $('#origem').textContent = r0Origem(percurso);
     document.body.classList.add('em-viagem');
     $('#pular').hidden = false; $('#repetir').hidden = true; $('#etapas').hidden = false; $('#via-wrap').open = false;
@@ -117,12 +131,41 @@ export function iniciarInterface(ctx) {
     for (const it of lista) { const b = document.createElement('button'); b.type = 'button'; b.textContent = it.title; const s = document.createElement('small'); s.textContent = it.sub; b.append(s); b.onclick = () => select(it); $('#resultados').append(b); }
     if (!lista.length) $('#resultados').textContent = 'Nada encontrado. Tente o número da sala ou o nome do setor.';
   });
+  /* ---------- achar a sala pelo número: teclado grande, resultado a cada dígito ---------- */
+  {
+    const wrap = $('#busca-wrap'); const bt = document.createElement('button'); bt.id = 'num-btn'; bt.type = 'button'; bt.textContent = '123'; bt.setAttribute('aria-label', 'Achar sala pelo número'); bt.setAttribute('aria-expanded', 'false');
+    const tec = document.createElement('div'); tec.id = 'teclado'; tec.hidden = true; tec.innerHTML = '<div id="tec-achados" aria-live="polite"></div><div id="tec-teclas">' + ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'fechar', '0', 'apagar'].map((k) => `<button type="button" data-k="${k}" ${k.length > 1 ? `class="tec-acao" aria-label="${k === 'apagar' ? 'Apagar' : 'Fechar teclado'}"` : ''}>${k === 'apagar' ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5h11v14H9l-6-7Z"/><path d="M12 9.500l5 5M17 9.500l-5 5"/></svg>' : k === 'fechar' ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>' : k}</button>`).join('') + '</div>';
+    wrap.append(bt, tec); let dig = '';
+    const fechar = () => { tec.hidden = true; bt.setAttribute('aria-expanded', 'false'); document.body.classList.remove('teclando'); };
+    const pintar = () => {
+      $('#busca').value = dig; const box = $('#tec-achados'); box.replaceChildren();
+      const salas = dig ? catalogo().filter((x) => x.kind === 'room' && x.zone.roomNumber && String(x.zone.roomNumber).startsWith(dig)) : [];
+      if (!dig) { box.textContent = 'Digite o número da sala'; return; }
+      if (!salas.length) { box.textContent = 'Nenhuma sala começa com ' + dig; return; }
+      /* número completo e único: abre direto */
+      if (salas.length === 1 && String(salas[0].zone.roomNumber) === dig && dig.length >= 2) { fechar(); select(salas[0]); dig = ''; return; }
+      salas.slice(0, 8).forEach((it) => { const b = document.createElement('button'); b.type = 'button'; b.innerHTML = `<b>${it.zone.roomNumber}</b><small>${it.zone.word || it.zone.label || ''} · ${nomeAndar(it.level)}</small>`; b.onclick = () => { fechar(); dig = ''; select(it); }; box.append(b); });
+    };
+    bt.onclick = () => { const abrir = tec.hidden; if (!abrir) { fechar(); return; } tec.hidden = false; bt.setAttribute('aria-expanded', 'true'); document.body.classList.add('teclando'); $('#resultados').hidden = true; $('#busca').blur(); dig = ''; pintar(); };
+    tec.addEventListener('pointerdown', (e) => { const b = e.target.closest('[data-k]'); if (!b) return; e.preventDefault(); const k = b.dataset.k; if (k === 'fechar') { fechar(); $('#busca').value = ''; return; } dig = k === 'apagar' ? dig.slice(0, -1) : (dig + k).slice(0, 3); pintar(); });
+    $('#busca').addEventListener('focus', fechar);
+  }
+  /* ---------- celular: tudo ao alcance do dedão ----------
+     Busca, cartão, modos e andares vão para uma doca na parte de baixo da tela; em cima fica só voltar, legenda e ajustes. */
+  {
+    const mq = matchMedia('(max-width: 600px)'); const doca = document.createElement('div'); doca.id = 'doca'; document.body.append(doca);
+    const arrumar = () => {
+      if (mq.matches) { doca.append($('#andares'), $('#cartao'), $('#busca-wrap'), $('#modos')); document.body.classList.add('dedao'); }
+      else { $('#topo').insertBefore($('#busca-wrap'), $('#ajustes-btn')); document.body.append($('#andares'), $('#cartao'), $('#modos')); document.body.classList.remove('dedao'); }
+    };
+    arrumar(); mq.addEventListener('change', arrumar);
+  }
   $('#busca').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('#resultados button')?.click(); if (e.key === 'Escape') $('#resultados').hidden = true; });
   $('#ir').onclick = () => ir(); $('#via').onchange = () => { if (selecionado) { if (percurso) ir(); else select(selecionado); } };
   $('#pular').onclick = () => viagem.pular(); $('#repetir').onclick = () => { if (percurso) { viagem.repetir(); $('#pular').hidden = false; $('#repetir').hidden = true; } };
   $('#limpar').onclick = limpar;
   $('#etapas').onclick = () => { $('#etapas-texto').hidden = !$('#etapas-texto').hidden; $('#etapas').setAttribute('aria-expanded', !$('#etapas-texto').hidden); };
-  $('#recolher').onclick = () => { const c = $('#cartao').classList.toggle('recolhido'); $('#recolher').setAttribute('aria-expanded', !c); $('#recolher').textContent = c ? '⌃' : '⌄'; };
+  $('#recolher').onclick = () => { const c = $('#cartao').classList.toggle('recolhido'); $('#recolher').setAttribute('aria-expanded', !c); };
   $('#trocar-origem').onclick = () => { origem = origem ? null : origemAtividade; mostrarOrigem(); if (selecionado) { const it = selecionado; select(it); } };
   document.addEventListener('mapa:etapa', (e) => { $('#etapa-atual').textContent = e.detail.text; });
   document.addEventListener('mapa:chegada', () => { document.body.classList.remove('em-viagem'); $('#pular').hidden = true; $('#repetir').hidden = false; $('#etapa-atual').textContent = percurso?.zona ? 'Chegou · a porta está marcada' : 'Chegou'; });
@@ -131,6 +174,7 @@ export function iniciarInterface(ctx) {
   document.querySelectorAll('[data-modo]').forEach((b) => (b.onclick = () => setMode(b.dataset.modo)));
   document.querySelectorAll('[data-nivel]').forEach((b) => b.addEventListener('click', () => { const l = b.dataset.nivel === 'tudo' ? null : +b.dataset.nivel; if (modo === 'andares') abrirAndares(l, plano2d && l != null); else verDentro(l); }));
   $('#flat').onclick = () => { const l = andarFoco ?? selecionado?.level ?? 0; abrirAndares(l, !plano2d); };
+  $('#p-sair').onclick = () => setMode('evento');
   $('#legenda').replaceChildren(...LEGENDA.map(([cor, nome, sub]) => { const b = document.createElement('button'); b.className = 'leg ' + cor; b.innerHTML = `<i></i><span><b>${nome}</b><small>${sub}</small></span>`; b.onclick = () => focarParte(nome); return b; }));
   function focarParte(nome) {
     const ids = { 'Bloco principal': 'principal', Auditório: 'principal', Cantina: 'cantina', Pátio: 'patio' }; const b = [...BUILDINGS, ...COVERS].find((x) => x.id === ids[nome]); if (!b) return;
@@ -171,26 +215,29 @@ export function iniciarInterface(ctx) {
   });
 
   /* ---------- integração com o app ---------- */
-  addEventListener('keydown', (e) => { if (e.key === 'Escape') $('#voltar').click(); });
+  addEventListener('keydown', (e) => { if (e.key !== 'Escape') return; if (modo === 'passear') setMode('evento'); else $('#voltar').click(); });
   $('#voltar').onclick = () => { if (window.parent !== window) window.parent.postMessage({ type: 'etal:mapa:fechar' }, location.origin); else if (history.length > 1) history.back(); };
   const api = {
     route: (l, z, via = null) => { const it = catalogo().find((x) => x.kind === 'room' && x.level === l && x.id === z); if (!it) return false; $('#via').value = via || ''; select(it); return ir(); },
     focus: (id) => { const x = catalogo().find((q) => q.kind === 'place' && q.id === id); if (x) select(x); },
-    clearRoute: limpar, setMode, setHour: hora,
-    setOrigem: (o) => { origemAtividade = o && Number.isInteger(o.floor) ? { level: o.floor, zonaId: o.zone, titulo: o.titulo || 'sua atividade' } : null; origem = origemAtividade; mostrarOrigem(); },
+    clearRoute: limpar, setMode, setHour: hora, setFoto: (uri, nome) => passeio.setFoto(uri, nome),
+    setOrigem: (o) => { origemAtividade = o && Number.isInteger(o.floor) ? { level: o.floor, zonaId: o.zone, titulo: o.titulo || 'sua atividade' } : null; origem = null; mostrarOrigem(); }, // a rota sai da portaria; "sair da minha atividade" troca
     syncRooms: (rooms) => { for (const f of PLAN.floors) for (const z of f.zones) { const n = rooms?.[`${f.level}:${z.id}`]; if (n) z.roomNumber = String(n); } principal.syncRooms(); interior.syncRooms(); },
   };
   window.CampusNovo = api;
   window.addEventListener('message', (e) => {
     if (e.origin !== location.origin || e.source !== parent || !['etal:mapa:abrir', 'etal:mapa:sincronizar'].includes(e.data?.type)) return;
-    const d = e.data; if (Array.isArray(d.sessions)) sessoes = d.sessions; api.syncRooms(d.rooms); if ('origem' in d) api.setOrigem(d.origem);
+    const d = e.data; if (Array.isArray(d.sessions)) sessoes = d.sessions; if ('foto' in d || 'nome' in d) passeio.setFoto(d.foto, d.nome); api.syncRooms(d.rooms); if ('origem' in d) api.setOrigem(d.origem);
     if (d.type === 'etal:mapa:sincronizar') return;
     if (d.hour != null) hora(d.hour); if (d.reduced != null) $('#reduzir').checked = !!d.reduced;
+    /* o app pode pedir um modo (tela grande do computador) e uma rota tira o mapa do passeio */
+    if (typeof d.mode === 'string' && ['evento', 'andares', 'campus', 'passear'].includes(d.mode) && d.mode !== modo) setMode(d.mode);
+    if (Number.isInteger(d.floor) && typeof d.zone === 'string' && modo === 'passear') setMode('evento');
     if (Number.isInteger(d.floor) && typeof d.zone === 'string') { const a = sessoes.find((s) => s.floor === d.floor && s.zone === d.zone); if (a) { select({ kind: 'activity', level: d.floor, id: d.zone, title: a.title, sub: `${a.time} · ${nomeAndar(d.floor)}`, activity: a }); ir(); } else api.route(d.floor, d.zone, d.via); }
     else if (d.place) api.focus(d.place);
   });
   if (parent !== window) parent.postMessage({ type: 'etal:mapa:pronto' }, location.origin);
-  const params = new URLSearchParams(location.search); if (params.get('aba') === '1') $('#voltar').hidden = true;
+  const params = new URLSearchParams(location.search); if (params.get('aba') === '1') { $('#voltar').hidden = true; document.body.classList.add('sem-voltar'); }
   if (params.has('origem')) { const [l, z] = params.get('origem').split(':'); const zz = PLAN.floors[+l]?.zones.find((q) => q.id === z); if (zz) api.setOrigem({ floor: +l, zone: z, titulo: zz.roomNumber ? 'Sala ' + zz.roomNumber : zz.label }); } else mostrarOrigem();
   if (params.has('sala')) api.route(+(params.get('andar') || 1), params.get('sala'), params.get('via'));
   addEventListener('resize', () => { viagem.resize(); qualidade(); });
@@ -200,7 +247,7 @@ export function iniciarInterface(ctx) {
   return {
     api, select, ir, qualidade, poseEvento: eventoPose,
     quadro(now) {
-      const ocupado = []; const ver = modo === 'evento' && !viagem.ativa() && palco.estado().abre < 0.05 && !window.MAPA3D?.abertura?.ativa();
+      const ocupado = []; const ver = modo === 'evento' && !passeio.ativo() && !viagem.ativa() && palco.estado().abre < 0.05 && !window.MAPA3D?.abertura?.ativa();
       for (const l of etiquetas) {
         const p = l.p.clone().project(camera), x = (p.x * 0.5 + 0.5) * innerWidth, y = (-p.y * 0.5 + 0.5) * innerHeight;
         const ok = ver && p.z > -1 && p.z < 1 && x > 60 && x < innerWidth - 60 && y > 140 && y < innerHeight - 40 && !ocupado.some((o) => Math.abs(o.x - x) < 110 && Math.abs(o.y - y) < 32);

@@ -259,5 +259,7 @@ export function criarMateriais(T) {
   };
   /* O chão é desenhado em camadas, na ordem, sem disputar profundidade entre si. */
   ['grama', 'terra', 'terraFora', 'chao', 'asfalto', 'calcada', 'faixa', 'faixaAmarela', 'intertravado', 'paralelo', 'passarela', 'tatil', 'cimento', 'areia', 'campo', 'tijolo', 'mato', 'estrada'].forEach((k) => { M[k + 'Chao'] = M[k].clone(); M[k + 'Chao'].depthWrite = false; });
+  /* redes de dormir (fundos do bloco): pano colorido, visto dos dois lados */
+  M.redeA = new THREE.MeshLambertMaterial({ color: 0xc8452f, side: THREE.DoubleSide }); M.redeB = new THREE.MeshLambertMaterial({ color: 0x2f6fb5, side: THREE.DoubleSide }); M.redeC = new THREE.MeshLambertMaterial({ color: 0xe0a526, side: THREE.DoubleSide });
   return M;
 }
