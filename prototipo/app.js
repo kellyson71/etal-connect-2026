@@ -89,6 +89,8 @@
   const mapAct = (x) => (x.place ? `data-act="openplace" data-id="${x.place}"` : `data-act="openmap" data-floor="${x.floor}" data-zone="${x.zone}"`);
   const whereOf = (x) => (x.floor === undefined ? x.room : `${x.room} · ${floorOf(x.floor).label}`);
   const isNow = (x) => x.day === D.now.day && x.time <= D.now.time && D.now.time < x.end;
+  /* Mapa novo: a rota sai da sala da atividade em que a pessoa está inscrita acontecendo agora; sem ela, da portaria. */
+  const origemAgora = () => { const x = D.sessions.find((q) => S.saved.has(q.id) && isNow(q) && Number.isInteger(q.floor) && q.zone); return x ? { floor: x.floor, zone: x.zone, titulo: x.room || x.short || x.title } : null; };
   const speakersList = () => { const seen = new Set(); return D.sessions.filter((x) => x.speakerShort && !seen.has(x.speakerShort) && seen.add(x.speakerShort)); };
   const hoursOf = (s) => { const [a, b] = [s.time, s.end].map((t) => { const [h, m] = t.split(':').map(Number); return h + m / 60; }); return b - a; };
   const seatLine = (s) => (!s.seats ? '' : s.taken >= s.seats ? 'Vagas esgotadas' : `${s.seats - s.taken} vagas de ${s.seats}`);
@@ -130,7 +132,7 @@
     entardecer: { name: 'Entardecer', desc: 'Céu do fim de tarde', accent: '#55368f', hue: 265 },
   };
   const ACCENTS = ['#22386f', '#1f6fb2', '#0f766e', '#2f7d32', '#8a5300', '#b4372f', '#b0307a', '#55368f'];
-  const UI_DEFAULT = { theme: 'etal', accent: null, mode: 'claro', badge: 'solido', corners: 'suaves', font: 'padrao', text: 'normal', motion: 'completas', sky: true, mapHour: true, layers: { labels: true, shadows: true, trees: true, cars: true }, view: '3d',
+  const UI_DEFAULT = { mapa: 'novo', theme: 'etal', accent: null, mode: 'claro', badge: 'solido', corners: 'suaves', font: 'padrao', text: 'normal', motion: 'completas', sky: true, mapHour: true, layers: { labels: true, shadows: true, trees: true, cars: true }, view: '3d',
     home: { atalhos: true, live: true, colmeia: true, agenda: true, palestrantes: true, campeonatos: true, avisos: true } };
   const HOME_PARTS = [['atalhos', 'Atalhos'], ['live', 'Campus ao vivo'], ['colmeia', 'Sua colmeia'], ['agenda', 'Sua agenda'], ['palestrantes', 'Palestrantes'], ['campeonatos', 'Campeonatos'], ['avisos', 'Avisos']];
   const uiLoad = () => { try { const v = JSON.parse(localStorage.getItem('etal-ui')); return v ? { ...UI_DEFAULT, ...v, home: { ...UI_DEFAULT.home, ...(v.home || {}) }, layers: { ...UI_DEFAULT.layers, ...(v.layers || {}) } } : null; } catch (_) { return null; } };
@@ -737,7 +739,7 @@
 
   const searchBtn = () => `<button class="search" data-act="finder">${ic('search')}<span>Buscar sala, atividade, banheiro…</span></button>`;
   /* Parte de baixo do mapa: controles à direita, abas e busca perto do polegar e, por último, a folha do lugar. */
-  const mapBottom = (sheet, extra = '') => `<div class="map-bottom ${/class="sheet-card[^"]*detail/.test(sheet) ? 'has-detail' : ''}">${camCtrl()}<div class="map-dock">${extra}${viewSeg()}${searchBtn()}</div>${sheet}</div>`;
+  const mapBottom = (sheet, extra = '') => `<div class="map-bottom ${/class="sheet-card[^"]*detail/.test(sheet) ? 'has-detail' : ''}">${camCtrl()}<div class="map-dock">${extra}${viewSeg()}${!window.ASSET_DATA && new URLSearchParams(location.search).get('mapa') === 'novo' ? `<button class="btn soft" data-act="mapanovo">Explorar novo mapa 3D</button>` : ''}${searchBtn()}</div>${sheet}</div>`;
   const MAP_TABS = [['evento', 'Evento'], ['bloco', 'Andares'], ['campus', 'Campus']];
   const viewSeg = () => `<div class="seg" style="--k:${MAP_TABS.findIndex(([v]) => v === S.mapView)}"><i class="seg-ind"></i>${MAP_TABS.map(([v, t]) => `<button class="${S.mapView === v ? 'on' : ''}" data-act="mapview" data-v="${v}">${t}</button>`).join('')}</div>`;
   const dimToggle = () => { if (!window.Campus3D.canUse3D()) return ''; const f = window.Campus3D.isFlat(); return `<div class="dim" role="group" aria-label="Tipo de vista" style="--k:${f ? 1 : 0}"><i></i><button class="${f ? '' : 'on'}" data-act="dim" data-v="3d" aria-pressed="${!f}">3D</button><button class="${f ? 'on' : ''}" data-act="dim" data-v="2d" aria-pressed="${f}">2D</button></div>`; };
@@ -771,7 +773,26 @@
     </div>`;
   }
 
-  Screens.campus = () => ({
+  /* Mapa padrão: o novo (mapa3d/, WebGL), embutido na aba Mapa. O mapa anterior do app (campus3d.js, Canvas) continua
+     guardado como "Mapa clássico": Perfil → Personalizar → Mapa, ou ?mapa=classico. A exportação em arquivo único
+     (index.html da raiz) e a qualidade "2D" usam sempre o clássico. */
+  const mapaEscolhido = () => { const q = new URLSearchParams(location.search).get('mapa'); return q === 'novo' || q === 'classico' ? q : UI.mapa || 'novo'; };
+  const mapaNovoOn = () => !window.ASSET_DATA && mapaEscolhido() === 'novo' && window.Campus3D?.quality?.().setting !== 'simples';
+  const telaMapaNovo = () => ({
+    html: '<div class="map-screen mapa-aba"><iframe title="Mapa do campus" src="mapa3d/index.html?aba=1"></iframe></div>',
+    mount: (page) => {
+      const frame = page.querySelector('iframe'); if (!frame) return;
+      /* rota pedida por "Como chegar" (atividade ou sala) vai junto, uma vez */
+      const pedida = S.mapRoute && Number.isInteger(S.mapFloor) && S.mapZone ? { floor: S.mapFloor, zone: S.mapZone } : {}; S.mapRoute = false;
+      const dados = (type) => ({ type, ...pedida, origem: origemAgora(), hour: skyHour, reduced: reduce, sessions: D.sessions.map((x) => ({ id: x.id, title: x.title, time: x.time, floor: x.floor, zone: x.zone })), rooms: Object.fromEntries(P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => [`${f.level}:${z.id}`, z.roomNumber]))) });
+      const ouvir = (e) => {
+        if (!frame.isConnected) { window.removeEventListener('message', ouvir); return; }
+        if (e.origin === location.origin && e.source === frame.contentWindow && e.data?.type === 'etal:mapa:pronto') frame.contentWindow.postMessage(dados('etal:mapa:abrir'), location.origin);
+      };
+      window.addEventListener('message', ouvir);
+    },
+  });
+  Screens.campus = () => (mapaNovoOn() ? telaMapaNovo() : {
     html: `<div class="map-screen campus">
       <canvas class="campus3d" tabindex="0" role="application" aria-label="Mapa do campus IFRN Pau dos Ferros, com a área do evento em destaque. Arraste para mover e use os botões para aproximar."></canvas>
       ${fpsHud()}
@@ -914,11 +935,12 @@
       for (let f = 0; f < floors; f++) for (let x = a + 1.4; x < b - 1.4; x += 3.1) o += `<rect x="${x.toFixed(1)}" y="${(G - per * (f + 0.68)).toFixed(1)}" width="1.700" height="${(per * 0.36).toFixed(1)}"/>`;
       return o;
     };
-    const tree = (i, r) => { const x = E[i].pontos[0][0]; return `<rect class="sl-near" x="${(x - 0.35).toFixed(1)}" y="${G - r * 2.2}" width=".7" height="${r * 2.2 + 3}"/><circle class="sl-near" cx="${x.toFixed(1)}" cy="${G - r * 2.4}" r="${r}"/>`; };
+    /* copa em três tufos, para não parecer pirulito */
+    const tree = (i, r) => { const x = E[i].pontos[0][0]; const cy = G - r * 2.4; return `<rect class="sl-near" x="${(x - 0.35).toFixed(1)}" y="${G - r * 2.2}" width=".7" height="${r * 2.2 + 3}"/><circle class="sl-near" cx="${x.toFixed(1)}" cy="${cy}" r="${r}"/><circle class="sl-near" cx="${(x - r * 0.7).toFixed(1)}" cy="${(cy + r * 0.45).toFixed(1)}" r="${(r * 0.68).toFixed(2)}"/><circle class="sl-near" cx="${(x + r * 0.72).toFixed(1)}" cy="${(cy + r * 0.38).toFixed(1)}" r="${(r * 0.62).toFixed(2)}"/>`; };
     const [px0, px1] = span(5);
-    const clouds = '<g class="sl-cloud"><path d="M-74 17h15a3 3 0 0 0-3-5 4.500 4.500 0 0 0-8-1 3.500 3.500 0 0 0-4 6Z"/></g><g class="sl-cloud two"><path d="M15 11h20a3.600 3.600 0 0 0-4-6 5.500 5.500 0 0 0-10-1 4.200 4.200 0 0 0-6 7Z"/></g>';
+    /* As nuvens ficam fora deste SVG (ver skyArt): animadas aqui dentro, o campus inteiro era repintado a cada quadro. */
     return `<svg class="hm-skyline" viewBox="-100 0 162 50" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
-      ${clouds}
+      <path class="sl-hill" d="M-110 50V30C-96 24-84 27-70 30S-40 20-18 25 20 31 44 24 60 22 70 25V50Z"/>
       <path class="sl-far" d="M-110 50V37C-92 31-76 34-60 36S-28 28-6 32 34 38 70 30V50Z"/>
       ${box(7, 4.8, 'sl-mid')}${box(4, 4.8, 'sl-mid')}${box(1, 4.8, 'sl-mid')}
       ${box(0, 11.7, 'sl-mid')}<g class="sl-win">${wins(0, 11.7, 3)}</g>
@@ -927,10 +949,11 @@
       ${box(6, 4.8, 'sl-near')}
       <rect class="sl-near" x="-50" y="${G - 2.3 * Y}" width="107" height="${2.3 * Y + 3}"/>
       ${box(8, 3.6, 'sl-near')}
+      <g class="sl-near"><rect x="8.300" y="${G - 5.6 * Y}" width="1" height="${5.6 * Y + 3}"/></g><rect class="sl-mark" x="8.450" y="${G - 5.2 * Y}" width=".7" height="1.600"/>
       ${[[31, 2.2], [32, 2.2], [33, 2.2], [30, 3.2], [29, 2.2], [28, 2.2], [26, 2.2]].map(([i, r]) => tree(i, r)).join('')}
     </svg>`;
   }
-  const skyArt = () => `<div class="hm-bg"><i class="hm-stars"></i><button class="hm-sun" data-act="skycycle" aria-label="Mudar a hora do céu"></button><i class="hm-moon"></i>${skyline()}</div>`;
+  const skyArt = () => `<div class="hm-bg"><i class="hm-stars"></i><i class="hm-glow"></i><i class="hm-cloud c1"></i><i class="hm-cloud c2"></i><i class="hm-cloud c3"></i><button class="hm-sun" data-act="skycycle" aria-label="Mudar a hora do céu"></button><i class="hm-moon"></i>${skyline()}</div>`;
 
   /* ---- campus ao vivo ---- */
   let liveI = 0, liveTimer = 0, liveCred = D.liveBase.credenciados;
@@ -1017,6 +1040,7 @@
   }
 
   Screens.map = () => {
+    if (mapaNovoOn()) return telaMapaNovo();
     if (S.mapView !== 'bloco') return Screens.campus();
     const idx = S.mapFloor === null ? 0 : S.mapFloor + 1;
     return {
@@ -1155,6 +1179,7 @@
         </ul>
         <h2 class="h">Mapa</h2>
         <ul class="cu-opts">
+          <li><span>Mapa</span>${uiSeg('mapa', [['novo', 'Novo (3D)'], ['classico', 'Clássico']])}</li>
           ${C.canUse3D() ? `<li><span>Vista inicial</span>${uiSeg('view', [['3d', '3D'], ['2d', '2D']])}</li>` : ''}
           <li><span>Qualidade</span><div class="mini-seg wide" role="radiogroup">${[['auto', 'Auto'], ['alta', 'Completo'], ['media', 'Médio'], ['leve', 'Leve'], ['simples', '2D']].map(([v, t]) => `<button class="${q.setting === v ? 'on' : ''}" role="radio" aria-checked="${q.setting === v}" data-act="quality" data-v="${v}">${t}</button>`).join('')}</div><small class="cu-note">Em uso: ${LABEL[q.tier]}${q.setting === 'auto' ? ` · ${q.why}` : ''}. </small></li>
           <li class="cu-row2"><button data-act="uimaphour" aria-pressed="${UI.mapHour}" class="${UI.mapHour ? 'on' : ''}"><span>Luz do mapa segue o horário</span><i class="switch"></i></button></li>
@@ -1316,7 +1341,7 @@
           ['Programação', `${orig} atividades seguem o VII ETAL (novembro de 2025). As outras ${demo}, com palestrantes de nomes inventados, são de exemplo.`],
           ['Salas e vagas', 'A distribuição das atividades pelas salas é demonstrativa.'],
           ['Credenciamento, presença, certificados e materiais', 'Simulados. Não há integração com o SUAP nem registro oficial de presença.'],
-          ['Campeonatos', 'Chaves, jogadores e horários de exemplo.'],
+          ['Campeonatos', 'Jogadores e horários de exemplo. A inscrição e os resultados funcionam, mas ficam só neste navegador.'],
           ['Avisos, Campus ao vivo e painel da organização', 'Números e mensagens simulados.'],
         ].map(row).join('')}</ul></section>
         <section class="sb-card approx st" ${st(3)}><h2>${ic('pin')}Aproximações</h2><ul>${[
@@ -1405,41 +1430,89 @@
 
   const titleOf = (t, cls = '') => (t.logo ? `<img class="p-logo ${cls}" src="${t.logo}" alt="${t.name}">` : t.hideName ? `<span class="sr">${t.name}</span>` : `<span class="p-name">${t.name}</span>`);
 
+  /* Estado dos campeonatos: vem do painel (etal-org.torneios). Ver window.TOUR em data.js. */
+  const tourSt = (t) => window.TOUR.state(t, orgRead());
+  const tourMine = (st) => st.players.findIndex((p) => p && p[4] === D.person.id);
+  const tourChip = (st) => { const [k, l] = window.TOUR.status(st); return `<span class="t-chip ${k}">${k === 'live' ? '<i></i>' : ''}${l}</span>`; };
+  const tourSession = (t) => D.sessions.find((x) => x.tournament === t.id);
+  const facesOf = (st) => { const ps = st.players.filter(Boolean); return `<span class="faces">${ps.slice(0, 4).map((p) => `<i>${esc(p[2])}</i>`).join('')}${ps.length > 4 ? `<i>+${ps.length - 4}</i>` : ''}</span>`; };
+
   Screens.games = () => ({
     html: `${header('Campeonatos')}
-      <div class="pad stack">${D.tournaments.map((t, i) => `
-        <button class="poster ${t.theme} st" ${st(i)} data-go="tournament" data-id="${t.id}">
+      <div class="pad stack">
+        <p class="games-lead st" ${st(0)}>Quinta, 27 de novembro, na Sala 102. Entre na chave ou venha torcer.</p>
+        ${D.tournaments.map((t, i) => { const stt = tourSt(t); const me = tourMine(stt) >= 0; return `
+        <button class="poster ${t.theme} st" ${st(i + 1)} data-go="tournament" data-id="${t.id}">
           ${gameArt(t)}
           <span class="poster-tx">${titleOf(t)}<span class="p-tag">${t.tagline}</span></span>
-          <span class="poster-foot"><span>${dayOf(t.day).week} ${t.day} · ${t.time}</span><span class="faces">${t.players.slice(0, 4).map((p) => `<i>${p[2]}</i>`).join('')}<i>+4</i></span></span>
-        </button>`).join('')}
+          <span class="poster-chip">${me ? `<span class="t-chip me">${ic('check')}Você está na chave</span>` : tourChip(stt)}</span>
+          <span class="poster-foot"><span>${dayOf(t.day).week} ${t.day} · ${t.time}</span>${facesOf(stt)}</span>
+        </button>`; }).join('')}
       </div>`,
   });
 
-  function bracket(t) {
-    const P8 = t.players;
-    const pair = (a, b, time, k) => `<div class="match st" ${st(3 + k)}><time>${time}</time>
-      <div class="pl"><i>${a[2]}</i><b>${a[0]}</b></div><div class="pl"><i>${b[2]}</i><b>${b[0]}</b></div></div>`;
-    const tbd = (label, k) => `<div class="match tbd st" ${st(7 + k)}><time>${label}</time><div class="pl"><i></i><b>A definir</b></div><div class="pl"><i></i><b>A definir</b></div></div>`;
-    return `<div class="bracket"><div class="bk-round"><h3>Quartas</h3>${[0, 2, 4, 6].map((n, k) => pair(P8[n], P8[n + 1], t.times[k], k)).join('')}</div>
-      <div class="bk-round r2"><h3>Semifinal</h3>${tbd('Semi 1', 0)}${tbd('Semi 2', 1)}</div>
-      <div class="bk-round r3"><h3>Final</h3><div class="match final tbd st" ${st(9)}><time>${ic('trophy')}Final</time><div class="pl"><i></i><b>A definir</b></div><div class="pl"><i></i><b>A definir</b></div></div></div></div>`;
+  function bracket(t, stt) {
+    const R = window.TOUR.rounds(stt); const mine = D.person.id;
+    const side = (p, m, i) => { const cls = m.w === null ? '' : m.w === i ? 'win' : 'lose'; return p
+      ? `<div class="pl ${cls} ${p[4] === mine ? 'me' : ''}"><i>${esc(p[2])}</i><b>${esc(p[0])}</b>${m.w === i ? ic('check', 'i pl-ok') : ''}</div>`
+      : `<div class="pl open"><i></i><b>${m.k[0] === 'q' ? 'Vaga aberta' : 'A definir'}</b></div>`; };
+    const match = (m, label, k, cls = '') => `<div class="match ${cls} ${m.a && m.b ? '' : 'tbd'} ${m.w !== null ? 'done' : ''} st" ${st(3 + k)}>${label ? `<time>${label}</time>` : ''}${side(m.a, m, 0)}${side(m.b, m, 1)}</div>`;
+    /* Chave inteira na largura do celular: quartas, semifinais e final em três colunas ligadas por linhas. */
+    return `${R.champ ? `<div class="champ st" ${st(2)}>${ic('trophy')}<span><small>Campeão</small><b>${esc(R.champ[0])}</b><em>${esc(R.champ[1])}</em></span></div>` : ''}
+      <div class="bk3">
+        <h3 class="st" ${st(2)}>Quartas</h3><h3 class="st" ${st(2)}>Semifinal</h3><h3 class="st" ${st(2)}>Final</h3>
+        ${R.q.map((m, k) => `<div class="bk-cell q" style="grid-row:${k + 2}">${match(m, t.times[k], k)}</div>`).join('')}
+        ${R.s.map((m, k) => `<div class="bk-cell s" style="grid-row:${2 * k + 2}/span 2">${match(m, '', 4 + k)}</div>`).join('')}
+        <div class="bk-cell f" style="grid-row:2/span 4">${match(R.f, '', 6, 'final')}<span class="bk-cup ${R.champ ? 'on' : ''}">${ic('trophy')}</span></div>
+      </div>`;
+  }
+
+  /* Inscrição: apelido, escolha (personagem ou time) e como a pessoa quer jogar. */
+  const TOUR_LEVELS = ['Só pela diversão', 'Jogo às vezes', 'Vim para ganhar'];
+  function tourForm(t, stt) {
+    const f = S.tourForm || {}; const nick = f.nick ?? D.person.first ?? '';
+    return `<form class="t-form st" ${st(2)} data-form="tourjoin" data-id="${t.id}">
+      <h3>Entrar na chave</h3>
+      <label class="t-field"><span>Seu apelido na chave</span><input name="nick" maxlength="14" required autocomplete="off" value="${esc(nick)}" placeholder="Como vão te chamar"></label>
+      <div class="t-field"><span>${t.pickLabel}</span><div class="t-chips">${t.picks.map((x) => `<button type="button" class="${(f.pick || t.picks[t.picks.length - 1]) === x ? 'on' : ''}" data-act="tourpick" data-k="pick" data-v="${esc(x)}">${esc(x)}</button>`).join('')}</div></div>
+      <div class="t-field"><span>Como você joga</span><div class="t-chips">${TOUR_LEVELS.map((x, i) => `<button type="button" class="${(f.level ?? 1) === i ? 'on' : ''}" data-act="tourpick" data-k="level" data-v="${i}">${x}</button>`).join('')}</div></div>
+      <p class="t-note">${stt.free} ${stt.free === 1 ? 'vaga' : 'vagas'}. A ordem dos confrontos é definida pela organização.</p>
+      <div class="t-row"><button type="button" class="btn t-ghost" data-act="tourform" data-v="0">Cancelar</button><button type="submit" class="btn t-cta">Confirmar inscrição</button></div>
+    </form>`;
   }
 
   Screens.tournament = ({ id }) => {
     const t = D.tournaments.find((x) => x.id === id);
+    const stt = tourSt(t); const R = window.TOUR.rounds(stt); const mi = tourMine(stt); const me = mi >= 0 ? stt.players[mi] : null;
+    const ses = tourSession(t); const watching = ses && S.saved.has(ses.id);
     const tab = S.tourTab;
-    const tabs = [['chave', 'Chave'], ['jogadores', 'Jogadores'], ['regras', 'Regras']];
-    const body = tab === 'chave' ? bracket(t)
-      : tab === 'jogadores' ? `<ul class="players">${t.players.map((p, i) => `<li class="st" ${st(3 + i)}><i>${p[2]}</i><b>${p[0]}</b><small>${p[1]}</small></li>`).join('')}</ul>`
-        : `<dl class="rules st" ${st(3)}><div><dt>Formato</dt><dd>${t.format}</dd></div><div><dt>Local</dt><dd>${t.place}</dd></div><div><dt>Prêmio</dt><dd>${t.prize}</dd></div></dl><p class="desc st" ${st(4)}>${t.rules}</p>`;
+    const tabs = [['chave', 'Chave'], ['jogadores', `Jogadores · ${8 - stt.free}`], ['regras', 'Regras']];
+    const canJoin = stt.open && stt.free > 0 && !R.played && !me;
+    const lvl = (p) => (p[5] !== undefined ? TOUR_LEVELS[p[5]] : '');
+    const body = tab === 'chave' ? bracket(t, stt)
+      : tab === 'jogadores' ? `<ul class="players">${stt.players.map((p, i) => (p
+        ? `<li class="st ${p[4] === D.person.id ? 'me' : ''}" ${st(3 + i)}><i>${esc(p[2])}</i><b>${esc(p[0])}</b><small>${esc(p[1])}</small>${p[3] ? `<em>${esc(p[3])}</em>` : ''}${p[4] === D.person.id ? '<u>Você</u>' : ''}</li>`
+        : `<li class="st open" ${st(3 + i)}>${canJoin ? `<button data-act="tourform" data-v="1"><i>+</i><b>Vaga aberta</b><small>Toque para entrar</small></button>` : '<i></i><b>Vaga</b><small>Sem inscrito</small>'}</li>`)).join('')}</ul>`
+        : `<dl class="rules st" ${st(3)}><div><dt>Formato</dt><dd>${t.format}</dd></div><div><dt>Vagas</dt><dd>${8 - stt.free} de 8</dd></div><div><dt>Local</dt><dd>${t.place}</dd></div><div><dt>Prêmio</dt><dd>${t.prize}</dd></div></dl><p class="desc st" ${st(4)}>${t.rules}</p>`;
+    const cta = S.tourForm && canJoin ? tourForm(t, stt)
+      : `<div class="t-actions st" ${st(1)}>
+          ${me ? `<div class="t-in">${ic('check', 'i t-in-ok')}<span><b>Você está na chave como ${esc(me[0])}</b><small>${[me[3], lvl(me)].filter(Boolean).map(esc).join(' · ') || 'Inscrição confirmada'}</small></span>${R.played ? '' : `<button data-act="tourleave" data-id="${t.id}">Sair</button>`}</div>`
+            : canJoin ? `<button class="btn t-cta" data-act="tourform" data-v="1">${ic('trophy')}Quero jogar</button>` : ''}
+          <div class="t-row">
+            ${ses ? `<button class="btn t-ghost ${watching ? 'on' : ''}" data-act="tourwatch" data-id="${ses.id}" aria-pressed="${!!watching}">${ic(watching ? 'check' : 'cal')}${watching ? 'Na sua agenda' : 'Vou assistir'}</button>
+            <button class="btn t-ghost" data-act="openmap" data-floor="${ses.floor}" data-zone="${ses.zone}">${ic('pin')}Como chegar</button>` : ''}
+          </div>
+        </div>`;
+    const facts = `<dl class="t-facts st" ${st(1)}><div><dt>Quando</dt><dd>${dayOf(t.day).week} ${t.day}<small>${t.time}</small></dd></div><div><dt>Onde</dt><dd>${t.place.split(' · ')[0]}<small>${t.place.split(' · ')[1] || ''}</small></dd></div><div><dt>Chave</dt><dd>${8 - stt.free}/8<small>${stt.free ? `${stt.free} ${stt.free === 1 ? 'vaga' : 'vagas'}` : 'completa'}</small></dd></div></dl>`;
     return {
       dark: true,
       html: `<div class="tour ${t.theme}">
         <div class="tour-hero">${gameArt(t)}
           <header class="bar on-dark"><button class="iconbtn" data-act="back" aria-label="Voltar">${ic('back')}</button><span></span><span class="iconbtn ghost"></span></header>
-          <div class="tour-title st" ${st(0)}>${titleOf(t)}<span class="tour-meta">${dayOf(t.day).long.split(',')[0]}, ${t.day} nov · ${t.time} · ${t.place}</span></div>
+          <div class="tour-title st" ${st(0)}>${tourChip(stt)}${titleOf(t)}<span class="tour-meta">${t.tagline} ${t.format}.</span></div>
         </div>
+        ${facts}
+        ${cta}
         <div class="tour-tabs st" style="--i:1;--k:${tabs.findIndex((x) => x[0] === tab)}"><i class="seg-ind"></i>${tabs.map(([k, l]) => `<button class="${k === tab ? 'on' : ''}" data-act="tourtab" data-k="${k}">${l}</button>`).join('')}</div>
         <div class="tour-body">${body}</div>
       </div>`,
@@ -1828,6 +1901,25 @@
     if (!mapCanvas) mapCanvas = ph; else { mapCanvas.setAttribute('aria-label', ph.getAttribute('aria-label')); ph.replaceWith(mapCanvas); }
     return mapCanvas;
   }
+  /* Modelo novo em uma superfície isolada: o app conserva atividade, scroll e câmera. */
+  function abrirMapaNovo(floor, zone, fallback) {
+    /* Só com o mapa novo escolhido (padrão); com o clássico, "Como chegar" usa o mapa Canvas. */
+    if (UI.view === '2d' || !mapaNovoOn()) return false;
+    const host = document.createElement('section'); host.className = 'mapa-novo'; host.setAttribute('role', 'dialog'); host.setAttribute('aria-label', 'Caminho pelo campus'); host.setAttribute('aria-modal', 'true');
+    const frame = document.createElement('iframe'); frame.title = 'Mapa do campus'; frame.src = 'mapa3d/index.html';
+    const light = document.createElement('button'); light.className = 'mapa-novo-leve'; light.textContent = 'Mapa leve';
+    const previous = document.activeElement;
+    const close = () => { clearTimeout(timer); clearInterval(sync); window.removeEventListener('message', receive); document.removeEventListener('keydown', key); host.remove(); vp.inert = false; tabbar.inert = false; previous?.focus?.(); };
+    const payload = () => ({type:'etal:mapa:abrir', floor, zone, origem: origemAgora(), via:S.mapVia || null, hour:skyHour, reduced:reduce, sessions:D.sessions.map(x=>({id:x.id,title:x.title,time:x.time,floor:x.floor,zone:x.zone})), rooms:Object.fromEntries(P.floors.flatMap(f=>f.zones.filter(z=>z.roomNumber).map(z=>[`${f.level}:${z.id}`,z.roomNumber]))) });
+    let ready = false, lastSync = '';
+    const receive = e => { if(e.origin!==location.origin || e.source!==frame.contentWindow) return; if(e.data?.type==='etal:mapa:pronto'){ ready=true;clearTimeout(timer);frame.contentWindow.postMessage(payload(),location.origin);light.textContent='Mapa leve'; } if(e.data?.type==='etal:mapa:fechar')navBack();if(e.data?.type==='etal:mapa:leve')useLight(); };
+    const useLight = () => { navBack(); setTimeout(fallback, 100); };
+    const key = e => { if(e.key==='Escape'){e.preventDefault();navBack();} };
+    const timer = setTimeout(()=>{if(!ready){light.textContent='Abrir mapa leve';toast('O modelo está demorando. O mapa leve está disponível.');}},15000);
+    const sync = setInterval(()=>{if(!ready)return;const data=payload();const stamp=JSON.stringify([data.sessions,data.rooms]);if(stamp!==lastSync){lastSync=stamp;frame.contentWindow.postMessage({...data,type:'etal:mapa:sincronizar'},location.origin);}},1500);
+    light.onclick=useLight;host.append(frame,light);device.append(host);vp.inert=true;tabbar.inert=true;
+    window.addEventListener('message',receive);document.addEventListener('keydown',key);navPush(close,'mapa-novo');frame.focus();return true;
+  }
   function runJourney() {
     const C = window.Campus3D; const [lvl, zone] = [S.mapFloor, S.mapZone];
     S.journeying = true;
@@ -1917,7 +2009,7 @@
     const out = [];
     const room = (f, z, t, d) => out.push({ t, d, i: a.icon, tone: a.tone, min: minTo(f.level, z.id), a: `data-k="room" data-floor="${f.level}" data-zone="${z.id}"` });
     P.floors.forEach((f) => f.zones.forEach((z) => {
-      if (a.k === 'banheiro' && z.kind === 'restroom') room(f, z, z.name || 'Banheiros', `Bloco principal · ${f.label}`);
+      if (a.k === 'banheiro' && z.kind === 'restroom' && !z.closed) room(f, z, z.name || 'Banheiros', `Bloco principal · ${f.label}`);
       if (a.k === 'descanso' && z.kind === 'lounge') room(f, z, z.name, `Bloco principal · ${f.label}`);
       if (a.k === 'recepcao' && z.kind === 'reception') room(f, z, 'Recepção', `Entrada principal do bloco · ${f.label}`);
       if (a.k === 'escada' && z.kind === 'stairs' && f.level === 0) room(f, z, 'Escada', 'Bloco principal · ala oeste');
@@ -2189,7 +2281,8 @@
         if (v === 'in') C.zoom(1.4); else if (v === 'out') C.zoom(0.72); else if (v === 'rot') C.rotate(45); else C.fit();
         break;
       }
-      case 'openmap': S.mapView = 'bloco'; S.mapFloor = +el.dataset.floor; S.mapZone = el.dataset.zone; S.mapRoute = true; S.pending = true; S.journeying = true; switchTab('map', true); break;
+      case 'mapanovo': abrirMapaNovo(null,null,()=>toast('Você está no mapa leve.')); break;
+      case 'openmap': { const fl=+el.dataset.floor, z=el.dataset.zone; const legacy=()=>{ S.mapView='bloco'; S.mapFloor=fl; S.mapZone=z; S.mapRoute=true; S.pending=true; S.journeying=true; switchTab('map',true); }; if(!abrirMapaNovo(fl,z,legacy))legacy(); break; }
       case 'openplace': S.mapView = 'evento'; S.campusPlace = el.dataset.id; window.Campus3D.setMode('evento'); window.Campus3D.select(el.dataset.id); switchTab('map', true); setTimeout(() => { window.Campus3D.select(el.dataset.id); window.Campus3D.focus(el.dataset.id); window.Campus3D.route(el.dataset.id); }, reduce ? 0 : 450); break;
       case 'today': S.todayOpen = !S.todayOpen; el.setAttribute('aria-expanded', S.todayOpen); el.closest('.today').classList.toggle('open', S.todayOpen); break;
       case 'floorsel': {
@@ -2204,7 +2297,7 @@
         break;
       }
       case 'zoneclose': if (navTag() === 'room') { navBack(); break; } S.mapZone = null; S.mapRoute = false; rerender(); window.Campus3D.room(S.mapFloor, null); break;
-      case 'roomroute': navMark('route'); S.mapRoute = true; S.journeying = true; rerender(); runJourney(); break;
+      case 'roomroute': if(abrirMapaNovo(S.mapFloor,S.mapZone,()=>{S.mapRoute=true;S.journeying=true;rerender();runJourney();}))break; navMark('route'); S.mapRoute = true; S.journeying = true; rerender(); runJourney(); break;
       case 'via': S.mapVia = el.dataset.v; S.mapRoute = true; S.journeying = true; rerender(); runJourney(); break;
       case 'finder': S.finderMode = null; openOverlay(Overlays.finder(), 'finder'); kbTrack(true); setTimeout(() => $('#fq')?.focus({ preventScroll: true }), 480); break;
       case 'finderq': { const i = $('#fq'); if (i) { i.value = el.dataset.q; S.finderMode = null; finderRender(); } break; }
@@ -2223,6 +2316,20 @@
         break;
       }
       case 'tourtab': S.tourTab = el.dataset.k; rerender(); break;
+      case 'tourform': S.tourForm = el.dataset.v === '1' ? (S.tourForm || {}) : null; rerender(); break;
+      case 'tourpick': {
+        const nick = el.closest('form')?.querySelector('[name=nick]')?.value;
+        S.tourForm = { ...(S.tourForm || {}), nick, [el.dataset.k]: el.dataset.k === 'level' ? +el.dataset.v : el.dataset.v }; rerender(); break;
+      }
+      case 'tourleave': {
+        const t = D.tournaments.find((x) => x.id === el.dataset.id);
+        orgWrite((o) => { const stt = window.TOUR.state(t, o); const i = stt.players.findIndex((p) => p && p[4] === D.person.id); if (i < 0) return; stt.players[i] = null; o.torneios = { ...(o.torneios || {}), [t.id]: { ...((o.torneios || {})[t.id] || {}), players: stt.players } }; });
+        toast('Você saiu da chave'); rerender(); break;
+      }
+      case 'tourwatch': {
+        const id = el.dataset.id; if (S.saved.has(id)) S.saved.delete(id); else S.saved.add(id);
+        toast(S.saved.has(id) ? 'Adicionado à sua agenda' : 'Removido da sua agenda'); rerender(); break;
+      }
       case 'mine': S.agendaFilter = 'saved'; switchTab('agenda', true); break;
       case 'share': openOverlay(Overlays.share(el.dataset.id), 'share'); break;
       case 'copy': {
@@ -2243,6 +2350,22 @@
   });
 
   document.addEventListener('submit', async (e) => {
+    if (e.target.dataset.form === 'tourjoin') {
+      e.preventDefault();
+      const t = D.tournaments.find((x) => x.id === e.target.dataset.id); const f = S.tourForm || {};
+      const nick = String(new FormData(e.target).get('nick') || '').trim().slice(0, 14); if (!nick) return;
+      let ok = false;
+      orgWrite((o) => {
+        const stt = window.TOUR.state(t, o); const i = stt.players.indexOf(null);
+        if (i < 0 || !stt.open || stt.players.some((p) => p && p[4] === D.person.id)) return;
+        const pick = f.pick && f.pick !== t.picks[t.picks.length - 1] ? f.pick : '';
+        stt.players[i] = [nick, D.person.name, D.person.initials, pick, D.person.id, f.level ?? 1]; ok = true;
+        o.torneios = { ...(o.torneios || {}), [t.id]: { ...((o.torneios || {})[t.id] || {}), players: stt.players } };
+      });
+      S.tourForm = null;
+      if (ok) { S.tourTab = 'chave'; buzz([20, 40, 20]); notify(`Você está na chave de ${t.name}`, `${dayOf(t.day).week} ${t.day}, ${t.time} · ${t.place}`); } else toast('As vagas acabaram');
+      rerender(); return;
+    }
     const ask = e.target.closest('[data-form="ask"]');
     if (ask) {
       e.preventDefault();
@@ -2383,7 +2506,7 @@
     if (!first && fresh.length) { notify(fresh[0].title, fresh[0].text); buzz([20, 40, 20]); if (S.auth && vp.querySelector('.page')) rerender(); }
   }
   orgSync(true);
-  window.addEventListener('storage', (e) => { if (e.key === ORG_KEY) orgSync(false); });
+  window.addEventListener('storage', (e) => { if (e.key !== ORG_KEY) return; orgSync(false); if (S.auth && vp.querySelector('.tour, .poster, .duel')) rerender(); });
 
   /* ---------------- servidor (config.js → api) ----------------
      Com a API ligada, programação, perfil, agenda, presenças e avisos vêm do servidor; sem ela, tudo segue de exemplo. */

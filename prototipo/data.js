@@ -104,8 +104,10 @@ window.DATA = {
       format: '1 × 1 · melhor de 3', theme: 'mk',
       rules: 'Eliminação simples. Cada confronto é decidido em melhor de três partidas. Configurações e personagens são combinados pela organização.',
       prize: 'Troféu simbólico',
-      players: [['Arcade', 'Alex Costa', 'AC'], ['Pixel', 'Nina Martins', 'NM'], ['Raio', 'Ravi Lima', 'RL'], ['Lunar', 'Lia Souza', 'LS'],
-        ['Combo', 'Davi Alves', 'DA'], ['Nova', 'Bia Nunes', 'BN'], ['Zero', 'Ivo Rocha', 'IR'], ['Spark', 'Sara Melo', 'SM']],
+      /* seis inscritos de exemplo e duas vagas: quem usa o app pode entrar na chave */
+      players: [['Arcade', 'Alex Costa', 'AC', 'Scorpion'], ['Pixel', 'Nina Martins', 'NM', 'Kitana'], ['Raio', 'Ravi Lima', 'RL', 'Raiden'], ['Lunar', 'Lia Souza', 'LS', 'Mileena'],
+        ['Combo', 'Davi Alves', 'DA', 'Liu Kang'], ['Nova', 'Bia Nunes', 'BN', 'Sub-Zero']],
+      pickLabel: 'Personagem', picks: ['Scorpion', 'Sub-Zero', 'Liu Kang', 'Kitana', 'Raiden', 'Mileena', 'Johnny Cage', 'Sonya', 'Ainda não sei'],
       times: ['14:00', '14:20', '14:40', '15:00'],
     },
     {
@@ -113,11 +115,41 @@ window.DATA = {
       format: '1 × 1 · mata-mata', theme: 'fifa',
       rules: 'Oito participantes e confrontos eliminatórios. Tempo de partida, equipes e critérios de desempate são definidos pela organização.',
       prize: 'Troféu simbólico',
-      players: [['Camisa 10', 'Caio Freitas', 'CF'], ['Finta', 'Luna Reis', 'LR'], ['Maestro', 'Theo Dias', 'TD'], ['Artilheira', 'Maya Lopes', 'ML'],
-        ['Capitão', 'Noah Cruz', 'NC'], ['Canhota', 'Eva Ramos', 'ER'], ['Craque', 'Enzo Luz', 'EL'], ['Gol de Placa', 'Ana Vale', 'AV']],
+      players: [['Camisa 10', 'Caio Freitas', 'CF', 'Real Madrid'], ['Finta', 'Luna Reis', 'LR', 'Barcelona'], ['Maestro', 'Theo Dias', 'TD', 'Flamengo'], ['Artilheira', 'Maya Lopes', 'ML', 'Manchester City'],
+        ['Capitão', 'Noah Cruz', 'NC', 'Palmeiras'], ['Canhota', 'Eva Ramos', 'ER', 'PSG']],
+      pickLabel: 'Time', picks: ['Real Madrid', 'Barcelona', 'Manchester City', 'PSG', 'Flamengo', 'Palmeiras', 'Bayern', 'Liverpool', 'Ainda não sei'],
       times: ['15:30', '15:50', '16:10', '16:30'],
     },
   ],
+};
+
+/* Campeonatos: o estado (inscritos, vagas, resultados) fica no painel da organização (etal-org.torneios) e é
+   lido igual pelo app e pelo painel. Chave de oito: quartas q0..q3, semifinais s0 e s1, final f.
+   Jogador = [apelido, nome, iniciais, escolha, id de quem se inscreveu pelo app]. */
+window.TOUR = {
+  SLOTS: 8,
+  state(t, org) {
+    const o = ((org && org.torneios) || {})[t.id] || {};
+    const players = (o.players || t.players).slice(0, 8).map((p) => p || null);
+    while (players.length < 8) players.push(null);
+    return { open: o.open !== false, players, res: { ...(o.res || {}) }, free: players.filter((p) => !p).length };
+  },
+  /* Monta as rodadas: quem ganha uma partida aparece na seguinte. w = 0 ou 1 (lado que venceu). */
+  rounds(st) {
+    const m = (k, a, b) => { const w = st.res[k]; const ok = a && b && (w === 0 || w === 1); return { k, a, b, w: ok ? w : null, win: ok ? (w ? b : a) : null }; };
+    const q = [0, 1, 2, 3].map((i) => m(`q${i}`, st.players[2 * i], st.players[2 * i + 1]));
+    const s = [0, 1].map((i) => m(`s${i}`, q[2 * i].win, q[2 * i + 1].win));
+    const f = m('f', s[0].win, s[1].win);
+    const played = [...q, ...s, f].filter((x) => x.w !== null).length;
+    return { q, s, f, champ: f.win, played };
+  },
+  status(st) {
+    const r = window.TOUR.rounds(st);
+    if (r.champ) return ['done', 'Encerrado'];
+    if (r.played) return ['live', 'Em andamento'];
+    if (st.open && st.free) return ['open', `Inscrições abertas · ${st.free} ${st.free === 1 ? 'vaga' : 'vagas'}`];
+    return ['closed', st.free ? 'Inscrições encerradas' : 'Chave completa'];
+  },
 };
 
 /* Extras demonstrativos: vagas, perguntas, contatos e participação. */

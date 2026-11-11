@@ -20,6 +20,7 @@
     clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
     alert: '<path d="M12 3 2 20h20Z"/><path d="M12 10v4M12 17v.01"/>',
     download: '<path d="M12 4v12M7 11l5 5 5-5M5 20h14"/>',
+    trophy: '<path d="M8 4h8v5a4 4 0 0 1-8 0Z"/><path d="M8 6H4v1a3 3 0 0 0 4 3M16 6h4v1a3 3 0 0 1-4 3M12 13v4M8 20h8M9 17h6"/>',
     grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
   };
   const ic = (n) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]}</svg>`;
@@ -90,7 +91,7 @@
   /* ---------- navegação ---------- */
   const SECTIONS = [
     ['visao', 'Visão geral', 'home'], ['planta', 'Planta ao vivo', 'map'], ['programacao', 'Programação', 'cal'],
-    ['participantes', 'Participantes', 'users'], ['salas', 'Salas', 'grid'], ['avisos', 'Avisos', 'bell'],
+    ['participantes', 'Participantes', 'users'], ['salas', 'Salas', 'grid'], ['campeonatos', 'Campeonatos', 'trophy'], ['avisos', 'Avisos', 'bell'],
   ];
   const state = { day: D.now.day, ptype: 'todos', pstat: 'todos', q: '', limit: 40, floor: 2, room: null, ref: 'off', refOp: 0.55 };
   /* Plantas de 2012 (dissertação de Larissa Leiros de Souza, UFRN), recortadas no contorno do prédio.
@@ -245,6 +246,7 @@
         </tbody></table></div>${list.length > state.limit ? `<p class="empty"><button class="btn soft" data-act="more" type="button">Mostrar mais ${Math.min(40, list.length - state.limit)}</button></p>` : ''}`
         : `<p class="empty">Ninguém encontrado. Confira o nome, a matrícula ou o e-mail.</p>`}</section>`;
     },
+    campeonatos() { return `<p class="sub lead">As mudanças aparecem na hora no app aberto neste navegador.</p>${D.tournaments.map(tourCard).join('')}`; },
     avisos() {
       const opts = D.sessions.filter((x) => x.day === D.now.day && !isPast(x) && x.seats);
       return `<div class="grid g-2"><section class="card"><h2>Enviar aviso</h2><p class="sub">Chega para quem está com o app aberto e fica na tela Avisos.</p>
@@ -255,6 +257,51 @@
         <section class="card"><h2>Enviados e programados</h2>${feed()}</section></div>`;
     },
   };
+  /* ---------- campeonatos ----------
+     Tudo num clique: clicar no jogador marca quem venceu (clicar de novo desfaz); os campos salvam ao sair.
+     O estado fica em ORG.torneios e o app aberto neste navegador atualiza na hora. */
+  const T = window.TOUR;
+  const tourOf = (id) => D.tournaments.find((t) => t.id === id);
+  function tourSet(id, fn) {
+    const st = T.state(tourOf(id), ORG); fn(st);
+    /* resultado que ficou sem os dois jogadores deixa de valer */
+    const R = T.rounds(st); [...R.q, ...R.s, R.f].forEach((m) => { if (m.w === null) delete st.res[m.k]; });
+    ORG.torneios = { ...(ORG.torneios || {}), [id]: { open: st.open, players: st.players, res: st.res } };
+    save(); render();
+  }
+  const ini = (name) => name.trim().split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('') || '?';
+  function tourCard(t) {
+    const st = T.state(t, ORG); const R = T.rounds(st); const [k, label] = T.status(st);
+    const side = (m, i) => { const p = i ? m.b : m.a; const ready = m.a && m.b;
+      return p ? `<button type="button" class="tm-p ${m.w === i ? 'win' : m.w === null ? '' : 'lose'}" ${ready ? `data-act="twin" data-id="${t.id}" data-k="${m.k}" data-v="${i}"` : 'disabled'} title="${ready ? (m.w === i ? 'Clique para desfazer' : 'Clique para marcar como vencedor') : 'Falta o adversário'}"><i>${esc(p[2])}</i><b>${esc(p[0])}</b>${m.w === i ? ic('check') : ''}</button>`
+        : `<span class="tm-p none">${m.k[0] === 'q' ? 'Vaga aberta' : 'A definir'}</span>`; };
+    const match = (m, title) => `<div class="tm ${m.w !== null ? 'done' : ''}"><small>${title}</small>${side(m, 0)}${side(m, 1)}</div>`;
+    const row = (p, i) => `<tr><td class="num">${i + 1}</td>
+      <td><input data-tp="${t.id}:${i}:0" value="${esc(p ? p[0] : '')}" placeholder="Apelido" maxlength="14" aria-label="Apelido da vaga ${i + 1}"></td>
+      <td><input data-tp="${t.id}:${i}:1" value="${esc(p ? p[1] : '')}" placeholder="Nome completo" maxlength="40" aria-label="Nome da vaga ${i + 1}"></td>
+      <td><input data-tp="${t.id}:${i}:3" value="${esc(p ? p[3] || '' : '')}" placeholder="${esc(t.pickLabel)}" maxlength="20" list="picks-${t.id}" aria-label="${esc(t.pickLabel)} da vaga ${i + 1}"></td>
+      <td>${p ? `${p[4] ? '<span class="pill vis">pelo app</span>' : ''}<button type="button" class="btn ghost" data-act="tdel" data-id="${t.id}" data-v="${i}" title="Tirar da chave">Tirar</button>` : '<span class="pill wait">vaga</span>'}</td></tr>`;
+    return `<section class="card tour-adm">
+      <h2>${esc(t.name)} <span class="pill ${k === 'live' ? 'live' : k === 'open' ? 'ok' : 'wait'}">${label}</span>
+        <small>${dayOf(t.day).week} ${t.day} · ${t.time} · ${esc(t.place)}</small></h2>
+      <div class="toolbar">
+        <button type="button" class="btn ${st.open ? 'primary' : ''}" data-act="topen" data-id="${t.id}" aria-pressed="${st.open}">${st.open ? 'Inscrições abertas' : 'Inscrições fechadas'}</button>
+        <button type="button" class="btn" data-act="tshuffle" data-id="${t.id}" ${R.played ? 'disabled title="Zere os resultados para sortear de novo"' : ''}>Sortear confrontos</button>
+        <button type="button" class="btn" data-act="tclear" data-id="${t.id}" ${R.played ? '' : 'disabled'}>Zerar resultados</button>
+        ${R.champ ? `<button type="button" class="btn primary" data-act="tannounce" data-id="${t.id}">${ic('bell')}Avisar o campeão</button>` : ''}
+        <button type="button" class="btn ghost" data-act="treset" data-id="${t.id}">Restaurar o exemplo</button>
+      </div>
+      <div class="tour-grid">
+        <div><h3>Jogadores <small>${8 - st.free} de 8 · digite e saia do campo para salvar</small></h3>
+          <div class="tbl-wrap"><table class="tplayers"><thead><tr><th></th><th>Apelido</th><th>Nome</th><th>${esc(t.pickLabel)}</th><th></th></tr></thead><tbody>${st.players.map(row).join('')}</tbody></table></div>
+          <datalist id="picks-${t.id}">${t.picks.map((x) => `<option value="${esc(x)}">`).join('')}</datalist></div>
+        <div><h3>Chave <small>clique em quem venceu</small></h3>
+          <div class="tm-cols"><div>${R.q.map((m, i) => match(m, `Quartas ${i + 1} · ${t.times[i]}`)).join('')}</div>
+            <div class="mid">${R.s.map((m, i) => match(m, `Semifinal ${i + 1}`)).join('')}</div>
+            <div class="mid">${match(R.f, 'Final')}${R.champ ? `<p class="tm-champ">${ic('trophy')}<b>${esc(R.champ[0])}</b> é o campeão</p>` : ''}</div></div></div>
+      </div></section>`;
+  }
+
   function nowTable(now) {
     if (!now.length) return '<p class="empty">Nenhuma atividade com vagas acontecendo agora.</p>';
     return `<div class="tbl-wrap"><table><thead><tr><th>Atividade</th><th>Local</th><th>Em sala</th><th></th></tr></thead><tbody>${now.map((x) => { const n = present(x); const pc = Math.round((n / x.seats) * 100);
@@ -309,6 +356,15 @@
     if (a === 'move') moveDialog(el.dataset.id);
     if (a === 'close') $('#dlg').close();
     if (a === 'csv') csv(el.dataset.v);
+    /* campeonatos */
+    const tid = el.dataset.id;
+    if (a === 'twin') tourSet(tid, (st) => { const k = el.dataset.k, v = +el.dataset.v; if (st.res[k] === v) delete st.res[k]; else st.res[k] = v; if (k[0] === 'q') { delete st.res[`s${Math.floor(+k[1] / 2)}`]; delete st.res.f; } if (k[0] === 's') delete st.res.f; });
+    if (a === 'topen') { tourSet(tid, (st) => { st.open = !st.open; }); toast(T.state(tourOf(tid), ORG).open ? 'Inscrições abertas' : 'Inscrições fechadas'); }
+    if (a === 'tdel') tourSet(tid, (st) => { st.players[+el.dataset.v] = null; });
+    if (a === 'tclear') { tourSet(tid, (st) => { st.res = {}; }); toast('Resultados zerados'); }
+    if (a === 'tshuffle') { tourSet(tid, (st) => { const ps = st.players.filter(Boolean); for (let i = ps.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [ps[i], ps[j]] = [ps[j], ps[i]]; } st.players = [...ps, ...Array(8 - ps.length).fill(null)]; }); toast('Confrontos sorteados'); }
+    if (a === 'treset') { delete (ORG.torneios || {})[tid]; save(); render(); toast('Exemplo restaurado'); }
+    if (a === 'tannounce') { const t = tourOf(tid); const c = T.rounds(T.state(t, ORG)).champ; sendNotice(`${c[0]} venceu o campeonato de ${t.name}`, `Parabéns, ${c[1]}! Obrigado a quem jogou e a quem veio torcer.`, ''); }
     if (a === 'cred') { const p = PEOPLE.find((q) => q.id === el.dataset.id); ORG.creds[p.id] = stamp(); save(); render(); toast(`Credenciamento de ${p.name.split(' ')[0]} confirmado às ${stamp()}`); }
   });
   document.addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.occ')) { e.preventDefault(); e.target.dispatchEvent(new MouseEvent('click', { bubbles: true })); } });
@@ -338,6 +394,17 @@
     if (e.target.matches('[data-ref-op]')) { state.refOp = +e.target.value; const im = $('.ref-img'); if (im) im.setAttribute('opacity', state.refOp); }
   });
   /* Número de sala: salva ao sair do campo ou com Enter. */
+  /* Jogador do campeonato: salva ao sair do campo. Apelido vazio tira a pessoa da chave. */
+  document.addEventListener('change', (e) => {
+    const el = e.target; if (!el.matches('[data-tp]')) return;
+    const [id, i, f] = el.dataset.tp.split(':'); const v = el.value.trim();
+    tourSet(id, (st) => {
+      const p = st.players[+i] ? [...st.players[+i]] : ['', '', '', ''];
+      p[+f] = v; if (!p[0] && +f === 1 && v) p[0] = v.split(' ')[0].slice(0, 14);
+      if (!p[0]) { st.players[+i] = null; return; }
+      p[2] = ini(p[1] || p[0]); st.players[+i] = p;
+    });
+  });
   document.addEventListener('change', (e) => {
     const el = e.target; if (!el.matches('[data-room-num]')) return;
     const k = el.dataset.roomNum; const v = el.value.trim().slice(0, 12);
