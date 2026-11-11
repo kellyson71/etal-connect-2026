@@ -134,7 +134,7 @@
   const ACCENTS = ['#22386f', '#1f6fb2', '#0f766e', '#2f7d32', '#8a5300', '#b4372f', '#b0307a', '#55368f'];
   const UI_DEFAULT = { mapa: 'novo', theme: 'etal', accent: null, mode: 'claro', badge: 'solido', corners: 'suaves', font: 'padrao', text: 'normal', motion: 'completas', sky: true, mapHour: true, layers: { labels: true, shadows: true, trees: true, cars: true }, view: '3d',
     home: { atalhos: true, live: true, colmeia: true, agenda: true, palestrantes: true, campeonatos: true, avisos: true } };
-  const HOME_PARTS = [['atalhos', 'Atalhos'], ['live', 'Campus ao vivo'], ['colmeia', 'Sua colmeia'], ['agenda', 'Sua agenda'], ['palestrantes', 'Palestrantes'], ['campeonatos', 'Campeonatos'], ['avisos', 'Avisos']];
+  const HOME_PARTS = [['atalhos', 'Atalhos'], ['live', 'Campus ao vivo'], ['colmeia', 'Sua colmeia'], ['agenda', 'Sua agenda'], ['palestrantes', 'Palestrantes']];
   const uiLoad = () => { try { const v = JSON.parse(localStorage.getItem('etal-ui')); return v ? { ...UI_DEFAULT, ...v, home: { ...UI_DEFAULT.home, ...(v.home || {}) }, layers: { ...UI_DEFAULT.layers, ...(v.layers || {}) } } : null; } catch (_) { return null; } };
   let UI = uiLoad() || JSON.parse(JSON.stringify(UI_DEFAULT));
   const uiSave = () => { try { localStorage.setItem('etal-ui', JSON.stringify(UI)); } catch (_) { /* opcional */ } };
@@ -557,8 +557,9 @@
     const next = D.enrolled.map(byId).filter((x) => x.id !== s.id);
     const speakers = speakersList();
     const pres = D.enrolled.filter((id) => S.present[id]).length;
-    const actions = [['cal', 'Programação', 'data-act="tab" data-tab="agenda"'], ['map', 'Mapa', 'data-act="tab" data-tab="map"'], ['mic', 'Palestrantes', 'data-go="speakers"'], ['file', 'Materiais', 'data-go="materials"'],
-      ['award', 'Certificados', 'data-go="certificates"'], ['contact', 'Contatos', 'data-go="network"'], ['trophy', 'Campeonatos', 'data-go="games"'], ['bell', 'Avisos', 'data-go="notices"']];
+    /* atalhos numa fileira só; Mapa e Avisos já estão na barra de baixo e no sino */
+    const actions = [['cal', 'Programação', 'data-act="tab" data-tab="agenda"'], ['mic', 'Palestrantes', 'data-go="speakers"'], ['file', 'Materiais', 'data-go="materials"'],
+      ['award', 'Certificados', 'data-go="certificates"'], ['contact', 'Contatos', 'data-go="network"'], ['trophy', 'Campeonatos', 'data-go="games"']];
     return {
       sky: UI.sky,
       mount: mountHome,
@@ -568,8 +569,7 @@
         </section>
         <div class="pad stack home">
           ${badge()}
-          ${UI.home.live ? `<button class="hm-live st" ${st(1)} aria-live="polite"><span class="hm-live-tag">Campus ao vivo</span><span class="hm-live-row"><span class="hm-live-msg"></span></span>${ic('chev')}</button>` : ''}
-          ${UI.home.atalhos ? `<nav class="quick st" ${st(1)} aria-label="Atalhos">${actions.map(([i, t, a]) => `<button ${a}><span>${ic(i)}</span><em>${t}</em></button>`).join('')}</nav>` : ''}
+          ${UI.home.live ? `<button class="hm-live st" ${st(1)} aria-live="polite"><span class="hm-live-tag"><i></i>Ao vivo</span><span class="hm-live-row"><span class="hm-live-msg"></span></span>${ic('chev')}</button>` : ''}
 
           <div class="sec st" ${st(2)}><h2>Agora</h2><span>Qua, 26 nov · <span id="nowclock">${skyClock()}</span></span></div>
           <article class="now st" ${st(3)} data-go="activity" data-id="${s.id}">
@@ -583,28 +583,18 @@
                 : `<button class="btn primary" data-act="openmap" data-floor="${s.floor}" data-zone="${s.zone}">Como chegar</button><button class="btn soft" data-act="scan">${ic('qr')}Presença</button>`}
             </div>
           </article>
-          <section class="today st ${S.todayOpen ? 'open' : ''}" ${st(4)}>
-            <button class="today-head" data-act="today" aria-expanded="${!!S.todayOpen}"><span><b>Programação de hoje</b><small>${today.length} atividades</small></span>${ic('chev')}</button>
-            <div class="today-body"><div><ul>${today.map((x) => `<li ${goOf(x)} class="${isNow(x) ? 'live' : ''}"><time>${x.time}</time><span><b>${x.short}</b><small>${x.room}${isNow(x) ? ' · agora' : ''}</small></span>${ic('chev')}</li>`).join('')}</ul>
-              <button class="btn soft" data-act="tab" data-tab="agenda">Ver a agenda dos três dias</button></div></div>
-          </section>
+          ${UI.home.atalhos ? `<nav class="quick rv" aria-label="Atalhos">${actions.map(([i, t, a], n) => `<button ${a} style="--n:${n}"><span>${ic(i)}</span><em>${t}</em></button>`).join('')}</nav>` : ''}
 
           ${UI.home.colmeia ? combCard() : ''}
 
-          ${UI.home.agenda ? `<div class="sec st" ${st(5)}><h2>Sua agenda</h2><button data-act="mine">Ver tudo</button></div>
-          <ul class="next st" ${st(6)}>${next.map((n) => `<li data-go="activity" data-id="${n.id}"><span class="date"><small>${dayOf(n.day).week}</small><b>${n.day}</b></span><span class="next-tx"><b>${n.short}</b><small>${n.time} · ${n.room}</small></span>
+          ${UI.home.agenda ? `<div class="sec rv"><h2>Sua agenda</h2><button data-act="mine">Ver tudo</button></div>
+          <ul class="next rv">${next.map((n) => `<li data-go="activity" data-id="${n.id}"><span class="date"><small>${dayOf(n.day).week}</small><b>${n.day}</b></span><span class="next-tx"><b>${n.short}</b><small>${n.time} · ${n.room}</small></span>
             <button class="remind ${S.reminders.has(n.id) ? 'on' : ''}" data-act="remind" data-id="${n.id}" aria-pressed="${S.reminders.has(n.id)}" aria-label="Lembrar 10 minutos antes">${ic('alarm')}</button></li>`).join('')}</ul>` : ''}
 
-          ${UI.home.palestrantes ? `<div class="sec st" ${st(8)}><h2>Palestrantes</h2><button data-go="speakers">Ver todos</button></div>
-          <div class="people st" ${st(9)}>${speakers.map((o) => `<button data-go="speaker" data-id="${o.id}">${spAv(o, true)}<b>${o.speakerShort.split(' ')[0]}</b><small>${o.type}</small></button>`).join('')}</div>` : ''}
+          ${UI.home.palestrantes ? `<div class="sec rv"><h2>Palestrantes</h2><button data-go="speakers">Ver todos</button></div>
+          <div class="people rv">${speakers.map((o) => `<button data-go="speaker" data-id="${o.id}">${spAv(o, true)}<b>${o.speakerShort.split(' ')[0]}</b><small>${o.type}</small></button>`).join('')}</div>` : ''}
 
-          ${UI.home.campeonatos ? `<div class="sec st" ${st(10)}><h2>Campeonatos</h2><button data-go="games">Ver todos</button></div>
-          <div class="duel st" ${st(10)}>${D.tournaments.map((g) => `<button class="tile-game ${g.theme}" data-go="tournament" data-id="${g.id}" aria-label="${g.name}">${gameArt(g)}${g.logo ? `<img class="p-logo" src="${g.logo}" alt="">` : ''}<small>${dayOf(g.day).week} ${g.day} · ${g.time}</small></button>`).join('')}</div>` : ''}
-
-          ${UI.home.avisos ? `<div class="sec st" ${st(11)}><h2>Avisos</h2><button data-go="notices">Ver todos</button></div>
-          <button class="notice st" ${st(12)} data-go="notices"><time>${D.notices[0].time}</time><b>${esc(D.notices[0].title)}</b><small>${esc(D.notices[0].text)}</small>${ic('chev', 'i card-chev')}</button>` : ''}
-
-          <footer class="made st" ${st(13)}>
+          <footer class="made rv">
             <div><small>Desenvolvido por</small><button data-go="nadic" aria-label="Sobre o NADIC"><img src="assets/nadic-logo.svg" alt="NADIC" width="64" height="28"></button></div>
             <i></i>
             <div><small>Em parceria com</small><span><a href="${D.ifrnUrl}" target="_blank" rel="noopener" aria-label="IFRN Campus Pau dos Ferros, abre em nova aba" class="made-ifrn">IFRN</a><button data-go="etal" aria-label="O que é o ETAL">${mark('mark xs')}<b>etal</b></button></span></div>
@@ -633,18 +623,24 @@
     if (f === 'saved') list = list.filter((s) => S.saved.has(s.id));
     const slots = [...new Set(list.map((s) => s.time))];
     const idx = D.days.findIndex((d) => d.day === day);
-    const filters = [['all', 'Tudo'], ['Minicurso', 'Minicursos'], ['Palestra', 'Palestras'], ['Oficina', 'Oficinas'], ['saved', 'Salvos']];
+    const filters = [['all', 'Tudo'], ['saved', 'Minhas'], ['Minicurso', 'Minicursos'], ['Palestra', 'Palestras'], ['Oficina', 'Oficinas']];
+/* Cada tipo tem a sua cor (a mesma do filtro) e a fileira é curta: tipo e até que horas, título, quem e onde, vagas. */
+    const tp = (t) => ({ Minicurso: 'mini', Palestra: 'pal', Oficina: 'ofi' })[t] || 'out';
+    const vagas = (s) => (!s.seats ? '' : s.taken >= s.seats ? '<span class="ag-vagas full">Lotado</span>' : `<span class="ag-vagas ${s.seats - s.taken <= 5 ? 'low' : ''}">${s.seats - s.taken} vagas</span>`);
     const row = (s) => s.simple
-      ? `<li class="ag-stop" ${goOf(s)}><div class="ag-tx"><h4>${s.title}</h4><p>${s.type} · ${s.room}</p></div>${ic('chev', 'i card-chev')}</li>`
-      : `<li class="${S.saved.has(s.id) ? 'mine' : ''}" ${goOf(s)}><div class="ag-tx"><span class="ag-kind">${s.type}${isNow(s) ? '<em>Agora</em>' : ''}</span><h4>${s.title}</h4><p>${s.speakerShort} · ${s.room}</p><p class="ag-seats">${seatBar(s)}<span>${seatLine(s)}</span></p></div>
-          <button class="bm ${S.saved.has(s.id) ? 'on' : ''}" data-act="save" data-id="${s.id}" aria-label="${S.saved.has(s.id) ? 'Remover dos salvos' : 'Salvar'}">${ic('bookmark')}</button></li>`;
+      ? `<li class="ag-stop" ${goOf(s)}><div class="ag-tx"><h4>${s.title}</h4><p>${s.room}</p></div>${ic('chev', 'i card-chev')}</li>`
+      : `<li class="tp-${tp(s.type)} ${S.saved.has(s.id) ? 'mine' : ''} ${isNow(s) ? 'now' : ''}" ${goOf(s)}><div class="ag-tx"><span class="ag-kind"><i></i>${s.type}${s.end ? ` · até ${s.end}` : ''}</span><h4>${s.title}</h4><p>${s.speakerShort} · ${s.room}</p></div>
+          <div class="ag-side"><button class="bm ${S.saved.has(s.id) ? 'on' : ''}" data-act="save" data-id="${s.id}" aria-label="${S.saved.has(s.id) ? 'Remover dos salvos' : 'Salvar'}">${ic('bookmark')}</button>${vagas(s)}</div></li>`;
+    const agora = list.filter(isNow).length; const meus = D.sessions.filter((x) => x.day === day && S.saved.has(x.id)).length;
+    const dia = dayOf(day);
     return {
       html: `<header class="apphead"><h1 class="title">Agenda</h1><button class="iconbtn" data-act="finder" aria-label="Buscar">${ic('search')}</button></header>
-      <div class="pad stack">
+      <div class="pad stack agenda">
         <div class="days st" style="--i:0;--k:${idx}"><i class="days-ind"></i>${D.days.map((d) => `<button class="${d.day === day ? 'on' : ''}" data-act="day" data-day="${d.day}">${d.week}<b>${d.day}</b></button>`).join('')}</div>
-        <div class="chips st" ${st(1)}>${filters.map(([k, t]) => `<button class="${k === f ? 'on' : ''}" data-act="filter" data-f="${k}">${t}</button>`).join('')}</div>
-        <div class="agenda-list" data-swap>
-        ${slots.length ? slots.map((t, si) => `<div class="slot st" ${st(2 + si)}><time>${t}</time><div>${list.filter((s) => s.time === t && S.saved.has(s.id)).length > 1 ? `<p class="clash">${ic('info')}Você salvou mais de uma atividade neste horário.</p>` : ''}<ul class="ag">${list.filter((s) => s.time === t).map(row).join('')}</ul></div></div>`).join('')
+        <p class="ag-resumo st" ${st(1)}><b>${dia.long ? dia.long.split(',')[0] : dia.week}</b><span>${list.length} ${list.length === 1 ? 'atividade' : 'atividades'}${agora ? ` · <em>${agora} agora</em>` : ''}${meus ? ` · ${meus} ${meus === 1 ? 'sua' : 'suas'}` : ''}</span></p>
+        <div class="chips ag-chips st" ${st(1)}>${filters.map(([k, t]) => `<button class="${k === f ? 'on' : ''} f-${tp(k)}" data-act="filter" data-f="${k}">${['Minicurso', 'Palestra', 'Oficina'].includes(k) ? '<i></i>' : ''}${k === 'saved' ? ic('bookmark') : ''}${t}</button>`).join('')}</div>
+        <div class="agenda-list ag-trilho" data-swap>
+        ${slots.length ? slots.map((t, si) => { const noSlot = list.filter((s) => s.time === t); const vivo = noSlot.some(isNow); return `<div class="slot st ${vivo ? 'now' : ''}" ${st(2 + si)}><time>${t}${vivo ? '<em>agora</em>' : ''}</time><div>${noSlot.filter((s) => S.saved.has(s.id)).length > 1 ? `<p class="clash">${ic('info')}Você salvou mais de uma atividade neste horário.</p>` : ''}<ul class="ag">${noSlot.map(row).join('')}</ul></div></div>`; }).join('')
           : f === 'saved' ? savedEmpty(day) : `<div class="empty st" ${st(2)}>${illo('mark')}<h3>Nada neste dia</h3><p>Escolha outro filtro para ver mais atividades.</p><button class="btn soft" data-act="filter" data-f="all">Ver tudo</button></div>`}
         </div>
         <p class="ag-note">Programação de exemplo, para demonstração.</p>
@@ -778,8 +774,42 @@
      (index.html da raiz) e a qualidade "2D" usam sempre o clássico. */
   const mapaEscolhido = () => { const q = new URLSearchParams(location.search).get('mapa'); return q === 'novo' || q === 'classico' ? q : UI.mapa || 'novo'; };
   const mapaNovoOn = () => !window.ASSET_DATA && mapaEscolhido() === 'novo' && window.Campus3D?.quality?.().setting !== 'simples';
-  const telaMapaNovo = () => ({
-    html: '<div class="map-screen mapa-aba"><iframe title="Mapa do campus" src="mapa3d/index.html?aba=1"></iframe></div>',
+  /* ---- computador: sem moldura de celular. O app fica numa coluna à esquerda e o mapa ocupa o resto da tela, já no
+     passeio (mouse e teclado). "Ver como celular" volta para a moldura; a escolha fica em etal-moldura. ---- */
+  const wideMq = matchMedia('(min-width: 1000px) and (pointer: fine)');
+  let palcoFrame = null, palcoPronto = false, palcoFila = null;
+  const dadosMapa = (extra = {}) => ({ type: 'etal:mapa:abrir', ...extra, origem: origemAgora(), foto: D.person.photo || null, nome: D.person.name || '', hour: skyHour, reduced: reduce, sessions: D.sessions.map((x) => ({ id: x.id, title: x.title, time: x.time, floor: x.floor, zone: x.zone })), rooms: Object.fromEntries(P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => [`${f.level}:${z.id}`, z.roomNumber]))) });
+  const palcoOn = () => document.documentElement.classList.contains('wide');
+  function palcoEnviar(extra) { if (!palcoFrame) return; if (!palcoPronto) { palcoFila = extra; return; } palcoFrame.contentWindow.postMessage(dadosMapa(extra), location.origin); palcoFrame.focus(); }
+  function telaGrande() {
+    const q = new URLSearchParams(location.search);
+    const on = wideMq.matches && !q.has('moldura') && localStorage.getItem('etal-moldura') !== '1' && mapaNovoOn();
+    document.documentElement.classList.toggle('wide', on);
+    const host = $('#palco'), bt = $('#moldura-btn');
+    if (bt) { bt.hidden = !wideMq.matches; bt.textContent = on ? 'Ver como celular' : 'Usar a tela toda'; bt.onclick = () => { localStorage.setItem('etal-moldura', on ? '1' : '0'); location.reload(); }; }
+    if (!host) return;
+    if (on && !palcoFrame) { palcoFrame = document.createElement('iframe'); palcoFrame.title = 'Mapa do campus em tela grande'; palcoFrame.allow = 'fullscreen'; palcoFrame.src = 'mapa3d/index.html?aba=1&passeio=1'; host.append(palcoFrame); host.hidden = false; }
+    if (!on && palcoFrame) { palcoFrame.remove(); palcoFrame = null; palcoPronto = false; host.hidden = true; }
+  }
+  /* o mapa avisa quando entra e sai do passeio: no celular ele fica com a tela toda */
+  window.addEventListener('message', (e) => { if (e.origin === location.origin && e.data?.type === 'etal:mapa:passeio' && !palcoOn()) document.documentElement.classList.toggle('passeio-cheio', !!e.data.on); });
+  window.addEventListener('message', (e) => {
+    if (!palcoFrame || e.origin !== location.origin || e.source !== palcoFrame.contentWindow || e.data?.type !== 'etal:mapa:pronto') return;
+    palcoPronto = true; palcoFrame.contentWindow.postMessage(dadosMapa(palcoFila || {}), location.origin); palcoFila = null;
+  });
+  /* na tela grande, a aba Mapa do app só comanda o mapa ao lado */
+  const telaMapaAoLado = () => ({
+    html: `${header('Mapa')}<div class="pad stack lado-mapa">
+      <p class="lado-tx st" ${st(0)}>O mapa está aberto ao lado, em tela grande. Escolha como quer ver:</p>
+      <button class="lado-op st" ${st(1)} data-act="palco" data-mode="passear">${ic('pin')}<span><b>Passear pelo campus</b><small>Ande com o mouse e o teclado, entre no bloco, dirija e voe</small></span>${ic('chev')}</button>
+      <button class="lado-op st" ${st(2)} data-act="palco" data-mode="evento">${ic('map')}<span><b>Ver o evento e buscar salas</b><small>Busca, rotas e as partes do evento em cores</small></span>${ic('chev')}</button>
+      <button class="lado-op st" ${st(3)} data-act="palco" data-mode="andares">${ic('building')}<span><b>Andares do bloco principal</b><small>O prédio aberto, andar por andar</small></span>${ic('chev')}</button>
+      <div class="sec st" ${st(4)}><h2>Como chegar</h2></div>
+      <ul class="next st" ${st(5)}>${D.sessions.filter((x) => Number.isInteger(x.floor) && x.zone && D.enrolled.includes(x.id)).slice(0, 4).map((n) => `<li data-act="openmap" data-floor="${n.floor}" data-zone="${n.zone}"><span class="date"><small>${dayOf(n.day).week}</small><b>${n.day}</b></span><span class="next-tx"><b>${n.short}</b><small>${n.time} · ${n.room}</small></span>${ic('chev')}</li>`).join('')}</ul>
+    </div>`,
+  });
+  const telaMapaNovo = () => (palcoOn() ? telaMapaAoLado() : {
+    html: '<div class="map-screen mapa-aba"><iframe title="Mapa do campus" allow="fullscreen" src="mapa3d/index.html?aba=1"></iframe></div>',
     mount: (page) => {
       const frame = page.querySelector('iframe'); if (!frame) return;
       /* rota pedida por "Como chegar" (atividade ou sala) vai junto, uma vez */
@@ -814,27 +844,55 @@
   }
   /* Favo de 7 células: a chegada no centro e as outras em volta. */
   const COMB_POS = [[0, 0], [14, -24.2], [28, 0], [14, 24.2], [-14, 24.2], [-28, 0], [-14, -24.2]];
+/* Desenho de cada conquista (traço em 24 × 24), feito para caber no favo. */
+  const COMB_ICONS = {
+    cred: '<path d="M8 3l4 5 4-5"/><rect x="5.5" y="8" width="13" height="12.5" rx="2.5"/><circle cx="12" cy="13" r="2"/><path d="M8.8 18c.7-1.400 1.800-2 3.200-2s2.500.6 3.200 2"/>',
+    'react-native': '<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><ellipse cx="12" cy="11.5" rx="3.8" ry="1.5" transform="rotate(-30 12 11.5)"/><ellipse cx="12" cy="11.5" rx="3.8" ry="1.5" transform="rotate(30 12 11.5)"/><path d="M11 18.5h2"/>',
+    'react-next': '<path d="M8.5 7.500 4 12l4.500 4.500M15.500 7.500 20 12l-4.500 4.500M13.500 5l-3 14"/>',
+    'saude-mental': '<path d="M12 20s-7.500-4.400-7.500-10A4.300 4.300 0 0 1 12 7.300 4.300 4.300 0 0 1 19.500 10c0 5.600-7.500 10-7.500 10Z"/><path d="M7.500 12.500h2.300l1.200-2.300 2 4.300 1.200-2h2.300"/>',
+    ask: '<path d="M4 6.500A2.500 2.500 0 0 1 6.500 4h11A2.500 2.500 0 0 1 20 6.500v8a2.500 2.500 0 0 1-2.500 2.500H11l-4.500 3.500V17A2.500 2.500 0 0 1 4 14.500Z"/><path d="M10 8.800a2.100 2.100 0 1 1 3.100 1.900c-.7.4-1.100.8-1.100 1.600"/><path d="M12 14.300v.1"/>',
+    rate: '<path d="m12 3.500 2.600 5.400 5.900.8-4.300 4.100 1.100 5.800L12 16.800l-5.300 2.800 1.100-5.800-4.300-4.100 5.900-.8Z"/>',
+    contact: '<circle cx="8" cy="8.5" r="2.8"/><circle cx="16" cy="8.5" r="2.8"/><path d="M3 19c.5-3 2.400-4.800 5-4.800 1.600 0 3 .7 4 2 1-1.300 2.400-2 4-2 2.600 0 4.500 1.800 5 4.800"/>',
+  };
+  const combGlyph = (c) => COMB_ICONS[c.id] || ICONS[c.icon] || '';
+  const HEX = 'M0-15.300 13.250-7.650V7.650L0 15.300-13.250 7.650V-7.650Z';
+  /* Degradês do mel e da cera, uma vez só no documento (os favos de qualquer tela apontam para eles). */
+  function combDefs() {
+    if (document.getElementById('cb-defs')) return;
+    const d = document.createElement('div'); d.id = 'cb-defs'; d.setAttribute('aria-hidden', 'true'); d.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden';
+    d.innerHTML = `<svg width="0" height="0"><defs>
+      <linearGradient id="cb-honey" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd761"/><stop offset=".55" stop-color="#f4ab1c"/><stop offset="1" stop-color="#d98507"/></linearGradient>
+      <radialGradient id="cb-honey-in" cx=".38" cy=".3" r=".85"><stop offset="0" stop-color="#ffe58c"/><stop offset=".6" stop-color="#f7b524"/><stop offset="1" stop-color="#e7960d"/></radialGradient>
+      <linearGradient id="cb-wax" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0b83a" stop-opacity=".16"/><stop offset="1" stop-color="#f0b83a" stop-opacity=".05"/></linearGradient>
+      <clipPath id="cb-clip"><path d="${HEX}"/></clipPath>
+    </defs></svg>`;
+    document.body.appendChild(d);
+  }
   function comb(cls = '', all = false) {
+    combDefs();
     const got = all ? D.combs.map((c) => c.id) : combEarned();
     return `<svg class="hm-comb ${cls}" viewBox="-44 -42 88 84" aria-hidden="true">${D.combs.map((c, i) => {
       const on = got.includes(c.id);
       const [x, y] = COMB_POS[i];
-      return `<g class="cell ${on ? 'on' : ''} ${S.newComb === c.id ? 'pop' : ''}" transform="translate(${x} ${y})"><g class="cell-in"><path d="M0-15.300 13.250-7.650V7.650L0 15.300-13.250 7.650V-7.650Z"/><g class="glyph" transform="scale(.56) translate(-12 -12)" fill="none" stroke="currentColor" stroke-width="2.100" stroke-linecap="round" stroke-linejoin="round">${on ? ICONS[c.icon] : ''}</g></g></g>`;
+      /* célula: borda de cera, fundo (mel cheio ou cera vazia), brilho no alto e o desenho da conquista */
+      return `<g class="cell ${on ? 'on' : ''} ${S.newComb === c.id ? 'pop' : ''}" style="--n:${i}" transform="translate(${x} ${y})"><g class="cell-in"><path class="hx-rim" d="${HEX}"/><path class="hx-in" d="${HEX}" transform="scale(.8)"/>${on ? `<path class="hx-gloss" d="M-8.6-6.400 0-11.400 8.600-6.400C5-7.600-5-7.600-8.600-6.400Z"/><g clip-path="url(#cb-clip)"><rect class="hx-shine" x="-30" y="-18" width="9" height="36" transform="skewX(-20)"/></g>` : ''}<g class="glyph" transform="scale(.56) translate(-12 -12)" fill="none" stroke="currentColor" stroke-width="2.100" stroke-linecap="round" stroke-linejoin="round">${combGlyph(c)}</g></g></g>`;
     }).join('')}</svg>`;
   }
+  /* Um favo só, para as linhas da lista. */
+  const combHex = (c, on) => `<svg class="hm-hex ${on ? 'on' : ''}" viewBox="-16 -17 32 34" aria-hidden="true"><path class="hx-rim" d="${HEX}"/><path class="hx-in" d="${HEX}" transform="scale(.8)"/>${on ? '<path class="hx-gloss" d="M-8.600-6.400 0-11.400 8.600-6.400C5-7.600-5-7.600-8.600-6.400Z"/>' : ''}<g class="glyph" transform="scale(.56) translate(-12 -12)" fill="none" stroke="currentColor" stroke-width="2.100" stroke-linecap="round" stroke-linejoin="round">${combGlyph(c)}</g></svg>`;
   function combCard() {
     const got = combEarned();
     const next = D.combs.find((c) => !got.includes(c.id));
-    return `<button class="hm-combcard st" ${st(4)} data-go="colmeia">${comb()}<span class="hm-combtx"><b>Sua colmeia</b><strong>${got.length} de ${D.combs.length} favos</strong><small>${next ? next.how : 'Colmeia completa!'}</small></span>${ic('chev')}</button>`;
+    return `<button class="hm-combcard rv" data-go="colmeia">${comb()}<span class="hm-combtx"><b>Sua colmeia</b><strong>${got.length} de ${D.combs.length} favos</strong><span class="hm-combbar" aria-hidden="true">${D.combs.map((c) => `<i class="${got.includes(c.id) ? 'on' : ''}"></i>`).join('')}</span><small>${next ? `Próximo: ${next.how.charAt(0).toLowerCase()}${next.how.slice(1)}` : 'Colmeia completa!'}</small></span>${ic('chev')}</button>`;
   }
   Screens.colmeia = () => {
     const got = combEarned();
     const done = got.length === D.combs.length;
     return {
       html: `${header('Sua colmeia')}<div class="pad stack hm-colmeia">
-        <div class="hm-bigcomb st" ${st(0)}>${comb('big')}</div>
+        <div class="hm-bigcomb st" ${st(0)}><i class="hm-halo"></i>${comb('big')}</div>
         <p class="hm-count st" ${st(1)}><b>${got.length}</b> de ${D.combs.length} favos${done ? '. Colmeia completa!' : ''}</p>
-        <ul class="hm-combs st" ${st(2)}>${D.combs.map((c) => { const on = got.includes(c.id); return `<li class="${on ? 'on' : ''}"><i>${ic(on ? c.icon : 'lock')}</i><span><b>${c.title}</b><small>${on ? 'Conquistado' : c.how}</small></span></li>`; }).join('')}</ul>
+        <ul class="hm-combs st" ${st(2)}>${D.combs.map((c, i) => { const on = got.includes(c.id); return `<li class="${on ? 'on' : ''}" style="--n:${i}">${combHex(c, on)}<span><b>${c.title}</b><small>${on ? 'Conquistado' : c.how}</small></span>${on ? ic('check', 'i hm-ok') : ''}</li>`; }).join('')}</ul>
         ${got.length ? `<button class="btn soft big st" ${st(3)} data-act="toast" data-msg="Imagem da colmeia pronta para compartilhar">${ic('share')}Compartilhar minha colmeia</button>` : ''}
       </div>`,
     };
@@ -925,36 +983,42 @@
     const step = (n) => { const k = Math.min(1, (n - t0) / 1400); skyHour = from + (target - from) * (1 - (1 - k) ** 3); applySky(); if (k < 1) skyAnim = requestAnimationFrame(step); };
     skyAnim = requestAnimationFrame(step);
   }
-  /* Vista da rua: posições e larguras do levantamento, alturas adotadas. */
+/* Vista da rua, desenhada em camadas para ter profundidade: serras do Alto Oeste ao fundo, névoa, a linha de árvores,
+     o campus (ginásio, auditório de fachada curva, bloco principal com as três fileiras de janelas, entrada, laboratórios,
+     cobertura do pátio, obelisco), o muro e as carnaúbas na frente. As cores vêm do céu da hora. */
   function skyline() {
-    const E = window.CAMPUS.elementos;
-    const span = (i) => { const xs = E[i].pontos.map((q) => q[0]); return [Math.min(...xs), Math.max(...xs)]; };
-    const G = 47; const Y = 2;
-    const box = (i, h, cls) => { const [a, b] = span(i); return `<rect class="${cls}" x="${a.toFixed(1)}" y="${(G - h * Y).toFixed(1)}" width="${(b - a).toFixed(1)}" height="${(h * Y + 3).toFixed(1)}"/>`; };
-    const wins = (i, h, floors) => {
-      const [a, b] = span(i); let o = ''; const per = (h * Y) / floors;
-      for (let f = 0; f < floors; f++) for (let x = a + 1.4; x < b - 1.4; x += 3.1) o += `<rect x="${x.toFixed(1)}" y="${(G - per * (f + 0.68)).toFixed(1)}" width="1.700" height="${(per * 0.36).toFixed(1)}"/>`;
-      return o;
-    };
-    /* copa em três tufos, para não parecer pirulito */
-    const tree = (i, r) => { const x = E[i].pontos[0][0]; const cy = G - r * 2.4; return `<rect class="sl-near" x="${(x - 0.35).toFixed(1)}" y="${G - r * 2.2}" width=".7" height="${r * 2.2 + 3}"/><circle class="sl-near" cx="${x.toFixed(1)}" cy="${cy}" r="${r}"/><circle class="sl-near" cx="${(x - r * 0.7).toFixed(1)}" cy="${(cy + r * 0.45).toFixed(1)}" r="${(r * 0.68).toFixed(2)}"/><circle class="sl-near" cx="${(x + r * 0.72).toFixed(1)}" cy="${(cy + r * 0.38).toFixed(1)}" r="${(r * 0.62).toFixed(2)}"/>`; };
-    const [px0, px1] = span(5);
-    /* As nuvens ficam fora deste SVG (ver skyArt): animadas aqui dentro, o campus inteiro era repintado a cada quadro. */
-    return `<svg class="hm-skyline" viewBox="-100 0 162 50" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
-      <path class="sl-hill" d="M-110 50V30C-96 24-84 27-70 30S-40 20-18 25 20 31 44 24 60 22 70 25V50Z"/>
-      <path class="sl-far" d="M-110 50V37C-92 31-76 34-60 36S-28 28-6 32 34 38 70 30V50Z"/>
-      ${box(7, 4.8, 'sl-mid')}${box(4, 4.8, 'sl-mid')}${box(1, 4.8, 'sl-mid')}
-      ${box(0, 11.7, 'sl-mid')}<g class="sl-win">${wins(0, 11.7, 3)}</g>
-      ${box(3, 9.3, 'sl-near')}<g class="sl-win">${wins(3, 9.3, 2)}</g>
-      <rect class="sl-near" x="${px0.toFixed(1)}" y="${G - 7.2 * Y}" width="${(px1 - px0).toFixed(1)}" height="1.300"/>${[0, 0.33, 0.66, 1].map((t) => `<rect class="sl-near" x="${(px0 + (px1 - px0) * t - 0.3).toFixed(1)}" y="${G - 7.2 * Y}" width=".6" height="${7.2 * Y + 3}"/>`).join('')}
-      ${box(6, 4.8, 'sl-near')}
-      <rect class="sl-near" x="-50" y="${G - 2.3 * Y}" width="107" height="${2.3 * Y + 3}"/>
-      ${box(8, 3.6, 'sl-near')}
-      <g class="sl-near"><rect x="8.300" y="${G - 5.6 * Y}" width="1" height="${5.6 * Y + 3}"/></g><rect class="sl-mark" x="8.450" y="${G - 5.2 * Y}" width=".7" height="1.600"/>
-      ${[[31, 2.2], [32, 2.2], [33, 2.2], [30, 3.2], [29, 2.2], [28, 2.2], [26, 2.2]].map(([i, r]) => tree(i, r)).join('')}
+    const R = (() => { let v = 7; return () => { v = (v * 16807) % 2147483647; return v / 2147483647; }; })();
+    /* copas em sequência, como mata vista de longe */
+    const mata = (y, x0, x1, passo, amp) => { let d = `M${x0} 150V${y}`; for (let x = x0; x < x1; x += passo) { const h = amp * (0.45 + R() * 0.75), w = passo * (0.8 + R() * 0.5); d += `q${(w / 2).toFixed(1)} ${(-h).toFixed(1)} ${w.toFixed(1)} 0`; x += w - passo; } return d + `V150Z`; };
+    const carnauba = (x, h, inc = 0) => { const top = [x + inc, 134 - h]; let o = `<path class="sl-trunk" d="M${x} 136Q${x + inc * 0.2} ${134 - h * 0.5} ${top[0]} ${top[1]}"/>`;
+      for (let i = 0; i < 9; i++) { const a = Math.PI * (1.08 + i * 0.105), L = 8.5 + (i % 2) * 2.2, ex = Math.cos(a) * L, ey = Math.sin(a) * L * 0.9; o += `<path class="sl-frond" d="M${top[0]} ${top[1]}q${(ex * 0.55).toFixed(1)} ${(ey * 0.9 - 2.2).toFixed(1)} ${ex.toFixed(1)} ${(ey + 3.4).toFixed(1)}"/>`; }
+      return o; };
+    const copa = (x, y, k = 1) => `<path class="sl-near" d="M${x - 1} ${y + 12 * k}h2V${y}h-2Z"/><path class="sl-near" d="M${x - 9 * k} ${y}c${-4.5 * k} ${-1 * k} ${-5.5 * k} ${-7 * k} ${-1.5 * k} ${-9 * k} ${0.2 * k} ${-6 * k} ${7 * k} ${-8.500 * k} ${10.500 * k} ${-4.500 * k} ${4 * k} ${-3.200 * k} ${10 * k} ${0.3 * k} ${9 * k} ${5 * k} ${4.200 * k} ${1.200 * k} ${4.200 * k} ${7.300 * k} ${0} ${8.500 * k}Z"/>`;
+    let jan = '';
+    [97, 108, 119].forEach((y) => { for (let x = 158; x < 293; x += 11) jan += `<rect x="${x}" y="${y}" width="7" height="4.600" rx=".9"/>`; });
+    for (let x = 109; x < 144; x += 9) jan += `<rect x="${x}" y="106" width="2.600" height="15" rx="1"/>`;
+    for (let x = 326; x < 374; x += 10) jan += `<rect x="${x}" y="112" width="6" height="4" rx=".8"/>`;
+    const predios = `<path d="M14 132v-15q30-17 60 0v15Z"/><rect x="318" y="104" width="62" height="28"/><path d="M150 132V96h-32c-10 0-18 7-18 16v20Z"/><rect x="150" y="86" width="150" height="46"/><rect x="300" y="103" width="19" height="29"/>`;
+    return `<svg class="hm-skyline" viewBox="0 0 390 150" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <defs><linearGradient id="sk-haze" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".55"/></linearGradient>
+      <linearGradient id="sk-shade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".17"/><stop offset="1" stop-color="#000" stop-opacity=".14"/></linearGradient></defs>
+      <path class="sl-hill" d="M0 150V78c18-8 34-11 52-6 14 4 24 10 40 9 20-2 30-17 52-19 18-2 30 9 46 13 20 5 34-5 54-10 22-6 40-2 58 6 16 7 28 6 44 1s30-6 44-2V150Z"/>
+      <path class="sl-far" d="M0 150V98c22-8 44-6 62 0 20 6 38 4 58-3 24-9 44-8 66-1 22 7 40 8 62 2 24-7 46-9 70-2 26 7 48 5 72-2V150Z"/>
+      <rect class="sl-haze" x="0" y="80" width="390" height="46" fill="url(#sk-haze)"/>
+      <path class="sl-mata" d="${mata(116, 0, 392, 9, 9)}"/>
+      <g class="sl-b">${predios}</g><g class="sl-luz" fill="url(#sk-shade)">${predios}</g>
+      <rect class="sl-plat" x="150" y="86" width="150" height="5.200"/><path class="sl-plat" d="M150 96h-32c-10 0-18 7-18 16v5.500c0-9 8-16.500 18-16.500h32Z"/><rect class="sl-plat" x="318" y="104" width="62" height="3.600"/><rect class="sl-plat" x="300" y="103" width="19" height="29" opacity=".35"/>
+      <path class="sl-rim" d="M100 112c0-9 8-16 18-16h32M150 86h150M300 103h19M318 104h62M22 113.500q22-11 44 0"/>
+      <g class="sl-win">${jan}<rect x="306" y="119" width="7" height="13" rx="1"/></g>
+      <path class="sl-near" d="M174 120l54-7 54 7v2.200H174Z"/>${[180, 228, 276].map((x) => `<rect class="sl-near" x="${x}" y="121" width="1.500" height="12"/>`).join('')}
+      <rect class="sl-near" x="236.300" y="100" width="3" height="33"/><rect class="sl-mark" x="236.800" y="103" width="2" height="4.500" rx=".6"/>
+      ${copa(206, 122, 0.8)}${copa(262, 124, 0.7)}
+      <path class="sl-near" d="M0 150v-16.500h390V150Z"/><path class="sl-cap" d="M0 133.500h390"/>
+      ${copa(28, 126, 1.15)}${copa(324, 127, 1)}${carnauba(64, 42, 2)}${carnauba(88, 31, -3)}${carnauba(352, 38, -2)}${carnauba(372, 27, 3)}
+      <path class="sl-near" d="${mata(143, 0, 392, 13, 5)}"/>
     </svg>`;
   }
-  const skyArt = () => `<div class="hm-bg"><i class="hm-stars"></i><i class="hm-glow"></i><i class="hm-cloud c1"></i><i class="hm-cloud c2"></i><i class="hm-cloud c3"></i><button class="hm-sun" data-act="skycycle" aria-label="Mudar a hora do céu"></button><i class="hm-moon"></i>${skyline()}</div>`;
+  const skyArt = () => `<div class="hm-bg"><i class="hm-stars"></i><i class="hm-glow"></i><i class="hm-cloud c1"></i><i class="hm-cloud c2"></i><i class="hm-cloud c3"></i><button class="hm-sun" data-act="skycycle" aria-label="Mudar a hora do céu"></button><i class="hm-moon"></i><svg class="hm-birds" viewBox="0 0 60 24" aria-hidden="true"><path d="M2 12q5-6 9 0 4-6 9 0"/><path d="M26 5q4-5 7 0 3-5 7 0"/><path d="M40 17q3-4 6 0 3-4 6 0"/></svg>${skyline()}</div>`;
 
   /* ---- campus ao vivo ---- */
   let liveI = 0, liveTimer = 0, liveCred = D.liveBase.credenciados;
@@ -969,9 +1033,13 @@
     ];
   }
   function mountHome(page) {
-    const stateScroll = () => device.classList.toggle('sky-past', page.scrollTop > 104);
+    /* o céu anda mais devagar que a página (profundidade) e as seções de baixo entram quando chegam na tela */
+    const stateScroll = () => { device.classList.toggle('sky-past', page.scrollTop > 104); if (!reduce && page.scrollTop < 240) page.style.setProperty('--hp', Math.max(0, page.scrollTop).toFixed(0)); };
     page.addEventListener('scroll', stateScroll, { passive: true });
     stateScroll();
+    const rvs = [...page.querySelectorAll('.rv')];
+    if (reduce || !('IntersectionObserver' in window)) rvs.forEach((e) => e.classList.add('in'));
+    else { const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { root: page, rootMargin: '0px 0px -6% 0px', threshold: 0.08 }); rvs.forEach((e) => io.observe(e)); }
     applySky();
     const box = $('.hm-live', page);
     if (!box) return;
@@ -1247,6 +1315,27 @@
     retroShow(0);
   }
 
+  /* Tudo o que não é do dia a dia do evento fica aqui, fora da primeira tela do perfil. */
+  Screens.mais = () => ({
+    html: `${header('Mais opções')}<div class="pad stack">
+        <div class="sec st" ${st(0)}><h2>Aplicativo</h2></div>
+        <ul class="menu st" ${st(1)}>
+          <li data-go="personalizar">${ic('moon')}<span>Personalizar</span><em>${(THEMES[UI.theme] || THEMES.etal).name}</em>${ic('chev', 'i chev')}</li>
+          ${standalone() ? '' : `<li data-act="install">${ic('download')}<span>Instalar o ETAL Connect</span><em>Sem internet</em>${ic('chev', 'i chev')}</li>`}
+        </ul>
+        <div class="sec st" ${st(2)}><h2>Organização</h2></div>
+        <ul class="menu st" ${st(3)}>
+          <li data-go="org">${ic('building')}<span>Painel da organização</span><em>Equipe</em>${ic('chev', 'i chev')}</li>
+        </ul>
+        <div class="sec st" ${st(4)}><h2>Sobre</h2></div>
+        <ul class="menu st" ${st(5)}>
+          <li data-go="etal">${ic('info')}<span>O que é o ETAL</span>${ic('chev', 'i chev')}</li>
+          <li data-go="sobre">${ic('list')}<span>Sobre este protótipo</span><em>Real e exemplo</em>${ic('chev', 'i chev')}</li>
+          <li data-go="nadic">${ic('info')}<span>Sobre o NADIC</span>${ic('chev', 'i chev')}</li>
+          <li data-act="link" data-url="${D.ifrnUrl}">${ic('open')}<span>IFRN Pau dos Ferros</span></li>
+        </ul>
+      </div>`,
+  });
   Screens.profile = () => ({
     html: `<header class="apphead"><h1 class="title">Perfil</h1></header>
       <div class="pad stack">
@@ -1260,18 +1349,8 @@
           <li data-go="network">${ic('contact')}<span>Contatos</span><em>${S.contacts.length}</em>${ic('chev', 'i chev')}</li>
         </ul>
         <ul class="menu st" ${st(2)}>
-          <li data-go="org">${ic('building')}<span>Painel da organização</span><em>Equipe</em>${ic('chev', 'i chev')}</li>
           <li data-go="games" class="games-row">${ic('trophy')}<span>Campeonatos</span><em>Qui 27</em>${ic('chev', 'i chev')}</li>
-        </ul>
-        ${standalone() ? '' : `<button class="install-cta st" ${st(2)} data-act="install">${ic('download')}<span><b>Instalar o ETAL Connect</b><small>Abre como app e funciona sem internet</small></span>${ic('chev')}</button>`}
-        <ul class="menu st" ${st(3)}>
-          <li data-go="personalizar">${ic('moon')}<span>Personalizar</span><em>${(THEMES[UI.theme] || THEMES.etal).name}</em>${ic('chev', 'i chev')}</li>
-        </ul>
-        <ul class="menu st" ${st(4)}>
-          <li data-go="etal">${ic('info')}<span>O que é o ETAL</span>${ic('chev', 'i chev')}</li>
-          <li data-go="sobre">${ic('list')}<span>Sobre este protótipo</span><em>Real e exemplo</em>${ic('chev', 'i chev')}</li>
-          <li data-go="nadic">${ic('info')}<span>Sobre o NADIC</span>${ic('chev', 'i chev')}</li>
-          <li data-act="link" data-url="${D.ifrnUrl}">${ic('open')}<span>IFRN Pau dos Ferros</span></li>
+          <li data-go="mais">${ic('list')}<span>Mais opções</span><em>Aparência e sobre</em>${ic('chev', 'i chev')}</li>
         </ul>
         <ul class="menu danger st" ${st(5)}><li data-act="logout">${ic('logout')}<span>Sair</span></li></ul>
       </div>`,
@@ -1906,8 +1985,10 @@
   function abrirMapaNovo(floor, zone, fallback) {
     /* Só com o mapa novo escolhido (padrão); com o clássico, "Como chegar" usa o mapa Canvas. */
     if (UI.view === '2d' || !mapaNovoOn()) return false;
+    /* tela grande: a rota vai para o mapa ao lado, sem abrir outra janela por cima do app */
+    if (palcoOn()) { palcoEnviar({ floor, zone, via: S.mapVia || null }); toast('Caminho traçado no mapa ao lado'); return true; }
     const host = document.createElement('section'); host.className = 'mapa-novo'; host.setAttribute('role', 'dialog'); host.setAttribute('aria-label', 'Caminho pelo campus'); host.setAttribute('aria-modal', 'true');
-    const frame = document.createElement('iframe'); frame.title = 'Mapa do campus'; frame.src = 'mapa3d/index.html';
+    const frame = document.createElement('iframe'); frame.title = 'Mapa do campus'; frame.allow = 'fullscreen'; frame.src = 'mapa3d/index.html';
     const light = document.createElement('button'); light.className = 'mapa-novo-leve'; light.textContent = 'Mapa leve';
     const previous = document.activeElement;
     const close = () => { clearTimeout(timer); clearInterval(sync); window.removeEventListener('message', receive); document.removeEventListener('keydown', key); host.remove(); vp.inert = false; tabbar.inert = false; previous?.focus?.(); };
@@ -2284,6 +2365,7 @@
       }
       case 'mapanovo': abrirMapaNovo(null,null,()=>toast('Você está no mapa leve.')); break;
       case 'openmap': { const fl=+el.dataset.floor, z=el.dataset.zone; const legacy=()=>{ S.mapView='bloco'; S.mapFloor=fl; S.mapZone=z; S.mapRoute=true; S.pending=true; S.journeying=true; switchTab('map',true); }; if(!abrirMapaNovo(fl,z,legacy))legacy(); break; }
+      case 'palco': palcoEnviar({ mode: el.dataset.mode }); break;
       case 'openplace': S.mapView = 'evento'; S.campusPlace = el.dataset.id; window.Campus3D.setMode('evento'); window.Campus3D.select(el.dataset.id); switchTab('map', true); setTimeout(() => { window.Campus3D.select(el.dataset.id); window.Campus3D.focus(el.dataset.id); window.Campus3D.route(el.dataset.id); }, reduce ? 0 : 450); break;
       case 'today': S.todayOpen = !S.todayOpen; el.setAttribute('aria-expanded', S.todayOpen); el.closest('.today').classList.toggle('open', S.todayOpen); break;
       case 'floorsel': {
@@ -2732,5 +2814,6 @@
     fifa: () => { S.tab = 'profile'; S.tourTab = 'jogadores'; S.stacks.profile.push({ s: 'games' }, { s: 'tournament', p: { id: 'fifa' } }); },
   };
   (setups[q] || (() => {}))();
+  telaGrande(); wideMq.addEventListener('change', () => location.reload());
   show(build(top()), 'fade');
 })();
