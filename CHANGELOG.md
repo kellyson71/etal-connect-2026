@@ -2,7 +2,7 @@
 
 O projeto segue o git flow: `main` tem só versões publicadas, `develop` junta as funcionalidades e cada uma nasce num ramo `feature/*`.
 
-## Em desenvolvimento
+## 0.7.0 (2026-11-11)
 
 - Modo Passear no mapa: personagem com a foto do SUAP no rosto, carros passando na BR-405 e estacionados que dá para dirigir (modelos do Sketchbook, MIT).
 - Física no passeio a partir da geometria do mapa, entrada no bloco principal pela porta, rampa e escada, e voo com câmera própria. No computador, o mapa abre direto no passeio, com mouse e teclado.
