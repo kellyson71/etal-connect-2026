@@ -39,7 +39,8 @@ S0, S1 = 454, 542    # fileira sul
 CURVE_ROOF = [(55, 333), (55, 380), (59, 404), (68, 428), (83, 452), (108, 476), (126, 488), (160, 500), (233, 501)]
 CURVE_WALL = [(67, 332), (68, 380), (72, 392), (78, 416), (86, 440), (100, 452), (127, 476), (147, 488), (197, 492)]
 
-ENTRANCES = {'principal': [891, 612], 'auditorio': [212, 484], 'anexo': [226, 28]}
+# Anexo: pela porta de vidro da fachada norte, no fim da circulação da esquerda (não há corredor colado no auditório).
+ENTRANCES = {'principal': [891, 612], 'auditorio': [212, 484], 'anexo': [359.5, 26]}
 
 # Ambientes com número de fonte oficial e nomes conhecidos.
 KNOWN = {
@@ -99,7 +100,7 @@ class Floor:
         z['lines'] = [z['label']]
         self.zones.append(z)
         if door:
-            self.doors.append(dict(x=door[0], y=door[1], axis=door[2]))
+            self.doors.append(dict(x=door[0], y=door[1], axis=door[2], zoneId=id))
         return z
 
     def corridor(self, id, label, poly):
@@ -143,7 +144,8 @@ def ground():
     f.zone('auditorio', rect(20, N0, 216, 302), 'auditorium', 'Auditório')
     # A antiga 002 deu lugar ao prolongamento da circulação até uma porta de vidro na fachada norte;
     # uma paredezinha segue a linha do corredor e o resto da sala virou um canto de descanso (informado pelo usuário).
-    row(f, N0, N1, [(235, 315, 'rh', 'office', 'Recursos Humanos', 'RH')], N1)
+    # As salas da ala oeste encostam na parede do auditório (x 216): não existe corredor entre eles (informado pelo usuário, 10/11/2026).
+    row(f, N0, N1, [(216, 315, 'rh', 'office', 'Recursos Humanos', 'RH')], N1)
     f.zone('descanso-norte', rect(315, N0, 341, N1 - 2), 'lounge', 'Área de descanso', 'DESCANSO')
     f.corridor('saida-norte', 'Circulação até a saída norte', rect(341, N0, 378, C1[0]))
     # Paredezinha na linha do corredor de cima, entre o canto de descanso e o corredor (parede de verdade, com espessura).
@@ -154,10 +156,10 @@ def ground():
                     (431, 520, 'extensao-pesquisa', 'office', 'Extensão e Pesquisa', 'EXTENSÃO'),
                     (520, 609, 'dep-academico', 'office', 'Departamento Acadêmico', 'DEP. ACADÊMICO'),
                     (609, 662, 'assuntos-estudantis', 'office', 'Ensino e Assuntos Estudantis', 'ESTUDANTIS')], N1)
-    f.zone('secretaria-academica', rect(235, I1[0], 341, I1[1]), 'office', 'Secretaria Acadêmica', 'SECRETARIA', door=(341, 194, 'v'))
-    f.zone('diretor', rect(235, I1[1], 298, I2[0]), 'office', 'Direção-Geral', 'DIREÇÃO', door=(235, 282, 'v'))
+    f.zone('secretaria-academica', rect(216, I1[0], 341, I1[1]), 'office', 'Secretaria Acadêmica', 'SECRETARIA', door=(341, 194, 'v'))
+    f.zone('diretor', rect(216, I1[1], 298, I2[0]), 'office', 'Direção-Geral', 'DIREÇÃO')
     f.zone('escada', rect(298, I1[1], 341, 322), 'stairs', 'Escada', 'ESCADA')
-    f.zone('gabinete', rect(235, I2[0], 298, I2[1]), 'office', 'Chefia de Gabinete', 'GABINETE', door=(235, 372, 'v'))
+    f.zone('gabinete', rect(216, I2[0], 298, I2[1]), 'office', 'Chefia de Gabinete', 'GABINETE')
     f.zone('estar', rect(298, 322, 341, I2[1]), 'office', 'Sala de estar', 'ESTAR', door=(341, 370, 'v'))
     row(f, I1[0], I1[1], [(377, 431, 'estudos-servidores', 'office', 'Sala de estudos dos servidores', 'ESTUDOS'),
                           (431, 520, 'sala-servidores', 'office', 'Sala dos servidores', 'SERVIDORES'),
@@ -170,25 +172,25 @@ def ground():
                           (553, 609, 'coord-ti', 'office', 'Coordenação de TI', 'COORD. TI'),
                           (609, 662, 'servico-social', 'office', 'Serviço Social', 'S. SOCIAL')], I2[1])
     f.zone('sala-projetos', TRAP_I2(662), 'office', 'Sala de Projetos', 'PROJETOS', door=(690, I2[1], 'h'))
-    row(f, S0, S1, [(235, 288, 'protocolo', 'office', 'Protocolo', 'PROTOCOLO'),
+    row(f, S0, S1, [(216, 288, 'protocolo', 'office', 'Protocolo', 'PROTOCOLO'),
                     (288, 377, 'manut-informatica', 'office', 'Manutenção de Informática', 'MANUT. INFO.'),
                     (377, 431, 'napne', 'office', 'NAPNE', 'NAPNE'),
                     (431, 520, 'almoxarifado', 'office', 'Almoxarifado', 'ALMOXARIFADO'),
                     (520, 662, 'sala-estudos-informatica', 'laboratory', 'Sala de Estudos de Informática', 'ESTUDOS INFO.'),
                     (662, 734, 'grafica', 'office', 'Gráfica', 'GRÁFICA')], S0)
     f.zone('dir-adm', [(734, S0), (L1(S0), S0), (L1(S1), S1), (734, S1)], 'office', 'Diretoria de Administração', 'DIR. ADM.', door=(756, S0, 'h'))
-    f.zone('wc-auditorio', rect(124, 327, 216, 417), 'restroom', 'Banheiros do auditório', 'WC', door=(124, 372, 'v'))
+    f.zone('wc-auditorio', rect(124, 327, 216, 417), 'restroom', 'Banheiros do auditório (interditados)', 'WC', door=(124, 372, 'v'))
+    f.zones[-1]['closed'] = True  # interditado (informado pelo usuário): fora da busca e das rotas
     f.zone('recepcao', rect(860, 578, 922, 614), 'reception', 'Recepção', 'RECEPÇÃO')
     common_east(f, False)
-    f.corridor('passagem-anexo', 'Corredor do Anexo', rect(213, N0, 236, 470))
     f.corridor('corredor-norte', 'Corredor', rect(235, C1[0], 662, C1[1]))
     f.corridor('circulacao-oeste', 'Circulação', rect(341, C1[1], 378, C2[0]))
-    f.corridor('corredor-sul', 'Corredor', rect(213, C2[0], 776, C2[1]))
+    f.corridor('corredor-sul', 'Corredor', rect(216, C2[0], 776, C2[1]))
     f.corridor('hall-auditorio', 'Hall do auditório',
                [(20, 302), (216, 302), (216, 327), (124, 327), (124, 417), (216, 417), (216, 490), (197, 492)] + CURVE_WALL[::-1][1:] + [(20, 332)])
     f.corridor('hall-entrada', 'Hall de entrada', rect(856, S1, 922, 578))
     f.outline = [(20, N0), (L3(N0), N0), (L3(S1), S1), (922, S1), (922, 614), (860, 614), (860, S1), (235, S1), (235, 492)] + CURVE_WALL[::-1] + [(20, 332)]
-    f.marks += [('Entrada do Anexo', 226, 14), ('Entrada do auditório', 160, 512)]
+    f.marks += [('Entrada do Anexo', 359, 14), ('Entrada do auditório', 160, 512)]
     f.entry = [[891, 646], [891, 600]]
     return f
 
@@ -295,7 +297,7 @@ for f in floors:
         inside_real = any(b[0] - 1 <= d['x'] <= b[2] + 1 and b[1] - 1 <= d['y'] <= b[3] + 1 for b in (zone_box(z) for z in f.zones if z['id'] in real))
         if not inside_real:
             keep.append(d)
-    f.doors = keep + [dict(x=v[0], y=v[1], axis=v[2] if len(v) > 2 else 'h') for v in real.values()]
+    f.doors = keep + [dict(x=v[0], y=v[1], axis=v[2] if len(v) > 2 else 'h', zoneId=key) for key, v in real.items()]
 
 # Ícone de cada ambiente (desenhado no 3D e na ficha) e uma frase curta para a ficha.
 ICON_OF = {
