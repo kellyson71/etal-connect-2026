@@ -9,6 +9,7 @@ import { criarPalco } from './palco.js';
 import { daCamera } from './camera.js';
 import { criarViagem } from './viagem.js';
 import { criarAbertura } from './abertura.js';
+import { criarPasseio } from './passeio.js';
 import { construirTerreno } from './terreno.js';
 import { construirPredios } from './predios.js';
 import { construirPrincipal, materiaisPrincipal } from './principal.js';
@@ -66,7 +67,7 @@ const estilo = criarEstilo();
 
 /* cena */
 const t0 = performance.now();
-scene.add(construirTerreno(M));
+const terreno = construirTerreno(M); scene.add(terreno);
 /* um grupo por prédio: a cantina precisa de materiais só dela para receber a cor do evento */
 const gPredios = new THREE.Group(); gPredios.name = 'predios';
 BUILDINGS.filter((b) => b.id !== 'principal').forEach((b, i) => { const g = new THREE.Group(); g.name = b.id; const L = new Lote(); construirPredios(L, (q) => q.id === b.id, i === 0); L.build(g, M, { name: b.id }); gPredios.add(g); });
@@ -98,13 +99,14 @@ try { const s = JSON.parse(sessionStorage.getItem('mapa3d-cam')); if (s && !new 
 controls.addEventListener('change', () => { pedir(); clearTimeout(irPara.t); irPara.t = setTimeout(() => sessionStorage.setItem('mapa3d-cam', JSON.stringify({ p: camera.position.toArray(), t: controls.target.toArray() })), 300); });
 
 const palco = criarPalco({ principal, interior, estilo, camera, controls, pedir });
+const passeio = criarPasseio({ scene, camera, controls, renderer, chao: terreno, pedir });
 const viagem = criarViagem({ scene, camera, controls, interior, palco, pedir, ficha: $('#ficha'), passos: $('#passos') });
 
 /* desenha só quando algo muda */
 let isoAntes = -1;
 function pedir() { if (!pedido) { pedido = true; requestAnimationFrame(quadro); } }
 function quadro(now) {
-  pedido = false; const viajando = viagem.tick(now); const abrindo = !viajando && !!abertura?.tick(now); const animando = !viajando && !abrindo && palco.tick(now); const mexeu = viajando || animando || abrindo ? false : controls.update();
+  pedido = false; const passeando = passeio.tick(now); const viajando = !passeando && viagem.tick(now); const abrindo = !viajando && !!abertura?.tick(now); const animando = !viajando && !abrindo && palco.tick(now); const mexeu = passeando || viajando || animando || abrindo ? false : controls.update();
   if (ISO.value !== isoAntes) { isoAntes = ISO.value; fundoCeu(); }
   interior.virar(daCamera(camera, controls).a);
   /* Com o bloco aberto, a maquete e a rota são desenhadas numa segunda passada, por cima do campus desbotado:
@@ -119,7 +121,7 @@ function quadro(now) {
   anterior = now;
   viagem.posicionarFicha(canvas.clientWidth, canvas.clientHeight);
   interfaceMapa?.quadro(now);
-  if (mexeu || viajando || animando || abrindo) pedir();
+  if (mexeu || viajando || animando || abrindo || passeando) pedir();
 }
 function tamanho() { const w = canvas.clientWidth, h = canvas.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); pedir(); }
 addEventListener('resize', tamanho); tamanho();
@@ -127,8 +129,8 @@ addEventListener('resize', tamanho); tamanho();
 const hr = $('#hora'); hr.addEventListener('input', () => { const h = +hr.value; sessionStorage.setItem('mapa3d-hora', hr.value); $('#horaTxt').textContent = String(Math.floor(h)).padStart(2, '0') + 'h' + (h % 1 ? '30' : '00'); hora(h); });
 hr.value = sessionStorage.getItem('mapa3d-hora') || 15; hr.dispatchEvent(new Event('input'));
 requestAnimationFrame(() => { const i = renderer.info; $('#info').textContent = `${tris(scene).toLocaleString('pt-BR')} triângulos · ${i.render.calls} chamadas · montado em ${tMontagem} ms`; });
-window.MAPA3D = { viagem, palco, interior, estilo, principal, scene, camera, controls, renderer, irPara, VISTAS, hora, M, T };
-interfaceMapa = iniciarInterface({ scene, camera, controls, renderer, principal, interior, palco, estilo, viagem, veg, entorno, sol, pedir, hora, irPara, VISTAS });
+window.MAPA3D = { passeio, viagem, palco, interior, estilo, principal, scene, camera, controls, renderer, irPara, VISTAS, hora, M, T };
+interfaceMapa = iniciarInterface({ scene, camera, controls, renderer, principal, interior, palco, estilo, viagem, passeio, veg, entorno, sol, pedir, hora, irPara, VISTAS });
 window.MAPA3D.interface = interfaceMapa;
 /* abertura: o bloco principal (verde e azul), a cantina, o pátio e o obelisco sobem do chão com a cor do evento */
 abertura = criarAbertura({ camera, controls, renderer, pedir, fim: () => interfaceMapa.poseEvento(), ocupado: () => viagem.ativa(), aoTerminar: () => estilo.setMode(estilo.mode()),
