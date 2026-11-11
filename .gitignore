@@ -74,3 +74,7 @@ deploy/.env
 
 # Gerado a partir de mapa3d/ por npm run pwa
 prototipo/mapa3d/
+
+# PNGs originais da comparação dos mapas (75 MB): ficam só na máquina; hashes em evidencias.json
+/docs/comparacao-modelos/imagens/
+/docs/comparacao-modelos/*.zip
