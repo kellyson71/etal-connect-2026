@@ -25,8 +25,8 @@ if REDE:
 API = os.environ.get('ETAL_API', '').strip().rstrip('/')
 TYPES = {'.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
          '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp',
-         '.webmanifest': 'application/manifest+json'}
-PUBLIC = {'index.html', 'homologacao.html', 'homologacao.js', 'vendor/jsQR.js', 'config.js', 'api.js', 'admin.html', 'admin.js', 'admin.css', 'app.js', 'app.css', 'data.js', 'plan-data.js', 'campus-data.js', 'campus-fundo.js', 'campus-limpo.js', 'campus-entorno.js', 'sprites.js', 'campus3d.js', 'sw.js', 'manifest.webmanifest', 'admin.html', 'admin.js', 'admin.css'}
+         '.glb': 'model/gltf-binary', '.webmanifest': 'application/manifest+json'}
+PUBLIC = {'index.html', 'homologacao.html', 'homologacao.js', 'vendor/jsQR.js', 'config.js', 'api.js', 'admin.html', 'admin.js', 'admin.css', 'app.js', 'app.css', 'data.js', 'plan-data.js', 'campus-data.js', 'campus-fundo.js', 'campus-limpo.js', 'campus-entorno.js', 'campus-verde.js', 'sprites.js', 'campus3d.js', 'sw.js', 'manifest.webmanifest', 'admin.html', 'admin.js', 'admin.css'}
 PREFIXES = ('Tecnologia em ', 'Técnico Integrado em ', 'Técnico Subsequente em ', 'Técnico em ', 'Bacharelado em ', 'Licenciatura em ')
 CAMPUS = {'PF': 'Campus Pau dos Ferros'}
 
@@ -110,10 +110,12 @@ class Handler(BaseHTTPRequestHandler):
         rel = self.path.split('?')[0].lstrip('/') or 'index.html'
         rel = {'demo': 'index.html', 'homologacao': 'homologacao.html'}.get(rel.rstrip('/'), rel)
         is_asset = rel.startswith('assets/') and '..' not in rel and Path(rel).suffix in ('.svg', '.png', '.jpg', '.webp')
+        if rel == 'mapa3d/': rel = 'mapa3d/index.html'
+        is_map = rel.startswith('mapa3d/') and '..' not in rel and Path(rel).suffix in ('.html', '.js', '.css', '.glb')
         file = ROOT / rel
         if rel == 'config.js' and API:
             return self._send(200, f"window.ETAL_CONFIG = {{ api: {json.dumps(API)} }};".encode(), TYPES['.js'])
-        if (rel in PUBLIC or is_asset) and file.is_file():
+        if (rel in PUBLIC or is_asset or is_map) and file.is_file():
             return self._send(200, file.read_bytes(), TYPES[file.suffix])
         self._json(404, {'erro': 'Não encontrado.'})
 
@@ -136,6 +138,9 @@ class Handler(BaseHTTPRequestHandler):
             self._json(401, {'erro': 'Matrícula ou senha incorretas.'})
         except (SuapError, OSError):
             self._json(502, {'erro': 'O SUAP não respondeu. Tente de novo.'})
+        except Exception as erro:  # resposta inesperada do SUAP: avisa em vez de derrubar a conexão (sem registrar dados)
+            print(f'login: erro inesperado {type(erro).__name__}')
+            self._json(502, {'erro': 'O SUAP respondeu de um jeito inesperado. Tente de novo ou entre como visitante.'})
 
 
 if __name__ == '__main__':
