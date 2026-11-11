@@ -2,7 +2,9 @@
 
 O projeto segue o git flow: `main` tem só versões publicadas, `develop` junta as funcionalidades e cada uma nasce num ramo `feature/*`.
 
-## Em desenvolvimento
+## 0.6.0 (2026-11-11)
+
+Reformulação completa do mapa.
 
 - O mapa novo (`mapa3d/`) passa a ser o padrão do app. O mapa anterior (`prototipo/campus3d.js`) fica guardado como **mapa clássico**: Perfil → Personalizar → Mapa, ou `?mapa=classico`.
 - Abertura do mapa no estilo da original, com voo contínuo e as partes do evento subindo do chão, cada uma com a sua cor.
