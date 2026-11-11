@@ -126,13 +126,13 @@
       sky: '#e9edf3', outside: '#d5c9a2', road: '#6c6f76', lane: '#f2f1ea', walk: '#b9b3a4',
       grass: '#a8c678', grass2: '#9dbd6f', paved: '#d7d2c4', park: '#bdb8aa', parkLine: '#a9a496', path: '#ebe6d9', pathEdge: '#bfb9a7',
       shadow: 'rgba(38,52,92,.20)', roof: '#ffffff', roofEdge: '#c9c6bb', wall: [216, 170, 86], band: [38, 56, 136], stream: '#3f8fd6', streamEdge: '#7fb35a', window: 'rgba(52,76,128,.34)',
-      accent: '#22386f', accentWall: [34, 56, 111], wood: '#c79a6b', woodWall: [150, 110, 72], cover: 'rgba(235,240,248,.82)', coverEdge: 'rgba(120,136,170,.7)',
+      accent: '#22386f', accentWall: [34, 56, 111], wood: '#c79a6b', woodWall: [150, 110, 72], cover: 'rgba(178,184,192,.96)', coverEdge: 'rgba(120,136,170,.7)',
       muro: [246, 245, 240], stripe: '#c43a32', leaf: ['#7fb65a', '#6aa749', '#8fc168', '#9aba5a'], leafTop: 'rgba(255,255,255,.2)', trunk: '#8a6f55', bush: [112, 168, 82],
       label: '#ffffff', labelInk: '#1f2f57', labelSel: '#4f9e22', labelSelInk: '#ffffff', route: '#3f8f1a', routeEdge: '#ffffff', court: '#e8c866', courtTree: '#6aa749', courtWall: '#c9a65a', gate: '#c43a32', fog: 'rgba(233,237,243,.08)',
       land: '#d5c9a2', land2: '#cabe94', scrub: '#b4bf86', scrub2: '#a1b277', scrubDot: 'rgba(120,140,85,.5)', dirt: '#e9ddc0', dirtEdge: '#c8ba96', lot: '#d9cda9', lotWall: [176, 170, 152], earth: '#d8cfb6',
       houseWall: [226, 222, 212], houseRoofs: ['#e3b596', '#d9a98c', '#d8d8d4', '#e8c3a8'], bigRoof: '#f2f3f4', bigWall: [204, 208, 214], parkLot: '#dcdde0', parkStall: 'rgba(255,255,255,.8)',
       fenceFill: 'rgba(120,140,170,.14)', fenceBar: 'rgba(85,102,134,.75)', glassLit: 'rgba(196,232,246,.95)', glassDark: 'rgba(120,184,214,.95)', glassEnd: 'rgba(158,212,234,.95)', skyFrame: 'rgba(255,255,255,.85)',
-      soil: '#d3c49c', soil2: '#c9ba90', trail: '#efebda', grove: '#b1c28a', roofRgb: [255, 255, 255], water: '#5cc0e6', waterDeep: '#3aa6d6', rim: '#f6fafc', deck: '#f1f0ea', fence: 'rgba(110,125,150,.55)',
+      soil: '#d3c49c', soil2: '#c9ba90', trail: '#efebda', grove: '#b1c28a', roofRgb: [206, 210, 216], water: '#5cc0e6', waterDeep: '#3aa6d6', rim: '#f6fafc', deck: '#f1f0ea', fence: 'rgba(110,125,150,.55)',
       sand: '#ecd9a6', courtLine: '#ffffff', field: '#cfd3a0', fieldLine: 'rgba(255,255,255,.9)', tank: [120, 134, 176], tankTop: '#a3b0d2', panel: '#2f4a86', panelLine: 'rgba(255,255,255,.28)',
       tile: '#e09a5e', tileWall: [236, 214, 190], hexBase: [214, 208, 196], hexDeck: '#f0ece2', hexRoof: [252, 247, 234], rail: 'rgba(95,105,130,.75)', neighbor: '#dfe2e8', neighborWall: [200, 205, 216], glass: 'rgba(205,232,216,.78)', glassWall: [186, 216, 200], glassRib: 'rgba(255,255,255,.75)',
       aptoWall: [240, 238, 232], aptoSlab: '#eeeeea', aptoBand: 'rgb(233,170,58)', aptoGap: 'rgba(70,74,84,.42)', aptoShop: 'rgb(150,154,160)', aptoDoor: 'rgb(222,224,226)', aptoSign: 'rgb(44,92,164)',
@@ -565,6 +565,26 @@
     }
   });
   ENT.trees.forEach((q, i) => addTree(q[0], q[1], 2.8 + (i % 2) * 0.8, i % 3));
+  /* Copas tiradas da imagem de satélite (scripts/extrair-verde.py): onde a imagem cobre, valem elas e saem as
+     árvores colocadas à mão. Fora do muro ficam só as copas maiores. */
+  const VERDE = window.CAMPUS_VERDE || null;
+  if (VERDE) {
+    const L = VERDE.meio_lado; const dentro = (x, y) => Math.abs(x * EAST[0] + y * EAST[1]) < L && Math.abs(x * NORTH[0] + y * NORTH[1]) < L;
+    for (let i = trees.length - 1; i >= 0; i--) if (dentro(trees[i].x, trees[i].y)) trees.splice(i, 1);
+    const muro = pts(22);
+    /* Da maior para a menor, pulando as que caem em cima de uma já colocada: um canteiro vira uma fileira de
+       árvores, não um amontoado. */
+    const postas = [];
+    VERDE.trees.slice().sort((a, b) => b[2] - a[2]).forEach(([x, y, r, tipo, tom]) => {
+      if (y > ROAD_Y0 - 1 && y < ROAD_Y1 + 1) return;
+      if (SOLIDS.some((p) => inPoly(x, y, p))) return;
+      const campus = inPoly(x, y, muro) || (y > 46 && y < ROAD_Y0);
+      if (r < (campus ? 1.9 : 2.8)) return;
+      if (postas.some((q) => Math.hypot(q[0] - x, q[1] - y) < (q[2] + r) * 0.95)) return;
+      postas.push([x, y, r]);
+      trees.push({ x, y, r: Math.min(4.2, r * 1.05), tone: tom % 3, kind: Math.abs(Math.round(x * 3 + y * 7)) % 3 });
+    });
+  }
   trees.forEach((t) => { t.far = !inPoly(t.x, t.y, pts(22)) && !(t.y > 46 && t.y < 58); });
 
   /* ---------- chão ---------- */
@@ -798,6 +818,7 @@
     if (opts.band && cam.hv > 0.02) edges.forEach(({ a, b }) => { wallQuad(a, b, h - (opts.bandH || 1.25), h); ctx.fillStyle = mix(opts.band, shadeOf(a, b, ws)); ctx.fill(); });
     poly(p, h); ctx.fillStyle = opts.roof; ctx.fill();
     if (opts.roofTex) fillWorldTex(opts.roofTex, h, opts.ev);
+    if (opts.roofTint) { const op = ctx.globalCompositeOperation; ctx.globalCompositeOperation = 'multiply'; ctx.fillStyle = opts.roofTint; ctx.fill(); ctx.globalCompositeOperation = op; }
     ctx.strokeStyle = opts.edge; ctx.lineWidth = Math.max(0.7, 0.16 * cam.z); ctx.lineJoin = 'round'; ctx.stroke();
   }
 
@@ -1263,6 +1284,7 @@
       return;
     }
     const opts = { wall: sel ? c.accentWall : c.wall, roof: sel ? c.accent : c.roof, edge: sel ? c.accent : mix(c.band || [120, 130, 160], 1), floors: b.floors, window: sel ? 'rgba(255,255,255,.28)' : NIGHT > 0.3 && b.id === 'anexo' ? WARM : c.window, tex: !sel && !(NIGHT > 0.3 && b.id === 'anexo'), roofTex: sel ? null : 'roof', band: sel ? null : c.band };
+    if (!sel && !isEv() && themeKey() === 'light') opts.roofTint = b.id === 'principal' ? '#d6c9ae' : b.solar ? '#e9e6df' : '#d9d0bd';
     if (b.id === 'principal') principalParts(g, h, (id, q, hh, base, aud) => {
       if (id === 'entrada') { drawEntry(q, hh, c, false); return; }
       drawExtruded(q, hh, c, aud ? { ...opts, floors: 0, tex: false, band: sel ? null : c.band && c.band.map((v) => Math.round(v * 1.05)) } : { ...opts, base });
@@ -1273,8 +1295,15 @@
     /* Parapeito: dá leitura de cobertura sem aumentar a complexidade. */
     const m = centroid(p); const inset = p.map((q) => [m[0] + (q[0] - m[0]) * 0.94, m[1] + (q[1] - m[1]) * 0.94]);
     poly(inset, h); ctx.strokeStyle = sel ? 'rgba(255,255,255,.24)' : c.roofEdge; ctx.lineWidth = Math.max(0.5, 0.1 * cam.z); ctx.stroke();
-    if (b.solar && !sel && g > 0.85) drawPanels(Array.isArray(b.solar) ? b.solar : shrink(p, b.solar), h + 0.02, c);
-    if (b.skylight && g > 0.85) drawSkylight(b.skylight, h, c);
+    if (b.solar && !sel && g > 0.85) {
+      if (b.id === 'laboratorios') {
+        /* satélite: grupos separados por corredores, com a ponta do lado da rua livre */
+        const L = Math.hypot(p[1][0] - p[0][0], p[1][1] - p[0][1]) > Math.hypot(p[2][0] - p[1][0], p[2][1] - p[1][1]) ? [p[0], p[1], p[2], p[3]] : [p[1], p[2], p[3], p[0]];
+        const front = (L[0][1] + L[3][1]) / 2 > (L[1][1] + L[2][1]) / 2; // lado da rua = y maior
+        [[0.03, 0.2], [0.22, 0.39], [0.41, 0.58], [0.6, 0.77]].forEach(([u0, u1]) => { const a = front ? 1 - u1 : u0, e = front ? 1 - u0 : u1; [[0.08, 0.48], [0.52, 0.92]].forEach(([v0, v1]) => drawPanels([quadAt(L, a, v0), quadAt(L, e, v0), quadAt(L, e, v1), quadAt(L, a, v1)], h + 0.02, c)); });
+      } else drawPanels(Array.isArray(b.solar) ? b.solar : shrink(p, b.solar), h + 0.02, c);
+    }
+    if (b.skylight && g > 0.85) drawPanels(b.skylight, h + 0.02, c);
     if (NIGHT > 0.3 && LIT[b.id] && !sel && g > 0.85) litWindows(b.id === 'principal' ? PIECES.principal : p, h, b.floors, LIT[b.id], b.id);
     if (b.court && g > 0.85) drawWell(b, h, c, c.courtWall);
   }
@@ -1977,7 +2006,7 @@
   const ENTRANCES = {
     principal: { name: 'entrada principal', plan: (window.PLAN.entrances || {}).principal || [820, 385], campus: [START, [13, 11], [15, -4], [17, -17]] },
     auditorio: { name: 'entrada do auditório', plan: (window.PLAN.entrances || {}).auditorio || [172, 335], campus: [START, [13, 11], [-23, 8], [-27, -8], [-31, -17]] },
-    anexo: { name: 'entrada do Anexo', plan: (window.PLAN.entrances || {}).anexo || [245, 25], campus: [START, [13, 11], [-23, 8], [-27, -8], [-48, -13], [-49.5, -50], [-50, -68], [-44.6, -66], [-39, -61.5], [-27, -60], [-25.3, -53]] },
+    anexo: { name: 'entrada do Anexo', plan: (window.PLAN.entrances || {}).anexo || [245, 25], campus: [START, [13, 11], [-23, 8], [-27, -8], [-48, -13], [-49.5, -50], [-50, -68], [-44.6, -66], [-39, -61.5], [-27, -60], [-20, -56], [-17.8, -52]] }, // porta de vidro norte
   };
   const uTurn = (xA, xB, yLow, yTop) => {
     const cx = (xA + xB) / 2, R = (xB - xA) / 2; const out = [[xA, yLow], [xA, yTop + R]];

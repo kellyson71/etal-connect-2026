@@ -16,7 +16,9 @@ Proposta de aplicativo para o **ETAL**, o Encontro de Tecnologia do Alto Oeste P
 - **Entrada pelo crachá.** A tela de entrada é um crachá em branco no cordão. Enquanto a pessoa digita, os dados aparecem nele; ao entrar, ele vira e mostra o crachá preenchido. Puxar o crachá para baixo abre o app. Quem é do IFRN entra com a matrícula, e nome, foto e curso vêm do SUAP pela biblioteca [suapy](https://github.com/kellyson71/suapy). Quem vem de fora cria uma conta de visitante.
 - **Crachá e credenciamento.** O crachá vira e mostra o QR. O credenciamento e a presença em cada atividade são registrados pela leitura do QR na sala.
 - **Programação.** Três dias de evento, com filtros, atividades salvas, palestrantes e materiais liberados depois da presença.
-- **Mapa do campus em 3D.** O campus inteiro foi feito a partir de um levantamento no Google Earth e de fotos. O modo Evento destaca o bloco principal, o auditório, a cantina, o pátio e o obelisco. "Como chegar" traça a rota da portaria até a porta da sala e escolhe a entrada e a escada ou rampa mais rápidas.
+- **Mapa do campus em 3D.** O campus inteiro foi feito a partir de um levantamento no Google Earth e de fotos. O modo Evento destaca o bloco principal, o auditório, a cantina, o pátio e o obelisco. "Como chegar" traça a rota da portaria (ou da sala da atividade em que você está) até a porta da sala e escolhe a entrada e a escada ou rampa mais rápidas.
+  - **Mapa padrão: o novo (`mapa3d/`, WebGL com three.js).** Prédios com textura das fotos, interior do bloco principal fiel às plantas, andares que se abrem em escada, abertura animada e rota que sobe de verdade pela rampa e pela escada.
+  - **Mapa clássico guardado (`prototipo/campus3d.js`, Canvas).** É o mapa que o app usava até 11/11/2026. Continua no código e funcionando: Perfil → Personalizar → Mapa → *Clássico*, ou `?mapa=classico`. A exportação em arquivo único (`index.html` da raiz) e a qualidade *2D* usam sempre o clássico. `modelo-3d/` é uma cópia ainda mais antiga, de antes das otimizações.
 - **Quatro versões do 3D.** Completo, médio, leve e 2D. O app mede o aparelho e escolhe a versão; o teste de desempenho em Perfil → Personalizar mostra os quadros por segundo de cada uma.
 - **Lembretes.** Dez minutos antes da atividade, o app avisa com a sala, o andar e quantos minutos a pé ela fica da entrada, também como notificação do sistema.
 - **Funciona sem internet.** É instalável (PWA) e guarda o app no aparelho, inclusive o mapa. Isso conta porque a internet do campus costuma cair com o evento cheio.
@@ -69,13 +71,13 @@ Pelo Wi-Fi a conexão é HTTP, sem criptografia. Use só contas de teste. A inst
 
 **Sem servidor:** `npm run export:html` gera o `index.html` da raiz, um arquivo único que abre por duplo clique. Nele o login do SUAP não funciona, mas dá para entrar como visitante ou com dados de exemplo.
 
-**Atalhos de teste:** `?tela=` abre direto numa tela (`home`, `agenda`, `atividade`, `mapa`, `bloco`, `campus`, `rota`, `org`, `sobre`, `visitante`, `perf`, `retro`…). Também há `?qualidade=alta|media|leve|simples`, `?fps=1` e `?tema=dark`.
+**Atalhos de teste:** `?tela=` abre direto numa tela (`home`, `agenda`, `atividade`, `mapa`, `bloco`, `campus`, `rota`, `org`, `sobre`, `visitante`, `perf`, `retro`…). Também há `?qualidade=alta|media|leve|simples`, `?fps=1`, `?tema=dark`, `?mapa=classico|novo` (escolhe o mapa) e `?intro=1` (repete a abertura do mapa novo).
 
 ## Estrutura
 
 | Pasta | O que tem |
 |---|---|
-| `prototipo/` | O app: `index.html`, `app.js` (telas), `admin.html` e `admin.js` (painel da organização), `app.css`, `campus3d.js` (motor do mapa em Canvas), `data.js` (programação), `sw.js` e `manifest.webmanifest` (PWA), `server.py` (servidor e login no SUAP) |
+| `prototipo/` | O app: `index.html`, `app.js` (telas), `admin.html` e `admin.js` (painel da organização), `app.css`, `campus3d.js` (mapa clássico, em Canvas), `mapa3d/` (cópia empacotada do mapa novo, gerada por `npm run pwa`), `data.js` (programação), `sw.js` e `manifest.webmanifest` (PWA), `server.py` (servidor e login no SUAP) |
 | `scripts/` | Geradores: planta do bloco (`build-principal-plan.py`, conferida por `check-principal-plan.py`), campus a partir do KML, sprites renderizados no Blender, cache offline (`build-pwa.py`) e exportação (`export-prototipo.py`) |
 | `referencias/` | Levantamento do campus em KML, imagens de referência da planta e modelos 3D (CC0) |
 | `docs/` | Contexto, fluxos, regras do mapa, propostas visuais e os prints |
