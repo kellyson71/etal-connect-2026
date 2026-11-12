@@ -2849,7 +2849,7 @@
     colmeia: () => { ok(); S.present['react-native'] = D.now.time; S.ratings['react-native'] = 5; S.stacks.home.push({ s: 'colmeia' }); },
     'home-favos': () => { ok(); S.present['react-native'] = D.now.time; S.ratings['react-native'] = 5; },
     rota: () => { S.tab = 'map'; S.mapView = 'bloco'; S.mapFloor = 2; S.mapZone = 'labs-norte-2'; S.mapRoute = true; S.pending = true; S.journeying = true; },
-    qr: () => { setTimeout(() => openOverlay(Overlays.scan(), 'scan'), 300); },
+    qr: () => { setTimeout(() => { openOverlay(Overlays.scan(), 'scan'); setTimeout(camStart, 350); }, 300); },
     meuqr: () => { ok(); setTimeout(() => openOverlay(Overlays.scan('meu'), 'scan'), 300); },
     palestrantes: () => { S.stacks.home.push({ s: 'speakers' }); },
     certificados: () => { ok(); S.present['react-native'] = '14:03'; S.stacks.home.push({ s: 'certificates' }); },

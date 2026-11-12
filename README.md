@@ -57,8 +57,8 @@ npm run prototipo        # ou: sh prototipo/rodar.sh
 ```
 
 - App: http://127.0.0.1:8770 · Painel: http://127.0.0.1:8770/admin.html · QR Codes de teste: http://127.0.0.1:8770/qrs.html
-- **No celular, pelo Wi-Fi:** `REDE=<IP do computador> sh prototipo/rodar.sh` e abra `http://<IP>:8770`. É HTTP: use só contas de teste. Instalar e usar sem internet exige HTTPS ou 127.0.0.1.
-- **QR Codes de teste:** cada QR da página é um link `?qr=etal:<atividade>`. A câmera do celular abre o app e, depois da entrada, faz a leitura de exemplo. Com a API ligada, os QRs assinados ficam em `homologacao.html`.
+- **No celular, pelo Wi-Fi:** `REDE=<IP do computador> HTTPS=1 sh prototipo/rodar.sh` e abra `https://<IP>:8770`. O certificado é local (gerado com `mkcert`): o navegador avisa uma vez, toque em *Avançado → Continuar*. Em HTTPS a câmera do leitor de QR funciona. Sem `HTTPS=1` o servidor fica em HTTP e a câmera do app não abre (o navegador não deixa); a câmera do próprio celular ainda lê os QRs da página de teste. Use só contas de teste.
+- **QR Codes de teste** (`/qrs.html`, aberto no computador): leia com o leitor do app (modo HTTPS) ou com a câmera do celular. Cada QR é um link `?qr=etal:<atividade>`. A câmera do celular abre o app e, depois da entrada, faz a leitura de exemplo. Com a API ligada, os QRs assinados ficam em `homologacao.html`.
 - **Sem servidor:** `npm run export:html` gera o `index.html` da raiz, que abre com duplo clique (sem login do SUAP).
 - **Atalhos:** `?tela=home|agenda|atividade|mapa|rota|org|sobre…`, `?mapa=classico`, `?tema=dark`, `?fps=1`.
 
