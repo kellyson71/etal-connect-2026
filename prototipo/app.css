@@ -2013,3 +2013,12 @@ html.passeio-cheio .statusbar{height:0!important;padding:0}
 
 /* atalho do tema ao lado dos avisos */
 .hd-acts{display:flex;gap:4px;align-items:center;margin-left:auto}
+
+/* convite para instalar (home): destaque leve, some depois de instalado ou dispensado */
+.instalar{display:flex;align-items:center;gap:4px;background:var(--card);border-radius:calc(18px*var(--rk,1));box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--navy) 14%,transparent)}
+.inst-main{flex:1;display:flex;align-items:center;gap:12px;padding:12px 4px 12px 14px;text-align:left;min-width:0}
+.inst-main>.i{width:22px;height:22px;flex:none;color:var(--accent-ink);padding:8px;box-sizing:content-box;border-radius:12px;background:var(--blue-50)}
+.inst-main b{display:block;font:600 14.5px var(--display);color:var(--ink)}
+.inst-main small{display:block;font-size:12.5px;color:var(--muted)}
+.inst-x{flex:none;width:40px;height:40px;margin-right:6px;display:grid;place-items:center;border-radius:12px;color:var(--muted)}
+.inst-x .i{width:16px;height:16px}
