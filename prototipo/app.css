@@ -1873,44 +1873,73 @@ html.passeio-cheio .statusbar{height:0!important;padding:0}
   .overlay{top:env(safe-area-inset-top,0px)}
 }
 
-/* ---- Tipos de atividade (TIPOS em app.js): cada um com cor, card na agenda e bloco no detalhe ---- */
-.f-mesa,.tp-mesa{--tp:#d0651f}
-.f-camp,.tp-camp{--tp:#d6332c}
-.ag-kind .i{width:13px;height:13px;stroke-width:2.2}
-.ag-who{display:flex;align-items:center;gap:9px;margin-top:8px}
-.ag-who .ava{width:30px;height:30px;font-size:11px;flex:none}
-.ag-who b{display:block;font-size:13px;font-weight:600;color:var(--ink)}
-.ag-who small{display:block;font-size:12px;color:var(--muted)}
-.ag li.ag-pal,.ag li.ag-mesa{background:linear-gradient(135deg,color-mix(in srgb,var(--tp) 9%,var(--card)),var(--card) 62%)}
-.ag-rodada{display:flex;flex:none}
-.ag-rodada .ava{width:26px;height:26px;font-size:9.5px;letter-spacing:-.02em;margin-left:-5px;box-shadow:0 0 0 2px var(--card)}
-.ag-rodada .ava:first-child{margin-left:0}
-.ag-pratica{display:flex;align-items:center;flex-wrap:wrap;gap:6px 9px;margin-top:8px;font-size:12px;color:var(--muted)}
-.ag-pratica .seats{flex:0 0 56px;margin:0}
-.ag-pratica em{font-style:normal;display:inline-flex;align-items:center;gap:4px;font-weight:600;color:var(--tp);background:color-mix(in srgb,var(--tp) 11%,transparent);padding:2px 8px;border-radius:999px}
-.ag-pratica em .i{width:13px;height:13px}
-.ag li.ag-camp{align-items:center;gap:12px;padding:10px 12px 10px 10px;color:#fff;background:linear-gradient(120deg,#1a1d2e,#43151f);box-shadow:none}
-.ag li.ag-camp.mine{box-shadow:0 0 0 2px var(--tp)}
-.ag li.ag-camp.fifa{background:linear-gradient(120deg,#0b2a4a,#0e5a3c)}
-.ag-camp .ag-arte{width:56px;height:56px;border-radius:12px;background:rgba(255,255,255,.08);display:grid;place-items:center;flex:none;overflow:hidden}
-.ag-camp .ag-arte img{width:50px;height:auto}
-.ag-camp .ag-arte .i{width:26px;height:26px;color:#ffd27a}
-.ag-camp .ag-kind{color:#ffb4a8}
-.ag-camp.fifa .ag-kind{color:#9fe3b8}
-.ag-camp h4{color:#fff}
-.ag-camp p{color:rgba(255,255,255,.74)}
-.ag-camp .card-chev{color:rgba(255,255,255,.7);flex:none}
-.kind-tp{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;color:var(--tp)!important;background:color-mix(in srgb,var(--tp) 11%,transparent);padding:4px 11px 4px 9px;border-radius:999px}
+/* ---- Tipos de atividade (TIPOS em app.js) ----
+   Cores dos hexágonos do logo do ETAL: azul, amarelo, verde e vermelho. --tp pinta o hexágono; --tp-ink é a mesma
+   cor escurecida para texto sobre fundo claro (contraste). Nada de cor solta fora daqui. */
+.tp-pal,.f-pal{--tp:#5d86dc;--tp-ink:#2f55b0}
+.tp-mesa,.f-mesa{--tp:#f2b230;--tp-ink:#8a5a00;--tp-on:#3d2a00}
+.tp-mini,.tp-ofi,.f-mini{--tp:#65b32e;--tp-ink:#2f6f12}
+.tp-camp,.f-camp{--tp:#d6332c;--tp-ink:#b02a24}
+.tp-out{--tp:#8793ab;--tp-ink:#5a6680}
+.ag-chips button i{background:var(--tp);border-radius:2px;width:9px;height:9px;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+
+/* card de sessão */
+.ag li.ses{display:flex;align-items:flex-start;gap:12px;padding:13px 6px 13px 13px;background:var(--card);box-shadow:none;border-radius:calc(16px*var(--rk,1))}
+.ag li.ses.mine{box-shadow:0 0 0 1.5px color-mix(in srgb,var(--navy) 30%,transparent)}
+.ses-hex{position:relative;flex:none;width:34px;height:34px;display:grid;place-items:center;margin-top:1px}
+.ses-hex svg{position:absolute;inset:0;width:100%;height:100%;fill:var(--tp)}
+.ses-hex .i{position:relative;width:16px;height:16px;color:var(--tp-on,#fff);stroke-width:2.2}
+.ses-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px}
+.ag .ses h4{margin:0;font:600 15.5px/1.28 var(--display);letter-spacing:-.01em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ag .ses-meta{display:flex;align-items:center;gap:7px;margin:0;font-size:12.5px;color:var(--muted);min-width:0}
+.ses-meta .ava{width:22px;height:22px;font-size:9px;border-radius:7px;flex:none}
+.ses-quem{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink-2);font-weight:500}
+.ses-onde{flex:0 1 auto;max-width:55%;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ses-quem{flex:0 100 auto;min-width:3.5em}
+.ag-trilho .slot{grid-template-columns:44px minmax(0,1fr)}
+.ag li.ses,.ag li.ses-camp{min-width:0}
+.ses-quem + .ses-onde::before{content:"·";margin-right:6px}
+.ses-rostos{display:flex;flex:none}
+.ses-rostos .ava{margin-left:-6px;box-shadow:0 0 0 2px var(--card)}
+.ses-rostos .ava:first-child{margin-left:0}
+.ses-selo{align-self:flex-start;display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
+.ses-selo.agora{background:var(--green-50);color:var(--green-ink)}
+.ses-selo.agora i{width:6px;height:6px;border-radius:50%;background:currentColor;animation:sesPulso 1.6s ease-in-out infinite}
+.ses-selo.pouca{background:#fff1d6;color:#8a5200}
+.ses-selo.cheio{background:var(--line);color:var(--muted)}
+@keyframes sesPulso{50%{opacity:.25}}
+@media(prefers-reduced-motion:reduce){.ses-selo.agora i{animation:none}}
+.ag .ses .bm{margin-top:-4px}
+
+/* campeonato: a arte do jogo é o card */
+.ag li.ses-camp{position:relative;display:block;height:104px;padding:0;border-radius:calc(16px*var(--rk,1));overflow:hidden;color:#fff;isolation:isolate;box-shadow:none;cursor:pointer}
+.ses-camp .art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-1}
+.ses-camp .art-scrim{background:linear-gradient(90deg,rgba(6,8,20,.72) 0%,rgba(6,8,20,.15) 70%)}
+.ses-camp-tx{position:absolute;left:14px;right:14px;top:12px;bottom:12px;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start}
+.ses-camp-tx small{margin-top:auto}
+.ses-camp-tx .p-logo{height:30px;width:auto;max-width:132px;object-fit:contain;object-position:left}
+.ses-camp-tx .p-name{font:800 24px/1 var(--display);letter-spacing:-.02em}
+.ses-camp-tx small{font-size:12px;font-weight:600;opacity:.9}
+.ses-camp-chip{position:absolute;right:10px;top:10px}
+.ses-camp-chip .t-chip{font-size:11px;padding:4px 9px}
+
+/* pausas (credenciamento, intervalo, almoço): uma linha discreta */
+.ag li.ses-pausa{display:flex;align-items:baseline;gap:8px;padding:4px 4px 4px 2px;background:none;box-shadow:none;font-size:13.5px;color:var(--ink-2)}
+.ses-pausa small{font-size:12px;color:var(--muted)}
+
+/* detalhe da atividade */
+.kind-tp{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;color:var(--tp-ink)!important;background:color-mix(in srgb,var(--tp) 16%,transparent);padding:4px 11px 4px 9px;border-radius:999px}
 .kind-tp .i{width:15px;height:15px}
-.teacher.quem-fala{padding:14px;background:linear-gradient(135deg,color-mix(in srgb,#8a4fd0 12%,var(--card)),var(--card))}
-.teacher.quem-fala small:first-child{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:#8a4fd0}
+.teacher.quem-fala{padding:14px;background:var(--card);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,#5d86dc 35%,transparent)}
+.teacher.quem-fala small:first-child{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:#2f55b0}
 .teacher.quem-fala b{display:block;font-size:17px}
 .roda ul{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:8px}
 .roda li{display:flex;align-items:center;gap:10px;background:var(--card);padding:9px 11px;border-radius:calc(14px*var(--rk,1))}
-.roda li:first-child{box-shadow:inset 3px 0 0 #d0651f}
+.roda li:first-child{box-shadow:inset 3px 0 0 #f2b230}
 .roda b{display:block;font-size:14px}
 .roda small{display:block;font-size:12.5px;color:var(--muted)}
-.levar{display:flex;gap:11px;align-items:flex-start;padding:12px 14px;border-radius:calc(14px*var(--rk,1));background:color-mix(in srgb,#2f55c8 8%,var(--card));color:var(--ink-2)}
-.levar .i{width:20px;height:20px;color:#2f55c8;flex:none;margin-top:2px}
+.levar{display:flex;gap:11px;align-items:flex-start;padding:12px 14px;border-radius:calc(14px*var(--rk,1));background:color-mix(in srgb,#65b32e 10%,var(--card));color:var(--ink-2)}
+.levar .i{width:20px;height:20px;color:#2f6f12;flex:none;margin-top:2px}
 .levar b{display:block;font-size:14px;color:var(--ink)}
 .levar small{font-size:13px}
+@media (prefers-color-scheme:dark){.ses-selo.pouca{background:#3a2c12;color:#ffd27a}}
