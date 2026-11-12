@@ -7,6 +7,8 @@ def test_programacao_publica(app_cliente):
     assert r.status_code == 200
     s = r.json()['sessions']
     assert len(s) == 21
+    assert len([a for a in s if a.get("suapId")]) == 15
+    assert len([a for a in s if a.get("tournament")]) == 4
     assert {'id', 'title', 'time', 'end', 'room', 'date'} <= set(s[0])
 
 
@@ -148,3 +150,26 @@ def test_login_suap_com_senha(app_cliente, monkeypatch):
     assert app_cliente.post('/api/auth/suap/senha', json={'matricula': '20241014', 'senha': 'certa'}).status_code == 200
     eu = app_cliente.get('/api/eu').json()['person']
     assert eu['name'] == 'Ana Souza' and eu['photo'] == 'https://suap.ifrn.edu.br/media/f.jpg'
+
+
+def test_debug_qr_so_para_administrador_em_demo(app_cliente, monkeypatch):
+    from app.config import config
+    monkeypatch.setattr(config(),'demo',True)
+    assert app_cliente.get('/api/org/debug/qrs').status_code == 401
+    entrar(app_cliente,matricula='participante')
+    assert app_cliente.get('/api/org/debug/qrs').status_code == 403
+    entrar(app_cliente,org=True,matricula='org-debug')
+    qrs=app_cliente.get('/api/org/debug/qrs').json()
+    assert len(qrs) == 21 and qrs[0]['id'] is None
+    sessions=app_cliente.get('/api/programacao').json()['sessions']
+    mini=[s['id'] for s in sessions if s['type']=='Minicurso']
+    assert len(mini)==6 and set(mini) <= {q['id'] for q in qrs}
+    assert not app_cliente.get('/api/eu').json()['person']['credentialedAt']
+    assert app_cliente.post('/api/presenca',json={'qr':qrs[0]['url']}).json()['newCredential'] is True
+    qr=next(q for q in qrs if q['id']==mini[0])
+    first=app_cliente.post('/api/presenca',json={'qr':qr['url']}).json()
+    again=app_cliente.post('/api/presenca',json={'qr':qr['url']}).json()
+    assert first['activity']==mini[0] and again['alreadyPresent'] is True
+    assert mini[0] in app_cliente.get('/api/eu').json()['present']
+    monkeypatch.setattr(config(),'demo',False)
+    assert app_cliente.get('/api/org/debug/qrs').status_code == 404

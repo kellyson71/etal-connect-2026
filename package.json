@@ -19,7 +19,8 @@
     "preview:html": "python3 -m http.server 8080 --bind 127.0.0.1",
     "prototipo": "sh prototipo/rodar.sh",
     "pwa": "python3 scripts/build-pwa.py",
-    "planta": "python3 scripts/build-principal-plan.py && python3 scripts/check-principal-plan.py && python3 scripts/build-prototype-plan.py"
+    "planta": "python3 scripts/build-principal-plan.py && python3 scripts/check-principal-plan.py && python3 scripts/build-prototype-plan.py",
+    "test:comunidade": "node --test prototipo/tests/community.test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

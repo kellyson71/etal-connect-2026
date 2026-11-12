@@ -52,12 +52,22 @@
     ball: '<circle cx="12" cy="12" r="9"/><path d="m12 7 4 3-1.5 5h-5L8 10Z"/><path d="M12 3v4M21 10l-5 0M17 20l-2.5-5M7 20l2.5-5M3 10h5"/>',
     star: '<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2-5.500-2.900-5.500 2.900 1-6.200L3 9.600l6.200-.900Z"/>',
     award: '<circle cx="12" cy="9" r="6"/><path d="m8.500 14-1.500 8 5-3 5 3-1.500-8"/>',
+    trash: '<path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"/>',
+    flag: '<path d="M5 21V4c5-4 9 4 14 0v11c-5 4-9-4-14 0"/>',
+    pencil: '<path d="m15 4 5 5M4 20l5-1L21 7a2.1 2.1 0 0 0-4-4L5 15Z"/>',
+    heart: '<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/>',
+    image: '<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.5"/><path d="m21 15-5-5L5 21"/>',
     chat: '<path d="M21 12a8 8 0 0 1-8 8H4l2-3.500A8 8 0 1 1 21 12Z"/>',
     up: '<path d="m6 15 6-6 6 6"/>',
     moon: '<path d="M20 14.500A8.500 8.500 0 1 1 9.500 4a7 7 0 0 0 10.500 10.500Z"/>',
     sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.500v2M12 19.500v2M2.500 12h2M19.500 12h2M5.300 5.300l1.400 1.400M17.300 17.300l1.400 1.400M5.300 18.700l1.400-1.400M17.300 6.700l1.400-1.400"/>',
     text: '<path d="M4 19 9 6l5 13M5.800 15h6.400M15 19l3-7 3 7M16 17h4"/>',
     mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
+    phone: '<rect x="6" y="2.500" width="12" height="19" rx="2.500"/><path d="M10.500 18.500h3"/>',
+    mail: '<rect x="3" y="5" width="18" height="14" rx="2.500"/><path d="m4 7 8 6 8-6"/>',
+    code: '<path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/>',
+    github: '<path fill="currentColor" stroke="none" d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.82-.26.82-.57v-2.04c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.33-1.76-1.33-1.76-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.62-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .3"/>',
+    play: '<rect x="2.500" y="5" width="19" height="14" rx="4"/><path d="m10 9 5 3-5 3Z" fill="currentColor"/>',
     contact: '<circle cx="9" cy="8" r="3.500"/><path d="M3 20a6 6 0 0 1 12 0M18 8v6M15 11h6"/>',
     alarm: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.300 21a1.900 1.900 0 0 0 3.400 0"/>',
     drop: '<path d="M12 3c4 5 6.500 8.200 6.500 11.500a6.500 6.500 0 0 1-13 0C5.500 11.200 8 8 12 3Z"/>',
@@ -80,9 +90,11 @@
     <g class="hx hx1" transform="translate(16 36)"><path d="${hexPath}" fill="#d6332c"/><path d="M-5-7h10v2.800h-6.800v2.800h5.400v2.800h-5.400v2.800h6.800V7H-5Z" fill="#fff"/></g>
     <g class="hx hx2" transform="translate(30 13)"><path d="${hexPath}" fill="#65b32e"/><path d="M0-7a4.600 4.600 0 0 1 2.700 8.300V3h-5.400V1.300A4.600 4.600 0 0 1 0-7ZM-2 5.200h4" fill="none" stroke="#fff" stroke-width="1.800" stroke-linecap="round"/></g>
     <g class="hx hx3" transform="translate(30 59)"><path d="${hexPath}" fill="#65b32e"/><rect x="-6.500" y="-5" width="13" height="9" rx="1.500" fill="none" stroke="#fff" stroke-width="1.800"/><path d="M-1.600-2.800V1.800L2.400-.500Z" fill="#fff"/><path d="M-3 6.500h6" stroke="#fff" stroke-width="1.800" stroke-linecap="round"/></g></svg>`;
-  const meAv = (cls = 'av') => (D.person.photo ? `<span class="${cls} has-photo"><img src="${D.person.photo}" alt=""></span>` : `<span class="${cls}">${D.person.initials}</span>`);
+  const meAv = (cls = 'av') => (D.person.photo ? `<span class="${cls} has-photo"><img src="${esc(D.person.photo)}" alt=""></span>` : `<span class="${cls}">${esc(D.person.initials)}</span>`);
   const TINTS = ['#dfe8fa,#22386f', '#e6f3dc,#2f6f12', '#fde8e6,#a5302a', '#fff1d6,#8a5200', '#e7e4fb,#46389a', '#d9f1f1,#116466'];
   const spAv = (s, big = false) => {
+    const photo = s.speakerPhoto || (s.self && D.person.photo);
+    if (photo) return `<span class="ava${big ? ' lg' : ''} has-photo"><img src="${esc(assetUrl(photo))}" alt=""></span>`;
     const [bg, fg] = TINTS[(s.initials.charCodeAt(0) + s.initials.charCodeAt(1)) % TINTS.length].split(',');
     return `<span class="ava${big ? ' lg' : ''}" style="background:${bg};color:${fg}">${s.initials}</span>`;
   };
@@ -90,13 +102,17 @@
   const mapAct = (x) => (x.place ? `data-act="openplace" data-id="${x.place}"` : `data-act="openmap" data-floor="${x.floor}" data-zone="${x.zone}"`);
   /* Tipos de atividade: cada um tem cor (classe tp-*), ícone, card próprio na agenda e um bloco próprio no detalhe.
      g é o filtro da agenda (oficina anda junto com minicurso: as duas são mão na massa). Tipos novos entram aqui;
-     o que não estiver na lista vira uma parada simples (credenciamento, intervalo, abertura…). */
+     os demais continuam como cartões completos, com ícone de calendário. */
   const TIPOS = {
     Palestra: { k: 'pal', g: 'pal', icon: 'mic', plural: 'Palestras', formato: 'Uma pessoa fala; perguntas no fim' },
     'Mesa-redonda': { k: 'mesa', g: 'mesa', icon: 'chat', plural: 'Mesas', formato: 'Conversa entre convidados; a plateia pergunta' },
     Minicurso: { k: 'mini', g: 'mini', icon: 'laptop', plural: 'Minicursos', formato: 'Aula prática, no computador' },
     Oficina: { k: 'ofi', g: 'mini', icon: 'laptop', plural: 'Oficinas', formato: 'Mão na massa, em grupo' },
     Campeonato: { k: 'camp', g: 'camp', icon: 'trophy', plural: 'Campeonatos', formato: 'Chave eliminatória' },
+    Abertura: { k: 'pal', g: 'pal', icon: 'mic', plural: 'Aberturas', formato: 'Abertura do encontro' },
+    Apresentação: { k: 'mesa', g: 'out', icon: 'star', formato: 'Apresentação cultural' },
+    Encerramento: { k: 'mesa', g: 'out', icon: 'award', formato: 'Encerramento e premiações' },
+    Credenciamento: { k: 'mini', g: 'out', icon: 'id', formato: 'Recepção dos participantes' },
   };
   const TIPOS_G = new Set(['pal', 'mesa', 'mini', 'camp']);
   const tipoDe = (x) => TIPOS[x.type] || { k: 'out', g: 'out', icon: 'cal', formato: '' };
@@ -230,7 +246,7 @@
     present: {},
     saved: new Set(D.enrolled),
     tab: 'home',
-    stacks: { home: [{ s: 'home' }], agenda: [{ s: 'agenda' }], map: [{ s: 'map' }], profile: [{ s: 'profile' }] },
+    stacks: { community: [{ s: 'community' }], home: [{ s: 'home' }], agenda: [{ s: 'agenda' }], map: [{ s: 'map' }], profile: [{ s: 'profile' }] },
     agendaDay: 26, agendaFilter: 'all',
     mapView: 'evento', campusPlace: null, mapFloor: null, mapZone: null, mapRoute: false, mapVia: null, pending: false, journeying: false,
     tourTab: 'chave',
@@ -303,6 +319,326 @@
     <header class="bar">${back ? `<button class="iconbtn" data-act="back" aria-label="Voltar">${ic('back')}</button>` : '<span class="iconbtn ghost"></span>'}
     <h1 class="bar-title">${title}</h1>${right || '<span class="iconbtn ghost"></span>'}</header>`;
 
+  /* Perfil visual local: nunca altera os dados de identificação no SUAP/API. */
+  const profileLocalKey = (id) => `etal-perfil-visual:${id}`;
+  const profileLocal = (id) => { try { return JSON.parse(localStorage.getItem(profileLocalKey(id))) || {}; } catch (_) { return {}; } };
+  const PROFILE_AVATARS = ['assets/community/avatar-ana.svg', 'assets/community/avatar-lucas.svg', 'assets/community/avatar-julia.svg'];
+  let profileEditDraft = null; let profilePhotoBusy = false;
+  /* O nome de exibição e a foto mudam; o nome do SUAP (ou do cadastro de visitante) e a matrícula continuam ligados à conta. */
+  const officialName = (p = D.person) => p.officialName || p.name;
+  const isGuest = (p = D.person) => p.source === 'visitante';
+  const linkLine = (p = D.person) => `${ic('lock')}<span><b>${esc(officialName(p))}</b><small>${isGuest(p) ? 'Cadastro de visitante' : 'Nome no SUAP'} · ${isGuest(p) ? esc(p.email || p.id) : `Matrícula ${esc(p.id)}`}</small></span>`;
+
+  /* Cartão de contato: opcional, fica neste aparelho e só aparece para quem trocar contato pelo QR do crachá. */
+  const CARD_LANGS = ['Python', 'JavaScript', 'TypeScript', 'Java', 'C', 'C++', 'C#', 'PHP', 'Kotlin', 'Dart', 'Go', 'Rust', 'SQL', 'GDScript'];
+  const CARD_AREAS = ['Web', 'Mobile', 'Jogos', 'IA', 'Dados', 'Redes', 'Segurança', 'Design e UX', 'Robótica', 'Hardware'];
+  const CARD_OPEN = ['Estágio', 'Projetos de pesquisa', 'Grupo de estudo', 'Hackathons', 'Monitoria'];
+  const CARD_NADIC = [['bolsista', 'Sou bolsista'], ['ex', 'Já fui'], ['nao', 'Não sou']];
+  const cardKey = (id) => `etal-cartao:${id}`;
+  const cardGet = (id = D.person.id) => { try { return JSON.parse(localStorage.getItem(cardKey(id))) || null; } catch (_) { return null; } };
+  const cardSkipped = (id = D.person.id) => prefs.get(`etal-cartao-pulado:${id}`) === '1';
+  const cardSkip = (id = D.person.id) => prefs.set(`etal-cartao-pulado:${id}`, '1');
+  /* Homologação/demo: o convite volta a cada entrada e a cada recarga, mesmo já preenchido ou pulado. */
+  let cardDemoDone = false;
+  const cardAsk = () => S.auth && D.person.id && (DEMO ? !cardDemoDone : !cardGet() && !cardSkipped());
+  const cardIntro = (ms) => setTimeout(() => { if (cardAsk() && !ov.classList.contains('open') && S.tab === 'home' && top().s !== 'cartao') push('cartao', { intro: 1 }); }, ms);
+  const personAv = (p) => (p.photo ? `<span class="av has-photo"><img src="${esc(p.photo)}" alt=""></span>` : `<span class="av">${esc(p.initials || '?')}</span>`);
+  function taughtActivity(person) {
+    return D.sessions.find((a) => a.speakerId ? a.speakerId === String(person.id) : a.speaker && fold(a.speaker) === fold(person.officialName || person.name || ''));
+  }
+  function taughtActivityCard(person) {
+    const activity = taughtActivity(person); if (!activity) return '';
+    return `<button class="speaker-offer" ${goOf(activity)}>${spAv(activity, true)}<span><small>${ic(tipoDe(activity).icon)}${esc(activity.type)} no ETAL</small><b>${esc(activity.title)}</b><em>${activity.day} nov · ${activity.time}–${activity.end} · ${esc(activity.room)}</em></span>${ic('chev')}</button>`;
+  }
+  function cardPreview(c = {}, p = D.person, { own = p === D.person, taught = true } = {}) {
+    const priv = !own && c.publish === false; if (priv) c = {};
+    const nadic = c.nadic === 'bolsista' ? 'Bolsista' : c.nadic === 'ex' ? 'Ex-bolsista' : '';
+    const tags = [...(c.langs || []), ...(c.areas || [])];
+    const rows = [['phone', c.phone], ['mail', c.email], ['link', c.link]].filter(([, v]) => v);
+    const nada = !c.bio && !tags.length && !c.open?.length && !rows.length && !nadic;
+    const vazio = (i, t, sub) => `<div class="ct-empty">${ic(i)}<span><b>${t}</b>${sub ? `<small>${sub}</small>` : ''}</span></div>`;
+    return `<div class="ct-card${!own && c.publish === false ? ' off' : ''}"><i class="ct-glow"></i>
+      <div class="ct-top">${personAv(p)}<div><b>${esc(p.name)}</b><small>${esc(p.course || p.role || '')}</small></div>${nadic ? `<span class="ct-nadic"><img src="assets/nadic-logo.svg" alt="NADIC">${nadic}</span>` : ''}</div>
+      <p class="ct-real">${ic('lock')}${p.source === 'speaker' ? 'Ministrante do ETAL' : officialName(p) !== p.name ? esc(officialName(p)) : isGuest(p) ? 'Cadastro de visitante confirmado' : 'Nome confirmado pelo SUAP'}</p>
+      ${priv ? vazio('eye', 'Perfil privado', 'Esta pessoa preferiu não mostrar os detalhes') : nada ? (p.source === 'speaker' ? '' : own ? '<div class="ct-tags empty"><span>Seus interesses aparecem aqui</span></div>' : vazio('user', 'Perfil ainda não personalizado', 'Nenhuma informação extra cadastrada')) : `
+      ${c.bio ? `<p class="ct-bio">${esc(c.bio)}</p>` : ''}
+      ${tags.length ? `<div class="ct-tags">${tags.slice(0, 8).map((t) => `<span>${esc(t)}</span>`).join('')}${tags.length > 8 ? `<span>+${tags.length - 8}</span>` : ''}</div>` : own ? '<div class="ct-tags empty"><span>Seus interesses aparecem aqui</span></div>' : ''}
+      ${c.open?.length ? `<p class="ct-open">${ic('flag')}Aberto a ${esc(c.open.join(', ').replace(/, ([^,]*)$/, ' e $1'))}</p>` : ''}
+      ${rows.length ? `<ul class="ct-rows">${rows.map(([i, v]) => `<li>${ic(i)}<span>${esc(v)}</span></li>`).join('')}</ul>` : `<p class="ct-none">${ic('contact')}${own ? 'Nenhum contato adicionado' : 'Sem contato público'}</p>`}`}
+      ${taught ? taughtActivityCard(p) : ''}
+      ${own && c.publish === false ? `<span class="ct-hidden">${ic('eye')}Oculto</span>` : ''}</div>`;
+  }
+  /* Perfil público de outra pessoa: dados de exemplo da comunidade ou colegas de teste. */
+  const otherProfile = (id) => (window.DATA.demoProfiles || {})[id] || D.peers.find((x) => x.id === id) || null;
+  const cardChips = (name, list, on) => `<div class="ct-chips">${list.map((v) => `<label class="ct-chip"><input type="checkbox" name="${name}" value="${esc(v)}" ${on?.includes(v) ? 'checked' : ''}><span>${esc(v)}</span></label>`).join('')}</div>`;
+  function cardRead(f) {
+    const d = new FormData(f); const t = (k, n) => String(d.get(k) || '').trim().slice(0, n);
+    return { publish: d.get('publish') === 'on', phone: t('phone', 20), email: t('email', 80), link: t('link', 80), nadic: t('nadic', 10), langs: d.getAll('langs'), areas: d.getAll('areas'), open: d.getAll('open'), bio: t('bio', 140) };
+  }
+
+  function profileEditOpen() {
+    if (!S.auth && !lgPending) return;
+    profileEditDraft = { name: D.person.name, photo: D.person.photo || null };
+    openOverlay(`<form class="sheet profile-editor" data-form="profile-edit" role="dialog" aria-modal="true" aria-labelledby="profile-edit-title"><i class="grab"></i><header><h2 id="profile-edit-title">Editar perfil</h2><button type="button" class="iconbtn" data-act="closeov" aria-label="Fechar edição">${ic('x')}</button></header>
+      <div class="profile-edit-photo"></div><label class="btn soft community-file">${ic('image')}Escolher foto<input id="profile-photo" type="file" accept="image/jpeg,image/png,image/webp"></label>
+      <div class="profile-presets" aria-label="Avatares ilustrados">${PROFILE_AVATARS.map((src, i) => `<button type="button" data-act="profile-preset" data-index="${i}" aria-label="Usar avatar ilustrado ${i + 1}"><img src="${esc(src)}" alt=""></button>`).join('')}</div>
+      <button class="profile-remove" type="button" data-act="profile-remove-photo">Remover foto</button>
+      <label class="field" for="profile-name"><span>Nome de exibição</span><input id="profile-name" name="name" maxlength="80" value="${esc(D.person.name)}" autocomplete="nickname" required></label>
+      <div class="profile-link">${linkLine()}</div><button class="btn primary big" type="submit">Salvar alterações</button></form>`, 'ask');
+    profileEditRefresh();
+  }
+  function profileEditRefresh() {
+    const target = $('.profile-edit-photo', ov); if (!target || !profileEditDraft) return;
+    target.innerHTML = `<span class="av">${profileEditDraft.photo ? `<img src="${esc(profileEditDraft.photo)}" alt="Prévia da foto de perfil">` : esc(D.person.initials)}</span>`;
+    const save = $('[data-form="profile-edit"] button[type="submit"]', ov); if (save) save.disabled = profilePhotoBusy;
+    const remove = $('[data-act="profile-remove-photo"]', ov); if (remove) remove.hidden = !profileEditDraft.photo;
+  }
+  document.addEventListener('change', async (e) => {
+    if (e.target.id !== 'profile-photo' || !e.target.files?.[0] || profilePhotoBusy) return;
+    const draft = profileEditDraft; profilePhotoBusy = true; profileEditRefresh();
+    try { const photo = await readLocalPhoto(e.target.files[0], 512, true); if (profileEditDraft === draft && e.target.isConnected) draft.photo = photo; }
+    catch (error) { toast(error.message || 'Não foi possível abrir essa foto.'); }
+    finally { profilePhotoBusy = false; profileEditRefresh(); }
+  });
+
+  /* Carrosséis: navegação nativa por toque, sem avanço automático. */
+  const galleryPositions = {};
+  const communityPhotos = (p) => p.images?.length ? p.images : p.image ? [{ src: p.image, alt: p.alt }] : [];
+  function communityGallery(p) {
+    const photos = communityPhotos(p); if (!photos.length) return '';
+    return `<section class="community-gallery ${photos.length > 1 ? 'multi' : 'single'}" data-gallery="${esc(p.id)}" aria-label="Fotos da publicação de ${esc(p.name)}" aria-roledescription="carrossel">
+      <span class="gallery-count" aria-live="polite">1 / ${photos.length}</span>
+      <div class="gallery-track" tabindex="0" aria-label="Fotos; deslize ou use as setas para navegar">${photos.map((img, i) => `<figure class="gallery-slide" role="group" aria-label="Foto ${i + 1} de ${photos.length}"><img src="${esc(img.src)}" alt="${esc(img.alt || `Foto ${i + 1} compartilhada no evento`)}" loading="lazy">${img.caption ? `<figcaption>${esc(img.caption)}</figcaption>` : ''}</figure>`).join('')}</div>
+      ${photos.length > 1 ? `<div class="gallery-controls"><button type="button" class="gallery-prev" data-act="gallery-step" data-index="0" aria-label="Foto anterior">${ic('back')}</button><div class="gallery-dots">${photos.map((_, i) => `<button type="button" data-act="gallery-step" data-index="${i}" aria-label="Ver foto ${i + 1}" aria-current="${i === 0}"></button>`).join('')}</div><button type="button" class="gallery-next" data-act="gallery-step" data-index="1" aria-label="Próxima foto">${ic('arrow')}</button></div>` : ''}</section>`;
+  }
+  function mountGalleries(page) {
+    page.querySelectorAll('.community-gallery').forEach((gallery) => {
+      const track = $('.gallery-track', gallery); const slides = [...track.children]; const key = gallery.dataset.gallery;
+      const showIndex = () => {
+        const stride = slides.length > 1 ? slides[1].offsetLeft - slides[0].offsetLeft : 1;
+        const i = Math.min(slides.length - 1, Math.max(0, Math.round(track.scrollLeft / stride)));
+        galleryPositions[key] = i; $('.gallery-count', gallery).textContent = `${i + 1} / ${slides.length}`;
+        gallery.querySelectorAll('.gallery-dots button').forEach((dot, n) => dot.setAttribute('aria-current', String(n === i)));
+        const prev = $('.gallery-prev', gallery); const next = $('.gallery-next', gallery);
+        if (prev) { prev.dataset.index = Math.max(0, i - 1); prev.disabled = i === 0; }
+        if (next) { next.dataset.index = Math.min(slides.length - 1, i + 1); next.disabled = i === slides.length - 1; }
+      };
+      let frame; track.addEventListener('scroll', () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(showIndex); }, { passive: true });
+      track.addEventListener('keydown', (e) => {
+        if (!['ArrowLeft', 'ArrowRight'].includes(e.key) || e.target !== track) return;
+        e.preventDefault(); const i = Math.max(0, Math.min(slides.length - 1, (galleryPositions[key] || 0) + (e.key === 'ArrowRight' ? 1 : -1)));
+        track.scrollTo({ left: slides[i].offsetLeft - slides[0].offsetLeft, behavior: reduce ? 'instant' : 'smooth' });
+      });
+      requestAnimationFrame(() => { const i = Math.min(slides.length - 1, galleryPositions[key] || 0); track.scrollLeft = slides[i].offsetLeft - slides[0].offsetLeft; showIndex(); });
+    });
+  }
+
+  const profileShortcut = () => `<button class="iconbtn profile-shortcut" data-act="tab" data-tab="profile" aria-label="Abrir perfil">${meAv()}</button>`;
+
+  /* ---------------- comunidade (demonstração local) ---------------- */
+  const SOCIAL = window.COMMUNITY;
+  const COMMUNITY_KEY = SOCIAL.key;
+  const communityRead = SOCIAL.read;
+  const communityWrite = (change) => {
+    try { SOCIAL.write(change); return true; }
+    catch (error) { toast(error.message || 'Não foi possível salvar. Libere espaço no navegador.'); return false; }
+  };
+  const canModerateCommunity = () => S.auth && (API ? !!D.person.org : !!orgDe());
+  const communitySeeds = window.COMMUNITY.seeds;
+  let communityMode = 'feed';
+  const communityDraft = { post: '', message: '', comments: {}, images: [], activity: '', day: D.now.day, tag: 'No evento', contextReady: false, activityManual: false };
+  let communityImageBusy = false;
+  const communityAuthor = () => ({ author: String(D.person.id), name: D.person.name, initials: D.person.initials, photo: D.person.photo || null, role: D.person.course || 'Participante' });
+  const communityTime = (p) => p.time || new Date(p.created).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  const communityAvatar = (p) => {
+    const own = p.author === String(D.person.id); const photo = own ? D.person.photo : p.photo;
+    return `<span class="community-avatar">${photo ? `<img src="${esc(photo)}" alt="" loading="lazy">` : esc(own ? D.person.initials : p.initials || '?')}</span>`;
+  };
+  const communityPosts = (v) => SOCIAL.posts(v);
+  const communityGate = () => `<div class="community-gate">${ic('lock')}<span>Para participar, leia o QR Code da recepção.</span><button data-act="scan">Ler QR Code</button></div>`;
+  let communityDay = 'all'; let communityActivity = 'all'; let communityModFilter = 'pending';
+  const communityEmpty = (text) => `<p class="social-empty">${esc(text)}</p>`;
+  function communityPeople(v = communityRead()) {
+    const rows = [...communitySeeds, communityAuthor(), ...SOCIAL.contents(v)]; const people = new Map(); const handles = new Set();
+    for (const row of rows) {
+      if (!row.author || people.has(String(row.author))) continue;
+      const own = String(row.author) === String(D.person.id); const person = own ? communityAuthor() : row;
+      let handle = row.handle || SOCIAL.contents(v).find((p) => p.author === row.author && p.handle)?.handle || person.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '.').replace(/^\.|\.$/g, '') || 'participante';
+      const base = handle; let n = 2; while (handles.has(handle)) handle = `${base}.${n++}`;
+      handles.add(handle); people.set(String(row.author), { ...person, id: String(row.author), handle });
+    }
+    return [...people.values()];
+  }
+  const mentionPattern = () => /(^|[^\w@])@([a-z0-9]+(?:[._-][a-z0-9]+)*)/gi;
+  function communityMentions(text, v = communityRead()) {
+    const handles = [...String(text).matchAll(mentionPattern())].map((m) => m[2].toLowerCase());
+    return communityPeople(v).filter((p) => handles.includes(p.handle));
+  }
+  function communityText(text, v) {
+    const raw = String(text || ''); const people = communityPeople(v); let html = ''; let offset = 0;
+    for (const match of raw.matchAll(mentionPattern())) {
+      html += esc(raw.slice(offset, match.index) + match[1]); const person = people.find((p) => p.handle === match[2].toLowerCase());
+      html += person ? `<button class="social-mention" data-go="communityPerson" data-id="${esc(person.id)}">@${esc(person.handle)}</button>` : esc(`@${match[2]}`); offset = match.index + match[0].length;
+    }
+    return html + esc(raw.slice(offset));
+  }
+  function communityMentionRows(v) {
+    return SOCIAL.contents(v).filter((item) => !SOCIAL.hidden(v, item.target) && (!item.postId || !SOCIAL.hidden(v, SOCIAL.postKey(item.postId))) && (item.mentions || []).some((id) => id === String(D.person.id)) && item.author !== String(D.person.id));
+  }
+  function communityMentionHints(input) {
+    const existing = input.parentElement.querySelector('.social-mention-hints'); existing?.remove();
+    const before = input.value.slice(0, input.selectionStart); const match = /(?:^|\s)@([a-z0-9._-]*)$/i.exec(before); if (!match) return;
+    const people = communityPeople().filter((p) => p.handle.startsWith(match[1].toLowerCase())).slice(0, 5); if (!people.length) return;
+    if (!input.id) input.id = 'social-mention-input';
+    const list = document.createElement('div'); list.className = 'social-mention-hints'; list.setAttribute('aria-label', 'Sugestões de pessoas');
+    list.innerHTML = people.map((p) => `<button type="button" data-act="community-insert-mention" data-input="${esc(input.id)}" data-handle="${esc(p.handle)}">${communityAvatar(p)}<span><b>${esc(p.name)}</b><small>@${esc(p.handle)}</small></span></button>`).join(''); input.after(list);
+  }
+  function communityAddMention(input, handle) {
+    if (!input) return;
+    const cursor = input.selectionStart; const before = input.value.slice(0, cursor); const match = /(?:^|\s)@([a-z0-9._-]*)$/i.exec(before);
+    const start = match ? cursor - match[1].length - 1 : cursor;
+    const separator = !match && start > 0 && !/\s/.test(input.value[start - 1]) ? ' ' : '';
+    input.setRangeText(`${separator}@${handle} `, start, cursor, 'end'); input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.parentElement.querySelector('.social-mention-hints')?.remove(); input.focus();
+  }
+  function communityActivityCard(p) {
+    const activity = byId(p.activity); if (!activity) return '';
+    return `<button class="social-activity" data-go="activity" data-id="${esc(activity.id)}">${ic('cal')}<span><b>${esc(activity.short)}</b><small>${activity.day} nov · ${esc(activity.time)} · ${esc(activity.room)}</small></span>${ic('chev')}</button>`;
+  }
+  function communityToolbar(v) {
+    if (communityMode === 'chat') return '';
+    const unread = communityMentionRows(v).filter((m) => !(v.mentionSeen[String(D.person.id)] || []).includes(m.target)).length;
+    return `<nav class="social-tabs" aria-label="Explorar publicações">${[['feed', 'Feed'], ['wall', 'Fotos'], ['saved', 'Salvos'], ['mentions', `Menções${unread ? ` · ${unread}` : ''}`]].map(([id, label]) => `<button data-act="community-mode" data-v="${id}" aria-pressed="${communityMode === id}">${label}</button>`).join('')}</nav>`;
+  }
+  function communityWall(v) {
+    const posts = communityPosts(v).filter((p) => (communityDay === 'all' || +p.day === +communityDay) && (communityActivity === 'all' || p.activity === communityActivity));
+    const photos = posts.flatMap((p) => communityPhotos(p).map((photo, index) => ({ p, photo, index })));
+    return `<div class="social-wall"><div class="social-wall-filters"><label>Dia<select data-community-filter="day"><option value="all">Todos os dias</option>${D.days.map((d) => `<option value="${d.day}" ${String(d.day) === communityDay ? 'selected' : ''}>${esc(d.week)} · ${d.day} nov</option>`).join('')}</select></label><label>Atividade<select data-community-filter="activity"><option value="all">Todas as atividades</option>${D.sessions.map((a) => `<option value="${esc(a.id)}" ${a.id === communityActivity ? 'selected' : ''}>${esc(a.short)}</option>`).join('')}</select></label></div>
+      ${photos.length ? `<div class="social-photo-grid">${photos.map(({ p, photo, index }) => `<button data-act="community-photo-open" data-id="${esc(p.id)}" data-index="${index}" aria-label="Ver foto ${index + 1} da publicação de ${esc(p.name)}"><img src="${esc(photo.src)}" alt="${esc(photo.alt || 'Foto no mural')}" loading="lazy"><span>${esc(p.name.split(' ')[0])} · ${p.day || '—'} nov</span></button>`).join('')}</div>` : communityEmpty('Nenhuma foto para estes filtros.')}</div>`;
+  }
+  function communityReportOpen(target) {
+    if (!S.credAt) { toast('Leia o QR Code da recepção para participar.'); return; }
+    const v = communityRead(); if (!SOCIAL.find(v, target) || SOCIAL.hidden(v, target)) { toast('Este conteúdo não está mais disponível.'); return; }
+    openOverlay(`<form class="sheet social-report" data-form="community-report" data-target="${esc(target)}" role="dialog" aria-modal="true" aria-labelledby="social-report-title"><i class="grab"></i><header><h2 id="social-report-title">Denunciar conteúdo</h2><button class="iconbtn" type="button" data-act="closeov" aria-label="Fechar denúncia">${ic('x')}</button></header><label class="field">Motivo<select name="reason" required><option value="">Selecione o motivo</option>${SOCIAL.reasons.map((r) => `<option>${esc(r)}</option>`).join('')}</select></label><label class="field">Detalhes<textarea name="detail" rows="3" maxlength="500" placeholder="Conte o que a equipe precisa saber (opcional)"></textarea></label><p class="community-muted">A denúncia fica neste navegador para revisão da organização.</p><button class="btn primary big" type="submit">Enviar denúncia</button></form>`, 'ask');
+  }
+  Screens.communityPerson = ({ id }) => {
+    const v = communityRead(); const person = communityPeople(v).find((p) => p.id === id);
+    if (!person) return { html: `${header('Participante')}${communityEmpty('Este perfil não está disponível.')}` };
+    const posts = communityPosts(v).filter((p) => p.author === person.id);
+    const own = person.id === String(D.person.id); const prof = own ? null : otherProfile(person.id);
+    const card = own ? cardGet() || {} : prof?.card || {}; const who = own ? D.person : { ...person, ...(prof || {}), name: person.name, photo: person.photo };
+    return { html: `${header(own ? 'Seu perfil' : 'Participante')}<div class="pad social-card">${cardPreview(card, who, { own })}<div class="social-card-acts">${own ? `<button class="btn soft" data-go="cartao">${ic('pencil')}Editar perfil</button>` : S.credAt ? `<button class="btn soft" data-act="community-mention-person" data-id="${esc(person.id)}">${ic('contact')}Marcar na publicação</button>` : ''}</div></div><div class="community-feed">${posts.map((p) => communityPost(p, v)).join('') || communityEmpty('Ainda não há publicações.')}</div>` };
+  };
+  Screens.orgCommunity = () => canModerateCommunity() ? { html: `${header('Moderação')}<div class="pad">${orgDe() || D.person.org ? `<button class="oq-atalho" data-go="orgQrs">${ic('qr')}<span><b>QR Codes das salas</b><small>Para quando o impresso rasga ou não lê</small></span>${ic('chev')}</button>` : ''}${SOCIAL.moderationHTML(communityRead(), communityModFilter)}</div>` } : semAcesso();
+
+  function communityPost(p, v, detail = false) {
+    const liked = (v.likes[p.id] || []).includes(String(D.person.id));
+    const comments = SOCIAL.comments(v, p.id);
+    const bookmarked = (v.bookmarks[String(D.person.id)] || []).includes(p.id);
+    return `<article class="community-post">
+      <header><button class="social-who" data-go="communityPerson" data-id="${esc(String(p.author))}" aria-label="Ver perfil">${communityAvatar(p)}</button><div><b data-go="communityPerson" data-id="${esc(String(p.author))}">${esc(p.author === String(D.person.id) ? D.person.name : p.name)}</b><small>${esc(p.role)} · ${esc(communityTime(p))}</small></div>${p.author === String(D.person.id) || canModerateCommunity() ? `<button class="iconbtn social-delete-button" data-act="community-delete" data-id="${esc(p.id)}" aria-label="${p.author === String(D.person.id) ? 'Excluir minha publicação' : `Excluir publicação de ${esc(p.name)}`}" title="Excluir publicação">${ic('trash')}</button>` : `<button class="iconbtn social-report-button" data-act="community-report" data-target="${esc(SOCIAL.postKey(p.id))}" aria-label="Denunciar publicação">${ic('flag')}</button>`}</header>
+      ${p.text ? `<p class="community-text">${communityText(p.text, v)}</p>` : ''}
+      ${communityActivityCard(p)}
+      ${communityGallery(p)}
+      <footer><button class="${liked ? 'liked' : ''}" data-act="community-like" data-id="${esc(p.id)}" aria-pressed="${liked}" aria-label="Curtir publicação de ${esc(p.name)}">${ic('heart')}<span>${(p.likes || 0) + (v.likes[p.id] || []).length}</span></button><button data-go="communityPost" data-id="${esc(p.id)}">${ic('chat')}<span>${comments.length ? `${comments.length} comentário${comments.length === 1 ? '' : 's'}` : 'Comentar'}</span></button><button class="social-save ${bookmarked ? 'on' : ''}" data-act="community-save" data-id="${esc(p.id)}" aria-pressed="${bookmarked}" aria-label="${bookmarked ? 'Remover dos salvos' : 'Salvar publicação'}">${ic('bookmark')}</button></footer>
+      ${detail ? `<section class="community-comments"><h2>Comentários</h2>${comments.length ? comments.map((c) => `<div class="community-comment"><button class="social-who" data-go="communityPerson" data-id="${esc(String(c.author))}" aria-label="Ver perfil">${communityAvatar(c)}</button><div><b data-go="communityPerson" data-id="${esc(String(c.author))}">${esc(c.author === String(D.person.id) ? D.person.name : c.name)}</b><p class="community-text">${communityText(c.text, v)}</p></div><button class="iconbtn social-report-button" data-act="community-report" data-target="${esc(SOCIAL.commentKey(p.id, c.id))}" aria-label="Denunciar comentário">${ic('flag')}</button></div>`).join('') : '<p class="community-muted">Comece essa conversa.</p>'}
+      ${S.credAt ? `<form data-form="community-comment" data-id="${esc(p.id)}" class="community-reply"><label class="sr-only" for="community-reply">Seu comentário</label><textarea id="community-reply" name="text" data-community-draft="comment" data-id="${esc(p.id)}" maxlength="1000" rows="2" placeholder="Escreva um comentário…" required>${esc(communityDraft.comments[p.id] || '')}</textarea><button class="iconbtn" type="submit" aria-label="Enviar comentário">${ic('arrow')}</button></form>` : communityGate()}</section>` : ''}
+    </article>`;
+  }
+  Screens.community = () => {
+    const v = communityRead(); const chat = communityMode === 'chat';
+    return { html: `<header class="community-bar"><div class="community-brand">${mark('mark xs')}<h1>${chat ? 'Chat geral' : 'Publicações'}</h1></div><div class="hd-acts"><button class="iconbtn ${chat ? 'on' : ''}" data-act="community-mode" data-v="${chat ? 'feed' : 'chat'}" aria-label="${chat ? 'Voltar às publicações' : 'Abrir chat geral'}" aria-pressed="${chat}">${ic(chat ? 'list' : 'chat')}</button>${profileShortcut()}</div></header>
+
+      ${communityToolbar(v)}
+      ${chat ? `<div class="community-chat"><div class="community-messages" role="log" aria-label="Mensagens do chat geral">${SOCIAL.messages(v).map((m) => `<div class="community-message ${m.author === String(D.person.id) ? 'mine' : ''}"><div class="community-chat-author"><button class="social-who" data-go="communityPerson" data-id="${esc(String(m.author))}" aria-label="Ver perfil">${communityAvatar(m)}</button><b data-go="communityPerson" data-id="${esc(String(m.author))}">${esc(m.author === String(D.person.id) ? D.person.name : m.name)}</b><button class="iconbtn social-report-button" data-act="community-report" data-target="${esc(SOCIAL.messageKey(m.id))}" aria-label="Denunciar mensagem">${ic('flag')}</button></div><p class="community-text">${communityText(m.text, v)}</p><time>${esc(communityTime(m))}</time></div>`).join('')}</div>
+      ${S.credAt ? `<form data-form="community-message" class="community-reply community-chat-form"><label class="sr-only" for="community-message">Sua mensagem</label><textarea id="community-message" data-community-draft="message" name="text" rows="2" maxlength="1000" placeholder="Mande um oi para a galera…" required>${esc(communityDraft.message)}</textarea><button class="iconbtn" type="submit" aria-label="Enviar mensagem">${ic('arrow')}</button></form>` : communityGate()}</div>` : communityMode === 'wall' ? communityWall(v) : communityMode === 'mentions' ? `<div class="social-mentions">${communityMentionRows(v).map((item) => `<button class="social-mention-row" data-act="community-mention-open" data-target="${esc(item.target)}">${communityAvatar(item)}<span><b>${esc(item.name)} marcou você</b><small>${esc(item.type)} · ${esc(item.text.slice(0, 110))}</small></span>${ic('chev')}</button>`).join('') || communityEmpty('Quando alguém marcar você, a menção aparece aqui.')}</div>` : `<div class="community-feed">${communityMode === 'feed' && S.credAt ? `<div class="community-start"><button class="community-start-text" data-act="community-compose">${meAv()}<span>Compartilhe algo do evento…</span></button><div class="community-start-actions"><button data-act="community-compose" data-photo="1">${ic('image')}Foto / imagem</button><button data-act="community-compose">${ic('plus')}Publicar</button></div></div>` : communityMode === 'feed' ? communityGate() : ''}${(() => { const posts = communityPosts(v).filter((p) => communityMode !== 'saved' || (v.bookmarks[String(D.person.id)] || []).includes(p.id)); return posts.map((p) => communityPost(p, v)).join('') || communityEmpty(communityMode === 'saved' ? 'Salve publicações pelo marcador para encontrá-las aqui.' : 'Ainda não há publicações.'); })()}</div>`}`,
+      mount(el) { if (chat) $('.community-chat-form', el)?.scrollIntoView({ block: 'end' }); },
+    };
+  };
+  Screens.communityPost = ({ id }) => {
+    const v = communityRead(); const p = communityPosts(v).find((x) => x.id === id);
+    return { html: `${header('Publicação')}<div class="community-feed">${p ? communityPost(p, v, true) : '<p class="community-muted">Esta publicação foi excluída.</p>'}</div>` };
+  };
+  const communityCheckinKey = () => `etal-atividade-atual:${D.person.id}`;
+  function communityCheckin(id) { if (byId(id)?.type !== 'Credenciamento') store.set(communityCheckinKey(), { id, at: Date.now() }); }
+  function prepareCommunityContext() {
+    if (communityDraft.contextReady) return;
+    const context = SOCIAL.currentActivity({ sessions: D.sessions, day: D.now.day, time: D.now.time, saved: [...S.saved], present: S.present, lastCheckin: store.get(communityCheckinKey()) });
+    communityDraft.activity = context?.activity.id || '';
+    communityDraft.day = context?.activity.day || D.now.day;
+    communityDraft.contextReason = context?.reason || '';
+    communityDraft.contextReady = true;
+  }
+  function updateComposerState() {
+    const button = $('.page:not(.leaving) .compose-submit');
+    if (button) button.disabled = communityImageBusy || (!communityDraft.post.trim() && !communityDraft.images.length);
+    const counter = $('#compose-count'); if (counter) counter.textContent = `${communityDraft.post.length}/2000`;
+  }
+  Screens.communityCompose = () => {
+    prepareCommunityContext(); const activity = byId(communityDraft.activity);
+    const canPost = !communityImageBusy && (communityDraft.post.trim() || communityDraft.images.length);
+    return { html: `${header('Nova publicação', { right: S.credAt ? `<button class="compose-submit" type="submit" form="community-post-form" ${canPost ? '' : 'disabled'}>Publicar</button>` : '' })}
+      <div class="community-compose">${S.credAt ? `<form id="community-post-form" class="post-editor" data-form="community-post">
+        <div class="community-identity">${meAv()}<div><b>${esc(D.person.name)}</b><small>${esc(D.event?.name || 'ETAL')}</small></div></div>
+        <details class="compose-context"><summary>${ic(activity ? 'pin' : 'cal')}<span><b>${esc(activity?.short || 'Adicionar atividade')}</b><small>${activity ? `${activity.day} nov · ${esc(activity.room)}` : 'Opcional'}${activity && communityDraft.contextReason === 'qr' ? ' · Check-in realizado' : activity && communityDraft.contextReason === 'agenda' ? ' · Na sua agenda agora' : ''}</small></span>${ic('chev')}</summary>
+          <div class="compose-context-fields"><label>Atividade<select name="activity" data-community-draft="activity"><option value="">Sem atividade vinculada</option>${D.sessions.filter((a) => a.type !== 'Credenciamento').map((a) => `<option value="${esc(a.id)}" ${communityDraft.activity === a.id ? 'selected' : ''}>${esc(a.short)} · ${a.day} nov</option>`).join('')}</select></label>
+          <div class="compose-secondary"><label>Dia<select name="day" data-community-draft="day" ${activity ? 'disabled' : ''}>${D.days.map((d) => `<option value="${d.day}" ${+communityDraft.day === d.day ? 'selected' : ''}>${d.day} de novembro</option>`).join('')}</select></label><label>Assunto<select name="tag" data-community-draft="tag">${['No evento', 'Conexões', 'Projetos', 'Dicas'].map((t) => `<option ${communityDraft.tag === t ? 'selected' : ''}>${t}</option>`).join('')}</select></label></div></div>
+        </details>
+        <div class="compose-writing"><label class="sr-only" for="community-post">Texto da publicação</label><textarea id="community-post" name="text" data-community-draft="post" rows="6" maxlength="2000" placeholder="Como está sendo o seu ETAL?">${esc(communityDraft.post)}</textarea><small id="compose-count">${communityDraft.post.length}/2000</small></div>
+        ${communityDraft.images.length ? `<div class="community-upload-grid">${communityDraft.images.map((img, i) => `<div class="community-upload"><img src="${esc(img.src)}" alt="Prévia da foto ${i + 1}"><button type="button" data-act="community-remove-image" data-index="${i}" aria-label="Remover foto ${i + 1}">${ic('x')}</button><details class="compose-photo-alt"><summary>Descrição da foto</summary><label class="sr-only" for="image-alt-${i}">Descrição da foto ${i + 1}</label><input id="image-alt-${i}" name="${i ? `alt-${i}` : 'alt'}" data-image-alt="${i}" maxlength="240" value="${esc(img.alt || '')}" placeholder="O que aparece nesta foto?"></details></div>`).join('')}</div>` : ''}
+        <div class="compose-tools">${communityDraft.images.length < 6 ? `<label class="compose-tool compose-file">${ic('image')}<span>Fotos</span><input type="file" id="community-image" aria-label="Adicionar fotos" accept="image/jpeg,image/png,image/webp" multiple></label>` : ''}
+          <details class="social-people-picker compose-mentions"><summary>${ic('contact')}Marcar pessoas</summary><div class="compose-people-panel"><label class="sr-only" for="community-people-search">Buscar participante</label><input id="community-people-search" placeholder="Buscar participante"><div class="social-people-results">${communityPeople().map((person) => `<button type="button" data-act="community-insert-mention" data-input="community-post" data-handle="${esc(person.handle)}">${communityAvatar(person)}<span><b>${esc(person.name)}</b><small>@${esc(person.handle)}</small></span></button>`).join('')}</div></div></details><small class="compose-photo-count">${communityDraft.images.length}/6 fotos</small>
+        </div>
+      </form>` : communityGate()}</div>`, mount: (page) => { updateComposerState(); const input = $('#community-post', page); if (input) { const cursor = Math.min(communityDraft.cursor ?? input.value.length, input.value.length); input.setSelectionRange(cursor, cursor); } } };
+  };
+  document.addEventListener('input', (e) => {
+    if (e.target.hasAttribute('data-image-alt')) { const img = communityDraft.images[+e.target.dataset.imageAlt]; if (img) img.alt = e.target.value; return; }
+    if (e.target.id === 'community-people-search') {
+      const q = e.target.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+      e.target.closest('.social-people-picker').querySelectorAll('[data-handle]').forEach((button) => { button.hidden = !button.textContent.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().includes(q); }); return;
+    }
+    if (e.target.matches('textarea[data-community-draft]')) communityMentionHints(e.target);
+    const k = e.target.dataset.communityDraft; if (!k) return;
+    if (k === 'comment') communityDraft.comments[e.target.dataset.id] = e.target.value;
+    else communityDraft[k] = e.target.value;
+    if (k === 'post') { communityDraft.cursor = e.target.selectionStart; updateComposerState(); }
+  });
+  document.addEventListener('change', (e) => {
+    const f = e.target.dataset.communityFilter;
+    if (f === 'day') { communityDay = e.target.value; rerender(); }
+    if (f === 'activity') { communityActivity = e.target.value; rerender(); }
+    if (e.target.dataset.communityDraft === 'activity') {
+      communityDraft.activity = e.target.value; communityDraft.activityManual = true; communityDraft.contextReason = '';
+      const activity = byId(e.target.value); if (activity) communityDraft.day = activity.day;
+      rerender();
+    }
+    if (e.target.dataset.communityDraft === 'day') communityDraft.day = +e.target.value;
+  });
+  async function readLocalPhoto(file, size = 1200, square = false) {
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 10 * 1024 * 1024) throw new Error('Escolha uma foto JPG, PNG ou WebP de até 10 MB.');
+    const bitmap = await createImageBitmap(file); const scale = Math.min(1, size / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement('canvas'); canvas.width = square ? size : Math.max(1, Math.round(bitmap.width * scale)); canvas.height = square ? size : Math.max(1, Math.round(bitmap.height * scale));
+    const ctx = canvas.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (square) { const side = Math.min(bitmap.width, bitmap.height); ctx.drawImage(bitmap, (bitmap.width - side) / 2, (bitmap.height - side) / 2, side, side, 0, 0, size, size); }
+    else ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close(); return canvas.toDataURL('image/jpeg', 0.78);
+  }
+  document.addEventListener('change', async (e) => {
+    if (e.target.id !== 'community-image') return;
+    const files = [...e.target.files || []]; if (!files.length || communityImageBusy) return;
+    const available = 6 - communityDraft.images.length;
+    if (files.length > available) { toast(`Você pode adicionar mais ${available} foto${available === 1 ? '' : 's'}.`); e.target.value = ''; return; }
+    communityImageBusy = true; updateComposerState(); const owner = String(D.person.id); e.target.disabled = true;
+    try {
+      const photos = []; for (const file of files) photos.push({ src: await readLocalPhoto(file), alt: '' });
+      if (!S.auth || String(D.person.id) !== owner) return;
+      communityDraft.images.push(...photos);
+      if (top().s === 'communityCompose') rerender();
+    } catch (error) { toast(error.message || 'Não foi possível abrir essa foto. Tente outra.'); }
+    finally { communityImageBusy = false; e.target.disabled = false; e.target.value = ''; updateComposerState(); }
+  });
+  window.addEventListener('storage', (e) => { if (e.key === COMMUNITY_KEY && S.auth && (S.tab === 'community' || top().s === 'orgCommunity')) rerender(); });
+
   /* ---------------- entrada: o crachá ----------------
      Um crachá em branco pendurado no cordão. Enquanto a pessoa digita, os dados aparecem nele; ao entrar,
      o cartão vira e mostra o crachá preenchido. Para abrir o app, puxa-se o crachá para baixo e a tela desce.
@@ -345,10 +681,10 @@
     const role = blank ? ['ph', 'Credencial'] : p.source === 'visitante' ? ['guest', 'Visitante'] : ['', 'Participante'];
     return `<i class="bx-slot"></i>
       <div class="bx-head"><span class="bx-ed">IFRN · Pau dos Ferros</span><span class="bx-brand">${mark('mark')}<b>etal</b></span>${blank ? '' : '<i class="bx-holo"></i>'}</div>
-      <span class="bx-photo">${av}</span>
+      <span class="bx-photo">${av}${blank ? '' : `<button class="badge-photo-edit" data-act="profile-edit" aria-label="Editar nome e foto do crachá">${ic('pencil')}</button>`}</span>
       <div class="bx-body">
         ${blank ? `<b class="bx-name ph" data-live="name">Seu nome</b><span class="bx-sub" data-live="sub">${S.lgMode === 'guest' ? 'Visitante' : 'Matrícula do SUAP'}</span>`
-          : `<b class="bx-name">${esc(p.name)}</b><span class="bx-sub">${esc(p.course || '')}</span><small class="bx-sub2">${esc([p.year, p.campus].filter(Boolean).join(' · '))}</small>`}
+          : `<b class="bx-name">${esc(p.name)}</b>${officialName(p) !== p.name ? `<small class="bx-real">${ic('lock')}${esc(officialName(p))}</small>` : ''}<span class="bx-sub">${esc(p.course || '')}</span><small class="bx-sub2">${esc([p.year, p.campus].filter(Boolean).join(' · '))}</small>`}
         <div class="bx-row">${blank ? `<span class="bx-qr ph">${ic('qr')}</span><small data-live="state">Seu QR aparece aqui depois de entrar</small>`
           : `<span class="bx-qr">${qr(7, 25)}</span><small><span>Seu código</span><b>${esc(p.id)}</b></small>`}</div>
       </div>
@@ -380,6 +716,7 @@
           </div>
           <div class="lx-done" role="status">
             <h2 class="lx-q" data-live="hello">Tudo certo!</h2>
+            <button class="btn ghost badge-edit" data-act="profile-edit" type="button">${ic('pencil')}Editar nome e foto</button>
             <button class="btn primary big" data-act="lgenter" type="button">Abrir o app</button>
             <button class="btn ghost" data-act="lgredo" type="button">Não sou eu</button>
           </div>
@@ -462,6 +799,7 @@
       P.kick(0, 420, 0.9);
       buzz([10, 30, 18]);
       setTimeout(() => { el.remove(); app.style.transition = app.style.transform = app.style.filter = ''; app.classList.remove('lx-under'); qrPendente(); }, dur + 40);
+      cardIntro(dur + 700);
       if (prof.source === 'visitante') setTimeout(() => notify(`Boas-vindas, ${prof.first}!`, 'Sua conta de visitante está pronta. Mostre o QR do crachá na recepção.'), dur + 350);
     };
 
@@ -479,7 +817,7 @@
 
     let samples = [];
     hang.addEventListener('pointerdown', (e) => {
-      if (P.going || e.button > 0) return;
+      if (P.going || e.button > 0 || e.target.closest('button')) return;
       P.drag = { x0: e.clientX, y0: e.clientY, bx: P.x, by: P.y + P.cv, moved: false };
       samples = [{ t: e.timeStamp, x: e.clientX, y: e.clientY }];
       P.vc = 0; P.touch = performance.now();
@@ -511,7 +849,7 @@
       P.ready = false; lg.classList.remove('ready'); wake();
     };
     hang.addEventListener('pointerup', release); hang.addEventListener('pointercancel', release);
-    hang.addEventListener('keydown', (e) => { if (lgPending && (e.key === 'ArrowDown' || e.key === 'Enter')) P.commit(); });
+    hang.addEventListener('keydown', (e) => { if (e.target.closest('button')) return; if (lgPending && (e.key === 'ArrowDown' || e.key === 'Enter')) P.commit(); });
 
     /* Até a pessoa mexer, o crachá dá um puxãozinho sozinho para mostrar que dá para puxar. */
     const nudge = setInterval(() => {
@@ -524,9 +862,11 @@
   }
   /* Entrou: o cartão vira e mostra o crachá preenchido. */
   function lgFilled(prof) {
+    prof.officialName = prof.officialName || prof.name; Object.assign(prof, profileLocal(prof.id)); applyProfile(prof);
     lgPending = prof;
     const lg = $('.login'); if (!lg) return;
     $('.bx-face.filled', lg).innerHTML = badgeFace(prof);
+    $('.lx-card', lg).removeAttribute('aria-hidden'); $('.bx-face.blank', lg).setAttribute('aria-hidden', 'true');
     $('[data-live="hello"]', lg).textContent = `Tudo certo, ${prof.first}!`;
     lg.classList.add('filled'); buzz([14, 40, 14]);
     if (lgPhys) { lgPhys.filledAt = performance.now(); lgPhys.kick(0, 0, 1.3, 1400); }
@@ -590,7 +930,7 @@
       html: `<section class="${UI.sky ? 'hm-sky' : 'hm-plain'}">${UI.sky ? skyArt() : ''}
           <header class="apphead"><span class="wm ${UI.sky ? 'on-sky' : ''}">${mark('mark xs')}<b>etal</b><span>connect</span></span>
           <span class="hd-acts"><button class="iconbtn ${UI.sky ? 'on-sky' : ''}" data-act="tema" aria-label="${isDark() ? 'Usar o tema claro' : 'Usar o tema escuro'}">${ic(isDark() ? 'sun' : 'moon')}</button>
-          <button class="iconbtn ${UI.sky ? 'on-sky' : ''}" data-go="notices" aria-label="Avisos, ${D.notices.filter((n) => n.fresh).length} novos">${ic('bell')}<u class="badge-num">${D.notices.filter((n) => n.fresh).length}</u></button></span></header>
+          <button class="iconbtn ${UI.sky ? 'on-sky' : ''}" data-go="notices" aria-label="Avisos, ${D.notices.filter((n) => n.fresh).length} novos">${ic('bell')}<u class="badge-num">${D.notices.filter((n) => n.fresh).length}</u></button>${profileShortcut()}</span></header>
         </section>
         <div class="pad stack home">
           ${badge()}
@@ -598,11 +938,11 @@
 
           <div class="sec st" ${st(2)}><h2>Agora</h2><span>Qua, 26 nov · <span id="nowclock">${skyClock()}</span></span></div>
           <article class="now st" ${st(3)} data-go="activity" data-id="${s.id}">
-            <div class="now-top"><span class="kind">${s.type} · sua inscrição</span>${here ? `<span class="tag ok">${ic('check')}Presente</span>` : ic('chev', 'i now-chev')}</div>
+            <div class="now-top"><span class="kind">${s.type}${S.saved.has(s.id) ? ' · sua inscrição' : ''}</span>${here ? `<span class="tag ok">${ic('check')}Presente</span>` : ic('chev', 'i now-chev')}</div>
             <h3>${s.title}</h3>
             <div class="now-sp">${spAv(s)}<span>${s.speakerShort}</span></div>
             <p class="m">${ic('clock')}${s.time} às ${s.end}</p>
-            <p class="m">${ic('pin')}${s.room} · 2º andar</p>
+            <p class="m">${ic('pin')}${whereOf(s)}</p>
             <div class="now-actions">
               ${here ? `<button class="btn primary" data-go="activity" data-id="${s.id}">Abrir aula</button>`
                 : `<button class="btn primary" data-act="openmap" data-floor="${s.floor}" data-zone="${s.zone}">Como chegar</button><button class="btn soft" data-act="scan">${ic('qr')}Presença</button>`}
@@ -611,6 +951,7 @@
           ${UI.home.atalhos ? `<nav class="quick rv" aria-label="Atalhos">${actions.map(([i, t, a], n) => `<button ${a} style="--n:${n}"><span>${ic(i)}</span><em>${t}</em></button>`).join('')}</nav>` : ''}
 
           ${!standalone() && !prefs.get('etal-instalar-oculto') ? `<div class="instalar rv"><button class="inst-main" data-act="install">${ic('download')}<span><b>Instale o ETAL Connect</b><small>Lembretes no celular e mapa sem internet</small></span></button><button class="inst-x" data-act="instalar-fechar" aria-label="Agora não">${ic('x')}</button></div>` : ''}
+          ${cardAsk() ? `<div class="ct-invite rv"><button class="ct-inv-main" data-go="cartao">${ic('contact')}<span><b>Personalize seu perfil</b><small>Interesses, NADIC e contato</small></span></button><button class="ct-inv-skip" data-act="cartao-pular">Pular</button></div>` : ''}
           ${UI.home.colmeia ? combCard() : ''}
 
           ${UI.home.agenda ? `<div class="sec rv"><h2>Sua agenda</h2><button data-act="mine">Ver tudo</button></div>
@@ -646,7 +987,7 @@
     const day = S.agendaDay, f = S.agendaFilter;
     let list = D.sessions.filter((s) => s.day === day);
     if (['pal', 'mesa', 'mini', 'camp'].includes(f)) list = list.filter((s) => tipoDe(s).g === f);
-    if (f === 'saved') list = list.filter((s) => S.saved.has(s.id));
+    if (f === 'saved') list = list.filter((s) => S.saved.has(s.id) || s.speakerId === String(D.person.id));
     const slots = [...new Set(list.map((s) => s.time))];
     const idx = D.days.findIndex((d) => d.day === day);
     const filters = [['all', 'Tudo'], ['saved', 'Minhas'], ['pal', 'Palestras'], ['mesa', 'Mesas'], ['mini', 'Minicursos'], ['camp', 'Campeonatos']].filter(([k]) => !TIPOS_G.has(k) || D.sessions.some((x) => tipoDe(x).g === k));
@@ -659,8 +1000,8 @@
     const bm = (s) => `<button class="bm ${S.saved.has(s.id) ? 'on' : ''}" data-act="save" data-id="${s.id}" aria-label="${S.saved.has(s.id) ? 'Remover dos salvos' : 'Salvar'}">${ic('bookmark')}</button>`;
     const hexa = (s) => `<span class="ses-hex" role="img" aria-label="${s.type}"><svg viewBox="-20 -20 40 40" aria-hidden="true"><path d="M0-18.5 16-9.25v18.5L0 18.5-16 9.25v-18.5Z"/></svg>${ic(tipoDe(s).icon)}</span>`;
     const selo = (s) => { /* "agora" já aparece na linha do tempo */ if (!s.seats) return ''; const n = s.seats - s.taken; return n <= 0 ? '<span class="ses-selo cheio">Esgotado</span>' : n <= 5 ? `<span class="ses-selo pouca">${n === 1 ? 'Última vaga' : `Últimas ${n}`}</span>` : ''; };
-    const rosto = (s) => { const ps = pessoasDe(s); return ps.length > 1 ? `<span class="ses-rostos">${ps.slice(0, 3).map((p) => spAv(p)).join('')}</span>` : spAv(s); };
-    const card = (s, quem) => `<li class="ses tp-${tipoDe(s).k} ${S.saved.has(s.id) ? 'mine' : ''}" ${goOf(s)}>${hexa(s)}<div class="ses-tx"><h4>${s.title}</h4><p class="ses-meta">${rosto(s)}${quem ? `<span class="ses-quem">${quem}</span>` : ''}<span class="ses-onde">${s.room}</span></p>${selo(s)}</div>${bm(s)}</li>`;
+    const rosto = (s) => { if (!s.initials && !s.speakerShort) return ''; const ps = pessoasDe(s); return ps.length > 1 ? `<span class="ses-rostos">${ps.slice(0, 3).map((p) => spAv(p)).join('')}</span>` : spAv(s); };
+    const card = (s, quem) => `<li class="ses tp-${tipoDe(s).k} ${S.saved.has(s.id) || s.speakerId === String(D.person.id) ? 'mine' : ''}" ${goOf(s)}>${hexa(s)}<div class="ses-tx"><h4>${s.title}</h4><p class="ses-meta">${rosto(s)}${quem ? `<span class="ses-quem">${quem}</span>` : ''}<span class="ses-onde">${s.room}</span></p>${selo(s)}</div>${bm(s)}</li>`;
     /* selo curto do campeonato: só o que importa para decidir (vagas, ao vivo, fim) */
     const chipCurto = (stt) => { const [k, l] = window.TOUR.status(stt); const curto = (l.match(/\d+ vagas?/) || [l.split(' · ')[0]])[0]; return `<span class="t-chip ${k}">${k === 'live' ? '<i></i>' : ''}${curto}</span>`; };
     const CARDS = {
@@ -670,7 +1011,7 @@
       /* campeonato: a arte do jogo (o banner do FIFA, a do Mortal Kombat) é o card */
       camp: (s) => { const t = D.tournaments.find((x) => x.id === s.tournament); if (!t) return CARDS.out(s); const stt = tourSt(t); const me = tourMine(stt) >= 0;
         return `<li class="ses-camp ${t.theme}" ${goOf(s)}>${gameArt(t)}<span class="ses-camp-tx">${titleOf(t)}<small>${s.room} · ${t.format}</small></span><span class="ses-camp-chip">${me ? `<span class="t-chip me">${ic('check')}Na chave</span>` : chipCurto(stt)}</span></li>`; },
-      out: (s) => `<li class="ses-pausa" ${goOf(s)}><span>${s.title}</span><small>${s.room}</small></li>`,
+      out: (s) => card(s, s.speakerShort || s.type),
     };
     const row = (s) => (CARDS[tipoDe(s).g] || CARDS.out)(s);
     const agora = list.filter(isNow).length; const meus = D.sessions.filter((x) => x.day === day && S.saved.has(x.id)).length;
@@ -685,15 +1026,63 @@
         ${slots.length ? slots.map((t, si) => { const noSlot = list.filter((s) => s.time === t); const vivo = noSlot.some(isNow); return `<div class="slot st ${vivo ? 'now' : ''}" ${st(2 + si)}><time>${t}${vivo ? '<em>agora</em>' : ''}</time><div>${noSlot.filter((s) => S.saved.has(s.id)).length > 1 ? `<p class="clash">${ic('info')}Você salvou mais de uma atividade neste horário.</p>` : ''}<ul class="ag">${noSlot.map(row).join('')}</ul></div></div>`; }).join('')
           : f === 'saved' ? savedEmpty(day) : `<div class="empty st" ${st(2)}>${illo('mark')}<h3>Nada neste dia</h3><p>Escolha outro filtro para ver mais atividades.</p><button class="btn soft" data-act="filter" data-f="all">Ver tudo</button></div>`}
         </div>
-        <p class="ag-note">Programação de exemplo, para demonstração.</p>
+
       </div>`,
     };
   };
 
+  /* Materiais: arquivos enviados (PDF, imagem, ZIP, slides) e links (GitHub, YouTube, Drive, sites). Tocar abre o
+     visualizador dentro do app; o GitHub vira um cartão com os dados públicos do repositório. */
+  const GH = /github\.com\/([\w.-]+)\/([\w.-]+?)(?:\.git)?(?:[/?#]|$)/i; const YT = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([\w-]{6,})/i;
+  const matUrl = (u) => (u && u.startsWith('/api/') && API ? API.url(u) : u || '');
+  function matInfo(m) {
+    const u = m.url || '';
+    if (m.kind === 'link' || /^https?:/.test(u)) {
+      if (GH.test(u)) { const [, o, r] = GH.exec(u); return { tipo: 'github', icon: 'github', cls: 'gh', rot: `GitHub · ${o}/${r}` }; }
+      if (YT.test(u)) return { tipo: 'youtube', icon: 'play', cls: 'yt', rot: 'Vídeo no YouTube' };
+      if (/(drive|docs)\.google\./.test(u)) return { tipo: 'link', icon: 'file', cls: 'gd', rot: 'Google Drive' };
+      let host = ''; try { host = new URL(u).hostname.replace(/^www\./, ''); } catch (_) { /* link inválido */ }
+      return { tipo: 'link', icon: 'link', cls: 'link', rot: host || 'Link' };
+    }
+    const k = m.kind === 'link' ? 'pdf' : m.kind;
+    return { tipo: k === 'pdf' ? 'pdf' : k === 'imagem' ? 'imagem' : 'arquivo', icon: k === 'zip' ? 'zip' : k === 'imagem' ? 'image' : 'pdf', cls: k, rot: m.meta || { pdf: 'PDF', zip: 'ZIP', slides: 'Slides', texto: 'Texto' }[k] || 'Arquivo' };
+  }
   function materialRow(m, i) {
-    const icon = m.kind === 'link' ? 'link' : m.kind === 'zip' ? 'zip' : 'pdf';
-    return `<li class="mat st" ${st(6 + i)}><span class="mat-ic ${m.kind}">${ic(icon)}</span><span class="mat-tx"><b>${m.name}</b><small>${m.fresh ? `<em>${m.fresh}</em>` : m.meta}</small></span>
-      <button class="iconbtn sm" data-act="toast" data-msg="${m.kind === 'link' ? 'Abrindo link' : 'Baixando arquivo'}" aria-label="Abrir">${ic(m.kind === 'link' ? 'open' : 'download')}</button></li>`;
+    const inf = matInfo(m);
+    return `<li class="mat st" ${st(6 + i)} data-act="mat-abrir" data-url="${esc(m.url || '')}" data-kind="${esc(m.kind || '')}" data-name="${esc(m.name)}" data-meta="${esc(m.meta || '')}" role="button" tabindex="0"><span class="mat-ic ${inf.cls}">${ic(inf.icon)}</span><span class="mat-tx"><b>${esc(m.name)}</b><small>${m.fresh ? `<em>${m.fresh}</em>` : esc(inf.tipo === 'link' || inf.tipo === 'github' || inf.tipo === 'youtube' ? inf.rot : m.meta || inf.rot)}</small></span>${ic('chev', 'i mat-go')}</li>`;
+  }
+  const ghCache = {};
+  async function ghRepo(o, r) {
+    const k = `${o}/${r}`; if (ghCache[k]) return ghCache[k];
+    const res = await fetch(`https://api.github.com/repos/${encodeURIComponent(o)}/${encodeURIComponent(r)}`, { headers: { Accept: 'application/vnd.github+json' } });
+    if (!res.ok) throw new Error('GitHub indisponível'); return (ghCache[k] = await res.json());
+  }
+  const numK = (n) => (n >= 1000 ? `${(n / 1000).toFixed(n >= 10000 ? 0 : 1).replace('.', ',')} mil` : String(n));
+  async function matAbrir(m) {
+    const inf = matInfo(m); let url = matUrl(m.url);
+    if (!url) { toast('Este material ainda não tem arquivo nem link.'); return; }
+    if (url.startsWith('data:')) { try { url = URL.createObjectURL(await (await fetch(url)).blob()); } catch (_) { /* fica o data: */ } }
+    const baixar = m.url && m.url.startsWith('/api/') ? `${url}${url.includes('?') ? '&' : '?'}baixar=true` : url;
+    let corpo = '';
+    if (inf.tipo === 'pdf') corpo = `<iframe class="mv-doc" src="${esc(url)}#view=FitH" title="${esc(m.name)}"></iframe>`;
+    else if (inf.tipo === 'imagem') corpo = `<div class="mv-img"><img src="${esc(url)}" alt="${esc(m.name)}"></div>`;
+    else if (inf.tipo === 'youtube') corpo = `<div class="mv-vid"><iframe src="https://www.youtube-nocookie.com/embed/${esc(YT.exec(m.url)[1])}" title="${esc(m.name)}" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>`;
+    else if (inf.tipo === 'github') corpo = `<div class="mv-gh" data-gh="${esc(m.url)}"><div class="gh-card carregando">${ic('github')}<b>${esc(GH.exec(m.url)[1])}/${esc(GH.exec(m.url)[2])}</b><small>Carregando o repositório…</small></div></div>`;
+    else corpo = `<div class="mv-card"><span class="mat-ic ${inf.cls} big">${ic(inf.icon)}</span><b>${esc(m.name)}</b><small>${esc(inf.rot)}</small></div>`;
+    const acoes = inf.tipo === 'github' ? `<a class="btn primary" href="${esc(m.url)}" target="_blank" rel="noopener">${ic('github')}Abrir no GitHub</a><button class="btn soft" data-act="mv-clone" data-url="${esc(m.url.replace(/\/$/, ''))}.git">${ic('copy')}Copiar git clone</button>`
+      : inf.tipo === 'link' || inf.tipo === 'youtube' ? `<a class="btn primary" href="${esc(m.url)}" target="_blank" rel="noopener">${ic('open')}Abrir ${inf.tipo === 'youtube' ? 'no YouTube' : 'o link'}</a>`
+      : `<a class="btn soft" href="${esc(url)}" target="_blank" rel="noopener">${ic('open')}Nova aba</a><a class="btn primary" href="${esc(baixar)}" download="${esc(m.name)}">${ic('download')}Baixar</a>`;
+    openOverlay(`<div class="mv" role="dialog" aria-label="${esc(m.name)}"><header><span class="mat-ic ${inf.cls}">${ic(inf.icon)}</span><span><b>${esc(m.name)}</b><small>${esc(inf.rot)}</small></span><button class="iconbtn" data-act="closeov" aria-label="Fechar">${ic('x')}</button></header><div class="mv-corpo">${corpo}</div><footer>${acoes}</footer></div>`, 'matview');
+    if (inf.tipo === 'github') {
+      const [, o, r] = GH.exec(m.url); const alvo = $('.mv-gh', ov);
+      try {
+        const g = await ghRepo(o, r); if (!alvo?.isConnected) return;
+        alvo.innerHTML = `<div class="gh-card"><header><img src="${esc(g.owner?.avatar_url || '')}" alt=""><span><small>${esc(g.owner?.login || o)}</small><b>${esc(g.name || r)}</b></span>${ic('github')}</header>
+          ${g.description ? `<p>${esc(g.description)}</p>` : ''}
+          <ul><li>${ic('star')}<b>${numK(g.stargazers_count || 0)}</b><small>estrelas</small></li><li>${ic('route')}<b>${numK(g.forks_count || 0)}</b><small>forks</small></li>${g.language ? `<li>${ic('code')}<b>${esc(g.language)}</b><small>linguagem</small></li>` : ''}</ul>
+          <small class="gh-at">Atualizado em ${new Date(g.pushed_at || g.updated_at).toLocaleDateString('pt-BR')}${g.license?.spdx_id && g.license.spdx_id !== 'NOASSERTION' ? ` · ${esc(g.license.spdx_id)}` : ''}</small></div>`;
+      } catch (_) { if (alvo?.isConnected) alvo.innerHTML = `<div class="gh-card">${ic('github')}<b>${esc(o)}/${esc(r)}</b><small>Sem conexão com o GitHub agora. O link abre normalmente.</small></div>`; }
+    }
   }
 
   function questionsOf(id) {
@@ -710,15 +1099,38 @@
     setTimeout(draw, reduce ? 30 : 460);
   };
 
+  /* O que a pessoa ministra (cada um ministra uma atividade): a foto escolhida para ela e os dados completos. */
+  function taughtShow(x) {
+    const d = dayOf(x.day); const req = x.prerequisites || (x.requirements ? [x.requirements] : []);
+    const vagas = x.seats ? Math.max(0, x.seats - (x.taken || 0)) : null;
+    return `<h2 class="h st" ${st(1)}>Ministrando no ETAL</h2>
+      <article class="mc-show st" ${st(2)}>
+        <div class="mc-photo">${x.speakerPhoto ? `<img src="${esc(x.speakerPhoto)}" alt="${esc(x.speaker)}">` : spAv(x, true)}<span class="mc-kind">${ic(tipoDe(x).icon)}${esc(x.type)}</span></div>
+        <div class="mc-body"><h3>${esc(x.title)}</h3>
+          <ul class="mc-meta"><li>${ic('cal')}${d.long} · ${x.time} às ${x.end}</li><li>${ic('pin')}${esc(whereOf(x))}</li>${vagas !== null ? `<li>${ic('users')}${vagas} de ${x.seats} vagas</li>` : ''}</ul>
+          <p class="mc-desc">${esc(x.description)}</p>
+          ${req.length ? `<h4>Pré-requisitos</h4><ul class="mc-req">${req.map((r) => `<li>${ic('check')}<span>${esc(r)}</span></li>`).join('')}</ul>` : ''}
+          ${x.learn?.length ? `<h4>O que você vai fazer</h4><ol class="mc-learn">${x.learn.map((l, i) => `<li><b>${i + 1}</b><span>${esc(l)}</span></li>`).join('')}</ol>` : ''}
+          <div class="mc-acts"><button class="btn primary" ${goOf(x)}>Ver ${esc(x.type.toLowerCase())}</button><button class="btn soft" ${mapAct(x)}>${ic('route')}Como chegar</button></div>
+        </div></article>`;
+  }
   Screens.speaker = ({ id }) => {
-    const base = byId(id); const list = D.sessions.filter((x) => x.speakerShort === base.speakerShort);
+    const base = byId(id);
+    if (base.speakerId) {
+      const own = base.speakerId === String(D.person.id);
+      const profile = own ? D.person : otherProfile(base.speakerId) || communityPeople().find((p) => p.id === base.speakerId) || {};
+      const extra = own ? cardGet() || {} : profile.card || {};
+      const person = { ...profile, id: base.speakerId, name: base.speaker, officialName: base.speaker, initials: profile.initials || base.initials, photo: (own ? D.person.photo : profile.photo) || null, role: base.role, source: 'speaker' };
+      return { html: `${header('Ministrante')}<div class="pad stack speaker"><div class="sp-card st" ${st(0)}>${cardPreview(extra, person, { own, taught: false })}<span class="sp-badge">${ic('mic')}Palestrante</span></div>${taughtShow(base)}</div>` };
+    }
+    const list = D.sessions.filter((x) => x.speakerShort === base.speakerShort);
     return {
       html: `${header('')}<div class="pad stack speaker">
-        <section class="sp-hero st" ${st(0)}>${spAv(base, true)}<h1>${base.speaker}</h1><p>${base.role}</p></section>
+        ${base.self ? `<div class="sp-card st" ${st(0)}>${cardPreview(cardGet() || { publish: true }, D.person)}<span class="sp-badge">${ic('mic')}Palestrante</span></div>` : `<section class="sp-hero st" ${st(0)}>${spAv(base, true)}<h1>${base.speaker}</h1><p>${base.role}</p></section>`}
         <h2 class="h st" ${st(1)}>${list.length === 1 ? 'Atividade no ETAL' : 'Atividades no ETAL'}</h2>
         <ul class="splist st" ${st(2)}>${list.map((x) => `<li ${goOf(x)}><span class="date"><small>${dayOf(x.day).week}</small><b>${x.day}</b></span><span><b>${x.short}</b><small>${x.type}</small><em>${x.time} às ${x.end} · ${x.room}</em></span>${ic('chev', 'i chev')}</li>`).join('')}</ul>
         ${list.some((x) => x.learn.length) ? `<h2 class="h st" ${st(3)}>Assuntos</h2><ul class="learn st" ${st(4)}>${list.flatMap((x) => x.learn).slice(0, 5).map((l) => `<li>${ic('check')}<span>${l}</span></li>`).join('')}</ul>` : ''}
-        <p class="nadic-src st" ${st(5)}>Perfil de exemplo. A foto e a minibio entram quando a organização enviar.</p>
+
       </div>`,
     };
   };
@@ -772,11 +1184,12 @@
       </div>`;
     const lugar = `<button class="lugar st" ${st(4)} ${mapAct(s)} aria-label="Ver ${s.room} no mapa"><canvas class="thumb3d"></canvas><span class="lg-tx"><b>${s.room}</b><small>${Number.isInteger(s.floor) ? floorOf(s.floor).label : ''}</small></span><span class="lg-ir">${ic('route')}Como chegar</span></button>`;
     const lembrar = `<button class="remindrow st ${lembrete ? 'on' : ''}" ${st(5)} data-act="remind" data-id="${id}" aria-pressed="${lembrete}">${ic('alarm')}<span>${lembrete ? `Lembrete às ${hhmm(toMin(s.time) - LEAD)}` : `Lembrar ${LEAD} min antes`}</span><i class="switch"></i></button>`;
+    const fonte = '';
     const sobre = s.description ? `<section class="sobre st" ${st(6)}><h2 class="h">Sobre</h2><p class="desc clamp" data-act="lermais">${s.description}</p></section>` : '';
     /* "Notebook com Node.js instalado e conhecimentos básicos de JavaScript." vira dois itens */
-    const leva = (s.requirements || '').replace(/\.$/, '').split(/,\s*|\s+e\s+(?=[a-zà-ú]+\s)/i).filter(Boolean);
+    const leva = s.prerequisites || (s.requirements || '').replace(/\.$/, '').split(/,\s*|\s+e\s+(?=[a-zà-ú]+\s)/i).filter(Boolean);
     const extra = t.g === 'mini'
-      ? `${s.learn?.length ? `<section class="st" ${st(7)}><h2 class="h">O que você vai fazer</h2><ol class="passos-aula">${s.learn.map((l) => `<li>${l}</li>`).join('')}</ol></section>` : ''}${leva.length ? `<section class="levar st" ${st(8)}><h2 class="h">${ic('laptop')}Leve para a sala</h2><ul>${leva.map((l) => `<li>${l.charAt(0).toUpperCase() + l.slice(1)}</li>`).join('')}</ul></section>` : ''}`
+      ? `${s.learn?.length ? `<section class="st" ${st(7)}><h2 class="h">O que você vai fazer</h2><ol class="passos-aula">${s.learn.map((l) => `<li>${l}</li>`).join('')}</ol></section>` : ''}${leva.length ? `<section class="levar st" ${st(8)}><h2 class="h">${ic('laptop')}${esc(s.requirementsTitle || 'Leve para a sala')}</h2><ul>${leva.map((l) => `<li>${l.charAt(0).toUpperCase() + l.slice(1)}</li>`).join('')}</ul></section>` : ''}`
       : t.g === 'pal' || t.g === 'mesa' ? `<section class="block st" ${st(7)}><div class="sec"><h2>Perguntas</h2><button data-act="ask" data-id="${id}">Perguntar</button></div>${questionsOf(id)}</section>` : '';
     return {
       mount: mountThumb(s),
@@ -790,7 +1203,7 @@
         ${t.g === 'mesa' ? quem.replace('<ul>', '<h2 class="h">Quem conversa</h2><ul>') : ''}
         ${lembrar}
         ${DEMO && lembrete ? `<button class="remindtest st" ${st(5)} data-act="remindtest" data-id="${id}">${ic('bell')}Ver como o lembrete chega</button>` : ''}
-        ${sobre}
+        ${fonte}${sobre}
         ${extra}
         ${s.materials.length ? `<p class="locked st" ${st(9)}>${ic('lock')}${s.materials.length} ${s.materials.length === 1 ? 'material' : 'materiais'} depois da presença</p>` : ''}
       </div>
@@ -843,7 +1256,14 @@
      Evento (o passeio virou segredo do mapa). "Ver como celular" volta para a moldura; a escolha fica em etal-moldura. ---- */
   const wideMq = matchMedia('(min-width: 1000px) and (pointer: fine)');
   let palcoFrame = null, palcoPronto = false, palcoFila = null;
-  const dadosMapa = (extra = {}) => ({ type: 'etal:mapa:abrir', ...extra, tema: isDark() ? 'escuro' : 'claro', proxima: proximaMinha(), origem: origemAgora(), foto: D.person.photo || null, nome: D.person.name || '', hour: skyHour, reduced: reduce, sessions: D.sessions.map((x) => ({ id: x.id, title: x.title, time: x.time, floor: x.floor, zone: x.zone })), rooms: Object.fromEntries(P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => [`${f.level}:${z.id}`, z.roomNumber]))) });
+  const dadosMapa = (extra = {}) => ({ type: 'etal:mapa:abrir', ...extra, tema: isDark() ? 'escuro' : 'claro', proxima: proximaMinha(), origem: origemAgora(), foto: D.person.photo || null, nome: D.person.name || '', hour: skyHour, reduced: reduce, sessions: D.sessions.map((x) => ({ id: x.id, title: x.title, time: x.time, day: x.day, type: x.type, place: x.place, tournament: x.tournament, floor: x.floor, zone: x.zone })), rooms: Object.fromEntries(P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => [`${f.level}:${z.id}`, z.roomNumber]))) });
+  window.addEventListener('message', (e) => {
+    if (e.origin !== location.origin || e.data?.type !== 'etal:mapa:atividade') return;
+    const frames = [palcoFrame, mapaFixo?.querySelector('iframe')].filter(Boolean);
+    if (!frames.some((f) => f.contentWindow === e.source)) return;
+    const activity = D.sessions.find((x) => x.id === e.data.id);
+    if (activity) push(activity.tournament ? 'tournament' : 'activity', { id: activity.tournament || activity.id });
+  });
   const palcoOn = () => document.documentElement.classList.contains('wide');
   function palcoEnviar(extra) { if (!palcoFrame) return; if (!palcoPronto) { palcoFila = extra; return; } palcoFrame.contentWindow.postMessage(dadosMapa(extra), location.origin); palcoFrame.focus(); }
   function telaGrande() {
@@ -876,7 +1296,7 @@
   /* O mapa 3D fica num iframe só, criado na primeira vez e nunca removido: trocar de aba apenas o esconde. Antes ele
      era recriado a cada abertura da aba Mapa e o campus inteiro era montado de novo (vários segundos no celular). */
   let mapaFixo = null, mapaPronto = false, mapaFila = null;
-  const dadosAba = (type, pedida = {}) => ({ type, ...pedida, tema: isDark() ? 'escuro' : 'claro', proxima: proximaMinha(), origem: origemAgora(), foto: D.person.photo || null, nome: D.person.name || '', hour: skyHour, reduced: reduce, sessions: D.sessions.map((x) => ({ id: x.id, title: x.title, time: x.time, floor: x.floor, zone: x.zone })), rooms: Object.fromEntries(P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => [`${f.level}:${z.id}`, z.roomNumber]))) });
+  const dadosAba = (type, pedida = {}) => ({ type, ...pedida, tema: isDark() ? 'escuro' : 'claro', proxima: proximaMinha(), origem: origemAgora(), foto: D.person.photo || null, nome: D.person.name || '', hour: skyHour, reduced: reduce, sessions: D.sessions.map((x) => ({ id: x.id, title: x.title, time: x.time, day: x.day, type: x.type, place: x.place, tournament: x.tournament, floor: x.floor, zone: x.zone })), rooms: Object.fromEntries(P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => [`${f.level}:${z.id}`, z.roomNumber]))) });
   function mapaFixoEnviar(type, pedida) {
     if (!mapaPronto) { mapaFila = pedida; return; }
     mapaFixo.querySelector('iframe').contentWindow.postMessage(dadosAba(type, pedida), location.origin);
@@ -1190,7 +1610,7 @@
       <div class="sh-top">${z.icon && window.Campus3D?.useIcons?.[z.icon] ? `<span class="sh-ic" aria-hidden="true"><svg viewBox="-12 -12 24 24"><path d="${window.Campus3D.useIcons[z.icon]}"/></svg></span>` : ''}<div><strong>${zoneName(z)}</strong><small>${z.name ? `Sala ${z.roomNumber} · ` : z.roomNumber && z.kind !== 'classroom' ? `${z.useLabel} · ` : ''}${floorOf(lvl).label}</small></div><button class="iconbtn sm" data-act="zoneclose" aria-label="Fechar">${ic('x')}</button></div>
       ${z.info ? `<p class="sh-text">${esc(z.info)}</p>` : ''}
 
-      ${acts.length && !S.mapRoute ? `<ul class="sh-acts">${acts.slice(0, 2).map((x) => `<li data-go="activity" data-id="${x.id}"><span><b>${x.short}</b><small>${dayOf(x.day).week} ${x.day} · ${x.time}</small></span>${ic('chev')}</li>`).join('')}</ul>` : ''}
+      ${acts.length && !S.mapRoute ? `<ul class="sh-acts">${acts.map((x) => `<li data-go="activity" data-id="${x.id}"><span><b>${x.short}</b><small>${dayOf(x.day).week} ${x.day} · ${x.time}</small></span>${ic('chev')}</li>`).join('')}</ul>` : ''}
       ${walkable && lvl > 0 && S.mapRoute ? (() => { const v = S.mapVia || window.Campus3D.routeInfo(lvl, z.id, null).via; return `<div class="via" style="--k:${v === 'rampa' ? 1 : 0}"><i></i><button class="${v === 'escada' ? 'on' : ''}" data-act="via" data-v="escada">${ic('stairs')}Escada</button><button class="${v === 'rampa' ? 'on' : ''}" data-act="via" data-v="rampa">${ic('nav')}Rampa</button></div>`; })() : ''}
       ${S.mapRoute && walkable ? `<p class="sh-text steps">${routeSteps(lvl, z)}</p>` : walkable ? `<button class="btn primary" data-act="roomroute">${ic('route')}Como chegar</button>` : ''}
     </div>`;
@@ -1356,7 +1776,7 @@
     return { demo, list, hours: list.reduce((n, x) => n + hoursOf(x), 0), learn: list.flatMap((x) => x.learn).slice(0, 5), people: list, questions: demo ? 2 : q, contacts: demo ? 3 : S.contacts.length, ratings: demo ? 3 : Object.keys(S.ratings).length };
   }
   function retroSlides(r) {
-    const tag = r.demo ? '<span class="re-tag">Dados de exemplo</span>' : '';
+    const tag = '';
     const got = r.demo ? D.combs.length : combEarned().length;
     const n = r.list.length;
     return [
@@ -1394,7 +1814,7 @@
     </div>`;
   Overlays.retroEmpty = () => `<div class="sheet" role="dialog" aria-label="Retrospectiva"><i class="grab"></i>${illo('mark')}
       <h2>Sua retrospectiva começa na primeira presença</h2><p class="sh-p">Registre presença numa atividade para ela ganhar conteúdo.</p>
-      <button class="btn primary big" data-act="retrodemo">Ver com dados de exemplo</button></div>`;
+      </div>`;
   function retroOpen(demo) {
     const data = retroData(demo);
     if (!data.list.length) { openOverlay(Overlays.retroEmpty(), 'share'); return; }
@@ -1418,24 +1838,27 @@
         <div class="sec st" ${st(4)}><h2>Sobre</h2></div>
         <ul class="menu st" ${st(5)}>
           <li data-go="etal">${ic('info')}<span>O que é o ETAL</span>${ic('chev', 'i chev')}</li>
-          <li data-go="sobre">${ic('list')}<span>Sobre este protótipo</span><em>Real e exemplo</em>${ic('chev', 'i chev')}</li>
+          <li data-go="sobre">${ic('list')}<span>Sobre o aplicativo</span>${ic('chev', 'i chev')}</li>
           <li data-go="nadic">${ic('info')}<span>Sobre o NADIC</span>${ic('chev', 'i chev')}</li>
           <li data-act="link" data-url="${D.ifrnUrl}">${ic('open')}<span>IFRN Pau dos Ferros</span></li>
         </ul>
       </div>`,
   });
   Screens.profile = () => ({
-    html: `<header class="apphead"><h1 class="title">Perfil</h1></header>
+    html: `${header('Perfil')}
       <div class="pad stack">
-        <div class="me st" ${st(0)}>${meAv('av lg')}<div><strong>${esc(D.person.name)}</strong><span>${esc(D.person.courseFull)}</span><span>${esc(D.person.year)} · ${esc(D.person.id)}</span>${D.person.source === 'suap' ? `<span class="fromsuap">${ic('check')}Dados do SUAP</span>` : D.person.source === 'visitante' ? `<span class="fromsuap guest">${ic('users')}Conta de visitante</span>` : ''}</div></div>
+        <section class="profile-hero st" ${st(0)}><button class="profile-portrait" data-act="profile-edit" aria-label="Editar foto e nome">${meAv('av')}<span class="profile-pencil">${ic('pencil')}</span></button><h2>${esc(D.person.name)}</h2><div class="profile-link">${linkLine()}</div><p>${esc(D.person.courseFull || D.person.course || '')}</p><small>${esc([D.person.year, D.person.campus].filter(Boolean).join(' · '))}</small><button class="profile-edit-link" data-act="profile-edit">${ic('pencil')}Editar perfil</button></section>
+        ${taughtActivityCard(D.person)}
         ${orgDe() ? `<button class="org-cta st" ${st(1)} data-go="org">${ic('building')}<span><small>Você é da organização · ${esc(orgDe().papel)}</small><b>Painel da organização</b></span>${ic('chev')}</button>` : ''}
         <button class="retro-cta st" ${st(1)} data-act="retro">${comb('tiny')}<span><b>Minha retrospectiva</b><small>O que você fez e aprendeu no ETAL</small></span>${ic('chev')}</button>
         <ul class="menu st" ${st(1)}>
           <li data-go="credential">${ic('id')}<span>Minha credencial</span><em>${S.credAt ? 'Ativa' : 'Pendente'}</em>${ic('chev', 'i chev')}</li>
           <li data-act="mine">${ic('list')}<span>Minhas atividades</span><em>${S.saved.size}</em>${ic('chev', 'i chev')}</li>
           <li data-go="materials">${ic('file')}<span>Materiais</span><em>${Object.keys(S.present).reduce((n, k) => n + byId(k).materials.length, 0)}</em>${ic('chev', 'i chev')}</li>
+          <li data-go="suapEvents">${ic('cal')}<span>Meus eventos no SUAP</span>${ic('chev', 'i chev')}</li>
           <li data-go="certificates">${ic('award')}<span>Certificados</span>${ic('chev', 'i chev')}</li>
           <li data-go="network">${ic('contact')}<span>Contatos</span><em>${S.contacts.length}</em>${ic('chev', 'i chev')}</li>
+          <li data-go="cartao">${ic('id')}<span>Perfil público</span><em>${cardGet() ? (cardGet().publish === false ? 'Oculto' : 'Visível') : 'Personalizar'}</em>${ic('chev', 'i chev')}</li>
         </ul>
         <ul class="menu st" ${st(2)}>
           <li data-go="games" class="games-row">${ic('trophy')}<span>Campeonatos</span><em>Qui 27</em>${ic('chev', 'i chev')}</li>
@@ -1461,6 +1884,41 @@
   const orgDe = () => organizadores().find((o) => o.matricula === String(D.person.id || '')) || null;
   const semAcesso = () => ({ html: `${header('Painel da organização')}<div class="pad stack"><div class="empty st" ${st(0)}>${illo('mark')}<h3>Só para a organização</h3><p>O painel abre para as matrículas cadastradas como organizadoras do ETAL.</p></div></div>` });
   /* Painel no celular: números do momento e atalhos para o que a equipe faz durante o evento. */
+  /* Galeria de QR Codes para a equipe: com servidor, os QRs assinados (/api/org/qrs/lista); sem servidor, os de teste
+     (etal:<atividade>). Tocar abre em tela cheia, branco, para mostrar ao celular de quem não está conseguindo ler. */
+  let qrcodeLoad = null;
+  const loadQRCode = () => qrcodeLoad || (qrcodeLoad = new Promise((ok, no) => { const sc = document.createElement('script'); sc.src = 'vendor/qrcode.js'; sc.onload = () => ok(window.QRCode); sc.onerror = no; document.head.appendChild(sc); }));
+  let oqItens = []; let oqI = 0;
+  async function oqCarregar() {
+    if (API) return (await API.get('/api/org/qrs/lista')).map((q) => ({ ...q, texto: q.token }));
+    return [{ id: null, title: 'Credenciamento', where: 'Recepção', texto: 'etal:recepcao' }, ...D.sessions.filter((x) => x.id !== 'credenciamento').sort((a, b) => a.day - b.day || a.time.localeCompare(b.time)).map((x) => ({ id: x.id, title: x.title, where: x.room, day: x.day, time: x.time, texto: `etal:${x.id}` }))];
+  }
+  const oqOnde = (q) => [q.where, q.day ? `${dayOf(q.day).week} ${q.day}` : '', q.time].filter(Boolean).join(' · ');
+  function oqTela(i) {
+    oqI = (i + oqItens.length) % oqItens.length; const q = oqItens[oqI];
+    const el = $('.oq-full', ov); if (!el) return;
+    $('.oq-qr', el).innerHTML = window.QRCode.svg(q.texto, { margin: 2 });
+    $('.oq-t', el).textContent = q.title; $('.oq-w', el).textContent = oqOnde(q); $('.oq-n', el).textContent = `${oqI + 1} / ${oqItens.length}`;
+  }
+  Screens.orgQrs = () => {
+    if (!orgDe() && !D.person.org) return semAcesso();
+    return {
+      html: `${header('QR Codes das salas')}<div class="pad stack oq">
+        <p class="oq-nota st" ${st(0)}>${ic('info')}<span>QR rasgado ou que não lê? Toque nele para abrir em tela cheia e mostre para a câmera do participante.</span></p>
+        <label class="oq-busca st" ${st(1)}>${ic('search')}<input type="search" placeholder="Buscar atividade ou sala" aria-label="Buscar QR"></label>
+        <div class="oq-lista st" ${st(2)}><p class="oq-vazio">Carregando os QR Codes…</p></div>
+        ${API ? `<a class="btn soft st" ${st(3)} href="${esc(API.url('/api/org/qrs'))}" target="_blank" rel="noopener">${ic('file')}Versão para imprimir</a>` : ''}
+      </div>`,
+      mount: async (page) => {
+        const lista = $('.oq-lista', page);
+        try { const [QR, itens] = await Promise.all([loadQRCode(), oqCarregar()]); oqItens = itens;
+          const pinta = (f = '') => { const t = fold(f); lista.innerHTML = oqItens.map((q, i) => ({ q, i })).filter(({ q }) => !t || fold(`${q.title} ${q.where}`).includes(t))
+            .map(({ q, i }) => `<button class="oq-item" data-act="oq-abrir" data-i="${i}"><span class="oq-mini">${QR.svg(q.texto, { margin: 1 })}</span><b>${esc(q.title)}</b><small>${esc(oqOnde(q))}</small></button>`).join('') || '<p class="oq-vazio">Nada encontrado.</p>'; };
+          pinta(); $('.oq-busca input', page).addEventListener('input', (e) => pinta(e.target.value));
+        } catch (x) { lista.innerHTML = `<p class="oq-vazio">${esc(x.message || 'Não foi possível carregar os QR Codes.')}</p>`; }
+      },
+    };
+  };
   Screens.org = () => {
     const eu = orgDe(); if (!eu) return semAcesso();
     const now = D.sessions.filter((x) => isNow(x) && x.seats);
@@ -1473,6 +1931,8 @@
       ['trophy', 'Campeonatos', 'Resultados, regras e chave', 'orgJogos'],
       ['id', 'Credenciar', 'Cadastro manual de quem não consegue', 'orgCred'],
       ['users', 'Equipe', `${organizadores().length} matrículas na organização`, 'orgEquipe'],
+      ['flag', 'Moderação', 'Denúncias e conteúdo da comunidade', 'orgCommunity'],
+      ['qr', 'QR Codes das salas', 'Para quando o impresso rasga ou não lê', 'orgQrs'],
     ];
     return {
       html: `${header('Painel da organização')}<div class="pad stack org">
@@ -1484,7 +1944,7 @@
         <div class="org-ferr st" ${st(2)}>${ferramentas.map(([i, t, sub, go]) => `<button data-go="${go}">${ic(i)}<b>${t}</b><small>${sub}</small></button>`).join('')}</div>
         ${now.length ? `<section class="org-card st" ${st(3)}><h2>Lotação agora</h2><ul class="org-rooms">${now.map((x) => { const n = present(x); const pc = Math.round((n / x.seats) * 100); return `<li data-go="activity" data-id="${x.id}"><span><b>${esc(x.short)}</b><small>${esc(whereOf(x))}</small></span><span class="org-meter ${pc >= 90 ? 'full' : ''}"><i style="width:${pc}%"></i></span><em>${n}/${x.seats}</em></li>`; }).join('')}</ul></section>` : ''}
         <a class="org-desk st" ${st(4)} href="admin.html" target="_blank" rel="noopener">${ic('laptop')}<span><b>Painel completo no computador</b><small>Planta ao vivo, participantes e CSV</small></span>${ic('open')}</a>
-        <p class="org-demo st" ${st(5)}>${ic('info')}<span>Demonstração: as mudanças valem para o app aberto neste aparelho e no painel do computador no mesmo navegador.</span></p>
+
       </div>`,
     };
   };
@@ -1536,47 +1996,29 @@
       </form></div>` } : semAcesso();
 
   /* ---- o que é real e o que é exemplo neste protótipo ---- */
-  Screens.sobre = () => {
-    const orig = D.sessions.filter((x) => !x.demo).length; const demo = D.sessions.length - orig;
-    const C = window.Campus3D; const q = C.quality();
-    const row = ([t, d]) => `<li><b>${t}</b><small>${d}</small></li>`;
-    return {
-      html: `${header('Sobre este protótipo')}<div class="pad stack sobre">
-        <p class="desc st" ${st(0)}>O ETAL Connect é uma proposta de app para o ETAL. Parte dele já funciona de verdade; o resto é exemplo, para mostrar como o app seria no evento.</p>
-        <section class="sb-card real st" ${st(1)}><h2>${ic('check')}Real</h2><ul>${[
-          ['Login pelo SUAP', 'Nome, foto, curso e matrícula vêm da sua conta, pela biblioteca suapy. A senha não é guardada.'],
-          ['Mapa do campus', 'Contornos do levantamento no Google Earth; cores, alturas e detalhes conferidos nas fotos do campus.'],
-          ['Planta do bloco principal', 'Desenhada a partir das referências da equipe: corredores, escada, rampa, entradas e o auditório.'],
-          ['ETAL, NADIC e IFRN', 'Textos e links dos sites oficiais. O do NADIC vem de uma cópia de abril de 2025, porque o site estava fora do ar.'],
-          ['Conta de visitante, lembretes e uso sem internet', 'Funcionam de verdade, mas ficam só neste aparelho: não há servidor do evento.'],
-          ['Desempenho do mapa', 'Medido no próprio aparelho, que escolhe a versão do 3D.'],
-        ].map(row).join('')}</ul></section>
-        <section class="sb-card demo st" ${st(2)}><h2>${ic('flash')}Exemplo</h2><ul>${[
-          ['Programação', `${orig} atividades seguem o VII ETAL (novembro de 2025). As outras ${demo}, com palestrantes de nomes inventados, são de exemplo.`],
-          ['Salas e vagas', 'A distribuição das atividades pelas salas é demonstrativa.'],
-          ['Credenciamento, presença, certificados e materiais', 'Simulados. Não há integração com o SUAP nem registro oficial de presença.'],
-          ['Campeonatos', 'Jogadores e horários de exemplo. A inscrição e os resultados funcionam, mas ficam só neste navegador.'],
-          ['Avisos, Campus ao vivo e painel da organização', 'Números e mensagens simulados.'],
-        ].map(row).join('')}</ul></section>
-        <section class="sb-card approx st" ${st(3)}><h2>${ic('pin')}Aproximações</h2><ul>${[
-          ['Alturas', 'Bloco principal com 13,8 m, auditório com 9 m e prédio do NADIC com 13,2 m, estimados pelas fotos.'],
-          ['Obelisco e riacho do pátio', 'Posição e desenho lidos das fotos.'],
-          ['Entorno do campus', 'Ruas e casas ao redor são uma representação simples.'],
-        ].map(row).join('')}</ul></section>
-        <section class="sb-card dev st" ${st(4)}><h2>${ic('laptop')}Este aparelho</h2><ul>
-          ${row(['Uso sem internet', PWA.ready ? 'Pronto: o app abre mesmo sem conexão.' : swAllowed ? 'Preparando a cópia do app.' : 'Indisponível neste endereço: precisa de HTTPS.'])}
-          ${row(['Instalado como app', standalone() ? 'Sim' : 'Não'])}
-          ${row(['Notificações', { granted: 'Permitidas', denied: 'Bloqueadas', default: 'Ainda não pedidas', unsupported: 'Sem suporte neste navegador' }[notifState()]])}
-          ${row(['Mapa', `${TIER_LABEL[q.tier]} · ${q.why}`])}
-          ${row(['Versão', PWA.version || 'desenvolvimento'])}
-        </ul></section>
-      </div>`,
-    };
-  };
+  Screens.sobre = () => ({ html: `${header('Sobre o aplicativo')}<div class="pad stack sobre">
+    <section class="sb-card"><h2>ETAL Connect</h2><p>Programação, caminhos pelo campus e encontros em um só lugar.</p><p>VII ETAL · IFRN Campus Pau dos Ferros<br>26 a 28 de novembro de 2025</p></section>
+    <ul class="menu"><li data-go="etal">${ic('cal')}<span>Conheça o ETAL</span>${ic('chev')}</li><li data-go="nadic">${ic('building')}<span>NADIC</span>${ic('chev')}</li></ul>
+    <p class="note">Seu nome e sua foto podem ser personalizados no Perfil. As alterações não modificam sua conta do SUAP.</p>
+    <a class="btn soft" href="https://portal.ifrn.edu.br/eventos/8528/" target="_blank" rel="noopener">Página do evento ${ic('open')}</a>
+  </div>` });
 
-  /* ---- telas novas ---- */
-  Screens.speakers = () => ({
-    html: `${header('Palestrantes')}<div class="pad stack"><ul class="splist">${speakersList().map((s, i) => `<li class="st" ${st(i)} data-go="speaker" data-id="${s.id}">${spAv(s, true)}<span><b>${s.speakerShort}</b><small>${s.role}</small><em>${s.short} · ${dayOf(s.day).week} ${s.day}, ${s.time}</em></span>${ic('chev', 'i chev')}</li>`).join('')}</ul></div>`,
+  let suapSummary = null, suapLoading = false;
+  async function loadSuapSummary() {
+    if (!API || suapLoading) return;
+    suapLoading = true;
+    try { suapSummary = await API.get('/api/eu/suap'); }
+    catch (error) { suapSummary = { connected: false, message: error.message, events: [], certificates: [] }; }
+    finally { suapLoading = false; if (top().s === 'suapEvents') rerender(); }
+  }
+  Screens.suapEvents = () => ({
+    html: `${header('Meus eventos no SUAP')}<div class="pad stack">
+      <p class="note">Eventos e certificados da sua conta. A inscrição é concluída no portal oficial do SUAP.</p>
+      ${API && !suapSummary ? '<p role="status">Consultando sua sessão…</p>' : suapSummary?.connected ? `<ul class="ab-list">${suapSummary.events.map((e) => `<li><b>${esc(e.name)}</b><a href="${esc(e.url)}" target="_blank" rel="noopener">Abrir no SUAP ${ic('open')}</a></li>`).join('') || '<li>Nenhum evento encontrado nesta sessão.</li>'}</ul><h2 class="h">Certificados disponíveis</h2><ul class="ab-list">${suapSummary.certificates.map((c) => `<li><b>${esc(c.name)}</b><a class="btn soft" href="${esc(API.url('/api/eu/suap/certificados/' + encodeURIComponent(c.id)))}" target="_blank" rel="noopener">${ic('download')}Baixar PDF</a></li>`).join('') || '<li>O SUAP não disponibilizou certificados nesta sessão.</li>'}</ul>` : `<p class="note">${esc(suapSummary?.message || 'Entre com sua matrícula e senha para consultar seus eventos e certificados.')}</p>`}
+      <a class="btn primary" href="https://suap.ifrn.edu.br/admin/eventos/evento/?tab=tab_participante" target="_blank" rel="noopener">Abrir meus eventos no SUAP ${ic('open')}</a>
+      <a class="btn soft" href="https://suap.ifrn.edu.br/eventos/inscricao/1/8528/" target="_blank" rel="noopener">Programação original do VII ETAL ${ic('open')}</a>
+    </div>`,
+    mount: () => { if (API && !suapSummary) loadSuapSummary(); },
   });
 
   Screens.certificates = () => {
@@ -1585,16 +2027,62 @@
     const hours = done.reduce((n, s) => n + hoursOf(s), 0);
     const total = rows.reduce((n, s) => n + hoursOf(s), 0);
     return {
-      html: `${header('Certificados')}<div class="pad stack">
-        <section class="cert-top st" ${st(0)}><span class="ring big" style="--p:${Math.round((hours / total) * 100)}"><b>${hours}h</b></span><div><strong>${hours} de ${total} horas</strong><span>O certificado sai depois do evento, com as presenças registradas.</span></div></section>
+      html: `${header('Certificados')}<div class="pad stack"><button class="btn soft" data-go="suapEvents">Consultar certificados no SUAP ${ic('open')}</button>
+        <section class="cert-top st" ${st(0)}><span class="ring big" style="--p:${Math.round((hours / total) * 100)}"><b>${hours}h</b></span><div><strong>${hours} de ${total} horas</strong><span>Acompanhe suas horas de participação e consulte os certificados no SUAP.</span></div></section>
         <ul class="certs st" ${st(1)}>${rows.map((s) => `<li class="${S.present[s.id] ? 'done' : ''}" data-go="activity" data-id="${s.id}"><i>${ic(S.present[s.id] ? 'check' : 'clock')}</i><span><b>${s.short}</b><small>${S.present[s.id] ? `Presença às ${S.present[s.id]} · ${hoursOf(s)}h` : `${dayOf(s.day).week} ${s.day}, ${s.time} · ${hoursOf(s)}h`}</small></span></li>`).join('')}</ul>
       </div>`,
     };
   };
 
+  /* Cartão de contato: o que aparece para quem ler o QR do seu crachá. Tudo opcional; na primeira entrada vem com "Pular". */
+  Screens.cartao = (pp = {}) => {
+    const c = cardGet() || { publish: true, email: D.person.email || '', nadic: '', langs: [], areas: [], open: [] };
+    const intro = !!pp.intro;
+    return {
+      html: `${header(intro ? 'Seu perfil' : 'Perfil público', { right: intro ? '<button class="ct-skip" data-act="cartao-pular">Pular</button>' : '' })}
+      <form class="ct-form pad" data-form="cartao" novalidate>
+        ${intro ? `<div class="ct-hello st" ${st(0)}><small>Opcional</small><h2>Personalize seu perfil</h2></div>` : ''}
+        <div class="ct-preview st" ${st(1)}>${cardPreview(c)}</div>
+        <label class="ct-switch st" ${st(2)}><span><b>Perfil visível</b><small>Para quem tocar no seu nome ou ler seu QR</small></span><input type="checkbox" name="publish" ${c.publish !== false ? 'checked' : ''}><i></i></label>
+
+        <section class="ct-sec st" ${st(3)}><h3>${ic('contact')}Contato</h3>
+          <label class="ct-field">${ic('phone')}<input name="phone" type="tel" inputmode="tel" maxlength="20" placeholder="WhatsApp ou telefone" value="${esc(c.phone || '')}" autocomplete="tel"></label>
+          <label class="ct-field">${ic('mail')}<input name="email" type="email" maxlength="80" placeholder="E-mail" value="${esc(c.email || '')}" autocomplete="email"></label>
+          <label class="ct-field">${ic('link')}<input name="link" maxlength="80" placeholder="GitHub, LinkedIn ou portfólio" value="${esc(c.link || '')}" autocomplete="url"></label>
+        </section>
+
+        <section class="ct-sec st" ${st(4)}><h3><img class="ct-nadic-logo" src="assets/nadic-logo.svg" alt="">Bolsista do NADIC?</h3>
+          <div class="ct-seg">${CARD_NADIC.map(([v, t]) => `<label><input type="radio" name="nadic" value="${v}" ${c.nadic === v ? 'checked' : ''}><span>${t}</span></label>`).join('')}</div>
+        </section>
+
+        <section class="ct-sec st" ${st(5)}><h3>${ic('code')}Linguagens</h3>${cardChips('langs', CARD_LANGS, c.langs)}</section>
+        <section class="ct-sec st" ${st(6)}><h3>${ic('sliders')}Interesses</h3>${cardChips('areas', CARD_AREAS, c.areas)}</section>
+        <section class="ct-sec st" ${st(7)}><h3>${ic('flag')}Aberto a</h3>${cardChips('open', CARD_OPEN, c.open)}</section>
+        <section class="ct-sec st" ${st(8)}><h3>${ic('text')}Sobre você</h3>
+          <label class="ct-field area"><textarea name="bio" maxlength="140" rows="2" placeholder="Ex.: Curto jogos e estou aprendendo Godot.">${esc(c.bio || '')}</textarea><em class="ct-count">${(c.bio || '').length}/140</em></label>
+        </section>
+
+        <div class="ct-actions"><button class="btn primary big" type="submit">${ic('check')}Salvar</button>${intro ? '<button class="btn ghost" type="button" data-act="cartao-pular">Pular por enquanto</button>' : ''}</div>
+      </form>`,
+      mount: (page) => {
+        const f = $('[data-form="cartao"]', page); if (!f) return;
+        const live = () => { const v = cardRead(f); $('.ct-preview', page).innerHTML = cardPreview(v); $('.ct-count', page).textContent = `${v.bio.length}/140`; };
+        f.addEventListener('input', live); f.addEventListener('change', live);
+        f.addEventListener('submit', (e) => {
+          e.preventDefault(); e.stopPropagation();
+          const v = cardRead(f);
+          if (v.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v.email)) { toast('Confira o e-mail.'); $('[name="email"]', f).focus(); return; }
+          try { localStorage.setItem(cardKey(D.person.id), JSON.stringify({ ...v, at: Date.now() })); } catch (_) { toast('Não foi possível salvar neste aparelho.'); return; }
+          cardDemoDone = true; buzz(14); toast(v.publish ? 'Perfil atualizado' : 'Perfil salvo, mas oculto'); navBack();
+        });
+      },
+    };
+  };
+
+  Screens.peer = ({ id }) => { const p = D.peers.find((x) => x.id === id); return { html: `${header('Contato')}<div class="pad social-card">${p ? cardPreview(p.card || {}, p, { own: false }) : communityEmpty('Perfil indisponível.')}</div>` }; };
   Screens.network = () => ({
     html: `${header('Contatos')}<div class="pad stack">
-      ${S.contacts.length ? `<ul class="splist">${S.contacts.map((c, i) => `<li class="st" ${st(i)}><span class="ava lg">${c.initials}</span><span><b>${c.name}</b><small>${c.course}</small><em>${c.interest}</em></span></li>`).join('')}</ul>`
+      ${S.contacts.length ? `<ul class="splist">${S.contacts.map((c, i) => `<li class="st" ${st(i)} ${c.card ? `data-go="peer" data-id="${esc(c.id)}"` : ''}>${c.photo ? `<span class="ava lg has-photo"><img src="${esc(c.photo)}" alt=""></span>` : `<span class="ava lg">${c.initials}</span>`}<span><b>${c.name}</b><small>${c.course}${c.nadic ? ' · NADIC' : ''}</small><em>${[c.interest, ...(c.langs || [])].join(' · ')}</em></span></li>`).join('')}</ul>`
         : `<div class="empty st" ${st(0)}>${illo('people')}<h3>Nenhum contato ainda</h3><p>Leia o QR do crachá de um colega para trocar contatos.</p></div>`}
       <div class="net-actions st" ${st(1)}><button class="btn primary" data-act="scan" data-mode="ler">${ic('qr')}Ler QR de um colega</button><button class="btn soft" data-act="scan" data-mode="meu">Mostrar meu QR</button></div>
     </div>`,
@@ -1637,7 +2125,7 @@
   /* Na exportação em arquivo único, as imagens vêm embutidas em ASSET_DATA. */
   const assetUrl = (p) => (window.ASSET_DATA || {})[p] || p;
   /* Banner: se existir assets/banner-mk.jpg ou banner-fifa.jpg, a imagem cobre a arte original. */
-  function gameArt(t) { return `${gameBase(t)}<img class="art art-photo" src="${assetUrl(`assets/banner-${t.theme}.jpg`)}" alt="" onerror="this.remove()"><span class="art art-scrim"></span>`; }
+  function gameArt(t) { return `${gameBase(t)}<img class="art art-photo" src="${assetUrl(t.banner || `assets/banner-${t.theme}.jpg`)}" alt="" onerror="this.remove()"><span class="art art-scrim"></span>`; }
   function gameBase(t) { return t.theme === 'mk'
     ? `<svg class="art" viewBox="0 0 300 160" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><radialGradient id="mkg" cx=".75" cy=".2" r=".9"><stop offset="0" stop-color="#8f2412"/><stop offset=".42" stop-color="#3f0b0c"/><stop offset="1" stop-color="#0c0406"/></radialGradient></defs><rect width="300" height="160" fill="url(#mkg)"/><g fill="none" stroke="#ffb199" stroke-opacity=".28"><path d="M-10 150 210 -10M30 170 250 10M70 190 290 30"/></g></svg>`
     : `<svg class="art" viewBox="0 0 300 160" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><linearGradient id="ffg" x1="0" x2="1"><stop offset="0" stop-color="#1f7a35"/><stop offset="1" stop-color="#2f9b45"/></linearGradient></defs><rect width="300" height="160" fill="url(#ffg)"/><g fill="#ffffff" opacity=".06">${[0, 1, 2, 3, 4, 5].map((i) => `<rect x="${i * 50}" width="25" height="160"/>`).join('')}</g><g fill="none" stroke="#e9ffe9" stroke-opacity=".55" stroke-width="2"><rect x="12" y="12" width="276" height="136" rx="2"/><path d="M150 12v136"/><circle cx="150" cy="80" r="26"/><rect x="12" y="46" width="34" height="68"/><rect x="254" y="46" width="34" height="68"/></g><circle cx="150" cy="80" r="3" fill="#e9ffe9"/></svg>`; }
@@ -1776,13 +2264,14 @@
   };
   const placard = (k) => { const p = SPOTS[k]; return `<div class="placard" data-k="${k}"><header>${mark('mark xs')}<b>${p.name}</b></header><div class="pl-qr">${qr(p.seed, 21)}</div><footer>${p.sign}</footer></div>`; };
   const scanHint = (k) => (k === 'recepcao' && !S.credAt ? 'Comece pelo QR da recepção' : 'Aponte para o QR');
+  const canDebugQr = () => API ? !!D.person.org && !!window.ETAL_CONFIG?.demo : !!orgDe();
   Overlays.scan = (mode = 'ler') => {
     const spot = S.credAt ? 'react-native' : 'recepcao';
     return `<div class="scanner" data-mode="${mode}">
       <div class="scan-view">
         <div class="scene"><svg class="scene-bg" viewBox="0 0 400 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><linearGradient id="wl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9dfe6"/><stop offset=".62" stop-color="#b9c1ca"/><stop offset=".62" stop-color="#7b8590"/><stop offset="1" stop-color="#59626d"/></linearGradient></defs><rect width="400" height="700" fill="url(#wl)"/><path d="M0 0 150 190V470L0 700Z" fill="#a6afb9"/><path d="M400 0 250 190V470L400 700Z" fill="#98a2ad"/><rect x="150" y="190" width="100" height="280" fill="#eef1f4"/><path d="M12 70 22 80V530L12 590Z M60 130 70 140V490L60 530Z" fill="#3a5a9b"/><path d="M388 70 378 80V530L388 590Z M340 130 330 140V490L340 530Z" fill="#4f6270"/><path d="M165 60h70l-8 40h-54Z M120 0h160l-20 30H140Z" fill="#fff"/></svg></div>
         <div class="placard-wrap">${placard(spot)}</div>
-        <video class="scan-cam" playsinline muted aria-label="Imagem da câmera"></video>
+        <video class="scan-cam" playsinline muted aria-label="Imagem da câmera"></video><svg class="scan-track" aria-hidden="true"><polygon class="tk-poly"/><path class="tk-brk"/><g class="tk-ok"><g class="tk-okin"><circle r="24"/><path d="M-10 0l6 6 13-14"/></g></g></svg><span class="tk-tag" aria-hidden="true"></span>
         <div class="scan-mask"></div>
         <div class="frame"><i></i><i></i><i></i><i></i><span class="scanline"></span></div>
         <div class="torch-glow"></div>
@@ -1793,13 +2282,10 @@
         </div>
         <p class="scan-hint" aria-live="polite"><span>${scanHint(spot)}</span></p>
       </div>
-      <div class="scan-dock cam-dock ${DEMO ? 'with-demo' : ''}"><p id="camst">Aponte a câmera para o QR da sala ou da recepção.</p><button class="btn soft" data-act="camstart" hidden>Abrir a câmera</button></div>
-      <div class="scan-dock" ${DEMO ? '' : 'hidden'}>
-        <p>Simular leitura <em>demonstração</em></p>
-        <div class="spots">${Object.entries(SPOTS).map(([k, p]) => `<button class="spot ${k === 'recepcao' && !S.credAt ? 'first' : ''}" data-act="simulate" data-q="${k}"><span>${ic(p.icon)}</span><b>${p.name}</b><small>${p.where}</small></button>`).join('')}</div>
-      </div>
+      <div class="scan-dock cam-dock ${canDebugQr() ? 'with-debug' : ''}"><p id="camst">Aponte a câmera para o QR da sala ou da recepção.</p><button class="btn soft" data-act="camstart" hidden>Abrir a câmera</button></div>
+      ${canDebugQr() ? `<details class="qr-debug"><summary>Debug · QR Codes</summary><div class="qr-debug-grid"><button type="button" data-act="simulate" data-q="recepcao">Credenciamento</button><button type="button" data-act="colega-teste"><b>Colega de teste</b><small>Crachá com perfil completo</small></button>${D.sessions.filter((x) => x.id !== 'credenciamento').map((x) => `<button type="button" data-act="simulate" data-q="${esc(x.id)}"><b>${esc(x.title)}</b><small>${esc(x.type)} · ${x.day}/11 ${x.time} · ${esc(x.room)}</small></button>`).join('')}</div></details>` : ''}
       <div class="myqr" aria-hidden="${mode !== 'meu'}">
-        <div class="myqr-card">${meAv('av xl')}<strong>${esc(D.person.name)}</strong><span>${esc(D.person.course)}</span><div class="qrbox">${qr()}</div><small>Mostre para um colega trocar contato com você.</small></div>
+        <div class="myqr-card">${meAv('av xl')}<strong>${esc(D.person.name)}</strong><span>${esc(D.person.course)}</span>${cardGet()?.publish ? `<em class="myqr-card-on">${ic('check')}Perfil público visível</em>` : ''}<div class="qrbox">${qr()}</div><small>Mostre para um colega trocar contato com você.</small></div>
       </div>
     </div>`;
   };
@@ -1831,7 +2317,7 @@
   function scanAgain() {
     const root = $('.scanner', ov); if (!root) return;
     const d = $('.scan-res', root); d?.classList.remove('in');
-    root.classList.remove('has-res', 'is-locked'); delete root.dataset.busy;
+    root.classList.remove('has-res', 'is-locked'); delete root.dataset.busy; trackReset();
     $('.scan-hint span', ov).textContent = 'Aponte para o QR';
     setTimeout(() => d?.remove(), 400);
     if (API && root.dataset.mode !== 'meu') setTimeout(camStart, 300);
@@ -1868,8 +2354,11 @@
     </div>`;
   };
   function peerResult(p, { again, c }) {
+    if (p.card) return `<small class="sr-kick sr-kick-card">${again ? 'Vocês já são contatos' : 'Contato adicionado'}</small><div class="sr-peer-card">${cardPreview(p.card, p, { own: false })}</div>
+      ${c ? combRow(c) : ''}
+      <div class="sr-actions"><button class="btn primary big" data-act="scanopen" data-q="colega">Ver meus contatos</button><button class="btn soft" data-act="scanagain">${ic('qr')}Ler outro QR</button></div>`;
     return `<div class="sr-hero"><span class="sr-peer"><b>${esc(p.initials)}</b><i>${ic('check')}</i></span><div><small class="sr-kick">${again ? 'Vocês já são contatos' : 'Contato adicionado'}</small><h2>${esc(p.name)}</h2><p>${esc(p.course)}</p></div></div>
-      <div class="sr-tags"><span>${ic('star')}Interesse em ${esc(p.interest)}</span><span>${ic('contact')}Contato trocado agora</span></div>
+      <div class="sr-tags"><span>${ic('star')}Interesse em ${esc(p.interest)}</span>${p.nadic ? `<span>${ic('flag')}Bolsista do NADIC</span>` : ''}${(p.langs || []).map((l) => `<span>${ic('code')}${esc(l)}</span>`).join('')}<span>${ic('contact')}Contato trocado agora</span></div>
       ${c ? combRow(c) : ''}
       <div class="sr-actions"><button class="btn primary big" data-act="scanopen" data-q="colega">Ver meus contatos</button><button class="btn soft" data-act="scanagain">${ic('qr')}Ler outro QR</button></div>`;
   }
@@ -1947,7 +2436,7 @@
     const el = document.createElement('section');
     el.className = 'page';
     el.innerHTML = out.html;
-    el._mount = out.mount;
+    el._mount = (page) => { mountGalleries(page); out.mount?.(page); };
     el._dark = !!out.dark;
     el._chrome = out.chrome !== false;
     el._navy = !!out.navy;
@@ -2013,7 +2502,7 @@
     show(build(top()), 'fade');
   }
   function renderTabbar() {
-    const tabs = [['home', 'home', 'Início'], ['agenda', 'cal', 'Agenda'], null, ['map', 'map', 'Mapa'], ['profile', 'user', 'Perfil']];
+    const tabs = [['home', 'home', 'Início'], ['agenda', 'cal', 'Agenda'], null, ['map', 'map', 'Mapa'], ['community', 'image', 'Publicações']];
     tabbar.innerHTML = tabs.map((t) => t ? `<button class="${S.tab === t[0] ? 'on' : ''}" data-act="tab" data-tab="${t[0]}">${ic(t[1])}<span>${t[2]}</span></button>`
       : `<button class="qrbtn" data-act="scan" aria-label="Ler QR">${ic('qr')}</button>`).join('');
   }
@@ -2146,7 +2635,7 @@
   window.addEventListener('online', netState); window.addEventListener('offline', netState);
 
   function setTheme(v) { UI.mode = v === 'dark' ? 'escuro' : 'claro'; applyUI(); }
-  function applyProfile(p) { Object.assign(D.person, p); }
+  function applyProfile(p) { Object.assign(D.person, p, { officialName: p.officialName || p.name }, profileLocal(p.id)); }
   /* Troca entre IFRN e visitante sem refazer o crachá. */
   function lgSwap(mode) {
     S.lgMode = mode;
@@ -2368,6 +2857,7 @@
   document.addEventListener('input', (e) => { if (e.target.id === 'fq') { if (e.target.value.trim()) S.finderMode = null; finderRender(); } });
 
   /* ---------------- ações ---------------- */
+  let peerForce = null;
   function scanResult(q) {
     const root = $('.scanner', ov);
     if (!root || root.dataset.busy) return;
@@ -2391,7 +2881,7 @@
     }, reduce ? 20 : 950);
     setTimeout(() => {
       if (q === 'colega') {
-        const peer = D.peers[S.contacts.length % D.peers.length];
+        const peer = peerForce || D.peers[S.contacts.length % D.peers.length]; peerForce = null;
         const again = S.contacts.includes(peer);
         if (!again) S.contacts.unshift(peer);
         const c = takeNewComb();
@@ -2410,6 +2900,7 @@
       if (first) S.credAt = D.now.time;
       const again = !!S.present[q];
       if (!again) S.present[q] = D.now.time;
+      communityCheckin(q);
       const c = takeNewComb();
       rerender();
       if (!again && tipoDe(byId(q) || {}).g === 'camp' && byId(q)?.tournament) { openOverlay(Overlays.jogo(byId(q), c), 'welcome'); return; }
@@ -2441,6 +2932,72 @@
         else if (!busy) { navMark('tab'); S.stacks[S.tab].pop(); show(build(top()), 'pop'); }
         break;
       case 'tab': if (el.dataset.tab === 'map' && S.tab !== 'map' && soonRoute()) break; switchTab(el.dataset.tab); break;
+      case 'gallery-step': {
+        const gallery = el.closest('.community-gallery'); const track = $('.gallery-track', gallery); const index = Math.max(0, Math.min(track.children.length - 1, +el.dataset.index));
+        track.scrollTo({ left: track.children[index].offsetLeft - track.children[0].offsetLeft, behavior: reduce ? 'instant' : 'smooth' }); break;
+      }
+      case 'profile-edit': profileEditOpen(); break;
+      case 'mat-abrir': matAbrir({ url: el.dataset.url, kind: el.dataset.kind, name: el.dataset.name, meta: el.dataset.meta }); break;
+      case 'mv-clone': navigator.clipboard?.writeText(`git clone ${el.dataset.url}`).then(() => toast('Comando copiado'), () => toast(`git clone ${el.dataset.url}`)); break;
+      case 'oq-abrir': openOverlay(`<div class="oq-full" role="dialog" aria-label="QR Code em tela cheia"><span class="oq-n"></span><button class="oq-x" data-act="closeov" aria-label="Fechar">${ic('x')}</button><div class="oq-qr"></div><b class="oq-t"></b><small class="oq-w"></small><div class="oq-nav"><button data-act="oq-ant">${ic('back')}Anterior</button><button data-act="oq-prox">Próximo${ic('chev')}</button></div></div>`, 'qrfull'); oqTela(+el.dataset.i);
+        { const f = $('.oq-full', ov); let x0 = null; f.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true }); f.addEventListener('touchend', (e) => { if (x0 === null) return; const d = e.changedTouches[0].clientX - x0; if (Math.abs(d) > 50) oqTela(oqI + (d < 0 ? 1 : -1)); x0 = null; }); }
+        break;
+      case 'oq-ant': oqTela(oqI - 1); break;
+      case 'oq-prox': oqTela(oqI + 1); break;
+      case 'cartao-pular': cardSkip(); cardDemoDone = true; if (el.closest('.ct-invite')) { el.closest('.ct-invite').remove(); toast('Dá para personalizar depois em Perfil'); } else { navBack(); toast('Dá para personalizar depois em Perfil'); } break;
+      case 'profile-preset': profileEditDraft.photo = PROFILE_AVATARS[+el.dataset.index]; profileEditRefresh(); break;
+      case 'profile-remove-photo': profileEditDraft.photo = null; profileEditRefresh(); break;
+      case 'community-mode': {
+        const mode = ['feed', 'wall', 'saved', 'mentions', 'chat'].includes(el.dataset.v) ? el.dataset.v : 'feed';
+        if (mode === 'mentions' && !communityWrite((v) => { v.mentionSeen[String(D.person.id)] = communityMentionRows(v).map((row) => row.target); })) break;
+        communityMode = mode; rerender(); break;
+      }
+      case 'community-save': {
+        if (!S.auth) break;
+        const id = el.dataset.id; const me = String(D.person.id); let adding = false;
+        if (communityWrite((v) => {
+          if (!communityPosts(v).some((p) => p.id === id)) throw new Error('Esta publicação não está mais disponível.');
+          const ids = v.bookmarks[me] || []; adding = !ids.includes(id); v.bookmarks[me] = adding ? [...ids, id] : ids.filter((x) => x !== id);
+        })) { rerender(); toast(adding ? 'Publicação salva' : 'Removida dos salvos'); } break;
+      }
+      case 'community-photo-open': galleryPositions[el.dataset.id] = +el.dataset.index; push('communityPost', { id: el.dataset.id }); break;
+      case 'community-report': communityReportOpen(el.dataset.target); break;
+      case 'community-insert-mention': communityAddMention(document.getElementById(el.dataset.input), el.dataset.handle); el.closest('details')?.removeAttribute('open'); break;
+      case 'community-mention-person': {
+        if (!S.credAt) break;
+        const person = communityPeople().find((p) => p.id === el.dataset.id); if (!person) break;
+        communityDraft.post += `${communityDraft.post && !communityDraft.post.endsWith(' ') ? ' ' : ''}@${person.handle} `;
+        push('communityCompose'); break;
+      }
+      case 'community-mention-open': {
+        const item = SOCIAL.find(communityRead(), el.dataset.target); if (!item) break;
+        if (item.type === 'Mensagem') { communityMode = 'chat'; rerender(); }
+        else push('communityPost', { id: item.postId }); break;
+      }
+      case 'social-mod-filter': if (canModerateCommunity()) { communityModFilter = el.dataset.filter; rerender(); } break;
+      case 'social-mod': {
+        if (!canModerateCommunity()) { toast('Esta ação é da organização.'); break; }
+        const note = el.closest('[data-mod-target]')?.querySelector('[data-mod-note]')?.value || '';
+        if (communityWrite((v) => SOCIAL.moderate(v, el.dataset.target, el.dataset.action, D.person.name, note))) { rerender(); toast('Revisão salva neste navegador'); }
+        break;
+      }
+
+      case 'community-compose': if (!S.credAt) { toast('Leia o QR da recepção para participar.'); break; } if (!communityDraft.post.trim() && !communityDraft.images.length && !communityDraft.activityManual) communityDraft.contextReady = false; push('communityCompose'); if (el.dataset.photo) $('#community-image', vp.querySelector('.page:not(.leaving)'))?.click(); break;
+      case 'community-remove-image': communityDraft.images.splice(+el.dataset.index, 1); rerender(); break;
+      case 'community-like': {
+        if (!S.credAt) { toast('Leia o QR da recepção para participar.'); break; }
+        const id = el.dataset.id; const me = String(D.person.id);
+        if (communityWrite((v) => { if (!communityPosts(v).some((p) => p.id === id)) throw new Error('Esta publicação não está mais disponível.'); const list = v.likes[id] || []; v.likes[id] = list.includes(me) ? list.filter((x) => x !== me) : [...list, me]; })) rerender();
+        break;
+      }
+      case 'community-delete': {
+        if (!S.auth) break;
+        if (communityWrite((v) => SOCIAL.removePost(v, el.dataset.id, communityAuthor(), canModerateCommunity()))) {
+          if (top().s === 'communityPost') navBack(); else rerender();
+          toast('Publicação excluída');
+        }
+        break;
+      }
       case 'retro': retroOpen(false); break;
       case 'retrodemo': closeOverlay(() => retroOpen(true)); break;
       case 'retroprev': retroShow(retro.i - 1); break;
@@ -2505,7 +3062,8 @@
       case 'rate': S.ratings[el.dataset.id] = +el.dataset.n; rerender(); toast('Avaliação enviada'); break;
       case 'closeov': closeOverlay(el.dataset.then ? () => push(el.dataset.then, el.dataset.thenId ? { id: el.dataset.thenId } : undefined) : null); break;
       case 'scanask': { const q = el.dataset.q; scanOpen(q); setTimeout(() => { openOverlay(Overlays.ask(q), 'ask'); setTimeout(() => $('#qtext')?.focus({ preventScroll: true }), 480); }, 650); break; }
-      case 'simulate': if (API && el.dataset.q !== 'colega') demoQr(el.dataset.q); else scanResult(el.dataset.q); break;
+      case 'colega-teste': if (!canDebugQr()) break; peerForce = D.peers.find((x) => x.card) || null; scanResult('colega'); break;
+      case 'simulate': if (!canDebugQr()) break; if (API) demoQr(el.dataset.q); else demoHit('etal:' + el.dataset.q); break;
       case 'scanopen': scanOpen(el.dataset.q); break;
       case 'scanagain': scanAgain(); break;
       case 'day': S.agendaDay = +el.dataset.day; rerender(); vp.querySelector('.page .agenda-list')?.classList.add('swap'); break;
@@ -2613,15 +3171,57 @@
       case 'toast': toast(el.dataset.msg); break;
       case 'lgmode': if ((el.dataset.v === 'guest') !== (S.lgMode === 'guest')) lgSwap(el.dataset.v === 'guest' ? 'guest' : null); break;
       case 'lgenter': lgOpenApp(); break;
-      case 'lgredo': { lgPhys?.disarm?.(); lgPending = null; Object.keys(D.person).forEach((k) => delete D.person[k]); Object.assign(D.person, DEMO_PERSON); store.del(SAVE_KEY); $('.login')?.classList.remove('filled'); lgSwap(S.lgMode); lgPhys?.kick(0, 0, -1.1, 1200); break; }
+      case 'lgredo': { lgPhys?.disarm?.(); lgPending = null; Object.keys(D.person).forEach((k) => delete D.person[k]); Object.assign(D.person, DEMO_PERSON); store.del(SAVE_KEY); $('.lx-card', $('.login'))?.setAttribute('aria-hidden', 'true'); $('.login')?.classList.remove('filled'); lgSwap(S.lgMode); lgPhys?.kick(0, 0, -1.1, 1200); break; }
       case 'guestresume': { const g = guestSaved(); if (g) { Object.keys(D.person).forEach((k) => delete D.person[k]); applyProfile(g); store.set(SAVE_KEY, g); lgFilled(g); } break; }
       case 'togglepwd': { const i = $('#pwd'); i.type = i.type === 'password' ? 'text' : 'password'; break; }
-      case 'logout': { if (API) API.post('/api/auth/sair').catch(() => {}); const n = navUndo.length; navUndo.length = 0; if (n) { navSkip += 1; history.go(-n); } } S = fresh(); store.del(SAVE_KEY); Object.keys(D.person).forEach((k) => delete D.person[k]); Object.assign(D.person, DEMO_PERSON); vp.innerHTML = ''; show(build({ s: 'login' }), 'fade'); break;
+      case 'logout': suapSummary = null; { if (API) API.post('/api/auth/sair').catch(() => {}); const n = navUndo.length; navUndo.length = 0; if (n) { navSkip += 1; history.go(-n); } } S = fresh(); Object.assign(communityDraft, { post: '', message: '', comments: {}, images: [], activity: '', day: D.now.day, tag: 'No evento', contextReady: false, activityManual: false }); communityMode = 'feed'; store.del(SAVE_KEY); Object.keys(D.person).forEach((k) => delete D.person[k]); Object.assign(D.person, DEMO_PERSON); vp.innerHTML = ''; show(build({ s: 'login' }), 'fade'); break;
       default: break;
     }
   });
 
   document.addEventListener('submit', async (e) => {
+    if (e.target.dataset.form === 'community-report') {
+      e.preventDefault(); if (!S.auth || !S.credAt) { toast('Leia o QR Code da recepção para participar.'); return; }
+      const data = new FormData(e.target); const target = e.target.dataset.target;
+      if (communityWrite((v) => SOCIAL.report(v, target, communityAuthor(), String(data.get('reason') || ''), String(data.get('detail') || '')))) closeOverlay(() => toast('Denúncia registrada para revisão'));
+      return;
+    }
+
+    if (e.target.dataset.form === 'profile-edit') {
+      e.preventDefault(); if (profilePhotoBusy || !profileEditDraft) return;
+      const name = String(new FormData(e.target).get('name') || '').trim().replace(/\s+/g, ' ');
+      if (!name) { toast('Informe o nome que quer exibir.'); return; }
+      const words = name.split(' '); const edited = { name, first: words[0], initials: (words[0][0] + (words.length > 1 ? words[words.length - 1][0] : '')).toUpperCase(), photo: profileEditDraft.photo };
+      try { localStorage.setItem(profileLocalKey(D.person.id), JSON.stringify(edited)); }
+      catch (_) { toast('Não foi possível salvar. Libere espaço no navegador.'); return; }
+      const onBadge = !!$('.login.filled');
+      Object.assign(D.person, edited); store.set(SAVE_KEY, { ...D.person });
+      const guest = guestSaved(); if (guest && String(guest.id) === String(D.person.id)) prefs.set('etal-visitante', JSON.stringify({ ...guest, ...edited }));
+      if (lgPending) { Object.assign(lgPending, edited); lgPhys?.disarm?.(); }
+      closeOverlay(() => {
+        if (onBadge) { $('.bx-face.filled', $('.login')).innerHTML = badgeFace(lgPending); $('[data-live="hello"]').textContent = `Tudo certo, ${D.person.first}!`; }
+        else { rerender(); mapaFixoEnviar('etal:mapa:sincronizar', {}); }
+        toast('Perfil atualizado neste aparelho');
+      }); return;
+    }
+
+    if (['community-post', 'community-message', 'community-comment'].includes(e.target.dataset.form)) {
+      e.preventDefault(); if (!S.auth || !S.credAt) { toast('Leia o QR da recepção para participar.'); return; }
+      if (communityImageBusy && e.target.dataset.form === 'community-post') { toast('Aguarde a foto terminar de carregar.'); return; }
+      const f = e.target; const kind = f.dataset.form; const data = new FormData(f);
+      const text = String(data.get('text') || '').trim().slice(0, kind === 'community-post' ? 2000 : 1000);
+      if (!text && !(kind === 'community-post' && communityDraft.images.length)) { toast('Escreva algo para compartilhar.'); return; }
+      const item = { ...communityAuthor(), handle: communityPeople().find((p) => p.id === String(D.person.id))?.handle, id: SOCIAL.uid(), created: Date.now(), text, mentions: communityMentions(text).map((p) => p.id) };
+      const saved = communityWrite((v) => {
+        if (kind === 'community-post') v.posts.unshift({ ...item, activity: byId(communityDraft.activity)?.id || null, day: byId(communityDraft.activity)?.day || (D.days.some((d) => d.day === +communityDraft.day) ? +communityDraft.day : D.now.day), tag: communityDraft.tag, images: communityDraft.images.map((img) => ({ ...img })) });
+        else if (kind === 'community-message') v.messages.push(item);
+        else { if (!communityPosts(v).some((p) => p.id === f.dataset.id)) throw new Error('Esta publicação não está mais disponível.'); (v.comments[f.dataset.id] ||= []).push(item); }
+      });
+      if (!saved) return;
+      if (kind === 'community-post') { communityDraft.post = ''; communityDraft.cursor = 0; communityDraft.images = []; communityDraft.activity = ''; communityDraft.day = D.now.day; communityDraft.tag = 'No evento'; communityDraft.contextReady = false; communityDraft.activityManual = false; communityMode = 'feed'; navBack(); toast('Publicação salva neste aparelho'); }
+      else { if (kind === 'community-message') communityDraft.message = ''; else delete communityDraft.comments[f.dataset.id]; rerender(); }
+      return;
+    }
     if (e.target.dataset.form === 'tourjoin') {
       e.preventDefault();
       const t = D.tournaments.find((x) => x.id === e.target.dataset.id); const f = S.tourForm || {};
@@ -2734,13 +3334,13 @@
       }
       const r = await fetch('api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ matricula: mat, senha: pwd }) });
       const j = await r.json().catch(() => { throw new TypeError('sem servidor'); });
-      if (!r.ok) { say(j.erro || 'Não foi possível entrar.'); if (r.status >= 500) $('#lgdemo').hidden = false; return; }
+      if (!r.ok) { say(j.erro || 'Não foi possível entrar.'); if (r.status >= 500) $('#lgdemo')?.removeAttribute('hidden'); return; }
       Object.keys(D.person).forEach((k) => delete D.person[k]); applyProfile({ ...DEMO_PERSON, ...j.perfil });
       store.set(SAVE_KEY, j.perfil);
       lgFilled(D.person);
     } catch (_) {
       say(navigator.onLine === false ? 'Sem internet agora. Entre como visitante ou tente de novo quando a conexão voltar.' : 'Não foi possível falar com o servidor local. Abra o protótipo por server.py para usar o SUAP, ou entre como visitante.');
-      $('#lgdemo').hidden = false;
+      $('#lgdemo')?.removeAttribute('hidden');
     } finally {
       btn.classList.remove('loading');
       btn.disabled = false;
@@ -2784,11 +3384,14 @@
   }
   function orgSync(first) {
     const o = orgRead();
+    const sig = JSON.stringify(o.atividades || {}); const mudou = sig !== orgSync.sig; orgSync.sig = sig;
+    Object.values(o.atividades || {}).forEach((a) => { const x = byId(a.id); if (x) { delete x.floor; delete x.zone; delete x.prerequisites; Object.assign(x, a); } else D.sessions.push({ learn: [], materials: [], taken: 0, ...a }); });
     Object.entries(o.moves).forEach(([id, m]) => { const x = byId(id); if (x) Object.assign(x, m); });
     applyRoomNumbers(o.rooms || {});
     const fresh = o.notices.filter((n) => !orgSeen.has(n.id));
     fresh.slice().reverse().forEach((n) => { orgSeen.add(n.id); D.notices.unshift({ time: n.time, title: n.title, text: n.text, fresh: true, org: true }); });
     if (!first && fresh.length) { notify(fresh[0].title, fresh[0].text); buzz([20, 40, 20]); if (S.auth && vp.querySelector('.page')) rerender(); }
+    else if (!first && mudou && S.auth && vp.querySelector('.page')) rerender();
   }
   orgSync(true);
   window.addEventListener('storage', (e) => { if (e.key !== ORG_KEY) return; orgSync(false); if (S.auth && vp.querySelector('.tour, .poster, .duel')) rerender(); });
@@ -2797,7 +3400,8 @@
      Com a API ligada, programação, perfil, agenda, presenças e avisos vêm do servidor; sem ela, tudo segue de exemplo. */
   const isoHM = (iso) => (iso ? iso.slice(11, 16) : null);
   function apiPerson(p) {
-    return { ...DEMO_PERSON, name: p.name, first: p.first, initials: p.initials, course: p.course || (p.source === 'visitante' ? 'Visitante' : ''), courseFull: p.course || '',
+    suapSummary = null;
+    return { ...DEMO_PERSON, name: p.name, first: p.first, initials: p.initials, course: p.course || (p.source === 'visitante' ? 'Visitante' : ''), courseFull: p.course || '', year: '',
       campus: p.campus || p.city || '', id: p.matricula || p.email || String(p.id), photo: p.photo || null, source: p.source === 'visitante' ? 'guest' : 'suap', org: p.org };
   }
   function apiState(me) {
@@ -2808,7 +3412,7 @@
   async function apiQr(token) {
     try {
       const r = await API.post('/api/presenca', { qr: token });
-      if (r.activity) { S.present[r.activity] = r.time; }
+      if (r.activity) { S.present[r.activity] = r.time; communityCheckin(r.activity); }
       if (!S.credAt) S.credAt = r.time;
       const x = r.activity && byId(r.activity);
       toast(r.alreadyPresent ? 'Presença já estava registrada' : x ? `Presença registrada: ${x.short}` : 'Credenciamento confirmado');
@@ -2836,7 +3440,7 @@
       if (first) closeOverlay(() => openOverlay(Overlays.welcome(c), 'welcome')); else scanSheet(credResult());
       return;
     }
-    const again = !!r.alreadyPresent; S.present[q] = S.present[q] || r.time;
+    const again = !!r.alreadyPresent; S.present[q] = S.present[q] || r.time; communityCheckin(q);
     const c = takeNewComb(); rerender();
     scanSheet(roomResult(q, { again, first, c }));
   }
@@ -2847,23 +3451,54 @@
     if (!cam) return;
     cam.stop = true; cam.stream?.getTracks().forEach((t) => t.stop()); cam = null;
   }
+  /* ZXing em WebAssembly (vendor/zxing-reader.js + zxing_reader.wasm, MIT): bem mais rápido que o jsQR e lê imagem borrada
+     de webcam. O .wasm vem do próprio app (fica no cache offline), nunca de CDN. */
+  let zxLoad = null;
+  const loadZXing = () => zxLoad || (zxLoad = new Promise((ok, no) => {
+    const sc = document.createElement('script'); sc.src = 'vendor/zxing-reader.js'; sc.onerror = no;
+    sc.onload = () => {
+      const Z = window.ZXingWASM; if (!Z) { no(new Error('zxing')); return; }
+      Z.prepareZXingModule({ overrides: { locateFile: (f, pre) => (f.endsWith('.wasm') ? new URL('vendor/zxing_reader.wasm', location.href).href : pre + f) }, fireImmediately: true }).then(() => ok(Z), no);
+    };
+    document.head.appendChild(sc);
+  }));
   let jsqrLoad = null;
   const loadJsQR = () => jsqrLoad || (jsqrLoad = new Promise((ok, no) => { const sc = document.createElement('script'); sc.src = 'vendor/jsQR.js'; sc.onload = () => ok(window.jsQR); sc.onerror = no; document.head.appendChild(sc); }));
   async function makeReader(video) {
     if ('BarcodeDetector' in window) {
       try {
         const fm = await window.BarcodeDetector.getSupportedFormats?.();
-        if (!fm || fm.includes('qr_code')) { const det = new window.BarcodeDetector({ formats: ['qr_code'] }); return async () => (await det.detect(video)).map((c) => c.rawValue); }
+        if (!fm || fm.includes('qr_code')) { const det = new window.BarcodeDetector({ formats: ['qr_code'] }); return async () => (await det.detect(video)).map((c) => ({ v: c.rawValue, pts: c.cornerPoints })); }
       } catch (_) { /* cai no jsQR */ }
     }
+    try {
+      const Z = await loadZXing();
+      const zc = document.createElement('canvas'); const zx = zc.getContext('2d', { willReadFrequently: true }); let zv = 0;
+      return async () => {
+        const w = video.videoWidth; const h = video.videoHeight; if (!w) return [];
+        zv++; let sx = 0; let sy = 0; let sw = w; let sh = h;
+        if (zv % 2) { const lado = Math.round(Math.min(w, h) * 0.85); sx = Math.round((w - lado) / 2); sy = Math.round((h - lado) / 2); sw = sh = lado; }
+        const k = Math.min(1, 1280 / Math.max(sw, sh)); zc.width = Math.round(sw * k); zc.height = Math.round(sh * k);
+        zx.drawImage(video, sx, sy, sw, sh, 0, 0, zc.width, zc.height);
+        const out = await Z.readBarcodes(zx.getImageData(0, 0, zc.width, zc.height), { formats: ['QRCode'], tryHarder: true, maxNumberOfSymbols: 1 });
+        return out.filter((r) => r.isValid && r.text).map((r) => { const P = r.position; return { v: r.text, pts: [P.topLeft, P.topRight, P.bottomRight, P.bottomLeft].map((p) => ({ x: sx + p.x / k, y: sy + p.y / k })) }; });
+      };
+    } catch (_) { /* sem WebAssembly: jsQR */ }
     const jsQR = await loadJsQR();
     const cv = document.createElement('canvas'); const cx = cv.getContext('2d', { willReadFrequently: true });
+    /* Webcam de notebook é borrada: em vez de reduzir o quadro inteiro, alterna entre o recorte do centro (onde fica a
+       moldura) em resolução cheia e o quadro todo. A inversão de cores só é tentada de vez em quando (é mais lenta). */
+    let vez = 0;
     return async () => {
       const w = video.videoWidth; const h = video.videoHeight; if (!w) return [];
-      const k = Math.min(1, 720 / Math.max(w, h)); cv.width = Math.round(w * k); cv.height = Math.round(h * k);
-      cx.drawImage(video, 0, 0, cv.width, cv.height);
-      const r = jsQR(cx.getImageData(0, 0, cv.width, cv.height).data, cv.width, cv.height, { inversionAttempts: 'dontInvert' });
-      return r ? [r.data] : [];
+      vez++;
+      let sx = 0; let sy = 0; let sw = w; let sh = h;
+      if (vez % 3) { const lado = Math.round(Math.min(w, h) * (vez % 3 === 1 ? 0.75 : 0.95)); sx = Math.round((w - lado) / 2); sy = Math.round((h - lado) / 2); sw = sh = lado; }
+      const k = Math.min(1, 900 / Math.max(sw, sh)); cv.width = Math.round(sw * k); cv.height = Math.round(sh * k);
+      cx.drawImage(video, sx, sy, sw, sh, 0, 0, cv.width, cv.height);
+      const r = jsQR(cx.getImageData(0, 0, cv.width, cv.height).data, cv.width, cv.height, { inversionAttempts: vez % 6 === 0 ? 'attemptBoth' : 'dontInvert' });
+      if (!r) return [];
+      const L = r.location; return [{ v: r.data, pts: [L.topLeftCorner, L.topRightCorner, L.bottomRightCorner, L.bottomLeftCorner].map((p) => ({ x: sx + p.x / k, y: sy + p.y / k })) }];
     };
   }
   /* Conteúdo do QR → atividade (sem servidor). Aceita o link /q/<token> e o texto "etal:<atividade>". */
@@ -2890,10 +3525,53 @@
   let demoQrs = null;
   async function demoQr(q) {
     try {
-      demoQrs = demoQrs || await API.get('/api/homologacao/qrs');
-      const it = demoQrs.find((d) => (d.id || 'recepcao') === q) || demoQrs[0];
-      closeOverlay(() => apiQr(it.url));
-    } catch (_) { toast('Os QRs de teste só existem na homologação.'); }
+      if (!canDebugQr()) return;
+      demoQrs = demoQrs || await API.get('/api/org/debug/qrs');
+      const it = demoQrs.find((d) => (d.id || 'recepcao') === q);
+      if (!it) { toast('QR Code não encontrado.'); return; }
+      await apiScan(it.url);
+    } catch (error) { toast(error.message || 'Não foi possível abrir os QR Codes de debug.'); }
+  }
+  /* Rastreio do QR na imagem da câmera: um contorno segue os quatro cantos (suavizado a cada quadro), os cantos
+     "agarram" o código e a etiqueta diz o que foi visto. Ao validar, o QR acende, pulsa e mostra o ✓ antes de seguir. */
+  const trk = { tgt: null, cur: null, seen: 0, raf: 0, state: '' };
+  function trackSet(code, state) {
+    const video = $('.scan-cam', ov); const root = $('.scanner', ov); if (!video || !root) return;
+    if (code?.pts?.length === 4 && video.videoWidth) {
+      const r = video.getBoundingClientRect(); const s = Math.max(r.width / video.videoWidth, r.height / video.videoHeight);
+      const ox = (r.width - video.videoWidth * s) / 2; const oy = (r.height - video.videoHeight * s) / 2;
+      trk.tgt = code.pts.map((p) => ({ x: p.x * s + ox, y: p.y * s + oy })); trk.seen = performance.now();
+      if (!trk.cur) { const c = trk.tgt.reduce((m, p) => ({ x: m.x + p.x / 4, y: m.y + p.y / 4 }), { x: 0, y: 0 }); trk.cur = trk.tgt.map(() => ({ ...c })); }
+    }
+    if (state) trk.state = state;
+    root.classList.toggle('tracking', !!trk.cur);
+    if (!trk.raf) trk.raf = requestAnimationFrame(trackDraw);
+  }
+  function trackReset() {
+    cancelAnimationFrame(trk.raf); Object.assign(trk, { tgt: null, cur: null, seen: 0, raf: 0, state: '' });
+    const svg = $('.scan-track', ov); if (svg) { svg.classList.remove('on'); delete svg.dataset.state; }
+    $('.tk-tag', ov)?.classList.remove('on'); $('.scanner', ov)?.classList.remove('tracking');
+  }
+  function trackDraw() {
+    trk.raf = 0;
+    const svg = $('.scan-track', ov); const tag = $('.tk-tag', ov); const root = $('.scanner', ov);
+    if (!svg || !trk.cur) return;
+    const lock = trk.state === 'lock';
+    if (!lock && performance.now() - trk.seen > 450) { svg.classList.remove('on'); tag.classList.remove('on'); root?.classList.remove('tracking'); trk.cur = null; return; }
+    const a = lock ? 0.35 : 0.45; trk.cur.forEach((p, i) => { p.x += (trk.tgt[i].x - p.x) * a; p.y += (trk.tgt[i].y - p.y) * a; });
+    const P = trk.cur; const pt = (p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`;
+    const r = svg.getBoundingClientRect(); svg.setAttribute('viewBox', `0 0 ${r.width} ${r.height}`);
+    $('.tk-poly', svg).setAttribute('points', P.map(pt).join(' '));
+    const k = 0.24; const brk = P.map((p, i) => { const a1 = P[(i + 3) % 4]; const b1 = P[(i + 1) % 4];
+      const m = (q) => ({ x: p.x + (q.x - p.x) * k, y: p.y + (q.y - p.y) * k }); return `M${pt(m(a1))}L${pt(p)}L${pt(m(b1))}`; }).join('');
+    $('.tk-brk', svg).setAttribute('d', brk);
+    const cx = P.reduce((t, p) => t + p.x, 0) / 4; const cy = P.reduce((t, p) => t + p.y, 0) / 4;
+    $('.tk-ok', svg).setAttribute('transform', `translate(${cx.toFixed(1)} ${cy.toFixed(1)})`);
+    svg.dataset.state = trk.state; svg.classList.add('on');
+    const top = P.reduce((m, p) => (p.y < m.y ? p : m), P[0]);
+    tag.textContent = { lock: 'QR reconhecido', ok: 'QR do ETAL', outro: 'Não é do ETAL' }[trk.state] || 'Lendo…';
+    tag.dataset.state = trk.state; tag.style.transform = `translate(${cx.toFixed(0)}px, ${(top.y - 34).toFixed(0)}px) translateX(-50%)`; tag.classList.add('on');
+    trk.raf = requestAnimationFrame(trackDraw);
   }
   async function camStart() {
     const st = $('#camst'); const btn = $('[data-act="camstart"]'); const video = $('.scan-cam');
@@ -2902,25 +3580,36 @@
     if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) { say('A câmera só abre com o app em HTTPS. Use a câmera do celular: ela abre o ETAL Connect e registra a presença.'); return; }
     camStop();
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1280 } }, audio: false });
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false });
+      try { const tr = stream.getVideoTracks()[0]; const c = tr.getCapabilities?.() || {}; if (c.focusMode?.includes('continuous')) await tr.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }); } catch (_) { /* câmera sem ajuste de foco */ }
       if (!$('.scan-cam')) { stream.getTracks().forEach((t) => t.stop()); return; }
       cam = { stream, stop: false };
-      video.srcObject = stream; await video.play(); video.classList.add('on'); if (btn) btn.hidden = true;
+      video.srcObject = stream; await video.play(); video.classList.add('on'); $('.scanner', ov)?.classList.add('cam-live'); if (btn) btn.hidden = true;
       say('Aponte para o QR. A leitura é automática.');
       const read = await makeReader(video);
-      const me = cam; let warned = 0;
+      const me = cam; let warned = 0; let firm = 0; trackReset();
       const tick = async () => {
         if (me.stop) return;
         try {
           const codes = await read();
-          const hit = codes.find((v) => qrActivity(v) !== undefined);
-          if (hit) {
-            buzz([18, 40, 18]);
-            if (API) { apiScan(hit); return; }
-            camStop(); video.classList.remove('on'); if (demoHit(hit)) return;
-          } else if (codes.length && Date.now() - warned > 2500) { warned = Date.now(); say('Esse QR não é do ETAL. Procure o QR da sala ou da recepção.'); }
+          const good = codes.find((c) => qrActivity(c.v) !== undefined);
+          if (codes.length) trackSet(good || codes[0], good ? 'ok' : 'outro');
+          /* dois quadros seguidos com o mesmo QR do ETAL: trava, acende e só então segue */
+          if (good) { firm = performance.now() - (me.goodAt || 0) < 500 ? firm + 1 : 1; me.goodAt = performance.now(); }
+          if (good && firm >= 2) {
+            const hit = good.v; trackSet(good, 'lock'); buzz([18, 40, 18]);
+            const root = $('.scanner', ov); if (root) { root.dataset.busy = '1'; root.classList.add('is-locked'); }
+            say('QR reconhecido');
+            setTimeout(() => {
+              if (me.stop) return;
+              if (API) { apiScan(hit); return; }
+              freezeCam(); root?.removeAttribute('data-busy'); if (!demoHit(hit)) toast('Esse QR não é de uma atividade do ETAL.');
+            }, reduce ? 150 : 900);
+            return;
+          }
+          if (!good && codes.length && Date.now() - warned > 2500) { warned = Date.now(); say('Esse QR não é do ETAL. Procure o QR da sala ou da recepção.'); }
         } catch (_) { /* quadro ainda carregando */ }
-        setTimeout(tick, 200);
+        setTimeout(tick, 60);
       };
       tick();
     } catch (x) {
@@ -2938,6 +3627,9 @@
       const extra = Object.fromEntries(D.sessions.map((x) => [x.id, x]));
       D.sessions.length = 0; prog.sessions.forEach((x) => D.sessions.push({ ...(extra[x.id] || {}), ...x }));
       applyRoomNumbers(prog.rooms || {});
+      if (window.ETAL_CONFIG?.demo) {
+        try { const scenario = await API.get('/api/cenario-demo'); D.event = scenario.event; if (Array.isArray(scenario.tournaments)) D.tournaments.splice(0, D.tournaments.length, ...scenario.tournaments); if (Array.isArray(scenario.posts)) SOCIAL.seeds.splice(0, SOCIAL.seeds.length, ...scenario.posts); } catch (_) { /* cenário embarcado disponível sem rede */ }
+      }
       const av = await API.get('/api/avisos');
       if (av.length) { D.notices.length = 0; av.forEach((n) => D.notices.push({ time: n.time, title: n.title, text: n.text, org: true })); }
     } catch (_) { toast('Sem conexão com o servidor: mostrando a programação salva.'); }
@@ -2947,6 +3639,7 @@
       aviso: (n) => { D.notices.unshift({ time: n.time, title: n.title, text: n.text, fresh: true, org: true }); notify(n.title, n.text, n.activity); buzz([20, 40, 20]); if (S.auth && vp.querySelector('.page')) rerender(); },
       sala: (m) => { const x = byId(m.activity); if (x) { Object.assign(x, { floor: m.floor, zone: m.zone, room: m.room }); if (S.auth) rerender(); } },
       numeros: (rooms) => { applyRoomNumbers(rooms); if (S.auth) rerender(); },
+      atividade: (a) => { const x = byId(a.id); if (x) { ['floor', 'zone', 'seats', 'prerequisites'].forEach((k) => { if (!(k in a)) delete x[k]; }); Object.assign(x, a); } else D.sessions.push({ learn: [], materials: [], ...a }); if (S.auth && vp.querySelector('.page')) rerender(); },
     });
     if (login && login !== 'ok') toast({ erro: 'Não foi possível entrar. Tente de novo.', 'suap-indisponivel': 'O SUAP não respondeu. Tente de novo.', 'link-expirado': 'Esse link expirou. Peça outro.' }[login] || 'Não foi possível entrar.');
     if (!me) { show(build({ s: 'login' }), 'fade'); return; }
@@ -2954,6 +3647,7 @@
     show(build(top()), 'fade');
     const pend = sessionStorage.getItem('etal-qr');
     if (pend) { sessionStorage.removeItem('etal-qr'); setTimeout(() => apiQr(pend), 600); }
+    else if (DEMO || login === 'ok') cardIntro(900);
   }
 
   /* ---------------- início ---------------- */
@@ -2983,16 +3677,21 @@
   }
   if (!q) {
     const saved = store.get(SAVE_KEY);
-    if (saved) { applyProfile(saved); splashDone = true; S.auth = true; telaGrande(); show(build(top()), 'fade'); qrPendente(); return; }
+    if (saved) { applyProfile(saved); splashDone = true; S.auth = true; telaGrande(); show(build(top()), 'fade'); qrPendente(); if (DEMO) cardIntro(900); return; }
     show(build({ s: 'login' }), 'fade');
     return;
   }
   if (q === 'login') { show(build({ s: 'login' }), 'fade'); return; }
   if (q === 'visitante') { splashDone = true; S.lgMode = 'guest'; show(build({ s: 'login' }), 'fade'); return; }
-  S.auth = true;
+  S.auth = true; applyProfile(D.person);
   const ok = () => { S.credAt = D.now.time; };
   const setups = {
     home: () => {}, 'home-ok': ok,
+    comunidade: () => { S.tab = 'community'; },
+    'comunidade-ok': () => { ok(); S.tab = 'community'; },
+    mural: () => { S.tab = 'community'; communityMode = 'wall'; },
+    moderacao: () => { ok(); S.tab = 'profile'; S.stacks.profile.push({ s: 'orgCommunity' }); },
+    chat: () => { ok(); S.tab = 'community'; communityMode = 'chat'; },
     agenda: () => { S.tab = 'agenda'; },
     atividade: () => { S.stacks.home.push({ s: 'activity', p: { id: 'react-native' } }); },
     aula: () => { ok(); S.present['react-native'] = '14:03'; S.stacks.home.push({ s: 'activity', p: { id: 'react-native' } }); },

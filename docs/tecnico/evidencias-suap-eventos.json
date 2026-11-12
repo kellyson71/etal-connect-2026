@@ -1,0 +1,738 @@
+{
+  "checked_on": "2026-11-12",
+  "scope": "Documentação e páginas públicas; sem login ou envio de formulários.",
+  "openapi": {
+    "url": "https://suap.ifrn.edu.br/api/openapi.json",
+    "http_status": 200,
+    "bytes": 216389,
+    "sha256": "4000ef11ebc7b0098b9d59a79411676621b377b681ad1c5ebf13d22dded427c3",
+    "info": {
+      "title": "SUAP API",
+      "version": "1.0.0",
+      "description": ""
+    },
+    "path_count": 99,
+    "operation_count": 101,
+    "security_schemes": {
+      "JWTAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      },
+      "OAuth2TokenAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      },
+      "SessionAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "sessionid"
+      },
+      "TrustedAppAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  },
+  "event_endpoint": {
+    "path": "/api/midia/eventos/ativos-deferidos/",
+    "operation": {
+      "operationId": "api_endpoints_midia_eventos",
+      "summary": "Obtém eventos",
+      "parameters": [
+        {
+          "in": "query",
+          "name": "page",
+          "schema": {
+            "default": 1,
+            "minimum": 1,
+            "title": "Page",
+            "type": "integer"
+          },
+          "required": false
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "OK",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PagedEventoSchema"
+              }
+            }
+          }
+        },
+        "401": {
+          "description": "Unauthorized",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ErrorSchema"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Forbidden",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ErrorSchema"
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "Not Found",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ErrorSchema"
+              }
+            }
+          }
+        }
+      },
+      "description": "Obtém todos os eventos ativos e deferidos.",
+      "tags": [
+        "Comunicação Social"
+      ],
+      "security": [
+        {
+          "JWTAuth": []
+        },
+        {
+          "OAuth2TokenAuth": []
+        },
+        {
+          "SessionAuth": []
+        }
+      ]
+    },
+    "unauthenticated_probe": {
+      "method": "GET",
+      "status": 401,
+      "body": {
+        "detail": "Unauthorized"
+      }
+    }
+  },
+  "selected_schemas": {
+    "EventoSchema": {
+      "properties": {
+        "content_type": {
+          "default": "eventos.evento",
+          "title": "Content Type",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "integer"
+        },
+        "nome": {
+          "title": "Nome",
+          "type": "string"
+        },
+        "apresentacao": {
+          "title": "Apresentacao",
+          "type": "string"
+        },
+        "carga_horaria_em_segundos": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Carga Horaria Em Segundos"
+        },
+        "imagem": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Imagem"
+        },
+        "local": {
+          "title": "Local",
+          "type": "string"
+        },
+        "localizacao": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Localizacao"
+        },
+        "periodo_formatado": {
+          "title": "Periodo Formatado",
+          "type": "string"
+        },
+        "horario_formatado": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Horario Formatado"
+        },
+        "data_inicio": {
+          "format": "date",
+          "title": "Data Inicio",
+          "type": "string"
+        },
+        "hora_inicio": {
+          "format": "time",
+          "title": "Hora Inicio",
+          "type": "string"
+        },
+        "data_fim": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Data Fim"
+        },
+        "hora_fim": {
+          "anyOf": [
+            {
+              "format": "time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Hora Fim"
+        },
+        "campus": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Campus"
+        },
+        "campus_id": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Campus Id"
+        },
+        "campus_sigla": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Campus Sigla"
+        },
+        "campus_nome": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Campus Nome"
+        },
+        "link_suap": {
+          "title": "Link Suap",
+          "type": "string"
+        },
+        "estah_em_periodo_inscricao": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Estah Em Periodo Inscricao"
+        },
+        "estah_em_periodo_submissao": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Estah Em Periodo Submissao"
+        },
+        "link_submissao": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Link Submissao"
+        },
+        "situacao": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Situacao"
+        },
+        "modalidades": {
+          "default": [],
+          "items": {
+            "$ref": "#/components/schemas/ModalidadeSubmissaoSchema"
+          },
+          "title": "Modalidades",
+          "type": "array"
+        },
+        "site": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Site"
+        },
+        "periodos_inscricoes": {
+          "items": {
+            "$ref": "#/components/schemas/PeriodoInscricaoTipoSchema"
+          },
+          "title": "Periodos Inscricoes",
+          "type": "array"
+        },
+        "periodo_submissao_formatado": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Periodo Submissao Formatado"
+        },
+        "periodo_submissao": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/PeriodoSchema"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "periodo_avaliacao_formatado": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Periodo Avaliacao Formatado"
+        },
+        "periodo_avaliacao": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/PeriodoSchema"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "programacao": {
+          "items": {
+            "$ref": "#/components/schemas/ProgramacaoDiaSchema"
+          },
+          "title": "Programacao",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "nome",
+        "apresentacao",
+        "carga_horaria_em_segundos",
+        "imagem",
+        "local",
+        "localizacao",
+        "periodo_formatado",
+        "horario_formatado",
+        "data_inicio",
+        "hora_inicio",
+        "data_fim",
+        "hora_fim",
+        "campus",
+        "campus_id",
+        "campus_sigla",
+        "campus_nome",
+        "link_suap",
+        "estah_em_periodo_inscricao",
+        "estah_em_periodo_submissao",
+        "link_submissao",
+        "situacao",
+        "site",
+        "periodos_inscricoes",
+        "periodo_submissao_formatado",
+        "periodo_submissao",
+        "periodo_avaliacao_formatado",
+        "periodo_avaliacao",
+        "programacao"
+      ],
+      "title": "EventoSchema",
+      "type": "object"
+    },
+    "ProgramacaoDiaSchema": {
+      "description": "Schema para programação agrupada por dia",
+      "properties": {
+        "data": {
+          "format": "date",
+          "title": "Data",
+          "type": "string"
+        },
+        "atividades": {
+          "items": {
+            "$ref": "#/components/schemas/AtividadeEventoSchema"
+          },
+          "title": "Atividades",
+          "type": "array"
+        }
+      },
+      "required": [
+        "data",
+        "atividades"
+      ],
+      "title": "ProgramacaoDiaSchema",
+      "type": "object"
+    },
+    "AtividadeEventoSchema": {
+      "description": "Schema para atividades do evento",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "integer"
+        },
+        "tipo": {
+          "title": "Tipo",
+          "type": "string"
+        },
+        "descricao": {
+          "title": "Descricao",
+          "type": "string"
+        },
+        "carga_horaria_em_segundos": {
+          "title": "Carga Horaria Em Segundos",
+          "type": "integer"
+        },
+        "data": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Data"
+        },
+        "hora": {
+          "anyOf": [
+            {
+              "format": "time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Hora"
+        },
+        "data_fim": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Data Fim"
+        },
+        "hora_fim": {
+          "anyOf": [
+            {
+              "format": "time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Hora Fim"
+        },
+        "periodo_formatado": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Periodo Formatado"
+        },
+        "limite_inscricoes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Limite Inscricoes"
+        },
+        "vagas_disponiveis": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Vagas Disponiveis"
+        }
+      },
+      "required": [
+        "id",
+        "tipo",
+        "descricao",
+        "carga_horaria_em_segundos",
+        "data",
+        "hora",
+        "data_fim",
+        "hora_fim",
+        "periodo_formatado",
+        "limite_inscricoes",
+        "vagas_disponiveis"
+      ],
+      "title": "AtividadeEventoSchema",
+      "type": "object"
+    },
+    "PeriodoInscricaoTipoSchema": {
+      "description": "Schema para período de inscrição por tipo de participante",
+      "properties": {
+        "tipo_participacao": {
+          "title": "Tipo Participacao",
+          "type": "string"
+        },
+        "periodo_formatado": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Periodo Formatado"
+        },
+        "data_inicio": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Data Inicio"
+        },
+        "hora_inicio": {
+          "anyOf": [
+            {
+              "format": "time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Hora Inicio"
+        },
+        "data_fim": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Data Fim"
+        },
+        "hora_fim": {
+          "anyOf": [
+            {
+              "format": "time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Hora Fim"
+        }
+      },
+      "required": [
+        "tipo_participacao",
+        "periodo_formatado",
+        "data_inicio",
+        "hora_inicio",
+        "data_fim",
+        "hora_fim"
+      ],
+      "title": "PeriodoInscricaoTipoSchema",
+      "type": "object"
+    }
+  },
+  "enrollment_api_search": {
+    "scope": "paths, summaries, descriptions, tags and schema fields of this downloaded document",
+    "result": "Nenhuma rota identificada para minhas inscrições em eventos/atividades, certificados pessoais do evento ou registro de presença em evento. A ausência neste esquema não exclui rotas legadas/internas."
+  },
+  "public_pages": [
+    {
+      "url": "https://portal.ifrn.edu.br/eventos/8528/",
+      "purpose": "Programação pública do VII ETAL, novembro de 2025; contém link para SUAP."
+    },
+    {
+      "url": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+      "status": 200,
+      "observed": "Programação e listas nominais de participantes por atividade no HTML público. Nenhum nome de participante foi copiado para esta evidência. Há link para Área do Participante."
+    },
+    {
+      "url": "https://suap.ifrn.edu.br/eventos/area_do_participante/8528/",
+      "status": 200,
+      "observed": "Em sessão vazia, formulário POST com campos email e cpf; não enviado."
+    }
+  ],
+  "installed_client": {
+    "name": "suapy",
+    "version": "1.4.1",
+    "method": "Suap.ensino.obter_eventos()",
+    "route": "/api/midia/eventos/ativos-deferidos/",
+    "auth": "login() solicita /api/token/pair e configura Authorization: Bearer. Não foi observado fluxo explícito de login web/sessionid nesse método."
+  },
+  "limits": [
+    "Resposta autenticada do catálogo não foi consultada; campos são contrato de schema, não dados autenticados confirmados.",
+    "Não foi consultada inscrição pessoal.",
+    "Papéis, escopos OAuth, formato autenticado da Área do Participante e APIs legadas continuam por verificar.",
+    "Nenhuma credencial, token, CPF, cookie, e-mail ou lista nominal armazenada nesta evidência."
+  ],
+  "authenticated_validation": {
+    "checked_on": "2026-11-12",
+    "authorization": "Conta de teste autorizada pelo titular. Credenciais e sessões mantidas somente em memória; nenhuma identidade ou relação pessoal arquivada.",
+    "jwt_login": {
+      "path": "/api/token/pair",
+      "result": "success"
+    },
+    "catalogue": {
+      "path": "/api/midia/eventos/ativos-deferidos/",
+      "http_status": 200,
+      "count_observed": 9029,
+      "page_size_observed": 100,
+      "root_fields": [
+        "results",
+        "count",
+        "next",
+        "previous"
+      ],
+      "historical_event_verified": {
+        "id": 8528,
+        "name": "VII Etal",
+        "situacao": "Finalizado",
+        "data_inicio": "2025-11-26",
+        "data_fim": "2025-11-28",
+        "activity_count": 15,
+        "minicourse_count": 6
+      },
+      "pagination_note": "O evento foi encontrado paginando; a posição da página não é identificador estável."
+    },
+    "web_session": {
+      "login_path": "/accounts/login/",
+      "result": "success",
+      "session_cookie_observed": true
+    },
+    "personal_events": {
+      "path": "/admin/eventos/evento/",
+      "query": {
+        "tab": "tab_participante"
+      },
+      "http_status": 200,
+      "result": "Aba Participante com eventos relacionados à conta e links de certificados. Nenhuma lista pessoal, chave de download ou identidade arquivada.",
+      "format": "HTML; não é operação do OpenAPI consultado."
+    },
+    "participant_area": {
+      "path": "/eventos/area_do_participante/8528/",
+      "read_only_lookup": "Formulário de consulta do próprio participante localizado; etapa seguinte exige email e chave_acesso, mesmo após login institucional.",
+      "resend_confirmation_clicked": false,
+      "private_area_accessed_with_key": false
+    },
+    "activity_identity": {
+      "method": "Comparação em memória dos nomes do perfil com a lista pública de participantes por atividade.",
+      "name_match_observed": true,
+      "private_results_archived": false,
+      "stable_participant_id_binding_verified": false,
+      "enrollment_status_verified": false
+    },
+    "mutation_scope": "Somente autenticação, consulta do próprio participante e GETs de leitura. Nenhuma inscrição, cancelamento, presença, emissão de certificado ou reenvio de mensagem executado."
+  }
+}

@@ -2,6 +2,8 @@
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import Response
+from urllib.parse import quote
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -11,7 +13,7 @@ from ..ao_vivo import canal
 from ..config import config
 from ..db import sessao
 from ..limite import limitar
-from ..modelos import Agenda, Atividade, Pessoa, Presenca
+from ..modelos import Agenda, Arquivo, Atividade, Pessoa, Presenca
 from ..seguranca import agora, ler_qr, pessoa_atual
 
 rota = APIRouter(prefix='/api', tags=['participante'])
@@ -45,7 +47,7 @@ def tirar(atividade_id: str, p: Pessoa = Depends(pessoa_atual), db: Session = De
 
 
 class Leitura(BaseModel):
-    qr: str = Field(min_length=8, max_length=600)
+    qr: str = Field(min_length=8, max_length=600, description='URL completa ou token assinado de um QR do ETAL. Obtenha um QR válido em /api/org/qrs. Texto comum ou ID da atividade não substituem a assinatura.', examples=['URL_OU_TOKEN_DO_QR'])
 
 
 def _404():
@@ -82,3 +84,16 @@ def presenca(l: Leitura, p: Pessoa = Depends(pessoa_atual), db: Session = Depend
         canal.publicar('lotacao', {'activity': atividade.id, 'present': n})
     return {'credentialed': True, 'newCredential': novo_cred, 'activity': atividade.id if atividade else None,
             'alreadyPresent': ja, 'time': t.strftime('%H:%M')}
+
+
+@rota.get('/arquivos/{arquivo_id}')
+def abrir_arquivo(arquivo_id: str, baixar: bool = False, p: Pessoa = Depends(pessoa_atual), db: Session = Depends(sessao)):
+    """Material da atividade. Abre para a organização e para quem registrou presença nela."""
+    arq = db.get(Arquivo, arquivo_id)
+    if not arq:
+        raise HTTPException(404, 'Material não encontrado.')
+    presente = db.scalar(select(Presenca).where(Presenca.pessoa_id == p.id, Presenca.atividade_id == arq.atividade_id))
+    if p.papel != 'organizacao' and not presente:
+        raise HTTPException(403, 'O material abre depois da presença na atividade.')
+    disp = 'attachment' if baixar else 'inline'
+    return Response(arq.dados, media_type=arq.tipo, headers={'Content-Disposition': f"{disp}; filename*=UTF-8''{quote(arq.nome)}", 'Cache-Control': 'private, max-age=3600', 'X-Content-Type-Options': 'nosniff'})

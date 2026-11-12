@@ -1,0 +1,41 @@
+{
+  "id": "sua-palestra",
+  "type": "Oficina",
+  "day": 26,
+  "time": "14:00",
+  "end": "18:00",
+  "title": "Entendendo e programando com agentes de IA",
+  "short": "Programando com agentes de IA",
+  "speaker": "Kellyson Raphael",
+  "speakerShort": "Kellyson Raphael",
+  "speakerId": "20251094040030",
+  "speakerPhoto": "assets/speakers/kellyson-raphael.jpg",
+  "initials": "KR",
+  "role": "Ministrante da oficina",
+  "floor": 2,
+  "zone": "lab-sul-1",
+  "room": "Lab 213",
+  "description": "Uma oficina introdutória e prática sobre inteligência artificial aplicada ao desenvolvimento de software. A proposta é apresentar como funcionam os modelos de linguagem e os agentes de IA, discutir seus impactos na programação, suas limitações, riscos e as expectativas criadas pelo mercado. Na parte prática, os participantes terão contato com ferramentas de agentes de programação e irão utilizá-las para desenvolver e modificar um pequeno projeto, passando pelo planejamento, implementação e validação do código.",
+  "requirements": "Conhecimentos básicos de lógica de programação; noções de HTML, CSS e JavaScript; não é necessário ter experiência anterior com IA.",
+  "learn": [
+    "Entender modelos de linguagem e agentes de IA",
+    "Discutir impactos, limitações, riscos e expectativas do mercado",
+    "Conhecer ferramentas de agentes de programação",
+    "Planejar um pequeno projeto",
+    "Implementar, modificar e validar o código com agentes"
+  ],
+  "materials": [],
+  "seats": 20,
+  "taken": 0,
+  "demo": true,
+  "roomDemo": true,
+  "scheduleDemo": true,
+  "sourceType": "Oficina",
+  "source": "Conteúdo fornecido por Kellyson Raphael para a apresentação do aplicativo.",
+  "prerequisites": [
+    "Conhecimentos básicos de lógica de programação.",
+    "Noções de HTML, CSS e JavaScript.",
+    "Não é necessário ter experiência anterior com IA."
+  ],
+  "requirementsTitle": "Pré-requisitos"
+}

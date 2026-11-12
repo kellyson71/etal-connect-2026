@@ -51,6 +51,7 @@ ICONS = {
  'code':'m8 5-6 7 6 7M16 5l6 7-6 7m-3-17-2 20',
  'browser':'M3 3h18v18H3Zm0 5h18M6 5.5h.01M9 5.5h.01',
  'camera':'M4 6h4l2-3h4l2 3h4v15H4Zm12 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z',
+ 'flash':'M13 2 4 14h7l-1 8 9-12h-7Z',
  'clock':'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-5v6l4 2',
  'walk':'M15 3a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM8 9l4-3 3 5 4 1m-7-6-2 8-5 6m5-6 4 2 2 6',
  'mail':'M3 4h18v16H3Zm0 0 9 9 9-9',
@@ -161,30 +162,6 @@ def presenca(sid, titulo, cena, pros, contra, status):
 <div class="pres-pc"><b>{icon('check')}{pros}</b><b class="con">{icon('close')}{contra}</b></div></div></div>
 """, '', '', 'qr-exemplo.svg', titulo)
 
-presenca('pres-porta', 'Presença: QR na porta', f"""
-<div class="ps-door" data-step="0"><img src="{{assets}}/qr-exemplo.svg" alt="QR impresso"><small>Lab 210</small></div>
-<div class="ps-phone ok" data-step="1">{icon('check')}<b>Presença confirmada</b></div>
-<div class="ps-chat" data-step="2"><span>{icon('camera')}</span>foto do QR</div>
-<div class="ps-home" data-step="3">{icon('user')}<small>em casa</small></div>
-<div class="ps-phone warn" data-step="4">{icon('check')}<b>Também confirma</b></div>
-""", 'Simples, sem equipe na sala', 'A foto do QR funciona durante a aula (as verificações a mais fecham a brecha)', 'Já funciona no app · método principal')
-
-presenca('pres-tela', 'Presença: QR na tela, mudando', f"""
-<div class="ps-screen" data-step="0"><img src="{{assets}}/qr-exemplo.svg" alt="QR no telão"><i class="ps-ring"></i><small>muda a cada 30 s</small></div>
-<div class="ps-phone ok" data-step="1">{icon('check')}<b>Presença confirmada</b></div>
-<div class="ps-chat" data-step="2"><span>{icon('camera')}</span>foto do QR</div>
-<div class="ps-home" data-step="3">{icon('user')}<small>em casa</small></div>
-<div class="ps-phone bad" data-step="4">{icon('close')}<b>QR vencido</b></div>
-""", 'A foto chega vencida', 'Precisa de uma tela ligada na sala', 'Sugestão: camada a mais')
-
-presenca('pres-equipe', 'Presença: a equipe lê o QR', f"""
-<div class="ps-badge" data-step="0"><span class="ps-av">AS</span><b>Ana Beatriz</b><img src="{{assets}}/qr-exemplo.svg" alt="QR pessoal"><small>QR pessoal, muda a cada 30 s</small></div>
-<div class="ps-staff" data-step="1">{icon('camera')}<small>equipe do credenciamento</small></div>
-<div class="ps-phone ok" data-step="2">{icon('check')}<b>Ana Beatriz · confirmada</b></div>
-<div class="ps-chat" data-step="3"><span>{icon('camera')}</span>print do QR</div>
-<div class="ps-phone bad" data-step="4">{icon('close')}<b>Não vale: código vencido</b></div>
-""", 'Alguém vê quem está na sala', 'Precisa de uma pessoa por sala', 'Sugestão: camada a mais')
-
 # ---------------- 04 · Próximos passos ----------------
 def wipe(base, top, l, r):
     return f'<div class="wipe reveal"><img src="{{assets}}/{base}" alt="{l}"><div class="wipe-top"><img src="{{assets}}/{top}" alt="{r}"></div><i class="wipe-line"></i><span class="wipe-tag l">{l}</span><span class="wipe-tag r">{r}</span></div>'
@@ -199,6 +176,43 @@ slide('planta','Da planta de 2012 ao mapa','04 / Próximos passos',f"""
 <div class="pl-mapa" data-step="4"><img src="{{assets}}/cena-andares.webp" alt="Os três andares no mapa 3D do app"></div>
 </div><ol class="passos">{''.join(f'<li data-step="{n}" data-ir="{n}"><span>{icon(ic)}</span><b>{t}</b><small>{d}</small></li>' for n,(ic,t,d) in enumerate(PASSOS_PLANTA))}</ol></div>
 """,'Souza, L. L. · Padronização e flexibilidade · UFRN, 2012 · planta gerada por scripts/build-principal-plan.py','', 'fontes/planta-2012-0.webp', 'Da planta de 2012 ao mapa')
+
+# Programação do SUAP: atividades do VII ETAL (docs/programacao-referencia.html); pessoas e vagas de exemplo.
+SU_DIAS = [('Qua 26/11', [('14:00','Experiência com IA','mc','ana'),('14:00','React Native com Expo','mc','maria'),('14:00','FastAPI','mc','joao')]),
+           ('Qui 27/11', [('08:00','React e Next.js','mc','maria'),('08:00','React Native e OpenCV','mc','ana'),('08:00','Jogos com Game Maker','mc','joao'),('13:00','Governança de dados','pl',''),('14:50','Coral','cu',''),('16:30','IA e sociedade','pl','')]),
+           ('Sex 28/11', [('07:30','Saúde mental e IA','pl',''),('08:50','Banda Inteira','cu',''),('09:20','IA e imagens','pl',''),('10:30','Mercado de trabalho','pl',''),('13:00','DevSecOps e IA','pl',''),('14:50','Encerramento','cu','')])]
+SU_GENTE = [('maria','MC','Maria Clara'),('joao','JP','João Pedro'),('ana','AP','Ana Paula')]
+PASSOS_SU = [('globe','Busca no SUAP','uma chamada traz o evento inteiro'),('calendar','Separa por dia','minicursos, palestras e atrações'),('grid','Preenche a programação','a aba geral do app'),('users','De quem é cada minicurso','as inscrições de cada um'),('check','Preenche cada agenda','ninguém precisa salvar nada'),('rotate','Sincroniza sozinho','vagas e horários em dia')]
+def su_cartoes():
+    import random
+    sorte, out = random.Random(8528), ''
+    for c, (_, itens) in enumerate(SU_DIAS):
+        for r, (h, t, tipo, quem) in enumerate(itens):
+            dono = next(((s, n) for k, s, n in SU_GENTE if k == quem), None)
+            selo = f'<i class="su-dono {quem}" title="{dono[1]}">{dono[0]}</i>' if dono else ''
+            vagas = '<em class="su-vagas">3 vagas</em>' if t == 'FastAPI' else ''
+            out += (f'<div class="su-card {tipo}{" " + quem if quem else ""}{" alerta" if vagas else ""}" style="--sx:{c*170}px;--sy:{36+r*50}px;--hx:{sorte.randint(30,340)}px;--hy:{sorte.randint(30,300)}px;'
+                    f'--hr:{sorte.randint(-24,24)}deg;--d:{(c*6+r)*0.045:.3f}s"><b>{h}</b><span>{t}</span>{selo}{vagas}</div>')
+    return out
+def su_agenda(quem, nome, sigla):
+    itens = [(d.split()[0], h, t) for d, lista in SU_DIAS for h, t, tipo, q in lista if q == quem]
+    return (f'<div class="su-ag {quem}"><header><i class="su-dono {quem}">{sigla}</i><b>{nome}</b></header>'
+            + ''.join(f'<p><small>{d} {h}</small>{t}</p>' for d, h, t in itens) + '<p class="mais">+ 9 palestras e atrações</p></div>')
+SU_TELA_GERAL = ''.join(f'<li class="{tipo}" style="--d:{n*0.07:.2f}s"><small>{h}</small>{t}</li>' if h else f'<li class="dia" style="--d:{n*0.07:.2f}s">{t}</li>' for n, (h, t, tipo) in enumerate([('', 'Quarta, 26/11', '')] + [x[:3] for x in SU_DIAS[0][1]] + [('', 'Quinta, 27/11', '')] + [x[:3] for x in SU_DIAS[1][1][:3]]))
+SU_TELA_MINHA = ''.join(f'<li class="mc" style="--d:{n*0.12:.2f}s"><small>{d} {h}</small>{t}</li>' for n, (d, h, t) in enumerate([('Qua','14:00','React Native com Expo'),('Qui','08:00','React e Next.js'),('Qui','13:00','Governança de dados'),('Sex','07:30','Saúde mental e IA')]))
+slide('suap-programacao','Programação direto do SUAP','04 / Próximos passos',f"""
+<div class="etp su" data-steps="6"><div class="palco su-palco">
+<div class="su-fonte"><div class="su-suap">{icon('server')}<b>SUAP</b><small>API do IFRN</small></div>
+<div class="su-ok">{icon('check')}<span><b>Testado com o último ETAL</b><small>deu tudo certo</small></span></div></div>
+<div class="su-fio"><i></i><i></i><i></i></div>
+<div class="su-meio"><div class="su-dias">{''.join(f'<span style="--sx:{c*170}px">{d}</span>' for c, (d, _) in enumerate(SU_DIAS))}</div>{su_cartoes()}
+<div class="su-leg"><span class="mc">Minicurso</span><span class="pl">Palestra e mesa</span><span class="cu">Atração</span></div>
+<div class="su-gente">{''.join(f'<div class="su-pessoa {k}"><i class="su-dono {k}">{s}</i><b>{n}</b><small>inscrições no SUAP</small></div>' for k, s, n in SU_GENTE)}</div>
+<div class="su-agendas">{''.join(su_agenda(k, n, s) for k, s, n in SU_GENTE)}</div></div>
+<div class="su-cel"><div class="su-tela geral"><header>Programação</header><nav><b>Todas</b><span>Minicursos</span></nav><ul>{SU_TELA_GERAL}</ul></div>
+<div class="su-tela minha"><header>Minha agenda</header><nav><b>Maria Clara</b></nav><ul>{SU_TELA_MINHA}</ul><div class="su-toast">{icon('rotate')}<span><b>Atualizado do SUAP</b><small>FastAPI: restam 3 vagas</small></span></div></div></div>
+</div><ol class="passos">{''.join(f'<li data-step="{n}" data-ir="{n}"><span>{icon(ic)}</span><b>{t}</b><small>{d}</small></li>' for n,(ic,t,d) in enumerate(PASSOS_SU))}</ol></div>
+""",'Testado com o último ETAL: deu tudo certo','', 'cena-evento.webp', 'Programação direto do SUAP')
 
 # ---------------- 05 · Apêndice técnico ----------------
 PASSOS_ARQ = [('layers','As peças','celular, API, banco e SUAP'),('user','Login','o SUAP confirma quem é'),('qr','Presença','do QR ao banco e ao painel'),('bell','Aviso','do painel para todos os celulares')]
@@ -239,17 +253,21 @@ slide('banco','O banco de dados','05 / Apêndice técnico',f"""
 </div></div><ol class="passos">{''.join(f'<li data-step="{n}" data-ir="{n}"><span>{icon(ic)}</span><b>{t}</b><small>{d}</small></li>' for n,(ic,t,d) in enumerate(PASSOS_DB))}</ol></div>
 """,'backend/app/modelos.py · SQLite para desenvolver, PostgreSQL em produção','', 'cena-campus.webp', 'O banco de dados')
 
-PASSOS_QR = [('qr','O QR na porta','papel impresso, um por sala'),('code','O que tem dentro','dá para ler, não dá para falsificar'),('user','Quem leu','a conta do SUAP no celular'),('shield','A assinatura confere','o servidor refaz a conta'),('clock','Dentro do horário','só vale durante a atividade'),('wifi','Mais verificações','rede, lugar e aparelho'),('check','Sem duplicar','uma presença por pessoa'),('database','Direto para a planilha','pronta para o Excel'),('layers','Camadas a mais','quando o evento pedir')]
+PASSOS_QR = [('qr','O QR na porta','papel impresso, um por sala'),('code','Como é assinado','conteúdo + chave secreta → HMAC'),('user','Quem leu','a conta do SUAP no celular'),('shield','A assinatura confere','o servidor refaz e compara'),('clock','Dentro do horário','só vale durante a atividade'),('wifi','Mais verificações','rede, lugar e aparelho'),('check','Sem duplicar','uma presença por pessoa'),('database','Direto para a planilha','pronta para o Excel'),('layers','Camadas a mais','quando o evento pedir')]
 QV_EXTRA = [('wifi','Rede do IFRN','conectado ao Wi-Fi do campus (eduroam)'),('pin','Perto da sala','localização do celular junto do bloco'),('phone','Aparelho único','o mesmo celular não registra duas pessoas'),('clock','Ficou na atividade','leitura na entrada e na saída'),('users','Cabe na sala','presenças acima da lotação acendem alerta')]
 QV_LINHAS = [('Maria Clara F.','2023109401…','14:22'),('Ana Paula R.','2022109404…','14:23'),('João F. Morais','2023109000…','14:23'),('Rodrigo F.','2021109402…','14:25'),('Luana Freitas','2024109401…','14:26')]
 slide('qr','Como a presença é validada','05 / Apêndice técnico',f"""
 <div class="qv" data-steps="9">
 <div class="qv-palco">
 <div class="qv-porta" data-step="0"><div class="qv-papel"><header>{icon('qr')}<b>Lab 210</b></header><img src="{{assets}}/qr-exemplo.svg" alt="QR impresso da sala"><footer>React Native com Expo</footer></div><small>colado na porta</small></div>
-<div class="qv-token" data-step="1"><code><span class="url">etal.app/q/</span><span class="dado">eyJhIjoicmVhY3QtbmF0aXZlIn0</span><span class="ponto">.</span><span class="sig">-vsAoqlqItwK3f…</span></code>
-<div class="qv-abre"><div><small>conteúdo (base64: qualquer um lê)</small><b>{{ "a": "react-native" }}</b></div><div class="sig"><small>assinatura</small><b>HMAC(chave secreta do servidor, conteúdo)</b></div></div></div>
+<div class="qv-token qm" data-step="1"><code><span class="url">etal.app/q/</span><span class="dado">eyJhIjoicmVhY3QtbmF0aXZlIn0</span><span class="ponto">.</span><span class="sig">-b8EvbTck83SAwZpP5nawF81ZL8</span></code>
+<div class="qm-maq"><div class="qm-in"><small>conteúdo</small><b>{{"a":"react-native"}}</b><em>base64: qualquer um lê</em></div><span class="qm-op">+</span>
+<div class="qm-key">{icon('shield')}<small>chave secreta</small><b>só o servidor tem</b></div><span class="qm-op">→</span>
+<div class="qm-hmac"><b>HMAC-SHA1</b><span class="qm-bits"><i style="--k:0"></i><i style="--k:1"></i><i style="--k:2"></i><i style="--k:3"></i><i style="--k:4"></i><i style="--k:5"></i><i style="--k:6"></i><i style="--k:7"></i><i style="--k:8"></i><i style="--k:9"></i><i style="--k:10"></i><i style="--k:11"></i></span></div><span class="qm-op">→</span>
+<div class="qm-out"><small>assinatura</small><b>-b8EvbTck83S…</b><em>27 caracteres</em></div></div>
+<p class="qm-nota">Não é segredo o que tem dentro: o segredo é a <b>chave</b>. Sem ela, ninguém produz a assinatura certa.</p></div>
 <div class="qv-quem" data-step="2"><div class="qv-cel">{icon('phone')}<b>Maria Clara</b><small>matrícula 2023109401…<br>sessão do SUAP</small></div><i class="qv-seta"></i><div class="qv-api">{icon('server')}<b>API</b></div></div>
-<div class="qv-sig" data-step="3"><div class="ok">{icon('check')}<span><b>eyJhIjoicmVhY3Qt…</b><small>recalculada com a chave: igual</small></span></div><div class="nao">{icon('close')}<span><b>eyJhIjoiZ2l0In0…</b><small>alguém trocou a atividade: não confere</small></span></div></div>
+<div class="qc-cena" data-step="3"><div class="qc-cab"><span>conteúdo do QR</span><span></span><span>o servidor calcula</span><span></span><span>assinatura do QR</span></div><div class="qc ok"><small class="qc-l">QR verdadeiro</small><div class="qc-r"><span class="qc-d">eyJhIjoicmVhY3…</span><span class="qc-op">+ {icon("shield")}</span><span class="qc-c">-b8EvbTck8…</span><span class="qc-eq">=</span><span class="qc-q">-b8EvbTck8…</span><span class="qc-fim">{icon("check")}vale</span></div></div><div class="qc nao"><small class="qc-l">Alguém trocou a atividade para "git"</small><div class="qc-r"><span class="qc-d">eyJhIjoiZ2l0In0…</span><span class="qc-op">+ {icon("shield")}</span><span class="qc-c">y4zsZNfxPO…</span><span class="qc-eq">≠</span><span class="qc-q">-b8EvbTck8…</span><span class="qc-fim">{icon("close")}recusado</span></div></div></div>
 <div class="qv-hora" data-step="4"><div class="qv-faixa"><i></i><em class="ok">14:22 ✓</em><em class="nao">19:10 ✗</em><span class="ini">13:45</span><span class="fim">18:00</span></div><p>Vale 15 min antes do início até o fim. A foto do QR mandada depois não vale.</p></div>
 <ul class="qv-extra" data-step="5">{''.join(f'<li style="--d:{n*0.18}s"><span>{icon(ic)}</span><b>{t}</b><small>{d}</small><em>proposta</em></li>' for n,(ic,t,d) in enumerate(QV_EXTRA))}</ul>
 <div class="qv-dup" data-step="6"><div class="ok">{icon('check')}<b>14:22 · presença registrada</b></div><div class="de-novo">{icon('qr')}<b>14:31 · leu de novo</b><small>já registrada, nada muda</small></div></div>
@@ -260,6 +278,25 @@ slide('qr','Como a presença é validada','05 / Apêndice técnico',f"""
 <ol class="qv-passos">{''.join(f'<li data-step="{n}" data-ir="{n}"><span>{icon(ic)}</span><b>{t}</b><small>{d}</small></li>' for n,(ic,t,d) in enumerate(PASSOS_QR))}</ol>
 </div>
 """,'Assinatura com a chave do servidor (itsdangerous) · horário, sessão e presença única já funcionam; rede, lugar e aparelho são propostas','', 'qr-exemplo.svg', 'Como a presença é validada')
+
+PASSOS_LR = [('camera','A câmera','30 quadros por segundo'),('grid','Recorta o centro','só a moldura, em resolução cheia'),('flash','ZXing em WebAssembly','12 ms por quadro'),('qr','Acha os três olhos','e os quatro cantos'),('check','Duas leituras iguais','em meio segundo: trava'),('server','Manda só o token','o servidor confere e registra')]
+slide('leitor','Como o leitor é tão rápido','05 / Apêndice técnico',f"""
+<div class="etp lr" data-steps="6"><div class="palco lr-palco"><div class="lr-cena">
+<div class="lr-cam"><div class="lr-img"><img src="{{assets}}/qr-exemplo.svg" alt="QR visto pela webcam"></div><i class="lr-ruido"></i>
+<div class="lr-crop"><span>recorte do centro</span></div>
+{''.join(f'<i class="lr-olho" style="--x:{x};--y:{y}"></i>' for x,y in [(0,0),(1,0),(0,1)])}
+<svg class="lr-trk" viewBox="0 0 100 100" preserveAspectRatio="none"><polygon points="3,3 97,3 97,97 3,97"/></svg><span class="lr-ok">{icon('check')}</span>
+<div class="lr-tira">{''.join(f'<i style="--k:{k}"></i>' for k in range(8))}</div><small class="lr-fps">webcam · 30 quadros/s · imagem borrada</small></div>
+<div class="lr-info">
+<div class="lr-p" data-step="0"><b>Cada quadro da webcam é uma chance</b><p>O leitor olha um quadro a cada 60 ms. A imagem da webcam do notebook é pequena e borrada.</p></div>
+<div class="lr-p" data-step="1"><b>Não lê a tela inteira</b><p>Alterna entre o quadrado da moldura, em resolução cheia, e o quadro todo. Menos pixels para olhar, QR maior na imagem.</p></div>
+<div class="lr-p" data-step="2"><b>Trocamos o decodificador</b><div class="lr-bars"><div class="b velho"><span>jsQR</span><i style="--w:100%"></i><em>919 ms · 0 de 40</em></div><div class="b novo"><span>ZXing</span><i style="--w:1.4%"></i><em>12 ms · 40 de 40</em></div></div><p class="lr-fonte">por quadro, em vídeo de teste borrado</p></div>
+<div class="lr-p" data-step="3"><b>Os três quadrados dos cantos</b><p>São os "olhos" do QR. Com eles o leitor acha os quatro cantos, e o contorno segue o QR na tela.</p></div>
+<div class="lr-p" data-step="4"><b>Duas leituras iguais</b><div class="lr-leit"><span>{icon('check')}1ª leitura</span><span>{icon('check')}2ª leitura · +60 ms</span></div><p>Só trava quando o mesmo QR aparece duas vezes em meio segundo: sem falso positivo.</p></div>
+<div class="lr-p" data-step="5"><b>Do QR à presença</b><div class="lr-fluxo"><span>{icon('qr')}token</span><i></i><span>{icon('server')}confere a assinatura</span><i></i><span>{icon('check')}presença</span></div><p class="lr-total">≈ 0,6 s do QR na frente da câmera até o ✓</p></div>
+</div></div></div>
+<ol class="passos">{''.join(f'<li data-step="{n}" data-ir="{n}"><span>{icon(ic)}</span><b>{t}</b><small>{d}</small></li>' for n,(ic,t,d) in enumerate(PASSOS_LR))}</ol></div>
+""",'zxing-wasm (MIT) no próprio app, sem CDN · BarcodeDetector nativo quando o navegador tem · tempos medidos com câmera simulada','', 'qr-exemplo.svg', 'Como o leitor é tão rápido')
 
 PWA_ROWS = [('Abre por um link', True, False), ('Instala sem loja de apps', True, False), ('Usa o mesmo mapa web', True, False), ('Funciona sem internet', True, True), ('Câmera para o QR', True, True)]
 slide('pwa','Por que PWA','05 / Apêndice técnico',f"""

@@ -6,8 +6,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 
 from .config import config
+from . import documentacao
 from .db import criar_tabelas
-from .rotas import auth, eu, homologacao, org, publico
+from .rotas import auth, eu, homologacao, org, publico, suap
 from .seguranca import publica
 
 
@@ -17,10 +18,11 @@ async def ciclo(_app: FastAPI):
     yield
 
 
-app = FastAPI(title='ETAL Connect', version='0.5.0', lifespan=ciclo, docs_url='/api/docs', openapi_url='/api/openapi.json')
+app = FastAPI(title='ETAL Connect', version='0.5.0', description=documentacao.introducao(), openapi_tags=documentacao.TAGS, lifespan=ciclo, docs_url='/api/docs', openapi_url='/api/openapi.json', swagger_ui_parameters={'deepLinking':True,'displayRequestDuration':True,'defaultModelsExpandDepth':0,'filter':True,'docExpansion':'list','withCredentials':True})
 app.add_middleware(CORSMiddleware, allow_origins=[o.strip() for o in config().origens.split(',') if o.strip()],
                    allow_credentials=True, allow_methods=['*'], allow_headers=['*'])
-for r in (auth.rota, eu.rota, publico.rota, org.rota, homologacao.rota):
+for r in (auth.rota, eu.rota, publico.rota, org.rota, homologacao.rota, suap.rota):
+    documentacao.aplicar(r)
     app.include_router(r)
 
 
