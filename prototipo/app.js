@@ -610,6 +610,7 @@
           </article>
           ${UI.home.atalhos ? `<nav class="quick rv" aria-label="Atalhos">${actions.map(([i, t, a], n) => `<button ${a} style="--n:${n}"><span>${ic(i)}</span><em>${t}</em></button>`).join('')}</nav>` : ''}
 
+          ${!standalone() && !prefs.get('etal-instalar-oculto') ? `<div class="instalar rv"><button class="inst-main" data-act="install">${ic('download')}<span><b>Instale o ETAL Connect</b><small>Lembretes no celular e mapa sem internet</small></span></button><button class="inst-x" data-act="instalar-fechar" aria-label="Agora não">${ic('x')}</button></div>` : ''}
           ${UI.home.colmeia ? combCard() : ''}
 
           ${UI.home.agenda ? `<div class="sec rv"><h2>Sua agenda</h2><button data-act="mine">Ver tudo</button></div>
@@ -2052,12 +2053,12 @@
     b.innerHTML = `<span><b>Nova versão do app</b><small>As mudanças entram ao atualizar.</small></span><button data-act="update">Atualizar</button>`;
     b.classList.add('show');
   }
-  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); PWA.prompt = e; if (S.auth && S.tab === 'profile') rerender(); });
+  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); PWA.prompt = e; if (S.auth && (S.tab === 'profile' || S.tab === 'home')) rerender(); });
   window.addEventListener('appinstalled', () => { PWA.prompt = null; toast('ETAL Connect instalado'); });
   const standalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
   const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
   async function installApp() {
-    if (PWA.prompt) { PWA.prompt.prompt(); const r = await PWA.prompt.userChoice.catch(() => null); PWA.prompt = null; if (r?.outcome !== 'accepted') toast('Instalação cancelada'); rerender(); return; }
+    if (PWA.prompt) { PWA.prompt.prompt(); const r = await PWA.prompt.userChoice.catch(() => null); PWA.prompt = null; if (r?.outcome !== 'accepted') toast('Instalação cancelada'); else askNotify(); rerender(); return; }
     if (isIOS()) { notify('Instalar no iPhone', 'Toque em Compartilhar e depois em "Adicionar à Tela de Início".'); return; }
     notify('Instalar o app', swAllowed ? 'Abra o menu do navegador e toque em "Instalar app".' : 'A instalação precisa de HTTPS. Pelo Wi-Fi local, o app abre só no navegador.');
   }
@@ -2422,6 +2423,7 @@
       }
       case 'remindtest': deliver(byId(el.dataset.id), true); break;
       case 'install': installApp(); break;
+      case 'instalar-fechar': prefs.set('etal-instalar-oculto', '1'); el.closest('.instalar')?.remove(); toast('Dá para instalar depois em Perfil'); break;
       case 'update': if (PWA.waiting) { PWA.updating = true; PWA.waiting.postMessage({ type: 'skip' }); } else location.reload(); break;
       case 'vote': { const k = el.dataset.q; if (S.votes.has(k)) S.votes.delete(k); else S.votes.add(k); rerender(); break; }
       case 'ask': openOverlay(Overlays.ask(el.dataset.id), 'ask'); setTimeout(() => $('#qtext')?.focus({ preventScroll: true }), 480); break;
