@@ -218,6 +218,7 @@ window.DATA.liveBase = { credenciados: 312 };
 window.DATA.organizadores = [
   { matricula: '20231094010012', papel: 'Coordenação geral' },
   { matricula: '20221094010008', papel: 'Campeonatos' },
+  { matricula: '20251094040030', papel: 'Desenvolvimento do app' },
 ];
 window.DATA.org = { inscritos: 480, porHora: [[7, 38], [8, 96], [9, 71], [10, 34], [11, 15], [12, 9], [13, 49]] };
 
