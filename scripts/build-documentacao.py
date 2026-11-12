@@ -167,7 +167,7 @@ presenca('pres-porta', 'Presença: QR na porta', f"""
 <div class="ps-chat" data-step="2"><span>{icon('camera')}</span>foto do QR</div>
 <div class="ps-home" data-step="3">{icon('user')}<small>em casa</small></div>
 <div class="ps-phone warn" data-step="4">{icon('check')}<b>Também confirma</b></div>
-""", 'Simples, sem equipe na sala', 'A foto do QR funciona durante a aula', 'Já funciona no app')
+""", 'Simples, sem equipe na sala', 'A foto do QR funciona durante a aula (as verificações a mais fecham a brecha)', 'Já funciona no app · método principal')
 
 presenca('pres-tela', 'Presença: QR na tela, mudando', f"""
 <div class="ps-screen" data-step="0"><img src="{{assets}}/qr-exemplo.svg" alt="QR no telão"><i class="ps-ring"></i><small>muda a cada 30 s</small></div>
@@ -175,7 +175,7 @@ presenca('pres-tela', 'Presença: QR na tela, mudando', f"""
 <div class="ps-chat" data-step="2"><span>{icon('camera')}</span>foto do QR</div>
 <div class="ps-home" data-step="3">{icon('user')}<small>em casa</small></div>
 <div class="ps-phone bad" data-step="4">{icon('close')}<b>QR vencido</b></div>
-""", 'A foto chega vencida', 'Precisa de uma tela ligada na sala', 'A implementar')
+""", 'A foto chega vencida', 'Precisa de uma tela ligada na sala', 'Sugestão: camada a mais')
 
 presenca('pres-equipe', 'Presença: a equipe lê o QR', f"""
 <div class="ps-badge" data-step="0"><span class="ps-av">AS</span><b>Ana Beatriz</b><img src="{{assets}}/qr-exemplo.svg" alt="QR pessoal"><small>QR pessoal, muda a cada 30 s</small></div>
@@ -183,41 +183,83 @@ presenca('pres-equipe', 'Presença: a equipe lê o QR', f"""
 <div class="ps-phone ok" data-step="2">{icon('check')}<b>Ana Beatriz · confirmada</b></div>
 <div class="ps-chat" data-step="3"><span>{icon('camera')}</span>print do QR</div>
 <div class="ps-phone bad" data-step="4">{icon('close')}<b>Não vale: código vencido</b></div>
-""", 'Alguém vê quem está na sala', 'Precisa de uma pessoa por sala', 'A implementar')
+""", 'Alguém vê quem está na sala', 'Precisa de uma pessoa por sala', 'Sugestão: camada a mais')
 
 # ---------------- 04 · Próximos passos ----------------
 def wipe(base, top, l, r):
     return f'<div class="wipe reveal"><img src="{{assets}}/{base}" alt="{l}"><div class="wipe-top"><img src="{{assets}}/{top}" alt="{r}"></div><i class="wipe-line"></i><span class="wipe-tag l">{l}</span><span class="wipe-tag r">{r}</span></div>'
 
-slide('planta','Da planta de 2012 ao mapa','04 / Próximos passos', wipe('fontes/planta-2012-0.webp','fontes/planta-atual-0.svg','Dissertação · 2012','Hoje, no app'),
-      'Souza, L. L. · Padronização e flexibilidade · UFRN, 2012','', 'fontes/planta-2012-0.webp', 'Da planta de 2012 ao mapa')
+PASSOS_PLANTA = [('book','A planta de 2012','dissertação da UFRN'),('route','Traçada por cima','paredes, portas e corredores'),('grid','Salas com uso e número','cada ambiente vira dado'),('layers','Três andares','o prédio sobe em 3D'),('map','O mapa do app','rotas, andares e busca')]
+slide('planta','Da planta de 2012 ao mapa','04 / Próximos passos',f"""
+<div class="etp pl" data-steps="5"><div class="palco pl-palco">
+<div class="pl-scan" data-step="0"><img src="{{assets}}/fontes/planta-2012-0.webp" alt="Planta do térreo em 2012"><small>Souza, 2012 · figura 9</small></div>
+<div class="pl-traco" data-step="1"><img class="fundo" src="{{assets}}/fontes/planta-2012-0.webp" alt=""><img class="traco" src="{{assets}}/fontes/planta-atual-0.svg" alt="Planta traçada"></div>
+<div class="pl-salas" data-step="2"><img src="{{assets}}/fontes/planta-atual-0.svg" alt="Planta atual do térreo"></div>
+<div class="pl-andares" data-step="3"><div class="pl-pilha">{''.join(f'<img style="--k:{k}" src="{{assets}}/fontes/planta-atual-{k}.svg" alt="{n}">' for k,n in [(0,'Térreo'),(1,'1º andar'),(2,'2º andar')])}</div></div>
+<div class="pl-mapa" data-step="4"><img src="{{assets}}/cena-andares.webp" alt="Os três andares no mapa 3D do app"></div>
+</div><ol class="passos">{''.join(f'<li data-step="{n}" data-ir="{n}"><span>{icon(ic)}</span><b>{t}</b><small>{d}</small></li>' for n,(ic,t,d) in enumerate(PASSOS_PLANTA))}</ol></div>
+""",'Souza, L. L. · Padronização e flexibilidade · UFRN, 2012 · planta gerada por scripts/build-principal-plan.py','', 'fontes/planta-2012-0.webp', 'Da planta de 2012 ao mapa')
 
 # ---------------- 05 · Apêndice técnico ----------------
+PASSOS_ARQ = [('layers','As peças','celular, API, banco e SUAP'),('user','Login','o SUAP confirma quem é'),('qr','Presença','do QR ao banco e ao painel'),('bell','Aviso','do painel para todos os celulares')]
+def no_arq(x, y, ic, t, sub, cls=''):
+    return f'<g class="ar-no {cls}" transform="translate({x} {y})"><rect x="-82" y="-50" width="164" height="100" rx="20"/><use href="#i-{ic}" x="-16" y="-38" width="32" height="32"/><text y="14" class="t">{t}</text><text y="34" class="s">{sub}</text></g>'
+def fio_arq(d, cls, rot='', rx=0, ry=0, delay=0):
+    return f'<path class="ar-fio {cls}" d="{d}" pathLength="1" style="--d:{delay}s"/>' + (f'<text class="ar-rot {cls}" x="{rx}" y="{ry}" style="--d:{delay+0.5}s">{rot}</text>' if rot else '')
+ARQ_SVG = ('<svg class="ar-svg" viewBox="0 0 1000 600" role="img" aria-label="Arquitetura: celular, API, banco, SUAP e painel">'
+  + fio_arq('M150 300 C150 150 300 90 418 90', 'h1', '1 · entra com o SUAP', 200, 140, 0)
+  + fio_arq('M582 90 C700 90 720 200 520 250', 'h1', '2 · nome, foto e matrícula', 720, 170, 0.8)
+  + fio_arq('M418 320 L232 320', 'h1', '3 · sessão (cookie)', 325, 350, 1.6)
+  + fio_arq('M232 280 L418 280', 'h2', '1 · QR lido', 325, 268, 0)
+  + fio_arq('M582 300 L768 300', 'h2', '2 · grava a presença', 675, 288, 0.8)
+  + fio_arq('M500 350 L500 448', 'h2', '3 · lotação ao vivo', 590, 405, 1.6)
+  + fio_arq('M500 448 L500 350', 'h3', '1 · aviso enviado', 590, 405, 0)
+  + ''.join(fio_arq(f'M418 300 C330 300 300 {y} 232 {y}', 'h3', '' , 0, 0, 0.8 + n*0.15) for n,y in enumerate([300]))
+  + no_arq(150, 300, 'phone', 'Celular', 'o app (PWA)', 'cel')
+  + no_arq(500, 300, 'server', 'API', 'FastAPI')
+  + no_arq(850, 300, 'database', 'Banco', 'PostgreSQL')
+  + no_arq(500, 90, 'user', 'SUAP', 'login do IFRN')
+  + no_arq(500, 500, 'browser', 'Painel', 'da organização')
+  + ''.join(f'<g class="ar-ping h3" transform="translate({x} {y})" style="--d:{1.2+n*0.2}s"><circle r="18"/><use href="#i-bell" x="-10" y="-10" width="20" height="20"/></g>' for n,(x,y) in enumerate([(70,215),(150,215),(230,215)]))
+  + '</svg>')
 slide('arquitetura','Como as peças se ligam','05 / Apêndice técnico',f"""
-<div class="arch"><div class="arch-node reveal" style="--i:1"><span>{icon('phone')}</span><b>Celular</b><small>PWA</small></div><i class="arch-wire"><em></em></i>
-<div class="arch-node reveal" style="--i:2"><span>{icon('cloud')}</span><b>Site + API</b><small>FastAPI · Vercel (teste) · IFRN (produção)</small></div><i class="arch-wire"><em></em></i>
-<div class="arch-node reveal" style="--i:3"><span>{icon('database')}</span><b>Banco</b><small>PostgreSQL</small></div>
-<div class="arch-side reveal" style="--i:4"><span>{icon('user')}</span><b>SUAP</b><small>login do IFRN</small></div></div>
-""",'','', 'cena-campus.webp', 'Como as peças se ligam')
+<div class="etp ar" data-steps="4"><div class="palco ar-palco">{ARQ_SVG}</div>
+<ol class="passos">{''.join(f'<li data-step="{n}" data-ir="{n}"><span>{icon(ic)}</span><b>{t}</b><small>{d}</small></li>' for n,(ic,t,d) in enumerate(PASSOS_ARQ))}</ol></div>
+""",'FastAPI · Vercel (teste) · IFRN (produção) · avisos chegam por SSE','', 'cena-campus.webp', 'Como as peças se ligam')
 
+PASSOS_DB = [('database','As tabelas','sete, no PostgreSQL'),('calendar','Salva a atividade','Pessoa → Agenda → Atividade'),('qr','Lê o QR','Pessoa → Presença → Atividade'),('bell','A organização','avisos, salas e acessos')]
+def er_db(cls, ic, t, sub, ex=''):
+    return f'<div class="db-card {cls}"><span>{icon(ic)}</span><b>{t}</b><small>{sub}</small>{f"<em>{ex}</em>" if ex else ""}</div>'
 slide('banco','O banco de dados','05 / Apêndice técnico',f"""
-<div class="er"><div class="er-main">
-<div class="er-card big reveal" style="--i:1"><span>{icon('user')}</span><b>Pessoa</b><small>participante, visitante ou organização</small></div>
-<div class="er-links"><div class="er-rel reveal" style="--i:3"><i class="er-line"></i><div class="er-card"><span>{icon('check')}</span><b>Agenda</b><small>salvou a atividade</small></div><i class="er-line"></i></div>
-<div class="er-rel reveal" style="--i:4"><i class="er-line"></i><div class="er-card"><span>{icon('qr')}</span><b>Presença</b><small>leu o QR na sala</small></div><i class="er-line"></i></div></div>
-<div class="er-card big reveal" style="--i:2"><span>{icon('calendar')}</span><b>Atividade</b><small>horário, sala e vagas</small></div></div>
-<div class="er-extra">{''.join(f'<div class="er-card small reveal" style="--i:{n+5}"><span>{icon(ic)}</span><b>{t}</b><small>{d}</small></div>' for n,(ic,t,d) in enumerate([('bell','Aviso','da organização para todos'),('pin','Número de sala','nome de cada sala'),('mail','Link de acesso','entrada do visitante')]))}</div>
-<div class="er-count reveal" style="--i:9"><b data-count="7">7</b><small>tabelas</small></div></div>
+<div class="etp db" data-steps="4"><div class="palco db-palco"><div class="db-cena">
+<div class="db-linha">{er_db('pessoa','user','Pessoa','participante, visitante ou organização','Maria Clara · 2023109401…')}
+<div class="db-meio">{er_db('agenda','check','Agenda','salvou a atividade','Maria → React Native')}{er_db('presenca','qr','Presença','leu o QR na sala','14:22 · via QR')}</div>
+{er_db('atividade','calendar','Atividade','horário, sala e vagas','React Native · Lab 210')}</div>
+<div class="db-org">{er_db('aviso','bell','Aviso','da organização','“Minicursos às 14:00”')}{er_db('sala','pin','Número de sala','nome de cada sala','002 → Lab 210')}{er_db('link','mail','Link de acesso','entrada do visitante','válido por 7 dias')}</div>
+</div></div><ol class="passos">{''.join(f'<li data-step="{n}" data-ir="{n}"><span>{icon(ic)}</span><b>{t}</b><small>{d}</small></li>' for n,(ic,t,d) in enumerate(PASSOS_DB))}</ol></div>
 """,'backend/app/modelos.py · SQLite para desenvolver, PostgreSQL em produção','', 'cena-campus.webp', 'O banco de dados')
 
-slide('qr','O QR é assinado','05 / Apêndice técnico',f"""
-<div class="qrf" data-steps="9" data-interval="1500">
-<div class="qrf-code"><img class="qrf-ok" src="{{assets}}/qr-exemplo.svg" alt="QR da sala"><img class="qrf-bad" src="{{assets}}/qr-falso.svg" alt="QR alterado"></div>
-<div class="qrf-token"><span class="qrf-a" data-step="1">atividade · react-native</span><span class="qrf-sig" data-step="1">assinatura · -vsAoqlqItw…</span></div>
-<div class="qrf-server" data-step="2"><span>{icon('server')}</span><b>API</b></div>
-<ul class="qrf-checks"><li data-step="3">{icon('shield')}Assinatura confere</li><li data-step="4">{icon('clock')}Dentro do horário · 14:00–18:00</li><li data-step="5" class="qrf-done">{icon('check')}Presença gravada · 14:22</li><li data-step="7" class="qrf-fail">{icon('close')}QR alterado: assinatura não confere</li></ul>
+PASSOS_QR = [('qr','O QR na porta','papel impresso, um por sala'),('code','O que tem dentro','dá para ler, não dá para falsificar'),('user','Quem leu','a conta do SUAP no celular'),('shield','A assinatura confere','o servidor refaz a conta'),('clock','Dentro do horário','só vale durante a atividade'),('wifi','Mais verificações','rede, lugar e aparelho'),('check','Sem duplicar','uma presença por pessoa'),('database','Direto para a planilha','pronta para o Excel'),('layers','Camadas a mais','quando o evento pedir')]
+QV_EXTRA = [('wifi','Rede do IFRN','conectado ao Wi-Fi do campus (eduroam)'),('pin','Perto da sala','localização do celular junto do bloco'),('phone','Aparelho único','o mesmo celular não registra duas pessoas'),('clock','Ficou na atividade','leitura na entrada e na saída'),('users','Cabe na sala','presenças acima da lotação acendem alerta')]
+QV_LINHAS = [('Maria Clara F.','2023109401…','14:22'),('Ana Paula R.','2022109404…','14:23'),('João F. Morais','2023109000…','14:23'),('Rodrigo F.','2021109402…','14:25'),('Luana Freitas','2024109401…','14:26')]
+slide('qr','Como a presença é validada','05 / Apêndice técnico',f"""
+<div class="qv" data-steps="9">
+<div class="qv-palco">
+<div class="qv-porta" data-step="0"><div class="qv-papel"><header>{icon('qr')}<b>Lab 210</b></header><img src="{{assets}}/qr-exemplo.svg" alt="QR impresso da sala"><footer>React Native com Expo</footer></div><small>colado na porta</small></div>
+<div class="qv-token" data-step="1"><code><span class="url">etal.app/q/</span><span class="dado">eyJhIjoicmVhY3QtbmF0aXZlIn0</span><span class="ponto">.</span><span class="sig">-vsAoqlqItwK3f…</span></code>
+<div class="qv-abre"><div><small>conteúdo (base64: qualquer um lê)</small><b>{{ "a": "react-native" }}</b></div><div class="sig"><small>assinatura</small><b>HMAC(chave secreta do servidor, conteúdo)</b></div></div></div>
+<div class="qv-quem" data-step="2"><div class="qv-cel">{icon('phone')}<b>Maria Clara</b><small>matrícula 2023109401…<br>sessão do SUAP</small></div><i class="qv-seta"></i><div class="qv-api">{icon('server')}<b>API</b></div></div>
+<div class="qv-sig" data-step="3"><div class="ok">{icon('check')}<span><b>eyJhIjoicmVhY3Qt…</b><small>recalculada com a chave: igual</small></span></div><div class="nao">{icon('close')}<span><b>eyJhIjoiZ2l0In0…</b><small>alguém trocou a atividade: não confere</small></span></div></div>
+<div class="qv-hora" data-step="4"><div class="qv-faixa"><i></i><em class="ok">14:22 ✓</em><em class="nao">19:10 ✗</em><span class="ini">13:45</span><span class="fim">18:00</span></div><p>Vale 15 min antes do início até o fim. A foto do QR mandada depois não vale.</p></div>
+<ul class="qv-extra" data-step="5">{''.join(f'<li style="--d:{n*0.18}s"><span>{icon(ic)}</span><b>{t}</b><small>{d}</small><em>proposta</em></li>' for n,(ic,t,d) in enumerate(QV_EXTRA))}</ul>
+<div class="qv-dup" data-step="6"><div class="ok">{icon('check')}<b>14:22 · presença registrada</b></div><div class="de-novo">{icon('qr')}<b>14:31 · leu de novo</b><small>já registrada, nada muda</small></div></div>
+<div class="qv-planilha" data-step="7"><table><thead><tr><th>Nome</th><th>Matrícula</th><th>Atividade</th><th>Hora</th><th>Rede</th></tr></thead><tbody>{''.join(f'<tr style="--d:{n*0.22}s"><td>{a}</td><td>{b}</td><td>React Native</td><td>{c}</td><td>IFRN</td></tr>' for n,(a,b,c) in enumerate(QV_LINHAS))}</tbody></table>
+<div class="qv-vs"><span class="papel">{icon('file')}<b>Lista de assinatura</b><small>passa de mão em mão e é digitada depois</small></span><span class="qr">{icon('download')}<b>QR → planilha</b><small>2 s por pessoa, pronta para o Excel</small></span></div></div>
+<div class="qv-camadas" data-step="8"><div><span>{icon('qr')}</span><b>QR na tela, mudando</b><small>a cada 30 s: a foto chega vencida</small></div><div><span>{icon('users')}</span><b>A equipe lê o QR do crachá</b><small>alguém vê quem está na sala</small></div><p>O QR de papel é o principal. Estas duas ficam como camada a mais, para atividades que pedirem.</p></div>
 </div>
-""",'Token assinado com o segredo do servidor (itsdangerous) · vale de 20 min antes até o fim da atividade','', 'qr-exemplo.svg', 'O QR é assinado')
+<ol class="qv-passos">{''.join(f'<li data-step="{n}" data-ir="{n}"><span>{icon(ic)}</span><b>{t}</b><small>{d}</small></li>' for n,(ic,t,d) in enumerate(PASSOS_QR))}</ol>
+</div>
+""",'Assinatura com a chave do servidor (itsdangerous) · horário, sessão e presença única já funcionam; rede, lugar e aparelho são propostas','', 'qr-exemplo.svg', 'Como a presença é validada')
 
 PWA_ROWS = [('Abre por um link', True, False), ('Instala sem loja de apps', True, False), ('Usa o mesmo mapa web', True, False), ('Funciona sem internet', True, True), ('Câmera para o QR', True, True)]
 slide('pwa','Por que PWA','05 / Apêndice técnico',f"""
@@ -225,13 +267,16 @@ slide('pwa','Por que PWA','05 / Apêndice técnico',f"""
 {''.join(f'<div class="pwa-row reveal" style="--i:{n+2}"><span>{t}</span><i class="{"yes" if a else "no"}">{icon("check" if a else "close")}</i><i class="{"yes" if b else "no"}">{icon("check" if b else "close")}</i></div>' for n,(t,a,b) in enumerate(PWA_ROWS))}</div>
 """,'React Native exige publicar nas lojas e reescrever o mapa em componentes nativos','', 'app-home.png', 'Por que PWA')
 
+PASSOS_OFF = [('wifi','Com internet','tudo vem do servidor'),('database','Guarda uma cópia','app, mapa, planta e programação'),('wifi-off','A rede cai','o Wi-Fi do evento lota'),('phone','Abre do aparelho','pelo que ficou guardado'),('wifi','A rede volta','avisos e programação atualizam')]
 slide('offline','Sem internet','05 / Apêndice técnico',f"""
-<div class="off" data-steps="4" data-interval="2600">
-<div class="off-cloud" data-step="0"><span>{icon('cloud')}</span><b>Servidor</b></div>
-<div class="off-wire"><i class="off-packets"></i><em class="off-cut">{icon('wifi-off')}</em></div>
-<div class="off-phone"><img src="{{assets}}/app-home.png" alt="App aberto"><div class="off-cache" data-step="2"><span>{icon('database')}</span>Guardado no aparelho</div></div>
-<ul class="off-list"><li data-step="0">{icon('wifi')}Com internet: tudo do servidor</li><li data-step="1">{icon('wifi-off')}A rede cai</li><li data-step="2">{icon('check')}O app abre do cache</li><li data-step="3">{icon('map')}Programação, mapa e planta continuam</li></ul>
-</div>
+<div class="etp of" data-steps="5"><div class="palco of-palco">
+<div class="of-cena">
+<div class="of-nuvem">{icon('cloud')}<b>Servidor</b></div>
+<div class="of-fio"><i></i><i></i><i></i><em>{icon('wifi-off')}</em></div>
+<div class="of-cel"><img src="{{assets}}/app-home.png" alt="App aberto"></div>
+<div class="of-cofre">{icon('database')}<b>Guardado no aparelho</b><div class="of-itens">{''.join(f'<span style="--d:{n*0.2}s">{t}</span>' for n,t in enumerate(['app','mapa 3D','planta','programação']))}</div></div>
+<p class="of-nota"><span data-step="0">Com internet, tudo vem do servidor.</span><span data-step="1">O service worker guarda os arquivos no aparelho.</span><span data-step="2">O Wi-Fi do evento cai, como sempre acontece cheio.</span><span data-step="3">O app abre do que ficou guardado. A presença espera a rede.</span><span data-step="4">A rede volta: avisos e programação se atualizam.</span></p>
+</div></div><ol class="passos">{''.join(f'<li data-step="{n}" data-ir="{n}"><span>{icon(ic)}</span><b>{t}</b><small>{d}</small></li>' for n,(ic,t,d) in enumerate(PASSOS_OFF))}</ol></div>
 """,'Service worker (sw.js) guarda os arquivos do app e do mapa no aparelho','', 'app-home.png', 'Sem internet')
 
 slide('rotas','Como a rota é calculada','05 / Apêndice técnico',f"""
