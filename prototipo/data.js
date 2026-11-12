@@ -17,110 +17,972 @@ window.DATA = {
     { day: 28, week: 'Sex', long: 'Sexta, 28 de novembro' },
   ],
   sessions: [
-    {
-      id: 'react-native', type: 'Minicurso', day: 26, time: '14:00', end: '18:00',
-      title: 'Introdução ao React Native com Expo', short: 'React Native com Expo',
-      speaker: 'Jonhy Everton Silva Gomes de Santana', speakerShort: 'Jonhy Everton', initials: 'JE',
-      role: 'Desenvolvedor mobile', floor: 2, zone: 'labs-norte-2', room: 'Lab 203',
-      description: 'Da ideia ao primeiro app. Explore componentes, navegação e as primeiras telas de um aplicativo com React Native e Expo.',
-      requirements: 'Notebook com Node.js instalado e conhecimentos básicos de JavaScript.',
-      learn: ['Criar um projeto com Expo e abrir no seu celular', 'Montar telas com View, Text, Image e listas', 'Navegar entre telas com o Expo Router'],
-      link: 'etal.app/rn201',
-      materials: [
-        { kind: 'pdf', name: 'Slides da aula', meta: 'PDF · 3,1 MB' },
-        { kind: 'link', name: 'Projeto inicial', meta: 'github.com/etal-demo/expo-inicial' },
-        { kind: 'zip', name: 'Exercício 1 · lista de contatos', meta: 'ZIP · 120 KB', fresh: 'Adicionado às 14:01' },
-        { kind: 'link', name: 'Documentação do Expo', meta: 'docs.expo.dev' },
-      ],
-    },
-    {
-      id: 'fastapi', type: 'Minicurso', day: 26, time: '14:00', end: '18:00',
-      title: 'FastAPI: construindo APIs modernas e performáticas', short: 'APIs modernas com FastAPI',
-      speaker: 'Marcos Queiroz', speakerShort: 'Marcos Queiroz', initials: 'MQ',
-      role: 'Desenvolvedor backend', floor: 2, zone: 'labs-norte', room: 'Lab 201',
-      description: 'Crie sua primeira API com Python e FastAPI. Entenda rotas, validação de dados e documentação interativa.',
-      requirements: 'Notebook com Python instalado e noções básicas de programação.',
-      learn: ['Criar rotas e respostas em JSON', 'Validar dados com Pydantic', 'Usar a documentação interativa'],
-      link: 'etal.app/api204',
-      materials: [
-        { kind: 'pdf', name: 'Slides da aula', meta: 'PDF · 2,4 MB' },
-        { kind: 'link', name: 'Repositório de exemplo', meta: 'github.com/etal-demo/fastapi-basico' },
-      ],
-    },
-    {
-      id: 'experiencia-ia', type: 'Minicurso', day: 26, time: '14:00', end: '18:00',
-      title: 'O futuro da experiência com IA', short: 'O futuro da experiência com IA',
-      speaker: 'Pablo Rodrigo Bernardino de Lira', speakerShort: 'Pablo Rodrigo', initials: 'PR',
-      role: 'Designer de produto', floor: 1, zone: 'salas-sul-0', room: 'Sala 111',
-      description: 'Uso, experiência e tecnologia: como a inteligência artificial está redefinindo nossas interações.',
-      requirements: 'Notebook e curiosidade para experimentar novas ferramentas.',
-      learn: ['Padrões de interface para produtos com IA', 'Como testar ideias com protótipos rápidos'],
-      link: 'etal.app/ia001',
-      materials: [{ kind: 'pdf', name: 'Slides da aula', meta: 'PDF · 5,8 MB' }],
-    },
-    {
-      id: 'react-next', type: 'Minicurso', day: 27, time: '08:00', end: '12:00',
-      title: 'Desenvolvimento de aplicações web com React e Next.js', short: 'React e Next.js',
-      speaker: 'Caio Rafael da Rocha Gomes', speakerShort: 'Caio Rafael', initials: 'CR',
-      role: 'Desenvolvedor web', floor: 1, zone: 'sala-interna-norte-1', room: 'Sala 105',
-      description: 'Explore componentes e rotas na construção de uma aplicação web com React e Next.js.',
-      requirements: 'Notebook com Node.js e noções de JavaScript.',
-      learn: ['Componentes e estado no React', 'Rotas e páginas no Next.js'],
-      link: 'etal.app/web108',
-      materials: [{ kind: 'pdf', name: 'Slides da aula', meta: 'PDF · 2,9 MB' }, { kind: 'link', name: 'Projeto inicial', meta: 'github.com/etal-demo/next-inicial' }],
-    },
-    {
-      id: 'saude-mental', type: 'Palestra', day: 28, time: '07:30', end: '08:30',
-      title: 'Saúde mental na era da IA', short: 'Saúde mental na era da IA',
-      speaker: 'Francisco Rômulo Raulino Santos', speakerShort: 'Francisco Rômulo', initials: 'FR',
-      role: 'Palestrante', floor: 0, zone: 'auditorio', room: 'Auditório',
-      description: 'Da atenção fragmentada ao foco com significado. Uma conversa sobre bem-estar, hábitos e a presença da tecnologia em nosso cotidiano.',
-      requirements: 'Venha com suas perguntas e disponibilidade para uma boa conversa.',
-      learn: ['Hábitos que protegem a atenção', 'Como usar a tecnologia a seu favor'],
-      link: 'etal.app/saude',
-      materials: [{ kind: 'pdf', name: 'Slides da palestra', meta: 'PDF · 1,8 MB' }, { kind: 'link', name: 'Leituras recomendadas', meta: 'Lista com 6 textos' }],
-    },
-    {
-      id: 'imagens-ia', type: 'Palestra', day: 28, time: '09:20', end: '10:20',
-      title: 'Como a IA está transformando o mundo das imagens', short: 'IA e imagens',
-      speaker: 'Keylly Eyglys Araújo dos Santos', speakerShort: 'Keylly Eyglys', initials: 'KE',
-      role: 'Palestrante', floor: 0, zone: 'auditorio', room: 'Auditório',
-      description: 'Novas possibilidades criativas, ferramentas e reflexões sobre inteligência artificial e imagens.',
-      requirements: 'Não é necessário levar equipamento.',
-      learn: ['Ferramentas atuais de geração e edição', 'Cuidados éticos com imagens geradas'],
-      link: 'etal.app/imagens',
-      materials: [{ kind: 'pdf', name: 'Slides da palestra', meta: 'PDF · 7,2 MB' }],
-    },
-  ],
-  enrolled: ['react-native', 'react-next', 'saude-mental'],
+  {
+    "id": "credenciamento",
+    "type": "Credenciamento",
+    "day": 26,
+    "time": "13:00",
+    "end": "14:00",
+    "title": "Credenciamento",
+    "short": "Credenciamento",
+    "floor": 0,
+    "zone": "recepcao",
+    "room": "Recepção",
+    "simple": true,
+    "demo": true,
+    "description": "Leia o QR da recepção para confirmar seu credenciamento.",
+    "learn": [],
+    "materials": [],
+    "requirements": "",
+    "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/"
+  },
+  {
+    "id": "experiencia-ia",
+    "type": "Minicurso",
+    "day": 26,
+    "time": "14:00",
+    "end": "18:00",
+    "title": "O Futuro da Experiência com IA: Uso, Como a Tecnologia Está Redefinindo Nossas Interações",
+    "short": "Experiência com IA",
+    "speaker": "Pablo Rodrigo Bernardino de Lira",
+    "speakerShort": "Pablo Rodrigo",
+    "initials": "PR",
+    "role": "Instrutor(a)",
+    "floor": 1,
+    "zone": "salas-sul-0",
+    "room": "Sala 111",
+    "description": "Uso, experiência e tecnologia: como a inteligência artificial está redefinindo nossas interações.",
+    "requirements": "Notebook para acompanhar a prática.",
+    "learn": [
+      "Padrões de interface para produtos com IA",
+      "Como testar ideias com protótipos rápidos"
+    ],
+    "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "materials": [],
+    "taken": 40,
+    "seats": 40,
+    "suapId": 6840,
+    "sourceUrl": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "sourceType": "Minicurso",
+    "demo": false,
+    "roomDemo": true,
+    "contentDemo": true
+  },
+  {
+    "id": "fastapi",
+    "type": "Minicurso",
+    "day": 26,
+    "time": "14:00",
+    "end": "18:00",
+    "title": "FastAPI: Construindo APIs Modernas e Performática",
+    "short": "APIs modernas com FastAPI",
+    "speaker": "Marcos Queiroz",
+    "speakerShort": "Marcos Queiroz",
+    "initials": "MQ",
+    "role": "Instrutor(a)",
+    "floor": 2,
+    "zone": "labs-norte",
+    "room": "Lab 209",
+    "description": "Crie sua primeira API com Python e FastAPI. Entenda rotas, validação de dados e documentação interativa.",
+    "requirements": "Notebook para acompanhar a prática.",
+    "learn": [
+      "Criar rotas e respostas em JSON",
+      "Validar dados com Pydantic",
+      "Usar a documentação interativa"
+    ],
+    "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "materials": [],
+    "taken": 26,
+    "seats": 30,
+    "suapId": 6892,
+    "sourceUrl": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "sourceType": "Minicurso",
+    "demo": false,
+    "roomDemo": true,
+    "contentDemo": true
+  },
+  {
+    "id": "react-native",
+    "type": "Minicurso",
+    "day": 26,
+    "time": "14:00",
+    "end": "18:00",
+    "title": "Introdução ao React Native com Expo",
+    "short": "React Native com Expo",
+    "speaker": "Jonhy Everton Silva Gomes de Santana",
+    "speakerShort": "Jonhy Everton",
+    "initials": "JE",
+    "role": "Instrutor(a)",
+    "floor": 2,
+    "zone": "labs-norte-2",
+    "room": "Lab 210",
+    "description": "Da ideia ao primeiro app. Explore componentes, navegação e as primeiras telas de um aplicativo com React Native e Expo.",
+    "requirements": "Notebook para acompanhar a prática.",
+    "learn": [
+      "Criar um projeto com Expo e abrir no seu celular",
+      "Montar telas com View, Text, Image e listas",
+      "Navegar entre telas com o Expo Router"
+    ],
+    "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "materials": [],
+    "taken": 26,
+    "seats": 30,
+    "suapId": 6841,
+    "sourceUrl": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "sourceType": "Minicurso",
+    "demo": false,
+    "roomDemo": true,
+    "contentDemo": true
+  },
+  {
+    "id": "game-maker",
+    "type": "Minicurso",
+    "day": 27,
+    "time": "08:00",
+    "end": "12:00",
+    "title": "Desenvolvendo jogos com Game Maker",
+    "short": "Jogos com Game Maker",
+    "speaker": "Caio Enzo Bessa de Oliveira",
+    "speakerShort": "Caio Enzo",
+    "initials": "CE",
+    "role": "Instrutor(a)",
+    "suapId": 6837,
+    "sourceUrl": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "sourceType": "Minicurso",
+    "demo": false,
+    "roomDemo": true,
+    "contentDemo": true,
+    "materials": [],
+    "learn": [
+      "Montar uma cena com sprites",
+      "Programar colisões e controles",
+      "Testar e compartilhar um protótipo"
+    ],
+    "requirements": "Notebook para acompanhar a prática.",
+    "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "description": "Crie uma pequena cena jogável com Game Maker.",
+    "floor": 2,
+    "zone": "lab-sul-1",
+    "room": "Lab 213",
+    "seats": 30,
+    "taken": 30
+  },
+  {
+    "id": "opencv",
+    "type": "Minicurso",
+    "day": 27,
+    "time": "08:00",
+    "end": "12:00",
+    "title": "Processamento de imagens com React Native e OpenCV",
+    "short": "React Native e OpenCV",
+    "speaker": " Adryan Eryk de Oliveira Leite",
+    "speakerShort": "Adryan Eryk",
+    "initials": "AE",
+    "role": "Instrutor(a)",
+    "suapId": 6842,
+    "sourceUrl": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "sourceType": "Minicurso",
+    "demo": false,
+    "roomDemo": true,
+    "contentDemo": true,
+    "materials": [],
+    "learn": [
+      "Ler imagens no aplicativo",
+      "Aplicar filtros com OpenCV",
+      "Exibir o resultado no celular"
+    ],
+    "requirements": "Notebook para acompanhar a prática.",
+    "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "description": "Processe imagens com React Native e OpenCV.",
+    "floor": 2,
+    "zone": "labs-norte-2",
+    "room": "Lab 210",
+    "seats": 40,
+    "taken": 40
+  },
+  {
+    "id": "react-next",
+    "type": "Minicurso",
+    "day": 27,
+    "time": "08:00",
+    "end": "12:00",
+    "title": "Desenvolvimento de aplicações web com React e Nextjs",
+    "short": "React e Next.js",
+    "speaker": "Caio Rafael da Rocha Gomes",
+    "speakerShort": "Caio Rafael",
+    "initials": "CR",
+    "role": "Instrutor(a)",
+    "floor": 1,
+    "zone": "sala-interna-norte-1",
+    "room": "Sala 107",
+    "description": "Explore componentes e rotas na construção de uma aplicação web com React e Next.js.",
+    "requirements": "Notebook para acompanhar a prática.",
+    "learn": [
+      "Componentes e estado no React",
+      "Rotas e páginas no Next.js"
+    ],
+    "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "materials": [],
+    "taken": 30,
+    "seats": 30,
+    "suapId": 6838,
+    "sourceUrl": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "sourceType": "Minicurso",
+    "demo": false,
+    "roomDemo": true,
+    "contentDemo": true
+  },
+  {
+    "demo": false,
+    "simple": true,
+    "learn": [],
+    "materials": [],
+    "requirements": "Não é preciso levar material.",
+    "id": "abertura",
+    "type": "Abertura",
+    "day": 27,
+    "time": "13:00",
+    "end": "14:30",
+    "title": "Da transparência à IA generativa: o papel fundamental da governança de dados nessa jornada",
+    "short": "Governança de dados e IA",
+    "floor": 0,
+    "zone": "auditorio",
+    "room": "Auditório",
+    "description": "Boas-vindas e apresentação da programação.",
+    "speaker": "Rodolfo Carneiro Cavalcante",
+    "speakerShort": "Rodolfo Carneiro",
+    "initials": "RC",
+    "role": "Convidado(a) do VII ETAL",
+    "suapId": 6847,
+    "sourceUrl": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "sourceType": "Abertura Oficial",
+    "roomDemo": true,
+    "contentDemo": true,
+    "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "seats": 200,
+    "taken": 64
+  },
+  {
+    "id": "jogo-fifa",
+    "type": "Campeonato",
+    "day": 27,
+    "time": "14:00",
+    "end": "18:00",
+    "title": "Campeonato de FIFA",
+    "short": "FIFA",
+    "tournament": "fifa",
+    "floor": 1,
+    "zone": "sala-norte-2",
+    "room": "Sala 103",
+    "description": "1 × 1 · mata-mata. Confira as regras, acompanhe a chave e torça pelos jogadores.",
+    "learn": [],
+    "materials": [],
+    "requirements": "Confira as regras e chegue antes da sua partida.",
+    "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "demo": true,
+    "roomDemo": true,
+    "seats": 8,
+    "taken": 6
+  },
+  {
+    "id": "jogo-gh3",
+    "type": "Campeonato",
+    "day": 27,
+    "time": "14:00",
+    "end": "18:00",
+    "title": "Campeonato de Guitar Hero III",
+    "short": "Guitar Hero III",
+    "tournament": "gh3",
+    "floor": 1,
+    "zone": "sala-oeste-sul",
+    "room": "Sala 105",
+    "description": "1 × 1 · duelo por pontos. Confira as regras, acompanhe a chave e torça pelos jogadores.",
+    "learn": [],
+    "materials": [],
+    "requirements": "Confira as regras e chegue antes da sua partida.",
+    "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "demo": true,
+    "roomDemo": true,
+    "seats": 8,
+    "taken": 8
+  },
+  {
+    "id": "jogo-mk",
+    "type": "Campeonato",
+    "day": 27,
+    "time": "14:00",
+    "end": "18:00",
+    "title": "Campeonato de Mortal Kombat 11",
+    "short": "Mortal Kombat 11",
+    "tournament": "mk",
+    "floor": 1,
+    "zone": "sala-norte-1",
+    "room": "Sala 102",
+    "description": "1 × 1 · melhor de 3. Confira as regras, acompanhe a chave e torça pelos jogadores.",
+    "learn": [],
+    "materials": [],
+    "requirements": "Confira as regras e chegue antes da sua partida.",
+    "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "demo": true,
+    "roomDemo": true,
+    "seats": 8,
+    "taken": 8
+  },
+  {
+    "id": "jogo-valorant",
+    "type": "Campeonato",
+    "day": 27,
+    "time": "14:00",
+    "end": "18:00",
+    "title": "Campeonato de VALORANT",
+    "short": "VALORANT",
+    "tournament": "valorant",
+    "floor": 1,
+    "zone": "sala-interna-sul-0",
+    "room": "Sala 108",
+    "description": "5 × 5 · equipes. Confira as regras, acompanhe a chave e torça pelos jogadores.",
+    "learn": [],
+    "materials": [],
+    "requirements": "Confira as regras e chegue antes da sua partida.",
+    "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "demo": true,
+    "roomDemo": true,
+    "seats": 8,
+    "taken": 6
+  },
+  {
+    "id": "coral",
+    "type": "Apresentação",
+    "day": 27,
+    "time": "14:50",
+    "end": "16:20",
+    "title": "Coral",
+    "short": "Coral",
+    "speaker": "Comunidade do campus",
+    "speakerShort": "Comunidade do",
+    "initials": "CD",
+    "role": "Convidado(a) do VII ETAL",
+    "suapId": 6843,
+    "sourceUrl": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "sourceType": "Apresentação Cultural",
+    "demo": false,
+    "roomDemo": true,
+    "contentDemo": true,
+    "materials": [],
+    "learn": [],
+    "requirements": "Não é preciso levar material.",
+    "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "description": "Atividade da programação do VII ETAL, de 26 a 28 de novembro de 2025.",
+    "room": "Pátio",
+    "seats": 200,
+    "taken": 64,
+    "place": "patio",
+    "simple": true
+  },
+  {
+    "id": "impacto-ia",
+    "type": "Mesa-redonda",
+    "day": 27,
+    "time": "16:30",
+    "end": "18:00",
+    "title": "Impacto da IA na área de Computador e Sociedade",
+    "short": "Impacto da IA na sociedade",
+    "speaker": "Thiago Henrique Freire de Oliveira, Eliaquim Timóteo da Cunha e  Atson Paulo Barreto Santos.",
+    "speakerShort": "Thiago Henrique",
+    "initials": "TH",
+    "role": "Convidado(a) do VII ETAL",
+    "suapId": 6850,
+    "sourceUrl": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "sourceType": "Mesa Redonda",
+    "demo": false,
+    "roomDemo": true,
+    "contentDemo": true,
+    "materials": [],
+    "learn": [],
+    "requirements": "Não é preciso levar material.",
+    "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "description": "Mesa-redonda sobre os impactos da inteligência artificial na computação e na sociedade.",
+    "floor": 0,
+    "zone": "auditorio",
+    "room": "Auditório",
+    "seats": 200,
+    "taken": 64,
+    "guests": [
+      {
+        "name": "Thiago Henrique Freire de Oliveira",
+        "initials": "TH",
+        "role": "Convidado(a)"
+      },
+      {
+        "name": "Eliaquim Timóteo da Cunha",
+        "initials": "ET",
+        "role": "Convidado(a)"
+      },
+      {
+        "name": "Atson Paulo Barreto Santos",
+        "initials": "AP",
+        "role": "Convidado(a)"
+      }
+    ]
+  },
+  {
+    "id": "saude-mental",
+    "type": "Palestra",
+    "day": 28,
+    "time": "07:30",
+    "end": "08:30",
+    "title": "Saúde Mental na Era da IA: da Atenção Fragmentada ao Foco com Significado",
+    "short": "Saúde mental na era da IA",
+    "speaker": "Francisco Rômulo Raulino Santos",
+    "speakerShort": "Francisco Rômulo",
+    "initials": "FR",
+    "role": "Convidado(a) do VII ETAL",
+    "floor": 0,
+    "zone": "auditorio",
+    "room": "Auditório",
+    "description": "Da atenção fragmentada ao foco com significado. Uma conversa sobre bem-estar, hábitos e a presença da tecnologia em nosso cotidiano.",
+    "requirements": "Não é preciso levar material.",
+    "learn": [
+      "Hábitos que protegem a atenção",
+      "Como usar a tecnologia a seu favor"
+    ],
+    "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "materials": [],
+    "taken": 64,
+    "seats": 200,
+    "suapId": 6849,
+    "sourceUrl": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "sourceType": "Palestra",
+    "demo": false,
+    "roomDemo": true,
+    "contentDemo": true
+  },
+  {
+    "id": "banda-inteira",
+    "type": "Apresentação",
+    "day": 28,
+    "time": "08:50",
+    "end": "09:20",
+    "title": "Banda Inteira",
+    "short": "Banda Inteira",
+    "speaker": "Comunidade do campus",
+    "speakerShort": "Comunidade do",
+    "initials": "CD",
+    "role": "Convidado(a) do VII ETAL",
+    "suapId": 6845,
+    "sourceUrl": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "sourceType": "Apresentação Cultural",
+    "demo": false,
+    "roomDemo": true,
+    "contentDemo": true,
+    "materials": [],
+    "learn": [],
+    "requirements": "Não é preciso levar material.",
+    "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "description": "Atividade da programação do VII ETAL, de 26 a 28 de novembro de 2025.",
+    "room": "Pátio",
+    "seats": 200,
+    "taken": 64,
+    "place": "patio",
+    "simple": true
+  },
+  {
+    "id": "imagens-ia",
+    "type": "Palestra",
+    "day": 28,
+    "time": "09:20",
+    "end": "10:20",
+    "title": "Como a IA Está Transformando o Mundo das Imagens",
+    "short": "IA e imagens",
+    "speaker": "Keylly Eyglys Araújo dos Santos",
+    "speakerShort": "Keylly Eyglys",
+    "initials": "KE",
+    "role": "Convidado(a) do VII ETAL",
+    "floor": 0,
+    "zone": "auditorio",
+    "room": "Auditório",
+    "description": "Novas possibilidades criativas, ferramentas e reflexões sobre inteligência artificial e imagens.",
+    "requirements": "Não é preciso levar material.",
+    "learn": [
+      "Ferramentas atuais de geração e edição",
+      "Cuidados éticos com imagens geradas"
+    ],
+    "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "materials": [],
+    "taken": 64,
+    "seats": 200,
+    "suapId": 6844,
+    "sourceUrl": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "sourceType": "Palestra",
+    "demo": false,
+    "roomDemo": true,
+    "contentDemo": true
+  },
+  {
+    "id": "mesa-egressos",
+    "type": "Mesa-redonda",
+    "day": 28,
+    "time": "10:30",
+    "end": "12:00",
+    "title": "Mercado de Trabalho com Alunos Egressos",
+    "short": "Mercado de trabalho e egressos",
+    "speaker": "Egressos convidados",
+    "speakerShort": "Egressos convidados",
+    "initials": "EC",
+    "role": "Convidado(a) do VII ETAL",
+    "suapId": 6852,
+    "sourceUrl": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "sourceType": "Mesa Redonda",
+    "demo": false,
+    "roomDemo": true,
+    "contentDemo": true,
+    "materials": [],
+    "learn": [],
+    "requirements": "Não é preciso levar material.",
+    "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "description": "Mesa com egressos: experiências de carreira, formação e mercado de trabalho.",
+    "floor": 0,
+    "zone": "auditorio",
+    "room": "Auditório",
+    "seats": 200,
+    "taken": 64,
+    "guests": [
+      {
+        "name": "Egressos convidados",
+        "initials": "Ec",
+        "role": "Convidado(a)"
+      }
+    ]
+  },
+  {
+    "id": "devsecops",
+    "type": "Palestra",
+    "day": 28,
+    "time": "13:00",
+    "end": "14:30",
+    "title": "Transformação Digital Segura: O Papel da Inteligência artificial no mundo DevSecOps em Instituições Públicas",
+    "short": "IA e DevSecOps",
+    "speaker": "Walter Lopes",
+    "speakerShort": "Walter Lopes",
+    "initials": "WL",
+    "role": "Convidado(a) do VII ETAL",
+    "suapId": 6851,
+    "sourceUrl": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "sourceType": "Palestra",
+    "demo": false,
+    "roomDemo": true,
+    "contentDemo": true,
+    "materials": [],
+    "learn": [],
+    "requirements": "Não é preciso levar material.",
+    "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "description": "Conversa sobre transformação digital segura e inteligência artificial em instituições públicas.",
+    "floor": 0,
+    "zone": "auditorio",
+    "room": "Auditório",
+    "seats": 200,
+    "taken": 64
+  },
+  {
+    "demo": false,
+    "simple": true,
+    "learn": [],
+    "materials": [],
+    "requirements": "Não é preciso levar material.",
+    "id": "encerramento",
+    "type": "Encerramento",
+    "day": 28,
+    "time": "14:50",
+    "end": "16:20",
+    "title": "Banda Inteira, Cerimônia de Encerramento e Entrega de Premiações",
+    "short": "Encerramento e premiação",
+    "place": "patio",
+    "room": "Pátio",
+    "description": "Premiação dos campeonatos e encerramento, no pátio.",
+    "speaker": "Comunidade do campus",
+    "speakerShort": "Comunidade do",
+    "initials": "CD",
+    "role": "Convidado(a) do VII ETAL",
+    "suapId": 6846,
+    "sourceUrl": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "sourceType": "Vivência",
+    "roomDemo": true,
+    "contentDemo": true,
+    "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "seats": 200,
+    "taken": 64
+  }
+],
+  enrolled: ['game-maker', 'saude-mental', 'imagens-ia'],
   notices: [
     { time: '13:30', title: 'Minicursos da tarde começam às 14:00', text: 'Chegue alguns minutos antes para registrar presença na porta.', fresh: true },
     { time: '11:05', title: 'Lab 203: traga notebook', text: 'Com Node.js instalado. Há tomadas nas bancadas.', fresh: true },
     { time: '07:30', title: 'Credenciamento aberto', text: 'Na recepção do térreo, ao lado da rampa.' },
   ],
   tournaments: [
-    {
-      id: 'mk', name: 'Mortal Kombat', tagline: 'Um round muda tudo.', day: 27, time: '14:00', place: 'Sala 102 · 1º andar',
-      format: '1 × 1 · melhor de 3', theme: 'mk',
-      rules: 'Eliminação simples. Cada confronto é decidido em melhor de três partidas. Configurações e personagens são combinados pela organização.',
-      prize: 'Troféu simbólico',
-      /* seis inscritos de exemplo e duas vagas: quem usa o app pode entrar na chave */
-      players: [['Arcade', 'Alex Costa', 'AC', 'Scorpion'], ['Pixel', 'Nina Martins', 'NM', 'Kitana'], ['Raio', 'Ravi Lima', 'RL', 'Raiden'], ['Lunar', 'Lia Souza', 'LS', 'Mileena'],
-        ['Combo', 'Davi Alves', 'DA', 'Liu Kang'], ['Nova', 'Bia Nunes', 'BN', 'Sub-Zero']],
-      pickLabel: 'Personagem', picks: ['Scorpion', 'Sub-Zero', 'Liu Kang', 'Kitana', 'Raiden', 'Mileena', 'Johnny Cage', 'Sonya', 'Ainda não sei'],
-      times: ['14:00', '14:20', '14:40', '15:00'],
-    },
-    {
-      id: 'fifa', name: 'FIFA', tagline: 'O campus também entra em campo.', day: 27, time: '15:30', place: 'Sala 102 · 1º andar',
-      format: '1 × 1 · mata-mata', theme: 'fifa',
-      rules: 'Oito participantes e confrontos eliminatórios. Tempo de partida, equipes e critérios de desempate são definidos pela organização.',
-      prize: 'Troféu simbólico',
-      players: [['Camisa 10', 'Caio Freitas', 'CF', 'Real Madrid'], ['Finta', 'Luna Reis', 'LR', 'Barcelona'], ['Maestro', 'Theo Dias', 'TD', 'Flamengo'], ['Artilheira', 'Maya Lopes', 'ML', 'Manchester City'],
-        ['Capitão', 'Noah Cruz', 'NC', 'Palmeiras'], ['Canhota', 'Eva Ramos', 'ER', 'PSG']],
-      pickLabel: 'Time', picks: ['Real Madrid', 'Barcelona', 'Manchester City', 'PSG', 'Flamengo', 'Palmeiras', 'Bayern', 'Liverpool', 'Ainda não sei'],
-      times: ['15:30', '15:50', '16:10', '16:30'],
-    },
-  ],
+  {
+    "id": "mk",
+    "name": "Mortal Kombat 11",
+    "theme": "mk",
+    "banner": "assets/games/mk11.jpg",
+    "day": 27,
+    "time": "14:00",
+    "place": "Sala 102 · 1º andar",
+    "floor": 1,
+    "zone": "sala-norte-1",
+    "room": "Sala 102",
+    "format": "1 × 1 · melhor de 3",
+    "tagline": "Campeonato do encontro.",
+    "rules": "1. Chave eliminatória de oito jogadores.\n2. Cada duelo é melhor de três lutas; final em melhor de cinco.\n3. Dois rounds por luta, 90 segundos e configurações iguais para todos.\n4. Quem perdeu pode trocar de personagem; quem venceu mantém.\n5. Atraso de 5 minutos resulta em W.O.; pausas e falhas técnicas são decididas pela organização.",
+    "prize": "Premiação do campeonato",
+    "demo": true,
+    "players": [
+      [
+        "Lucas.exe",
+        "Lucas Emanuel Nogueira de Queiroz",
+        "LE",
+        "Scorpion",
+        "demo-player-0"
+      ],
+      [
+        "Andrea",
+        "Andrea Gabriely Vidal Feitosa",
+        "AG",
+        "Sub-Zero",
+        "demo-player-1"
+      ],
+      [
+        "Maria V.",
+        "Maria Vitória de Sousa Pereira",
+        "MV",
+        "Liu Kang",
+        "demo-player-2"
+      ],
+      [
+        "Chico",
+        "Francisco Leocássio da Silva",
+        "FL",
+        "Kitana",
+        "demo-player-3"
+      ],
+      [
+        "Ana B.",
+        "Ana Beatriz",
+        "AB",
+        "Raiden",
+        "demo-player-4"
+      ],
+      [
+        "Caio",
+        "Caio Enzo",
+        "CE",
+        "Jade",
+        "demo-player-5"
+      ],
+      [
+        "Júlia",
+        "Júlia Costa",
+        "JC",
+        "Johnny Cage",
+        "demo-player-6"
+      ],
+      [
+        "Ravi",
+        "Ravi Lima",
+        "RL",
+        "Sonya",
+        "demo-player-7"
+      ]
+    ],
+    "pickLabel": "Personagem",
+    "picks": [
+      "Scorpion",
+      "Sub-Zero",
+      "Liu Kang",
+      "Kitana",
+      "Raiden",
+      "Jade",
+      "Johnny Cage",
+      "Sonya",
+      "Ainda não sei"
+    ],
+    "times": [
+      "14:00",
+      "14:20",
+      "14:40",
+      "15:00"
+    ],
+    "teamSize": 1,
+    "open": false,
+    "res": {
+      "q0": 0,
+      "q1": 0,
+      "q2": 1,
+      "q3": 0,
+      "s0": 0,
+      "s1": 1,
+      "f": 0
+    }
+  },
+  {
+    "id": "fifa",
+    "name": "FIFA",
+    "theme": "fifa",
+    "banner": "assets/games/fifa.jpg",
+    "day": 27,
+    "time": "14:00",
+    "place": "Sala 103 · 1º andar",
+    "floor": 1,
+    "zone": "sala-norte-2",
+    "room": "Sala 103",
+    "format": "1 × 1 · mata-mata",
+    "tagline": "Campeonato do encontro.",
+    "rules": "1. Oito jogadores; eliminatória simples em partida única.\n2. Partidas com 6 minutos por tempo, velocidade normal e elencos iguais para todos.\n3. Empate vai para prorrogação e pênaltis.\n4. Sem seleções ou equipes personalizadas; pausas só com a bola parada.\n5. Confira o controle antes da partida. A edição do FIFA será a disponível na estação do campeonato.",
+    "prize": "Premiação do campeonato",
+    "demo": true,
+    "players": [
+      [
+        "Lucas.exe",
+        "Lucas Emanuel Nogueira de Queiroz",
+        "LE",
+        "Real Madrid",
+        "demo-player-0"
+      ],
+      [
+        "Andrea",
+        "Andrea Gabriely Vidal Feitosa",
+        "AG",
+        "Barcelona",
+        "demo-player-1"
+      ],
+      [
+        "Maria V.",
+        "Maria Vitória de Sousa Pereira",
+        "MV",
+        "Manchester City",
+        "demo-player-2"
+      ],
+      [
+        "Chico",
+        "Francisco Leocássio da Silva",
+        "FL",
+        "PSG",
+        "demo-player-3"
+      ],
+      [
+        "Ana B.",
+        "Ana Beatriz",
+        "AB",
+        "Flamengo",
+        "demo-player-4"
+      ],
+      [
+        "Caio",
+        "Caio Enzo",
+        "CE",
+        "Palmeiras",
+        "demo-player-5"
+      ]
+    ],
+    "pickLabel": "Time",
+    "picks": [
+      "Real Madrid",
+      "Barcelona",
+      "Manchester City",
+      "PSG",
+      "Flamengo",
+      "Palmeiras",
+      "Bayern",
+      "Liverpool",
+      "Ainda não sei"
+    ],
+    "times": [
+      "14:00",
+      "14:20",
+      "14:40",
+      "15:00"
+    ],
+    "teamSize": 1,
+    "open": true,
+    "res": {}
+  },
+  {
+    "id": "valorant",
+    "name": "VALORANT",
+    "theme": "valorant",
+    "banner": "assets/games/valorant.jpg",
+    "day": 27,
+    "time": "14:00",
+    "place": "Sala 108 · 1º andar",
+    "floor": 1,
+    "zone": "sala-interna-sul-0",
+    "room": "Sala 108",
+    "format": "5 × 5 · equipes",
+    "tagline": "Campeonato do encontro.",
+    "rules": "1. Oito equipes, cada uma com cinco jogadores e um capitão.\n2. A chave representa equipes; o capitão faz a inscrição e apresenta a escalação à organização.\n3. Melhor de um mapa até a final; final melhor de três, se houver tempo.\n4. Mapas e lados definidos por veto; configurações competitivas e prorrogação ativada.\n5. Proibidos cheats, exploração de bugs e comunicação ofensiva; falhas técnicas são tratadas pela equipe.",
+    "prize": "Premiação do campeonato",
+    "demo": true,
+    "players": [
+      [
+        "Equipe Lucas.exe",
+        "Lucas Emanuel Nogueira de Queiroz",
+        "LE",
+        "Duelista",
+        "demo-player-0"
+      ],
+      [
+        "Equipe Andrea",
+        "Andrea Gabriely Vidal Feitosa",
+        "AG",
+        "Controlador",
+        "demo-player-1"
+      ],
+      [
+        "Equipe Maria V.",
+        "Maria Vitória de Sousa Pereira",
+        "MV",
+        "Sentinela",
+        "demo-player-2"
+      ],
+      [
+        "Equipe Chico",
+        "Francisco Leocássio da Silva",
+        "FL",
+        "Iniciador",
+        "demo-player-3"
+      ],
+      [
+        "Equipe Ana B.",
+        "Ana Beatriz",
+        "AB",
+        "Duelista",
+        "demo-player-4"
+      ],
+      [
+        "Equipe Caio",
+        "Caio Enzo",
+        "CE",
+        "Controlador",
+        "demo-player-5"
+      ]
+    ],
+    "pickLabel": "Função",
+    "picks": [
+      "Duelista",
+      "Controlador",
+      "Sentinela",
+      "Iniciador",
+      "Ainda não sei"
+    ],
+    "times": [
+      "14:00",
+      "14:20",
+      "14:40",
+      "15:00"
+    ],
+    "teamSize": 5,
+    "open": true,
+    "res": {}
+  },
+  {
+    "id": "gh3",
+    "name": "Guitar Hero III",
+    "theme": "guitarhero3",
+    "banner": "assets/games/guitarhero3.jpg",
+    "day": 27,
+    "time": "14:00",
+    "place": "Sala 105 · 1º andar",
+    "floor": 1,
+    "zone": "sala-oeste-sul",
+    "room": "Sala 105",
+    "format": "1 × 1 · duelo por pontos",
+    "tagline": "Campeonato do encontro.",
+    "rules": "1. Chave de oito jogadores, em duelos melhor de três músicas.\n2. Mesma música e dificuldade para os dois jogadores; padrão Difícil.\n3. Ganha cada música quem alcançar a maior pontuação; empate usa maior sequência de notas.\n4. Cada jogador escolhe uma música da lista da estação; desempate por sorteio.\n5. Sem modificadores, cheats ou pausas; os controles são testados antes do duelo.",
+    "prize": "Premiação do campeonato",
+    "demo": true,
+    "players": [
+      [
+        "Lucas.exe",
+        "Lucas Emanuel Nogueira de Queiroz",
+        "LE",
+        "Difícil",
+        "demo-player-0"
+      ],
+      [
+        "Andrea",
+        "Andrea Gabriely Vidal Feitosa",
+        "AG",
+        "Expert",
+        "demo-player-1"
+      ],
+      [
+        "Maria V.",
+        "Maria Vitória de Sousa Pereira",
+        "MV",
+        "Difícil",
+        "demo-player-2"
+      ],
+      [
+        "Chico",
+        "Francisco Leocássio da Silva",
+        "FL",
+        "Expert",
+        "demo-player-3"
+      ],
+      [
+        "Ana B.",
+        "Ana Beatriz",
+        "AB",
+        "Difícil",
+        "demo-player-4"
+      ],
+      [
+        "Caio",
+        "Caio Enzo",
+        "CE",
+        "Expert",
+        "demo-player-5"
+      ],
+      [
+        "Júlia",
+        "Júlia Costa",
+        "JC",
+        "Difícil",
+        "demo-player-6"
+      ],
+      [
+        "Ravi",
+        "Ravi Lima",
+        "RL",
+        "Expert",
+        "demo-player-7"
+      ]
+    ],
+    "pickLabel": "Dificuldade",
+    "picks": [
+      "Difícil",
+      "Expert",
+      "Ainda não sei"
+    ],
+    "times": [
+      "14:00",
+      "14:20",
+      "14:40",
+      "15:00"
+    ],
+    "teamSize": 1,
+    "open": false,
+    "res": {
+      "q0": 0,
+      "q1": 0,
+      "q2": 1,
+      "q3": 0,
+      "s0": 1,
+      "s1": 1,
+      "f": 0
+    }
+  }
+],
 };
 
 /* Campeonatos: o estado (inscritos, vagas, resultados) fica no painel da organização (etal-org.torneios) e é
@@ -132,7 +994,7 @@ window.TOUR = {
     const o = ((org && org.torneios) || {})[t.id] || {};
     const players = (o.players || t.players).slice(0, 8).map((p) => p || null);
     while (players.length < 8) players.push(null);
-    return { open: o.open !== false, players, res: { ...(o.res || {}) }, free: players.filter((p) => !p).length, rules: o.rules || null };
+    return { open: (o.open ?? t.open) !== false, players, res: { ...(o.res || t.res || {}) }, free: players.filter((p) => !p).length, rules: o.rules || null };
   },
   /* Monta as rodadas: quem ganha uma partida aparece na seguinte. w = 0 ou 1 (lado que venceu). */
   rounds(st) {
@@ -154,8 +1016,6 @@ window.TOUR = {
 
 /* Extras demonstrativos: vagas, perguntas, contatos e participação. */
 (() => {
-  const seats = { 'react-native': [24, 30], fastapi: [27, 30], 'experiencia-ia': [18, 40], 'react-next': [30, 30], 'saude-mental': [96, 200], 'imagens-ia': [71, 200] };
-  window.DATA.sessions.forEach((s) => { [s.taken, s.seats] = seats[s.id]; });
   window.DATA.questions = {
     'react-native': [
       { id: 'q1', who: 'Ana V.', text: 'Dá para testar no iPhone sem ter um Mac?', votes: 9 },
@@ -164,9 +1024,12 @@ window.TOUR = {
     'saude-mental': [{ id: 'q3', who: 'Luna R.', text: 'Como reduzir o tempo de tela sem perder o que importa?', votes: 12 }],
   };
   window.DATA.peers = [
-    { name: 'Ana Vale', initials: 'AV', course: 'Informática · 4º ano', interest: 'Mobile' },
-    { name: 'Theo Dias', initials: 'TD', course: 'ADS · 3º período', interest: 'Back-end' },
-    { name: 'Luna Reis', initials: 'LR', course: 'Informática · 2º ano', interest: 'Design' },
+    /* Colega de teste (debug do QR): crachá com perfil público completo. */
+    { id: 'colega-teste', name: 'Bia Nogueira', officialName: 'Beatriz Nogueira da Silva', initials: 'BN', photo: 'assets/community/avatar-julia.svg', course: 'Informática · 3º ano', interest: 'Jogos', nadic: true, langs: ['C#', 'GDScript'],
+      card: { publish: true, phone: '(84) 98888-1234', email: 'bia.nogueira@exemplo.com', link: 'github.com/bianogueira', nadic: 'bolsista', langs: ['C#', 'GDScript', 'Python'], areas: ['Jogos', 'Design e UX'], open: ['Hackathons', 'Projetos de pesquisa'], bio: 'Faço jogos na Godot e ajudo nos projetos do NADIC.' } },
+    { name: 'Ana Vale', initials: 'AV', course: 'Informática · 4º ano', interest: 'Mobile', nadic: true, langs: ['Kotlin', 'Dart'] },
+    { name: 'Theo Dias', initials: 'TD', course: 'ADS · 3º período', interest: 'Back-end', langs: ['Python', 'Go'] },
+    { name: 'Luna Reis', initials: 'LR', course: 'Informática · 2º ano', interest: 'Design', langs: ['JavaScript'] },
   ];
   window.DATA.venue = 'IFRN Campus Pau dos Ferros';
 })();
@@ -188,8 +1051,8 @@ window.DATA.places = {
 window.DATA.placeOrder = ['principal', 'laboratorios', 'patio', 'cantina', 'biblioteca', 'anexo', 'diretoria', 'portaria'];
 
 /* Imagens do autor para os banners; informações do NADIC vindas do site oficial. */
-window.DATA.tournaments[0].logo = 'assets/logo-mk.png';
-window.DATA.tournaments[1].hideName = true;
+// As quatro modalidades usam suas próprias artes locais.
+
 window.DATA.nadic = {
   full: 'Núcleo de Análise de Dados e Inteligência Computacional',
   motto: 'Trazendo avanços tecnológicos para o Alto Oeste Potiguar',
@@ -283,31 +1146,47 @@ Object.assign(window.DATA.nadic, {
   ],
 });
 
-/* Programação ampliada: atividades novas são de exemplo, para ver a agenda cheia. Não é a programação oficial. */
-(() => {
-  const D = window.DATA;
-  const zoneRoom = (floor, zone) => { const z = window.PLAN.floors[floor].zones.find((q) => q.id === zone); return z.kind === 'laboratory' ? `Lab ${z.roomNumber}` : z.roomNumber ? `Sala ${z.roomNumber}` : z.label; };
-  const talk = (o) => ({ demo: true, learn: [], materials: [], requirements: 'Não é preciso levar nada.', link: 'etal.app/exemplo', taken: 12, seats: 40, room: zoneRoom(o.floor, o.zone), ...o });
-  const stop = (o) => ({ demo: true, simple: true, learn: [], materials: [], requirements: '', ...o });
-  D.sessions.push(
-    stop({ id: 'credenciamento', type: 'Credenciamento', day: 26, time: '13:00', end: '14:00', title: 'Credenciamento', short: 'Credenciamento', floor: 0, zone: 'recepcao', room: 'Recepção', description: 'Leia o QR da recepção para confirmar sua participação.' }),
-    talk({ id: 'git', type: 'Oficina', day: 26, time: '14:00', end: '18:00', title: 'Git e GitHub na prática', short: 'Git e GitHub', speaker: 'Helena Duarte', speakerShort: 'Helena Duarte', initials: 'HD', role: 'Desenvolvedora de software', floor: 1, zone: 'sala-norte-2', description: 'Versione seu código, trabalhe em equipe e publique seu primeiro repositório.', requirements: 'Notebook com Git instalado.', learn: ['Commits, branches e merge', 'Pull requests em equipe'], taken: 22, seats: 25, materials: [{ kind: 'pdf', name: 'Guia de comandos', meta: 'PDF · 800 KB' }] }),
-    stop({ id: 'intervalo-26', type: 'Intervalo', day: 26, time: '16:00', end: '16:20', title: 'Intervalo com lanche', short: 'Intervalo', place: 'cantina', room: 'Cantina', description: 'Pausa da tarde, na cantina.' }),
-    stop({ id: 'abertura', type: 'Abertura', day: 26, time: '19:00', end: '20:00', title: 'Abertura do ETAL', short: 'Abertura', floor: 0, zone: 'auditorio', room: 'Auditório', description: 'Boas-vindas e apresentação da programação.' }),
-    talk({ id: 'arduino', type: 'Oficina', day: 27, time: '08:00', end: '12:00', title: 'Primeiros passos com Arduino', short: 'Arduino', speaker: 'Rafael Nóbrega', speakerShort: 'Rafael Nóbrega', initials: 'RN', role: 'Engenheiro de sistemas embarcados', floor: 2, zone: 'labs-norte', description: 'Monte circuitos simples e programe sensores e LEDs.', learn: ['Montar um circuito simples', 'Ler um sensor e reagir a ele'], taken: 19, seats: 20 }),
-    talk({ id: 'mesa-carreira', type: 'Mesa-redonda', day: 27, time: '10:00', end: '11:30', title: 'Carreira em tecnologia no interior', short: 'Carreira no interior', speaker: 'Beatriz Lacerda', speakerShort: 'Beatriz Lacerda', initials: 'BL', role: 'Mediadora', guests: [{ name: 'Ana Paula Rêgo', initials: 'AR', role: 'Desenvolvedora em trabalho remoto' }, { name: 'Rodrigo Fernandes', initials: 'RF', role: 'Fundador de empresa local' }, { name: 'Luana Freitas', initials: 'LF', role: 'Egressa do IFRN' }], floor: 0, zone: 'auditorio', description: 'Conversa sobre trabalho remoto, empresas locais e como começar. A plateia pergunta durante a mesa.', learn: ['Caminhos para o primeiro emprego', 'Como montar um portfólio'], taken: 88, seats: 200 }),
-    stop({ id: 'almoco-27', type: 'Refeição', day: 27, time: '12:00', end: '13:30', title: 'Almoço', short: 'Almoço', place: 'cantina', room: 'Cantina', description: 'Refeição na cantina do campus.' }),
-    talk({ id: 'dados', type: 'Minicurso', day: 27, time: '14:00', end: '18:00', title: 'Análise de dados com Python', short: 'Dados com Python', speaker: 'Marina Telles', speakerShort: 'Marina Telles', initials: 'MT', role: 'Analista de dados', floor: 1, zone: 'sala-interna-sul-0', description: 'Limpe, explore e visualize dados com Pandas.', requirements: 'Notebook com Python instalado.', learn: ['Ler e limpar planilhas com Pandas', 'Fazer gráficos claros'], taken: 27, seats: 30 }),
-    stop({ id: 'jogo-mk', type: 'Campeonato', day: 27, time: '14:00', end: '15:20', title: 'Campeonato de Mortal Kombat', short: 'Mortal Kombat', tournament: 'mk', floor: 1, zone: 'sala-norte-1', room: 'Sala 102', description: 'Eliminação simples, melhor de três.' }),
-    stop({ id: 'jogo-fifa', type: 'Campeonato', day: 27, time: '15:30', end: '16:50', title: 'Campeonato de FIFA', short: 'FIFA', tournament: 'fifa', floor: 1, zone: 'sala-norte-1', room: 'Sala 102', description: 'Mata-mata com oito participantes.' }),
-    stop({ id: 'intervalo-28', type: 'Intervalo', day: 28, time: '10:20', end: '10:40', title: 'Intervalo com lanche', short: 'Intervalo', place: 'cantina', room: 'Cantina', description: 'Pausa da manhã, na cantina.' }),
-    talk({ id: 'seguranca', type: 'Palestra', day: 28, time: '10:40', end: '11:40', title: 'Segurança digital no dia a dia', short: 'Segurança digital', speaker: 'Tiago Brandão', speakerShort: 'Tiago Brandão', initials: 'TB', role: 'Especialista em segurança', floor: 0, zone: 'auditorio', description: 'Golpes comuns, senhas e como proteger suas contas.', learn: ['Reconhecer golpes comuns', 'Proteger suas contas'], taken: 64, seats: 200 }),
-    stop({ id: 'almoco-28', type: 'Refeição', day: 28, time: '12:00', end: '13:30', title: 'Almoço', short: 'Almoço', place: 'cantina', room: 'Cantina', description: 'Refeição na cantina do campus.' }),
-    talk({ id: 'interfaces', type: 'Oficina', day: 28, time: '14:00', end: '16:30', title: 'Design de interfaces para quem programa', short: 'Design de interfaces', speaker: 'Camila Rocha', speakerShort: 'Camila Rocha', initials: 'CM', role: 'Designer de produto', floor: 0, zone: 'sala-estudos-informatica', description: 'Hierarquia, contraste e como deixar uma tela clara.', learn: ['Hierarquia visual', 'Contraste e legibilidade'], taken: 15, seats: 30 }),
-    stop({ id: 'encerramento', type: 'Encerramento', day: 28, time: '17:00', end: '18:00', title: 'Encerramento e premiação', short: 'Encerramento', place: 'patio', room: 'Pátio', description: 'Premiação dos campeonatos e encerramento, no pátio.' }),
-  );
-  D.sessions.sort((a, b) => a.day - b.day || a.time.localeCompare(b.time));
-})();
-
 window.DATA.places.obelisco = { name: 'Obelisco do IFRN', kind: 'Monumento', text: 'Na entrada, à esquerda da passarela, quase chegando ao pátio, entre canteiros floridos.', noArea: true };
 window.DATA.placeOrder.splice(1, 0, 'obelisco');
+
+/* Perfis públicos de exemplo (tela de perfil ao tocar em alguém na comunidade). Uns completos, uns pela metade e uns
+   vazios, para mostrar os dois estados. Contatos fictícios. */
+window.DATA.demoProfiles = {
+  'demo-ana': { officialName: 'Ana Beatriz Fernandes Lima', course: 'Informática · 4º ano',
+    card: { publish: true, phone: '(84) 99812-4410', email: 'ana.beatriz@exemplo.com', link: 'github.com/anabeatriz', nadic: 'bolsista', langs: ['JavaScript', 'TypeScript', 'GDScript'], areas: ['Web', 'Jogos'], open: ['Estágio', 'Hackathons'], bio: 'Front-end de dia, jogos de noite. Bolsista no NADIC.' } },
+  'demo-rafa': { officialName: 'Rafael Torres de Almeida', course: 'ADS · 5º período',
+    card: { publish: true, phone: '(84) 99733-1029', email: 'rafael.torres@exemplo.com', link: 'linkedin.com/in/rafaeltorres', nadic: 'bolsista', langs: ['Python', 'Go', 'SQL'], areas: ['Dados', 'IA', 'Redes'], open: ['Projetos de pesquisa', 'Monitoria'], bio: 'Monitor de Banco de Dados e curioso por IA.' } },
+  'demo-julia': { course: 'Informática · 2º ano',
+    card: { publish: true, email: 'julia.costa@exemplo.com', langs: ['Python'], areas: ['Web'], open: ['Grupo de estudo'], nadic: 'nao' } },
+  'demo-lucas': { course: 'Informática · 3º ano',
+    card: { publish: true, nadic: 'nao', langs: ['C#', 'Lua'], areas: ['Jogos'], bio: 'Campeão do MK11 (por enquanto).' } },
+  'demo-chico': { course: 'Eletrotécnica · 3º ano',
+    card: { publish: true, nadic: 'ex', link: 'instagram.com/chico.dev', areas: ['Hardware', 'Robótica'] } },
+  'demo-andrea': { course: 'Informática · 1º ano' },
+  'demo-maria-v': { course: 'Informática · 2º ano', card: { publish: false } },
+};
+window.DATA.demoComments = {
+  'demo-encontro': [
+    { id: 'c-enc-1', author: 'demo-rafa', name: 'Rafael Torres', initials: 'RT', role: 'ADS · 5º período', text: 'Que massa! Passa no NADIC depois, a gente tem um grupinho de jogos 🎮', time: 'Há pouco' },
+    { id: 'c-enc-2', author: 'demo-lucas', name: 'Lucas Emanuel Nogueira de Queiroz', initials: 'LE', photo: 'assets/community/avatar-lucas.svg', role: 'Participante', text: 'Mostra o jogo rodando!', time: 'Há pouco' },
+  ],
+  'demo-dica': [
+    { id: 'c-dica-1', author: 'demo-ana', name: 'Ana Beatriz', initials: 'AB', photo: 'assets/community/avatar-ana.svg', role: 'Participante', text: 'FastAPI é muito bom. Já testou ligar num banco?', time: 'Há pouco' },
+    { id: 'c-dica-2', author: 'demo-rafa', name: 'Rafael Torres', initials: 'RT', role: 'ADS · 5º período', text: 'Manda o link do repositório que eu dou uma olhada 👀', time: 'Há pouco' },
+  ],
+  'demo-projeto': [{ id: 'c-proj-1', author: 'demo-andrea', name: 'Andrea Gabriely Vidal Feitosa', initials: 'AG', photo: 'assets/community/avatar-ana.svg', role: 'Participante', text: 'Final insana! 🔥', time: 'Há pouco' }],
+  'demo-gh3': [{ id: 'c-gh3-1', author: 'demo-chico', name: 'Francisco Leocássio da Silva', initials: 'FL', photo: 'assets/community/avatar-lucas.svg', role: 'Participante', text: 'Lenda do Guitar Hero 🎸', time: 'Há pouco' }],
+};
+
+/* Materiais de exemplo (PDF gerado para a demonstração e repositórios públicos). */
+(window.DATA.sessions.find((a) => a.id === 'react-native') || {}).materials = [{"kind": "pdf", "name": "Slides do minicurso", "url": "assets/materiais/react-native-expo-slides.pdf", "meta": "PDF · 4 slides · exemplo"}, {"kind": "link", "name": "Expo no GitHub", "url": "https://github.com/expo/expo"}];
+(window.DATA.sessions.find((a) => a.id === 'fastapi') || {}).materials = [{"kind": "link", "name": "FastAPI no GitHub", "url": "https://github.com/fastapi/fastapi"}];
+
+/* <cenario-demo> */
+window.DATA.event = {"id": 8528, "name": "VII ETAL", "year": 2025, "source": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/", "dates": ["2025-11-26", "2025-11-27", "2025-11-28"], "notice": "Programação de 2025. Salas, campeonatos, resultados e publicações preparados para demonstração."};
+window.DATA.demoPosts = [{"id": "demo-encontro", "author": "demo-ana", "handle": "ana.beatriz", "name": "Ana Beatriz", "initials": "AB", "photo": "assets/community/avatar-ana.svg", "text": "Saí do Game Maker com um joguinho funcionando! Colisão, personagem andando e aquela vontade de continuar em casa. Minicurso muito foda 🕹️", "activity": "game-maker", "day": 27, "images": [{"src": "assets/community/projeto.jpg", "alt": "Notebook com projeto de programação", "caption": "O primeiro jogo a gente não esquece"}], "likes": 18, "time": "Há pouco", "role": "Participante", "tag": "No evento", "demo": true}, {"id": "demo-projeto", "author": "demo-lucas", "handle": "lucas.gabriel", "name": "Lucas Emanuel Nogueira de Queiroz", "initials": "LE", "photo": "assets/community/avatar-lucas.svg", "text": "Ganhei o MK11! A final foi apertada demais. Valeu pra quem ficou torcendo 🏆", "activity": "jogo-mk", "day": 27, "images": [{"src": "assets/games/mk11.jpg", "alt": "Arte de Mortal Kombat 11"}], "likes": 32, "time": "Há pouco", "role": "Participante", "tag": "No evento", "demo": true}, {"id": "demo-dica", "author": "demo-julia", "handle": "julia.costa", "name": "Júlia Costa", "initials": "JC", "photo": "assets/community/avatar-julia.svg", "text": "Aprendi a criar uma API com FastAPI e já saí testando as rotas na documentação. Agora quero ligar isso no meu próximo projeto!", "activity": "fastapi", "day": 26, "images": [{"src": "assets/community/equipe.jpg", "alt": "Equipe trabalhando com notebooks"}, {"src": "assets/community/ideias.jpg", "alt": "Conversa sobre um projeto"}], "likes": 14, "time": "Há pouco", "role": "Participante", "tag": "No evento", "demo": true}, {"id": "demo-fifa", "author": "demo-andrea", "handle": "andrea.gabriely", "name": "Andrea Gabriely Vidal Feitosa", "initials": "AG", "photo": "assets/community/avatar-ana.svg", "text": "Passei da primeira fase do FIFA e já tô me achando profissional 😂 Quem vai acompanhar a próxima partida?", "activity": "jogo-fifa", "day": 27, "images": [{"src": "assets/games/fifa.jpg", "alt": "Arte de FIFA"}], "likes": 21, "time": "Há pouco", "role": "Participante", "tag": "No evento", "demo": true}, {"id": "demo-valorant", "author": "demo-chico", "handle": "francisco.leocassio", "name": "Francisco Leocássio da Silva", "initials": "FL", "photo": "assets/community/avatar-lucas.svg", "text": "Equipe fechada pro Valorant! Hoje é dia de jogar junto e fazer amizade com a galera do campus.", "activity": "jogo-valorant", "day": 27, "images": [{"src": "assets/games/valorant.jpg", "alt": "Arte de VALORANT"}], "likes": 11, "time": "Há pouco", "role": "Participante", "tag": "No evento", "demo": true}, {"id": "demo-gh3", "author": "demo-maria-v", "handle": "maria.vitoria", "name": "Maria Vitória de Sousa Pereira", "initials": "MV", "photo": "assets/community/avatar-julia.svg", "text": "Levei o Guitar Hero III! Minha mão quase travou na última música, mas deu bom 🎸🏆", "activity": "jogo-gh3", "day": 27, "images": [{"src": "assets/games/guitarhero3.jpg", "alt": "Capa de Guitar Hero III"}], "likes": 28, "time": "Há pouco", "role": "Participante", "tag": "No evento", "demo": true}];
+window.DATA.demoPeople = [{"id": "demo-player-0", "name": "Lucas Emanuel Nogueira de Queiroz", "initials": "LE"}, {"id": "demo-player-1", "name": "Andrea Gabriely Vidal Feitosa", "initials": "AG"}, {"id": "demo-player-2", "name": "Maria Vitória de Sousa Pereira", "initials": "MV"}, {"id": "demo-player-3", "name": "Francisco Leocássio da Silva", "initials": "FL"}, {"id": "demo-player-4", "name": "Ana Beatriz", "initials": "AB"}, {"id": "demo-player-5", "name": "Caio Enzo", "initials": "CE"}, {"id": "demo-player-6", "name": "Júlia Costa", "initials": "JC"}, {"id": "demo-player-7", "name": "Ravi Lima", "initials": "RL"}];
+
+/* <oficina-kellyson> */
+window.DATA.sessions = window.DATA.sessions.filter((a) => a.id !== "sua-palestra");
+window.DATA.sessions.push({"id": "sua-palestra", "type": "Oficina", "day": 26, "time": "14:00", "end": "18:00", "title": "Entendendo e programando com agentes de IA", "short": "Programando com agentes de IA", "speaker": "Kellyson Raphael", "speakerShort": "Kellyson Raphael", "speakerId": "20251094040030", "speakerPhoto": "assets/speakers/kellyson-raphael.jpg", "initials": "KR", "role": "Ministrante da oficina", "floor": 2, "zone": "lab-sul-1", "room": "Lab 213", "description": "Uma oficina introdutória e prática sobre inteligência artificial aplicada ao desenvolvimento de software. A proposta é apresentar como funcionam os modelos de linguagem e os agentes de IA, discutir seus impactos na programação, suas limitações, riscos e as expectativas criadas pelo mercado. Na parte prática, os participantes terão contato com ferramentas de agentes de programação e irão utilizá-las para desenvolver e modificar um pequeno projeto, passando pelo planejamento, implementação e validação do código.", "requirements": "Conhecimentos básicos de lógica de programação; noções de HTML, CSS e JavaScript; não é necessário ter experiência anterior com IA.", "learn": ["Entender modelos de linguagem e agentes de IA", "Discutir impactos, limitações, riscos e expectativas do mercado", "Conhecer ferramentas de agentes de programação", "Planejar um pequeno projeto", "Implementar, modificar e validar o código com agentes"], "materials": [], "seats": 20, "taken": 0, "demo": true, "roomDemo": true, "scheduleDemo": true, "sourceType": "Oficina", "source": "Conteúdo fornecido por Kellyson Raphael para a apresentação do aplicativo.", "prerequisites": ["Conhecimentos básicos de lógica de programação.", "Noções de HTML, CSS e JavaScript.", "Não é necessário ter experiência anterior com IA."], "requirementsTitle": "Pré-requisitos"});

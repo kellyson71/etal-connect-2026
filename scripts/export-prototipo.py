@@ -33,15 +33,16 @@ def inline_literals(text):
     return re.sub(r'assets/[\w./-]+\.(?:svg|png|jpg|webp)', lambda m: assets.get(m.group(0), m.group(0)), text)
 
 
-css = inline_literals((SRC / 'app.css').read_text())
-html = html.replace('<link rel="stylesheet" href="app.css">', f'<style>\n{css}\n</style>')
+for css_name in ('app.css', 'community.css'):
+    css = inline_literals((SRC / css_name).read_text())
+    html = html.replace(f'<link rel="stylesheet" href="{css_name}">', f'<style>\n{css}\n</style>')
 boot = f'<script>window.ASSET_DATA = {json.dumps(assets)};</script>\n'
 
 
 def inline_script(m):
     name = m.group(1)
     code = (SRC / name).read_text()
-    if name in ('app.js', 'data.js'):
+    if name in ('app.js', 'data.js', 'community.js'):
         code = inline_literals(code)
     return f'<script>/* {name} */\n{code.replace("</script", "<\\/script")}\n</script>'
 

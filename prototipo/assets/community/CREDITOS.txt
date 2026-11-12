@@ -1,0 +1,14 @@
+Imagens de preenchimento; não são registros do ETAL.
+
+Fotografias: Unsplash, https://unsplash.com/license
+encontro.jpg: https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=900&q=80&fit=crop
+equipe.jpg: https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=900&q=80&fit=crop
+projeto.jpg: https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=900&q=80&fit=crop
+ideias.jpg: https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=900&q=80&fit=crop
+
+Avatares ilustrados: Adventurer por Lisa Wischofsky, distribuídos pelo DiceBear (CC BY 4.0).
+https://www.dicebear.com/styles/adventurer/
+https://creativecommons.org/licenses/by/4.0/
+avatar-ana.svg: https://api.dicebear.com/9.x/adventurer/svg?seed=Mika&backgroundColor=dbeafe
+avatar-lucas.svg: https://api.dicebear.com/9.x/adventurer/svg?seed=Felix&backgroundColor=fef3c7
+avatar-julia.svg: https://api.dicebear.com/9.x/adventurer/svg?seed=Luna&backgroundColor=e8def8

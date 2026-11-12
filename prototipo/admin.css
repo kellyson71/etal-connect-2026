@@ -318,3 +318,66 @@ dialog.sheet::backdrop{background:rgba(10,18,40,.45)}
 :root[data-theme="dark"] .kpi .bar,:root[data-theme="dark"] .meter .track{background:#22305a}
 :root[data-theme="dark"] #nav a[aria-current="page"]{background:#2b3d72;color:#fff}
 :root[data-theme="dark"] .pill.wait{background:#22305a;color:var(--ink-2)}
+/* Cadastro e edição de atividade */
+dialog.wide{width:min(640px,94vw);max-height:92vh;overflow:auto}
+.row-acts{display:inline-flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.btn svg{width:15px;height:15px}
+.mats-ed{border:1.5px dashed var(--line);border-radius:14px;padding:12px}
+.mats-h{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.mats-h b{display:flex;align-items:center;gap:6px;font-size:14px}.mats-h b svg{width:16px;height:16px}
+.mats-list{display:flex;flex-direction:column;gap:8px}
+.mats-vazio{margin:0;color:var(--muted);font-size:13px}
+.mat-row{display:grid;grid-template-columns:34px 1fr 1fr auto;gap:8px;align-items:center}
+.mat-row.anexo{grid-template-columns:34px 1fr auto auto}.mat-row.anexo small{font-size:12px;color:var(--muted);white-space:nowrap}
+.mat-row select,.mat-row input{padding:8px 10px;border-radius:10px;border:1.5px solid var(--line);background:#fff;font-size:13.5px;min-width:0}
+.icon-only{padding:6px 8px}
+@media (max-width:600px){.mat-row{grid-template-columns:34px 1fr auto}.mat-row [name=murl],.mat-row .mat-pick{grid-column:2/-1;grid-row:2}}
+:root[data-theme="dark"] .mat-row select,:root[data-theme="dark"] .mat-row input{background:#12204a;border-color:var(--line);color:var(--ink)}
+dialog .row>*{min-width:0}dialog .fld input,dialog .fld select,dialog .fld textarea{width:100%;min-width:0}
+/* Tema escuro: partes que tinham ficado claras (revisão de 12/11/2026) */
+:root[data-theme="dark"] #nav a[aria-current="page"] em{background:#3f64b5;color:#fff}
+:root[data-theme="dark"] .plan{background:#12204a}
+:root[data-theme="dark"] table.rooms tr.grp th{background:#14214a;color:var(--ink-2)}
+:root[data-theme="dark"] .pill.ok,:root[data-theme="dark"] .pill.vis{background:#21401a;color:#a5e07f}
+:root[data-theme="dark"] .pill.ifrn{background:#24365f;color:#c3d6ff}
+:root[data-theme="dark"] .pill.live,:root[data-theme="dark"] .pill.full{background:#4a2320;color:#ffb4a8}
+:root[data-theme="dark"] .tm{background:#14214a}
+:root[data-theme="dark"] .tm-p i{background:#24365f;color:#c3d6ff}
+:root[data-theme="dark"] .tm-p.win{background:#21401a;border-color:#4f9e22;color:#c8ef9d}
+:root[data-theme="dark"] .tm-p.none{background:none;border-color:#33457a;color:var(--muted)}
+:root[data-theme="dark"] .tm-p:hover:not([disabled]){border-color:#5a7cc8}
+:root[data-theme="dark"] .tm-champ{background:#46361a;color:#ffd27a}
+:root[data-theme="dark"] .btn.soft:hover{background:#2b3d72}
+:root[data-theme="dark"] .mat-row select,:root[data-theme="dark"] .mat-row input{background:#12204a}
+:root[data-theme="dark"] .mats-ed{border-color:#33457a}
+/* Planta: toda sala é clicável para editar número e atividades */
+.plan .alvo{fill:transparent;stroke:transparent;stroke-width:2.5;cursor:pointer;transition:fill .15s,stroke .15s}
+.plan .alvo:hover,.plan .alvo:focus-visible{fill:rgba(59,99,184,.10);stroke:#3b63b8;outline:none}
+.plan .alvo.on{fill:rgba(59,99,184,.16);stroke:#3b63b8;stroke-width:3}
+.plan .occ{pointer-events:auto}
+.rp-num{margin-top:12px}
+.rp-num-in{display:flex;gap:6px;align-items:center}
+.rp-num-in .num-in{flex:1;min-width:0;font-size:16px;font-weight:700}
+.rp-num small{font-weight:500;color:var(--muted);font-size:12px}
+.rp-h{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:16px 0 8px}
+.rp-h b{font-size:14px}
+.rp-acts{display:flex;gap:6px;flex-wrap:wrap}
+.rp-vazio{margin:0;color:var(--muted);font-size:13px}
+:root[data-theme="dark"] .plan .alvo:hover,:root[data-theme="dark"] .plan .alvo:focus-visible,:root[data-theme="dark"] .plan .alvo.on{fill:rgba(143,176,238,.14);stroke:#8fb0ee}
+/* Presença chegando: a sala pulsa e sobe um +1 */
+.plan .occ.pulso>rect:not(.onda){animation:salaPulso .6s cubic-bezier(.3,1.4,.5,1)}
+.plan .occ .onda{fill:none;stroke:#4f9e22;stroke-width:4;transform-box:fill-box;transform-origin:center;animation:onda 1.2s ease-out forwards;pointer-events:none}
+.plan .occ .mais1{font:800 16px Geologica,system-ui,sans-serif;fill:#2f6f12;paint-order:stroke;stroke:#fff;stroke-width:4px;animation:mais1 1.6s ease-out forwards;pointer-events:none}
+@keyframes salaPulso{0%{transform:scale(1)}40%{transform:scale(1.05)}100%{transform:scale(1)}}
+.plan .occ.pulso>rect{transform-box:fill-box;transform-origin:center}
+@keyframes onda{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(1.35)}}
+@keyframes mais1{0%{opacity:0;transform:translateY(6px)}20%{opacity:1}100%{opacity:0;transform:translateY(-22px)}}
+
+.mats-bts{display:flex;gap:6px;flex-wrap:wrap}
+.mat-ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:#e8eefb;color:#2c4c96}.mat-ic svg{width:17px;height:17px}
+.mat-ic.k-pdf{background:#fde8e6;color:#b02a24}.mat-ic.k-imagem{background:#e8eefb;color:#2c4c96}.mat-ic.k-zip{background:#fff1d6;color:#8a5200}.mat-ic.k-slides{background:#ffeedd;color:#a5501a}.mat-ic.k-link{background:#e6f3dc;color:#2f6f12}
+.mat-pick{display:flex;align-items:center;gap:6px;padding:8px 10px;border-radius:10px;border:1.5px dashed var(--line);cursor:pointer;font-size:13px;color:var(--s-ifrn);font-weight:600;min-width:0}
+.mat-pick span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mat-pick svg{width:15px;height:15px;flex:none}
+.mat-pick.ok{border-style:solid;border-color:#7cc04a;color:#2f6f12;background:#f2faea}
+:root[data-theme="dark"] .mat-ic{background:#24365f;color:#c3d6ff}:root[data-theme="dark"] .mat-ic.k-pdf{background:#4a2422;color:#ffb4ae}:root[data-theme="dark"] .mat-ic.k-zip,:root[data-theme="dark"] .mat-ic.k-slides{background:#46361a;color:#ffd27a}:root[data-theme="dark"] .mat-ic.k-link{background:#21401a;color:#a5e07f}
+:root[data-theme="dark"] .mat-pick.ok{background:#1c3316;color:#a5e07f}
