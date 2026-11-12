@@ -1670,6 +1670,7 @@
     pessoas: 'M-1-5A3 3 0 1 1-7-5A3 3 0 1 1-1-5M-9 7A5 5 0 0 1 1 7M7-5A3 3 0 1 1 1-5M3 2A5 5 0 0 1 9 7',
     sofa: 'M-9 0V6H9V0M-9 0A2 2 0 0 1-5 0V3H5V0A2 2 0 0 1 9 0M-6 3V-4H6V3M-8 6V8M8 6V8',
   };
+  let previewing = false;
   const USE_ICON = Object.fromEntries(Object.entries(USE_D).map(([k, d]) => [k, new Path2D(d)]));
   const clamp01 = (v) => Math.max(0, Math.min(1, v));
   const GAP_OPEN = 17, GAP_FOCUS = 44;
@@ -1923,7 +1924,7 @@
       const size = z.roomNumber ? Math.min(14, Math.max(9.500, cam.z * 1.15)) : Math.min(14, Math.max(9.500, cam.z * 1.05));
       ctx.font = `${z.roomNumber ? 700 : 600} ${size}px Geologica, Onest, system-ui, sans-serif`;
       const w = ctx.measureText(text).width;
-      const useIcon = z.icon && USE_ICON[z.icon] && cam.z > 1.6;
+      const useIcon = !previewing && z.icon && USE_ICON[z.icon] && cam.z > 1.6; // a miniatura das telas fica só com os números
       const ih = useIcon ? size + 2 : 0;
       const bx = s[0] - w / 2, by = s[1] - size / 2 - ih;
       if (boxes.some((o) => bx < o[0] + o[2] + 1 && bx + w + 1 > o[0] && by < o[1] + o[3] && by + size + ih > o[1])) return;
@@ -2507,7 +2508,7 @@
         Object.assign(cam, view(b.p.flatMap((q) => [[q[0] + pad, q[1] + pad], [q[0] - pad, q[1] - pad]]), 0.5, 6, 6, 0.64), { hv: 1 });
       }
       syncAngle(); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      paintWorld(pal());
+      previewing = true; try { paintWorld(pal()); } finally { previewing = false; }
       W = saved.W; H = saved.H; dpr = saved.dpr; insetT = saved.insetT; insetB = saved.insetB; ctx = saved.ctx; room = saved.room; floorRoute = saved.floorRoute; selected = saved.selected;
       flat = saved.flat; mode = saved.mode; Q = saved.Q; grown = saved.grown; labelHits = saved.labelHits; levelHits = saved.levelHits;
       Object.assign(sv, saved.sv); Object.assign(cam, saved.cam); syncAngle();
