@@ -2,6 +2,10 @@
 
 O projeto segue o git flow: `main` tem só versões publicadas, `develop` junta as funcionalidades e cada uma nasce num ramo `feature/*`.
 
+## 0.9.2 (2026-11-12)
+
+- Painel: espaço abaixo da busca; avisos, painel da sala e campos acompanham o tema escuro.
+
 ## 0.9.1 (2026-11-12)
 
 - Painel da organização no computador também no celular: abas embaixo, tabelas em cartões, tema escuro e menos texto; sem a planta de 2012.
