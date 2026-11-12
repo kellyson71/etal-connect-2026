@@ -9,7 +9,6 @@ import { criarPalco } from './palco.js';
 import { daCamera } from './camera.js';
 import { criarViagem } from './viagem.js';
 import { criarAbertura } from './abertura.js';
-import { criarPasseio } from './passeio.js';
 import { construirTerreno } from './terreno.js';
 import { construirPredios } from './predios.js';
 import { construirPrincipal, materiaisPrincipal } from './principal.js';
@@ -31,7 +30,7 @@ setAniso(Math.min(8, renderer.capabilities.getMaxAnisotropy()));
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(38, 1, 2, 4000);
 const controls = new MapControls(camera, canvas);
-controls.enableDamping = true; controls.dampingFactor = 0.12; controls.maxPolarAngle = 1.45; controls.minDistance = 6; controls.maxDistance = 1100; controls.zoomToCursor = true;
+controls.enableDamping = true; controls.dampingFactor = 0.12; controls.maxPolarAngle = 1.45; controls.minDistance = 6; controls.maxDistance = 900; controls.zoomToCursor = true;
 
 /* luz */
 const ceu = new THREE.HemisphereLight(0xdfeeff, 0x9a8f78, 1.05); scene.add(ceu);
@@ -63,7 +62,8 @@ function hora(h) {
 }
 
 /* Carregamento: a cena é montada em etapas, com uma pausa entre elas para a barra andar na tela. */
-const etapa = (texto, parte) => { const t = $('#carga-tx'), b = $('#carga-barra'); if (t) t.textContent = texto; if (b) b.style.width = Math.round(parte * 100) + '%'; return new Promise((ok) => setTimeout(ok, 40)); };
+const CARGA = (window.MAPA3D_CARGA = []);
+const etapa = (texto, parte) => { CARGA.push([texto, Math.round(performance.now())]); const t = $('#carga-tx'), b = $('#carga-barra'); if (t) t.textContent = texto; if (b) b.style.width = Math.round(parte * 100) + '%'; return new Promise((ok) => setTimeout(ok, 40)); };
 await etapa('Preparando as texturas…', 0.12);
 const T = criarTexturas(); const M = criarMateriais(T); materiaisPrincipal(M, T);
 let pedido = false, quadros = 0, soma = 0, anterior = 0;
@@ -90,8 +90,26 @@ estilo.destacar(det.grupo.getObjectByName('patio'), 'patio');
 /* o resto do campus pode perder a cor e desbotar */
 Object.values(M).forEach((m) => { if (m !== M.poca) desaturavel(m); });
 await etapa('Plantando as árvores…', 0.8);
-const veg = construirVegetacao(M, { vasos: principal.vasos, flores: det.flores, pronto: () => { renderer.shadowMap.needsUpdate = true; pedir(); } }); scene.add(veg);
-const entorno = construirEntorno(M, () => pedir()); scene.add(entorno);
+const veg = construirVegetacao(M, { vasos: principal.vasos, vasosDentro: principal.vasosDentro, flores: det.flores, pronto: () => { renderer.shadowMap.needsUpdate = true; pedir(); } }); scene.add(veg);
+/* O entorno (bairro, caatinga, serras) e o recheio do bloco (móveis, portas, cartazes) não entram no modo Evento,
+   que é só o campus: são montados quando alguém abre o modo Campus ou o passeio (ou com o mapa já parado, sem pressa). */
+const entorno = new THREE.Group(); entorno.name = 'entorno'; entorno.visible = false; scene.add(entorno);
+let campusPronto = false, campusCarregando = null;
+function montarCampus() {
+  if (campusPronto) return; campusPronto = true;
+  entorno.add(construirEntorno(M, () => pedir()));
+  const novos = principal.detalhar(); novos.forEach((g) => estilo.destacar(g, 'verde', { clonar: false, isolado: true }));
+  [entorno, ...novos].forEach((g) => g.traverse((o) => { if (o.isMesh && !o.isInstancedMesh && o.matrixAutoUpdate === false) o.updateMatrix(); }));
+  quadro.sobre = undefined; // a próxima passada acerta a camada do recheio
+}
+/* Compila só o que aparece. O bloco fica de fora: com planos de corte, o compile do three monta o programa errado (ele
+   compila no primeiro quadro). */
+const visiveis = (raiz) => ({ traverse: (f) => raiz.traverseVisible((o) => { if (!o.material?.clippingPlanes?.length) f(o); }), traverseVisible: () => {} });
+/* compila os programas novos fora do quadro (em paralelo, onde a placa deixa) antes de mostrar */
+async function prepararCampus() {
+  return (campusCarregando ??= (async () => { montarCampus(); const sv = verCampus.on; verCampus(true, true); try { await renderer.compileAsync(visiveis(scene), camera, scene); } catch {} verCampus(sv, true); })());
+}
+function verCampus(on, quieto = false) { if (!quieto) verCampus.on = on; entorno.visible = on && campusPronto; principal.verDetalhes(on); veg.getObjectByName('vasos-dentro').visible = on && campusPronto; renderer.shadowMap.needsUpdate = true; pedir(); }
 await etapa('Arrumando o entorno…', 0.9);
 const interior = criarInterior(); scene.add(interior.grupo); interior.grupo.traverse((o) => o.layers.set(1));
 ceu.layers.enable(1); sol.layers.enable(1);
@@ -106,12 +124,28 @@ const VISTAS = {
 };
 function irPara(v) { camera.position.set(...v.p); controls.target.set(...v.t); controls.update(); pedir(); }
 try { const s = JSON.parse(sessionStorage.getItem('mapa3d-cam')); if (s && !new URLSearchParams(location.search).has('aba')) irPara(s); else irPara(VISTAS.evento); } catch { irPara(VISTAS.evento); }
-controls.addEventListener('change', () => { pedir(); clearTimeout(irPara.t); irPara.t = setTimeout(() => sessionStorage.setItem('mapa3d-cam', JSON.stringify({ p: camera.position.toArray(), t: controls.target.toArray() })), 300); });
+/* arrastando o mapa, o alvo da câmera não sai da região do campus e da rodovia (antes dava para se perder no vazio) */
+const LIMITE = new THREE.Box3(new THREE.Vector3(-230, -5, -250), new THREE.Vector3(130, 40, 170)); const _alvo = new THREE.Vector3();
+controls.addEventListener('change', () => { if (!LIMITE.containsPoint(controls.target)) { _alvo.copy(controls.target).clamp(LIMITE.min, LIMITE.max).sub(controls.target); controls.target.add(_alvo); camera.position.add(_alvo); } pedir(); clearTimeout(irPara.t); irPara.t = setTimeout(() => sessionStorage.setItem('mapa3d-cam', JSON.stringify({ p: camera.position.toArray(), t: controls.target.toArray() })), 300); });
 
 const palco = criarPalco({ principal, interior, estilo, camera, controls, pedir });
 /* computador (mouse, sem toque) abrindo o mapa direto: entra já no passeio, com o mouse na câmera */
 const noPC = matchMedia('(pointer: fine)').matches && !matchMedia('(any-pointer: coarse)').matches;
-const passeio = criarPasseio({ scene, camera, controls, renderer, chao: terreno, pedir, partes: [gPredios, det.grupo, veg, entorno], principal, setCorte: (h) => palco.set({ corte: h }), desktop: noPC, cones: det.cones, hora });
+/* Passeio: é um segredo (easter egg). O módulo dele (personagem, carros, física) só é baixado quando alguém o acha. */
+let passeioReal = null, fotoPasseio = null;
+const passeio = {
+  tick: (now) => passeioReal?.tick(now) ?? false, ativo: () => passeioReal?.ativo() ?? false, desligar: () => passeioReal?.desligar(), estado: () => passeioReal?.estado(),
+  setFoto: (uri, nome) => { fotoPasseio = [uri, nome]; passeioReal?.setFoto(uri, nome); },
+  async ligar(op) {
+    if (!passeioReal) {
+      await prepararCampus(); verCampus(true);
+      const { criarPasseio } = await import('./passeio.js');
+      passeioReal ??= criarPasseio({ scene, camera, controls, renderer, chao: terreno, pedir, partes: [gPredios, det.grupo, veg, entorno], principal, setCorte: (h) => palco.set({ corte: h }), desktop: noPC, cones: det.cones, hora });
+      if (fotoPasseio) passeioReal.setFoto(...fotoPasseio); window.MAPA3D.passeioReal = passeioReal;
+    }
+    return passeioReal.ligar(op);
+  },
+};
 const viagem = criarViagem({ scene, camera, controls, interior, palco, pedir, ficha: $('#ficha'), passos: $('#passos') });
 
 /* desenha só quando algo muda */
@@ -141,19 +175,28 @@ addEventListener('resize', tamanho); tamanho();
 const hr = $('#hora'); hr.addEventListener('input', () => { const h = +hr.value; sessionStorage.setItem('mapa3d-hora', hr.value); $('#horaTxt').textContent = String(Math.floor(h)).padStart(2, '0') + 'h' + (h % 1 ? '30' : '00'); hora(h); });
 hr.value = sessionStorage.getItem('mapa3d-hora') || 15; hr.dispatchEvent(new Event('input'));
 requestAnimationFrame(() => { const i = renderer.info; $('#info').textContent = `${tris(scene).toLocaleString('pt-BR')} triângulos · ${i.render.calls} chamadas · montado em ${tMontagem} ms`; });
-window.MAPA3D = { passeio, viagem, palco, interior, estilo, principal, scene, camera, controls, renderer, irPara, VISTAS, hora, M, T };
-interfaceMapa = iniciarInterface({ scene, camera, controls, renderer, principal, interior, palco, estilo, viagem, passeio, veg, entorno, sol, pedir, hora, irPara, VISTAS });
+window.MAPA3D = { passeio, prepararCampus, verCampus, viagem, palco, interior, estilo, principal, scene, camera, controls, renderer, irPara, VISTAS, hora, M, T };
+interfaceMapa = iniciarInterface({ scene, camera, controls, renderer, principal, interior, palco, estilo, viagem, passeio, veg, entorno, sol, pedir, hora, irPara, VISTAS, prepararCampus, verCampus, predios: gPredios, detalhes: det.grupo });
 window.MAPA3D.interface = interfaceMapa;
 /* abertura: o bloco principal (verde e azul), a cantina, o pátio e o obelisco sobem do chão com a cor do evento */
 abertura = criarAbertura({ camera, controls, renderer, pedir, fim: () => interfaceMapa.poseEvento(), ocupado: () => viagem.ativa(), aoTerminar: () => estilo.setMode(estilo.mode()),
   partes: [{ grupo: principal.grupo, cores: ['verde', 'azul'] }, { grupo: gPredios.getObjectByName('cantina'), cores: ['laranja'] }, { grupo: det.grupo.getObjectByName('patio'), cores: ['patio'] }, { grupo: det.grupo.getObjectByName('obelisco'), cores: [] }] });
 window.MAPA3D.abertura = abertura;
 const q0 = new URLSearchParams(location.search);
-/* passeio=1 força o passeio (o app usa no computador, com o mapa em tela grande ao lado) */
-if (q0.get('passeio') === '1' || (noPC && parent === window && q0.get('passeio') !== '0' && !q0.has('sala') && !q0.has('intro'))) { palco.parar(); interfaceMapa.api.setMode('passear'); }
+/* o passeio é segredo: ?passeio=1 ainda abre direto nele (para testar) */
+if (q0.get('passeio') === '1') { palco.parar(); interfaceMapa.api.setMode('passear'); }
 else { palco.parar(); abertura.rodar(); }
-pronta = true;
-/* o primeiro quadro é o mais demorado (a placa compila tudo): ele é desenhado ainda debaixo da tela de carregamento */
-await etapa('Preparando a imagem…', 0.96); quadro(performance.now());
+/* O primeiro quadro era o mais demorado: a placa compilava todos os programas de uma vez, travando a página. Agora eles
+   são compilados antes, em paralelo onde o navegador deixa (KHR_parallel_shader_compile), e as texturas sobem para a
+   placa uma a uma, com a barra andando. */
+await etapa('Preparando a imagem…', 0.93);
+/* só o que aparece: o recheio, a maquete escondida e o entorno do modo Campus ficam para quando forem pedidos */
+const soVisivel = visiveis(scene);
+try { await renderer.compileAsync(soVisivel, camera, scene); } catch { /* o primeiro quadro compila o que faltar */ }
+CARGA.push(['compilado', Math.round(performance.now())]);
+{ const tex = new Set(); scene.traverseVisible((o) => { const ms = !o.material ? [] : Array.isArray(o.material) ? o.material : [o.material]; ms.forEach((m) => ['map', 'normalMap', 'alphaMap', 'emissiveMap'].forEach((k) => m[k] && tex.add(m[k]))); });
+  let i = 0, t1 = performance.now(); for (const t of tex) { renderer.initTexture(t); if (performance.now() - t1 > 40) { await etapa('Preparando a imagem…', 0.93 + 0.05 * (++i / tex.size)); t1 = performance.now(); } } }
+CARGA.push(['texturas', Math.round(performance.now())]);
+pronta = true; quadro(performance.now());
 window.MAPA3D.ready = true;
 await etapa('Pronto', 1); pedir(); setTimeout(() => { const c = $('#carga'); if (c) { c.classList.add('fim'); setTimeout(() => c.remove(), 700); } }, 180);
