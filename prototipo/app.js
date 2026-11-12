@@ -87,13 +87,28 @@
   };
   const goOf = (x) => (x.tournament ? `data-go="tournament" data-id="${x.tournament}"` : `data-go="activity" data-id="${x.id}"`);
   const mapAct = (x) => (x.place ? `data-act="openplace" data-id="${x.place}"` : `data-act="openmap" data-floor="${x.floor}" data-zone="${x.zone}"`);
+  /* Tipos de atividade: cada um tem cor (classe tp-*), ícone, card próprio na agenda e um bloco próprio no detalhe.
+     g é o filtro da agenda (oficina anda junto com minicurso: as duas são mão na massa). Tipos novos entram aqui;
+     o que não estiver na lista vira uma parada simples (credenciamento, intervalo, abertura…). */
+  const TIPOS = {
+    Palestra: { k: 'pal', g: 'pal', icon: 'mic', plural: 'Palestras', formato: 'Uma pessoa fala; perguntas no fim' },
+    'Mesa-redonda': { k: 'mesa', g: 'mesa', icon: 'chat', plural: 'Mesas', formato: 'Conversa entre convidados; a plateia pergunta' },
+    Minicurso: { k: 'mini', g: 'mini', icon: 'laptop', plural: 'Minicursos', formato: 'Aula prática, no computador' },
+    Oficina: { k: 'ofi', g: 'mini', icon: 'laptop', plural: 'Oficinas', formato: 'Mão na massa, em grupo' },
+    Campeonato: { k: 'camp', g: 'camp', icon: 'trophy', plural: 'Campeonatos', formato: 'Chave eliminatória' },
+  };
+  const TIPOS_G = new Set(['pal', 'mesa', 'mini', 'camp']);
+  const tipoDe = (x) => TIPOS[x.type] || { k: 'out', g: 'out', icon: 'cal', formato: '' };
+  const duracao = (x) => { if (!x.end) return ''; const [a, b] = [x.time, x.end].map((t) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; }); const d = b - a; return d >= 60 ? `${Math.floor(d / 60)}h${d % 60 ? String(d % 60).padStart(2, '0') : ''}` : `${d} min`; };
+  const pessoasDe = (x) => [{ name: x.speakerShort, initials: x.initials, role: x.role }, ...(x.guests || [])].filter((p) => p.name);
+  const leva = (x) => /notebook|computador/i.test(x.requirements || '');
   const whereOf = (x) => (x.floor === undefined ? x.room : `${x.room} · ${floorOf(x.floor).label}`);
   const isNow = (x) => x.day === D.now.day && x.time <= D.now.time && D.now.time < x.end;
   /* Mapa novo: a rota sai da sala da atividade em que a pessoa está inscrita acontecendo agora; sem ela, da portaria. */
   const origemAgora = () => { const x = D.sessions.find((q) => S.saved.has(q.id) && isNow(q) && Number.isInteger(q.floor) && q.zone); return x ? { floor: x.floor, zone: x.zone, titulo: x.room || x.short || x.title } : null; };
   const speakersList = () => { const seen = new Set(); return D.sessions.filter((x) => x.speakerShort && !seen.has(x.speakerShort) && seen.add(x.speakerShort)); };
   const hoursOf = (s) => { const [a, b] = [s.time, s.end].map((t) => { const [h, m] = t.split(':').map(Number); return h + m / 60; }); return b - a; };
-  const seatLine = (s) => (!s.seats ? '' : s.taken >= s.seats ? 'Vagas esgotadas' : `${s.seats - s.taken} vagas de ${s.seats}`);
+  const seatLine = (s) => (!s.seats ? '' : s.taken >= s.seats ? 'Vagas esgotadas' : `${s.seats - s.taken} ${s.seats - s.taken === 1 ? 'vaga' : 'vagas'} de ${s.seats}`);
   const seatBar = (s) => !s.seats ? '' : `<span class="seats ${s.taken >= s.seats ? 'full' : ''}"><i style="width:${Math.round((s.taken / s.seats) * 100)}%"></i></span>`;
   /* Ilustrações dos estados vazios: colmeia em traço fino, sempre com o motivo da tela. */
   /* Favo sendo preenchido: a célula do meio traz o motivo da tela, e as outras acendem em sequência. */
@@ -437,7 +452,7 @@
       el.style.transform = `translate3d(0,${H}px,0)`; app.style.transform = 'none'; app.style.filter = 'none';
       P.kick(0, 420, 0.9);
       buzz([10, 30, 18]);
-      setTimeout(() => { el.remove(); app.style.transition = app.style.transform = app.style.filter = ''; app.classList.remove('lx-under'); }, dur + 40);
+      setTimeout(() => { el.remove(); app.style.transition = app.style.transform = app.style.filter = ''; app.classList.remove('lx-under'); qrPendente(); }, dur + 40);
       if (prof.source === 'visitante') setTimeout(() => notify(`Boas-vindas, ${prof.first}!`, 'Sua conta de visitante está pronta. Mostre o QR do crachá na recepção.'), dur + 350);
     };
 
@@ -619,18 +634,34 @@
   Screens.agenda = () => {
     const day = S.agendaDay, f = S.agendaFilter;
     let list = D.sessions.filter((s) => s.day === day);
-    if (['Minicurso', 'Palestra', 'Oficina'].includes(f)) list = list.filter((s) => s.type === f);
+    if (['pal', 'mesa', 'mini', 'camp'].includes(f)) list = list.filter((s) => tipoDe(s).g === f);
     if (f === 'saved') list = list.filter((s) => S.saved.has(s.id));
     const slots = [...new Set(list.map((s) => s.time))];
     const idx = D.days.findIndex((d) => d.day === day);
-    const filters = [['all', 'Tudo'], ['saved', 'Minhas'], ['Minicurso', 'Minicursos'], ['Palestra', 'Palestras'], ['Oficina', 'Oficinas']];
+    const filters = [['all', 'Tudo'], ['saved', 'Minhas'], ['pal', 'Palestras'], ['mesa', 'Mesas'], ['mini', 'Minicursos'], ['camp', 'Campeonatos']].filter(([k]) => !TIPOS_G.has(k) || D.sessions.some((x) => tipoDe(x).g === k));
 /* Cada tipo tem a sua cor (a mesma do filtro) e a fileira é curta: tipo e até que horas, título, quem e onde, vagas. */
-    const tp = (t) => ({ Minicurso: 'mini', Palestra: 'pal', Oficina: 'ofi' })[t] || 'out';
-    const vagas = (s) => (!s.seats ? '' : s.taken >= s.seats ? '<span class="ag-vagas full">Lotado</span>' : `<span class="ag-vagas ${s.seats - s.taken <= 5 ? 'low' : ''}">${s.seats - s.taken} vagas</span>`);
-    const row = (s) => s.simple
-      ? `<li class="ag-stop" ${goOf(s)}><div class="ag-tx"><h4>${s.title}</h4><p>${s.room}</p></div>${ic('chev', 'i card-chev')}</li>`
-      : `<li class="tp-${tp(s.type)} ${S.saved.has(s.id) ? 'mine' : ''} ${isNow(s) ? 'now' : ''}" ${goOf(s)}><div class="ag-tx"><span class="ag-kind"><i></i>${s.type}${s.end ? ` · até ${s.end}` : ''}</span><h4>${s.title}</h4><p>${s.speakerShort} · ${s.room}</p></div>
-          <div class="ag-side"><button class="bm ${S.saved.has(s.id) ? 'on' : ''}" data-act="save" data-id="${s.id}" aria-label="${S.saved.has(s.id) ? 'Remover dos salvos' : 'Salvar'}">${ic('bookmark')}</button>${vagas(s)}</div></li>`;
+    const tp = (k) => (TIPOS_G.has(k) ? k : 'out');
+    const vagas = (s) => (!s.seats ? '' : s.taken >= s.seats ? '<span class="ag-vagas full">Lotado</span>' : `<span class="ag-vagas ${s.seats - s.taken <= 5 ? 'low' : ''}">${s.seats - s.taken} ${s.seats - s.taken === 1 ? 'vaga' : 'vagas'}</span>`);
+    /* Card no padrão dos apps de evento (Whova, Sched, Google I/O): título forte, uma linha só com quem e onde, o
+       marcador à direita. O tipo aparece no hexágono colorido (as cores são as dos hexágonos do logo do ETAL), não em
+       texto; a legenda das cores são os filtros logo acima. Vagas só aparecem quando acabando ou esgotadas. */
+    const bm = (s) => `<button class="bm ${S.saved.has(s.id) ? 'on' : ''}" data-act="save" data-id="${s.id}" aria-label="${S.saved.has(s.id) ? 'Remover dos salvos' : 'Salvar'}">${ic('bookmark')}</button>`;
+    const hexa = (s) => `<span class="ses-hex" role="img" aria-label="${s.type}"><svg viewBox="-20 -20 40 40" aria-hidden="true"><path d="M0-18.5 16-9.25v18.5L0 18.5-16 9.25v-18.5Z"/></svg>${ic(tipoDe(s).icon)}</span>`;
+    const selo = (s) => { /* "agora" já aparece na linha do tempo */ if (!s.seats) return ''; const n = s.seats - s.taken; return n <= 0 ? '<span class="ses-selo cheio">Esgotado</span>' : n <= 5 ? `<span class="ses-selo pouca">${n === 1 ? 'Última vaga' : `Últimas ${n}`}</span>` : ''; };
+    const rosto = (s) => { const ps = pessoasDe(s); return ps.length > 1 ? `<span class="ses-rostos">${ps.slice(0, 3).map((p) => spAv(p)).join('')}</span>` : spAv(s); };
+    const card = (s, quem) => `<li class="ses tp-${tipoDe(s).k} ${S.saved.has(s.id) ? 'mine' : ''}" ${goOf(s)}>${hexa(s)}<div class="ses-tx"><h4>${s.title}</h4><p class="ses-meta">${rosto(s)}${quem ? `<span class="ses-quem">${quem}</span>` : ''}<span class="ses-onde">${s.room}</span></p>${selo(s)}</div>${bm(s)}</li>`;
+    /* selo curto do campeonato: só o que importa para decidir (vagas, ao vivo, fim) */
+    const chipCurto = (stt) => { const [k, l] = window.TOUR.status(stt); const curto = (l.match(/\d+ vagas?/) || [l.split(' · ')[0]])[0]; return `<span class="t-chip ${k}">${k === 'live' ? '<i></i>' : ''}${curto}</span>`; };
+    const CARDS = {
+      pal: (s) => card(s, s.speakerShort),
+      mesa: (s) => card(s, ''), // os rostos já dizem quem conversa
+      mini: (s) => card(s, s.speakerShort),
+      /* campeonato: a arte do jogo (o banner do FIFA, a do Mortal Kombat) é o card */
+      camp: (s) => { const t = D.tournaments.find((x) => x.id === s.tournament); if (!t) return CARDS.out(s); const stt = tourSt(t); const me = tourMine(stt) >= 0;
+        return `<li class="ses-camp ${t.theme}" ${goOf(s)}>${gameArt(t)}<span class="ses-camp-tx">${titleOf(t)}<small>${s.room} · ${t.format}</small></span><span class="ses-camp-chip">${me ? `<span class="t-chip me">${ic('check')}Na chave</span>` : chipCurto(stt)}</span></li>`; },
+      out: (s) => `<li class="ses-pausa" ${goOf(s)}><span>${s.title}</span><small>${s.room}</small></li>`,
+    };
+    const row = (s) => (CARDS[tipoDe(s).g] || CARDS.out)(s);
     const agora = list.filter(isNow).length; const meus = D.sessions.filter((x) => x.day === day && S.saved.has(x.id)).length;
     const dia = dayOf(day);
     return {
@@ -638,7 +669,7 @@
       <div class="pad stack agenda">
         <div class="days st" style="--i:0;--k:${idx}"><i class="days-ind"></i>${D.days.map((d) => `<button class="${d.day === day ? 'on' : ''}" data-act="day" data-day="${d.day}">${d.week}<b>${d.day}</b></button>`).join('')}</div>
         <p class="ag-resumo st" ${st(1)}><b>${dia.long ? dia.long.split(',')[0] : dia.week}</b><span>${list.length} ${list.length === 1 ? 'atividade' : 'atividades'}${agora ? ` · <em>${agora} agora</em>` : ''}${meus ? ` · ${meus} ${meus === 1 ? 'sua' : 'suas'}` : ''}</span></p>
-        <div class="chips ag-chips st" ${st(1)}>${filters.map(([k, t]) => `<button class="${k === f ? 'on' : ''} f-${tp(k)}" data-act="filter" data-f="${k}">${['Minicurso', 'Palestra', 'Oficina'].includes(k) ? '<i></i>' : ''}${k === 'saved' ? ic('bookmark') : ''}${t}</button>`).join('')}</div>
+        <div class="chips ag-chips st" ${st(1)}>${filters.map(([k, t]) => `<button class="${k === f ? 'on' : ''} f-${tp(k)}" data-act="filter" data-f="${k}">${TIPOS_G.has(k) ? '<i></i>' : ''}${k === 'saved' ? ic('bookmark') : ''}${t}</button>`).join('')}</div>
         <div class="agenda-list ag-trilho" data-swap>
         ${slots.length ? slots.map((t, si) => { const noSlot = list.filter((s) => s.time === t); const vivo = noSlot.some(isNow); return `<div class="slot st ${vivo ? 'now' : ''}" ${st(2 + si)}><time>${t}${vivo ? '<em>agora</em>' : ''}</time><div>${noSlot.filter((s) => S.saved.has(s.id)).length > 1 ? `<p class="clash">${ic('info')}Você salvou mais de uma atividade neste horário.</p>` : ''}<ul class="ag">${noSlot.map(row).join('')}</ul></div></div>`; }).join('')
           : f === 'saved' ? savedEmpty(day) : `<div class="empty st" ${st(2)}>${illo('mark')}<h3>Nada neste dia</h3><p>Escolha outro filtro para ver mais atividades.</p><button class="btn soft" data-act="filter" data-f="all">Ver tudo</button></div>`}
@@ -715,16 +746,26 @@
         </div>`,
       };
     }
+    /* bloco de cada tipo: palestra destaca quem fala; mesa mostra a roda de conversa; minicurso e oficina, o que se faz e o que levar */
+    const t = tipoDe(s);
+    const quem = t.g === 'mesa'
+      ? `<section class="roda st" ${st(2)}><h2 class="h">Quem conversa</h2><ul>${pessoasDe(s).map((p, i) => `<li>${spAv(p)}<span><b>${p.name}</b><small>${i === 0 ? 'Mediação' : p.role}</small></span></li>`).join('')}</ul></section>`
+      : `<button class="teacher ${t.g === 'pal' ? 'quem-fala' : ''} st" ${st(2)} data-go="speaker" data-id="${id}">${spAv(s, t.g === 'pal')}<span>${t.g === 'pal' ? '<small>Quem fala</small>' : ''}<b>${s.speakerShort}</b><small>${s.role}</small></span>${ic('chev', 'i card-chev')}</button>`;
+    const perguntas = `<section class="block st" ${st(6)}><div class="sec"><h2>Perguntas</h2><button data-act="ask" data-id="${id}">Perguntar</button></div>${questionsOf(id)}</section>`;
+    const extra = t.g === 'mini'
+      ? `${s.learn?.length ? `<section class="block pratica st" ${st(6)}><h2 class="h">O que você vai fazer</h2><ul class="learn">${s.learn.map((l) => `<li>${ic('check')}<span>${l}</span></li>`).join('')}</ul></section>` : ''}${s.requirements ? `<div class="levar st" ${st(6)}>${ic('laptop')}<span><b>Leve para a sala</b><small>${s.requirements}</small></span></div>` : ''}`
+      : t.g === 'pal' || t.g === 'mesa' ? perguntas : '';
     return {
       mount: mountThumb(s),
       html: `${header('', { right: `<button class="iconbtn bm ${S.saved.has(id) ? 'on' : ''}" data-act="save" data-id="${id}" aria-label="Salvar">${ic('bookmark')}</button>` })}
       <div class="pad stack detail">
-        <span class="kind st" ${st(0)}>${s.type}</span>
+        <span class="kind kind-tp tp-${t.k} st" ${st(0)}>${ic(t.icon)}${s.type}${duracao(s) ? ` · ${duracao(s)}` : ''}</span>
         <h1 class="title-lg st" ${st(1)}>${s.title}</h1>
-        <button class="teacher st" ${st(2)} data-go="speaker" data-id="${id}">${spAv(s)}<span><b>${s.speakerShort}</b><small>${s.role}</small></span>${ic('chev', 'i card-chev')}</button>
-        <ul class="info st" ${st(3)}><li>${ic('cal')}${d.long} · ${s.time} às ${s.end}</li><li>${ic('pin')}${whereOf(s)}</li><li>${ic('users')}<span>${seatLine(s)}</span>${seatBar(s)}</li></ul>
+        ${quem}
+        <ul class="info st" ${st(3)}><li>${ic('cal')}${d.long} · ${s.time} às ${s.end}</li><li>${ic('pin')}${whereOf(s)}</li>${t.formato ? `<li>${ic(t.icon)}${t.formato}</li>` : ''}<li>${ic('users')}<span>${seatLine(s)}</span>${seatBar(s)}</li></ul>
         ${thumb(s, 4)}
         <p class="desc st" ${st(5)}>${s.description}</p>
+        ${extra}
         <button class="remindrow st ${S.reminders.has(id) ? 'on' : ''}" ${st(6)} data-act="remind" data-id="${id}" aria-pressed="${S.reminders.has(id)}">${ic('alarm')}<span>${S.reminders.has(id) ? `Lembrete às ${hhmm(toMin(s.time) - LEAD)}` : `Lembrar ${LEAD} minutos antes`}<small>${S.reminders.has(id) ? `Com sala e tempo a pé${notifState() === 'granted' ? '' : ', dentro do app'}` : 'Aviso com a sala e o caminho'}</small></span><i class="switch"></i></button>
         ${S.reminders.has(id) ? `<button class="remindtest st" ${st(6)} data-act="remindtest" data-id="${id}">${ic('bell')}Ver como o lembrete chega</button>` : ''}
         <div class="locked st" ${st(7)}>${ic('lock')}<span>${s.materials.length} materiais ficam disponíveis quando você registrar presença na sala.</span></div>
@@ -774,8 +815,8 @@
      (index.html da raiz) e a qualidade "2D" usam sempre o clássico. */
   const mapaEscolhido = () => { const q = new URLSearchParams(location.search).get('mapa'); return q === 'novo' || q === 'classico' ? q : UI.mapa || 'novo'; };
   const mapaNovoOn = () => !window.ASSET_DATA && mapaEscolhido() === 'novo' && window.Campus3D?.quality?.().setting !== 'simples';
-  /* ---- computador: sem moldura de celular. O app fica numa coluna à esquerda e o mapa ocupa o resto da tela, já no
-     passeio (mouse e teclado). "Ver como celular" volta para a moldura; a escolha fica em etal-moldura. ---- */
+  /* ---- computador: sem moldura de celular. O app fica numa coluna à esquerda e o mapa ocupa o resto da tela, no modo
+     Evento (o passeio virou segredo do mapa). "Ver como celular" volta para a moldura; a escolha fica em etal-moldura. ---- */
   const wideMq = matchMedia('(min-width: 1000px) and (pointer: fine)');
   let palcoFrame = null, palcoPronto = false, palcoFila = null;
   const dadosMapa = (extra = {}) => ({ type: 'etal:mapa:abrir', ...extra, origem: origemAgora(), foto: D.person.photo || null, nome: D.person.name || '', hour: skyHour, reduced: reduce, sessions: D.sessions.map((x) => ({ id: x.id, title: x.title, time: x.time, floor: x.floor, zone: x.zone })), rooms: Object.fromEntries(P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => [`${f.level}:${z.id}`, z.roomNumber]))) });
@@ -788,7 +829,7 @@
     const host = $('#palco'), bt = $('#moldura-btn');
     if (bt) { bt.hidden = !wideMq.matches; bt.textContent = on ? 'Ver como celular' : 'Usar a tela toda'; bt.onclick = () => { localStorage.setItem('etal-moldura', on ? '1' : '0'); location.reload(); }; }
     if (!host) return;
-    if (on && !palcoFrame) { palcoFrame = document.createElement('iframe'); palcoFrame.title = 'Mapa do campus em tela grande'; palcoFrame.allow = 'fullscreen'; palcoFrame.src = 'mapa3d/index.html?aba=1&passeio=1'; host.append(palcoFrame); host.hidden = false; }
+    if (on && !palcoFrame) { palcoFrame = document.createElement('iframe'); palcoFrame.title = 'Mapa do campus em tela grande'; palcoFrame.allow = 'fullscreen'; palcoFrame.src = 'mapa3d/index.html?aba=1'; host.append(palcoFrame); host.hidden = false; }
     if (!on && palcoFrame) { palcoFrame.remove(); palcoFrame = null; palcoPronto = false; host.hidden = true; }
   }
   /* o mapa avisa quando entra e sai do passeio: no celular ele fica com a tela toda */
@@ -801,8 +842,8 @@
   const telaMapaAoLado = () => ({
     html: `${header('Mapa')}<div class="pad stack lado-mapa">
       <p class="lado-tx st" ${st(0)}>O mapa está aberto ao lado, em tela grande. Escolha como quer ver:</p>
-      <button class="lado-op st" ${st(1)} data-act="palco" data-mode="passear">${ic('pin')}<span><b>Passear pelo campus</b><small>Ande com o mouse e o teclado, entre no bloco, dirija e voe</small></span>${ic('chev')}</button>
-      <button class="lado-op st" ${st(2)} data-act="palco" data-mode="evento">${ic('map')}<span><b>Ver o evento e buscar salas</b><small>Busca, rotas e as partes do evento em cores</small></span>${ic('chev')}</button>
+      <button class="lado-op st" ${st(1)} data-act="palco" data-mode="evento">${ic('map')}<span><b>Ver o evento e buscar salas</b><small>Busca, rotas e as partes do evento em cores</small></span>${ic('chev')}</button>
+      <button class="lado-op st" ${st(2)} data-act="palco" data-mode="campus">${ic('pin')}<span><b>Campus inteiro</b><small>Todos os prédios, o bairro e o bloco por dentro</small></span>${ic('chev')}</button>
       <button class="lado-op st" ${st(3)} data-act="palco" data-mode="andares">${ic('building')}<span><b>Andares do bloco principal</b><small>O prédio aberto, andar por andar</small></span>${ic('chev')}</button>
       <div class="sec st" ${st(4)}><h2>Como chegar</h2></div>
       <ul class="next st" ${st(5)}>${D.sessions.filter((x) => Number.isInteger(x.floor) && x.zone && D.enrolled.includes(x.id)).slice(0, 4).map((n) => `<li data-act="openmap" data-floor="${n.floor}" data-zone="${n.zone}"><span class="date"><small>${dayOf(n.day).week}</small><b>${n.day}</b></span><span class="next-tx"><b>${n.short}</b><small>${n.time} · ${n.room}</small></span>${ic('chev')}</li>`).join('')}</ul>
@@ -1607,7 +1648,7 @@
   const floorName = (f) => (f ? `${f}º andar` : 'Térreo');
   const SPOTS = {
     recepcao: { name: 'Recepção', sign: 'Credenciamento', where: 'Térreo', icon: 'id', seed: 21 },
-    'react-native': { name: 'Lab 203', sign: 'React Native com Expo', where: '2º andar', icon: 'qr', seed: 34 },
+    'react-native': { get name() { return byId('react-native')?.room || 'Lab'; }, sign: 'React Native com Expo', where: '2º andar', icon: 'qr', seed: 34 }, // a sala segue a programação (o painel pode trocar)
     'saude-mental': { name: 'Auditório', sign: 'Saúde mental na era da IA', where: 'Térreo', icon: 'mic', seed: 47 },
     colega: { name: 'Colega', sign: 'Crachá de participante', where: 'Trocar contato', icon: 'contact', seed: 58 },
   };
@@ -1971,7 +2012,7 @@
     lgPhys?.kick(0, 0, 0.5, 900);
   }
   function navReset() { const n = navUndo.length; navUndo.length = 0; if (n) { navSkip += 1; history.go(-n); } }
-  function enterApp() { S.auth = true; S.tab = 'home'; show(build(top()), 'fade'); }
+  function enterApp() { S.auth = true; S.tab = 'home'; show(build(top()), 'fade'); qrPendente(); }
 
   /* ---------------- campus ---------------- */
   let mapCanvas = null;
@@ -2677,6 +2718,14 @@
     if (!SPOTS[q]) { if (!x) return false; SPOTS[q] = { name: x.room || 'Sala', sign: x.short, where: floorOf(x.floor ?? 0).label, icon: 'qr', seed: 30 + Object.keys(SPOTS).length * 7 }; }
     scanResult(q); return true;
   }
+  /* QR lido pela câmera do celular, sem servidor (página qrs.html): o link abre o app com ?qr=etal:<atividade>. O login
+     vem primeiro; depois dele o leitor abre e a leitura acontece como se fosse na sala. */
+  function qrPendente() {
+    let t = null; try { t = sessionStorage.getItem('etal-qr-demo'); } catch (_) { /* sem armazenamento */ }
+    if (!t || !S.auth || API) return;
+    try { sessionStorage.removeItem('etal-qr-demo'); } catch (_) { /* opcional */ }
+    setTimeout(() => { openOverlay(Overlays.scan(), 'scan'); setTimeout(() => { if (!demoHit(t)) toast('Esse QR não é de uma atividade do ETAL.'); }, 650); }, 500);
+  }
   let demoQrs = null;
   async function demoQr(q) {
     try {
@@ -2767,9 +2816,13 @@
   if (mapSaved && mapSaved.seen ? mapSaved.flat : UI.view === '2d') window.Campus3D.setFlat(true);
   if (q === 'login') splashDone = true;
   if (!q && API) { apiStart(); return; }
+  if (!API && qs.get('qr')) {
+    if (qrActivity(qs.get('qr')) !== undefined) try { sessionStorage.setItem('etal-qr-demo', qs.get('qr')); } catch (_) { /* opcional */ }
+    history.replaceState(history.state, '', location.pathname);
+  }
   if (!q) {
     const saved = store.get(SAVE_KEY);
-    if (saved) { applyProfile(saved); splashDone = true; S.auth = true; show(build(top()), 'fade'); return; }
+    if (saved) { applyProfile(saved); splashDone = true; S.auth = true; telaGrande(); show(build(top()), 'fade'); qrPendente(); return; }
     show(build({ s: 'login' }), 'fade');
     return;
   }

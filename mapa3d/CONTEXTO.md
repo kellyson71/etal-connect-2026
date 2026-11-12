@@ -43,7 +43,7 @@ Estado em 11/11/2026. Complementa `mapa3d/LEIAME.md` (detalhes de cada correçã
 | `rotas.js` | Rotas: grade A* na planta, portas em cadeia, rampa/escada, caminhos de fora em grafo, bebedouros, origem na atividade atual. `START` é o vão do portão de pedestres. |
 | `viagem.js` | Animação da rota (atos abaixo). |
 | `abertura.js` | Voo de entrada e destaque do evento. |
-| `interface.js` (+ `interface.css`, `index.html`) | Busca, cartão, modos Evento/Andares/Campus/Passear, botões de andar e 2D, legenda, pílulas, toque nas salas, mensagens com o app. |
+| `interface.js` (+ `interface.css`, `index.html`) | Busca, cartão, modos Evento/Andares/Campus (Passear é segredo), botões de andar e 2D, legenda, pílulas, toque nas salas, mensagens com o app. |
 | `passeio.js` | Personagem, carros, voo, câmera em terceira pessoa, controles. |
 | `colisao.js` | Física do passeio (grade de obstáculos e altura dentro do bloco). |
 | `moveis.js` | Portas que giram e cones que tombam quando alguém encosta. |
@@ -57,7 +57,7 @@ Assets: `assets/modelos/` (Kenney, CC0) e `assets/sketchbook/` (personagem `boxm
 - Primeira visita (chave `etal-mapa-novo-abertura` no localStorage), ou `?intro=1`: voo contínuo por Catmull-Rom em pose (de cima com o horizonte → aproximação → passagem baixa sobre a Elétrica e a rodovia → vista do evento), ~5,4 s, relógio a partir do primeiro quadro.
 - Destaque do evento no fim do voo: o campus perde a cor (`DESAT` 0→0,42) e bloco, cantina, pátio e obelisco **sobem do chão com um salto** (escala y com ultrapassagem), um de cada vez, cada um ganhando o véu da sua cor (`VEUS`).
 - Visitas seguintes: aproximação curta. `?intro=0` pula. Rota pedida pelo app pula a abertura. `MAPA3D.abertura.congelar(ms)` prende um instante para revisar.
-- No computador (mouse, sem toque) abrindo o mapa direto, a abertura não roda: entra no passeio.
+- Também no computador o mapa abre com a abertura, no modo Evento (antes entrava direto no passeio).
 
 ### Modo Evento e Campus
 - Evento (padrão): véu de cor ~42% sobre as partes do evento (textura aparece por baixo), resto desbotado, legenda e pílulas sobre os prédios. Campus: cores naturais.
@@ -76,7 +76,7 @@ Atos: 0 voo até o campus · 1 linha da portaria até a entrada · 2 o bloco se 
 - Carros: 4 por faixa na BR-405 (mão dupla, mantêm distância, param para quem estiver na pista) e 9 estacionados nas vagas, de cores diferentes. E entra (anda até a porta, abre, senta, fecha), dirige, sai parado.
 - Física: grade de 25 cm feita da geometria (faces quase verticais entre 0,42 e 1,9 m acima do chão) para o chão e para cada andar do bloco; troncos como círculos; entrada principal e porta de vidro do Anexo abertas na grade. Dentro do bloco, altura pela planta e fração da rampa/escada (sobe 0→3,48→6,93 sem saltos). O prédio é cortado acima do andar e a câmera sobe para ver por cima.
 - Voo (F ou botão): frente = para onde a câmera olha (olhar para cima sobe, para baixo mergulha); Espaço/C sobem e descem; Shift = turbo de 26 até 70 m/s. Pose aplicada nos ossos (`arm_upperL`… sem ponto no nome): braços **para trás** parado e no voo normal, **acima da cabeça** só acima de 15 m/s, e a troca passa **por baixo, pela frente do corpo** (ângulos medidos em `AJ`). Corpo segue a direção do voo e inclina nas curvas. Efeitos: riscos de vento, rastro fino, lente até 74°, bordas riscadas (`#p-veloz`), tremida acima de 40 m/s, anel de estrondo ao passar de 45 m/s. F de novo pousa com animação de queda.
-- Computador: abrindo `mapa3d/` direto já entra no passeio, sem botões de tela; clicar trava o mouse na câmera (Esc solta). `?passeio=0` abre o mapa normal. Celular: controle redondo e botões Correr, Pular, Voar (Subir/Descer no voo), Entrar/Sair.
+- Computador: no passeio, sem botões de tela; clicar trava o mouse na câmera (Esc solta). `?passeio=0` abre o mapa normal. Celular: controle redondo e botões Correr, Pular, Voar (Subir/Descer no voo), Entrar/Sair.
 
 ## Fatos do lugar já confirmados pelo usuário (não desfazer)
 - Portaria: a guarita (sala do porteiro, janelinha preta para a rua, portinha na passagem de pedestres) fica **entre o portão de veículos e o de pedestres**; o vão de pedestres fica **de frente para a passarela** (`GUARITA = [8.9, 11.5, 15.05]`).
@@ -113,7 +113,7 @@ Atos: 0 voo até o campus · 1 linha da portaria até a entrada · 2 o bloco se 
 - **Teclado numérico** (`#num-btn`, `#teclado`): botão "123" dentro da busca; cada dígito filtra as salas pelo número e, com número completo e único, abre a sala direto.
 - **Controle do passeio**: alavanca à esquerda e botões redondos com ícone à direita (Pular grande, Correr, Voar, Visão, Entrar; no voo, Subir e Descer). Os botões usam `pointerdown` (`toque()` em `passeio.js`): com um dedo na alavanca, o segundo dedo não gera `click`, e era por isso que não dava para andar e pular ao mesmo tempo. `nomear()` troca só o texto do botão.
 - **Tela deitada**: ao entrar no passeio em aparelho de toque, `deitar()` pede tela cheia e trava a orientação em paisagem; `levantar()` desfaz ao sair. Onde o navegador não deixa (iPhone), aparece o aviso "Vire o celular". Os iframes do app têm `allow="fullscreen"`.
-- **Tela grande do app**: `?passeio=1` força o passeio mesmo dentro do iframe; a mensagem `etal:mapa:abrir` aceita `mode` e uma rota tira o mapa do passeio.
+- **Tela grande do app**: abre no modo Evento (`mapa3d/index.html?aba=1`); `?passeio=1` ainda força o passeio; a mensagem `etal:mapa:abrir` aceita `mode` e uma rota tira o mapa do passeio.
 - Não testado em celular de verdade: multitoque, trava de orientação e tela cheia só foram conferidos por automação.
 
 ## Revisão de 11/11, parte 3 (pedidos do usuário pelo celular)
@@ -134,6 +134,35 @@ Atos: 0 voo até o campus · 1 linha da portaria até a entrada · 2 o bloco se 
 - A planta de 2012 é antiga. A **saída do auditório** fica no trecho curvo da fachada, de frente para o caminho calçado que chega do pátio: porta dupla de vidro em [181, 490.7] (`principal.js`, laço de `AUD`); a rota do auditório entra por [181, 482] e o caminho de fora termina em [-30, -19.4] (`rotas.js`).
 - **Fundos**: o corredor reto do térreo termina numa porta de vidro de **uma folha só** (`fach` com `vao.folhas: 1`), que dá numa calçada de uns 3,8 m (`CALCADA_FUNDOS` em `dados.js`, desenhada em `detalhes.js`) com quatro árvores em fila e redes entre elas (`REDES`). Suposição minha: três redes, uma em cada vão entre as árvores; o usuário disse "quatro árvores e uma rede em cada".
 - **Protocolo**: a sala vazava 1,3 m para fora da fachada oeste; no gerador (`scripts/build-principal-plan.py`) ela passou a começar em x = 235, e a planta foi regenerada com `npm run planta`.
+
+## Carregamento, modos e passeio secreto (11/11, parte 4)
+
+Pedido do usuário: o mapa demorava para abrir, principalmente no modo Evento; o Evento deve focar só no campus, sem o
+que há dentro das salas; o Campus mostra tudo, com melhor navegação e câmera mais baixa; o Passear vira easter egg.
+
+- **Medição** (bancada headless com SwiftShader, `?intro=0`, tela de celular): antes ~8,5 s até a imagem, 36 programas
+  de shader, 548 chamadas, 719 materiais; depois ~5,8 s, 26 programas, 436 chamadas. O primeiro quadro era o maior
+  custo (compilar programas e subir texturas). `window.MAPA3D_CARGA` guarda a hora de cada etapa.
+- **Um programa por tipo de material** (`injetar` em `texturas.js`): o véu de cor e o desbotar tinham chave de programa
+  por cor (`veu4fa627p`…), e o mesmo código era compilado várias vezes. Agora todos usam a chave `etal` e a cor vai em
+  uniform. Os materiais do bloco têm sempre dois planos de corte (`NUNCA`), para não dobrar os programas.
+- **Compilação antes do primeiro quadro**: `renderer.compileAsync` só com o que aparece (`visiveis` em `main.js`; usa
+  `KHR_parallel_shader_compile` onde o celular tem) e texturas enviadas uma a uma (`initTexture`) com a barra andando.
+  Os materiais com plano de corte ficam de fora: o `compile` do three r160 não conhece o estado de corte e monta o
+  programa errado.
+- **Modo Evento só com o campus**: o entorno (bairro, caatinga, serras) e o recheio do bloco (móveis, portas das salas,
+  cartazes, armários, adornos dos corredores, poltronas do auditório, janelas vistas de dentro, vasos dos corredores)
+  não são montados na abertura. `principal.detalhar()` monta o recheio (grupos `detalhe-k`, guardados em `lotesDet`
+  durante a construção) e `montarCampus()` faz isso junto com o entorno; `verCampus(on)` liga e desliga. Andares e rota
+  ficam sem recheio (portas aparecem como vãos com batente). As portas de fora (entrada, auditório, fundos) continuam.
+- **Modo Campus**: monta tudo na primeira vez (aviso "Montando o campus inteiro…" se demorar), compila antes de mostrar.
+  Vista nova (`campusPose`): 31° em tela em pé (miolo do campus, da quadra à rodovia) e 28° deitada (campus inteiro),
+  no lugar dos 48° de antes. Tocar num prédio (em Evento ou Campus) mostra o nome no cartão e aproxima (`tocarLugar`).
+  Arrastar o mapa não leva o alvo para fora do campus (`LIMITE` em `main.js`); distância máxima 900 m.
+- **Passear é segredo**: sem botão. Cinco toques seguidos no obelisco (o primeiro mostra o cartão sem mexer a câmera;
+  do terceiro em diante, "Mais 2…"), "passear" na busca, ou `?passeio=1`. `passeio` em `main.js` é um substituto leve:
+  o módulo `passeio.js` (com `colisao.js`, `moveis.js` e a luz de dentro) só é importado quando o segredo é achado, e
+  antes disso o campus completo é montado. `MAPA3D.passeioReal` é o objeto de verdade, para depurar.
 
 ## Pendências e pontos em aberto
 - Testar o passeio com teclado e mouse de verdade (testado por automação, com a aba em segundo plano, que deixa tudo lento); o travamento do mouse não foi testado por automação.

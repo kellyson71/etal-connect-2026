@@ -1,0 +1,1753 @@
+{
+  "capturedAt": "2026-11-11T14:42:05-03:00",
+  "commit": "442215668157f37e6f6c88f239090c3ee1a4b928",
+  "viewport": {
+    "width": 1600,
+    "height": 1000,
+    "deviceScaleFactor": 1.5
+  },
+  "hour": 14,
+  "captureProtocol": "7dc6eb88e0ea386cb705b4a2762c8c73bf38c96164e1802621610489b8e1a05c",
+  "sources": {
+    "prototipo/campus3d.js": "dba058896a23d081c71ee166a25a55cbcce8c285dd879ebbff322b0baf82cd67",
+    "prototipo/plan-data.js": "94ef2bbbcfcb98c9fde3aeeaec73405f9b4d446422a2340cb1dba3b924b2fa49",
+    "mapa3d/src/main.js": "e8caf1e7c56e286ddca7472f5c5ac4b36b6bf8ddb4c0a521a97a7f13c5248f01",
+    "mapa3d/src/principal.js": "11938043b5708348644a3425b93511e10d61b9e4994873d3c8fe17717a2c6777",
+    "mapa3d/src/dados.js": "6c679c02f439dad700f1c6922ee897b0ceaee46fca7d462b667a2eea4721ac5a"
+  },
+  "views": [
+    {
+      "key": "01-campus-frente",
+      "title": "Campus · vista pela frente",
+      "note": "Organização dos blocos, caminhos e áreas livres a partir da rodovia.",
+      "center": [
+        -64,
+        -120
+      ],
+      "span": 550,
+      "angle": 0.5,
+      "elevation": 42,
+      "mode": "campus",
+      "classico": {
+        "file": "imagens/classico/01-campus-frente.png",
+        "sha256": "cea424af5b0dfc3776b8c88648cf4f42d0b73d4cf6f7e0286c9b60d4ab57c55c",
+        "camera": {
+          "engine": "Canvas 2D · projeção axonométrica",
+          "target": [
+            -64,
+            -120
+          ],
+          "view": {
+            "x": -65.97751302058653,
+            "y": -123.61981330371015,
+            "z": 2.909090909090909,
+            "t": 0.5,
+            "k": 0.6691306063588582,
+            "hv": 1
+          },
+          "state": {
+            "mix": 0,
+            "focus": 0,
+            "floor": 1,
+            "room": null,
+            "hasRoute": false,
+            "route": null
+          },
+          "quality": {
+            "setting": "alta",
+            "tier": "alta",
+            "why": "escolha manual",
+            "info": {
+              "mem": 16,
+              "cores": 8,
+              "ms": 6.3,
+              "saveData": false
+            }
+          }
+        },
+        "preview": "previas/classico/01-campus-frente.jpg"
+      },
+      "novo": {
+        "file": "imagens/novo/01-campus-frente.png",
+        "sha256": "bfe80eade251cadf33ae89fceb896b444f70935e90cfe34c22df3a045d7a5319",
+        "camera": {
+          "engine": "three.js r160 · perspectiva",
+          "target": [
+            -64,
+            3,
+            -120
+          ],
+          "position": [
+            113.84247014633584,
+            337.0040662703963,
+            205.53845800188103
+          ],
+          "fov": 38,
+          "elevation": 42,
+          "angle": 0.5,
+          "span": 550,
+          "stage": {
+            "abre": 0,
+            "ops": [
+              1,
+              1,
+              1
+            ],
+            "elos": [
+              1,
+              1
+            ],
+            "chegada": 0,
+            "plano": 0,
+            "iso": 0,
+            "esc": 1,
+            "corte": 99,
+            "isoMax": 1
+          }
+        },
+        "preview": "previas/novo/01-campus-frente.jpg"
+      },
+      "pair": "pares/01-campus-frente.jpg"
+    },
+    {
+      "key": "02-campus-fundos",
+      "title": "Campus · vista pelos fundos",
+      "note": "O mesmo conjunto observado pelo lado oposto, incluindo a área esportiva.",
+      "center": [
+        -64,
+        -120
+      ],
+      "span": 550,
+      "angle": 3.64,
+      "elevation": 42,
+      "mode": "campus",
+      "classico": {
+        "file": "imagens/classico/02-campus-fundos.png",
+        "sha256": "ec75ef91b0cd93b31de4d9e60e941c003cb94782356c3e3e690bb8dfc0e642a1",
+        "camera": {
+          "engine": "Canvas 2D · projeção axonométrica",
+          "target": [
+            -64,
+            -120
+          ],
+          "view": {
+            "x": -62.02825459365407,
+            "y": -116.37704179531976,
+            "z": 2.909090909090909,
+            "t": 3.64,
+            "k": 0.6691306063588582,
+            "hv": 1
+          },
+          "state": {
+            "mix": 0,
+            "focus": 0,
+            "floor": 1,
+            "room": null,
+            "hasRoute": false,
+            "route": null
+          },
+          "quality": {
+            "setting": "alta",
+            "tier": "alta",
+            "why": "escolha manual",
+            "info": {
+              "mem": 16,
+              "cores": 8,
+              "ms": 6.3,
+              "saveData": false
+            }
+          }
+        },
+        "preview": "previas/classico/02-campus-fundos.jpg"
+      },
+      "novo": {
+        "file": "imagens/novo/02-campus-fundos.png",
+        "sha256": "266183fa1effa04f0e01487f754861c18b35048d05016f2b20d24f3b54fd5f90",
+        "camera": {
+          "engine": "three.js r160 · perspectiva",
+          "target": [
+            -64,
+            3,
+            -120
+          ],
+          "position": [
+            -241.32377481906326,
+            337.0040662703963,
+            -445.82128645917373
+          ],
+          "fov": 38,
+          "elevation": 42,
+          "angle": 3.64,
+          "span": 550,
+          "stage": {
+            "abre": 0,
+            "ops": [
+              1,
+              1,
+              1
+            ],
+            "elos": [
+              1,
+              1
+            ],
+            "chegada": 0,
+            "plano": 0,
+            "iso": 0,
+            "esc": 1,
+            "corte": 99,
+            "isoMax": 1
+          }
+        },
+        "preview": "previas/novo/02-campus-fundos.jpg"
+      },
+      "pair": "pares/02-campus-fundos.jpg"
+    },
+    {
+      "key": "03-evento",
+      "title": "Modo Evento · edifícios em destaque",
+      "note": "Bloco principal, auditório, cantina e pátio recebem as cores do evento.",
+      "center": [
+        -8,
+        -8
+      ],
+      "span": 155,
+      "angle": 0.5,
+      "elevation": 42,
+      "mode": "campus",
+      "event": true,
+      "classico": {
+        "file": "imagens/classico/03-evento.png",
+        "sha256": "707ba390bbe0fe7e062ea06ff977d52344ecd670bf90e6969cbaaecaac92eeeb",
+        "camera": {
+          "engine": "Canvas 2D · projeção axonométrica",
+          "target": [
+            -8,
+            -8
+          ],
+          "view": {
+            "x": -9.977513020586528,
+            "y": -11.619813303710142,
+            "z": 10.32258064516129,
+            "t": 0.5,
+            "k": 0.6691306063588582,
+            "hv": 1
+          },
+          "state": {
+            "mix": 0,
+            "focus": 0,
+            "floor": 1,
+            "room": null,
+            "hasRoute": false,
+            "route": null
+          },
+          "quality": {
+            "setting": "alta",
+            "tier": "alta",
+            "why": "escolha manual",
+            "info": {
+              "mem": 16,
+              "cores": 8,
+              "ms": 11.3,
+              "saveData": false
+            }
+          }
+        },
+        "preview": "previas/classico/03-evento.jpg"
+      },
+      "novo": {
+        "file": "imagens/novo/03-evento.png",
+        "sha256": "f567bc9e6dc1ebafa88f44b7bbcfecfd7d0772e3b2b4eff22b6274fd748f033e",
+        "camera": {
+          "engine": "three.js r160 · perspectiva",
+          "target": [
+            -8,
+            3,
+            -8
+          ],
+          "position": [
+            42.11924158669464,
+            97.12841867620261,
+            83.74265634598467
+          ],
+          "fov": 38,
+          "elevation": 42,
+          "angle": 0.5,
+          "span": 155,
+          "stage": {
+            "abre": 0,
+            "ops": [
+              1,
+              1,
+              1
+            ],
+            "elos": [
+              1,
+              1
+            ],
+            "chegada": 0,
+            "plano": 0,
+            "iso": 0,
+            "esc": 1,
+            "corte": 99,
+            "isoMax": 1
+          }
+        },
+        "preview": "previas/novo/03-evento.jpg"
+      },
+      "pair": "pares/03-evento.jpg"
+    },
+    {
+      "key": "04-fachada",
+      "title": "Bloco principal · fachada de entrada",
+      "note": "Entrada do bloco, cobertura do pátio e relação com a circulação externa.",
+      "center": [
+        -8,
+        -22
+      ],
+      "span": 110,
+      "angle": 0.5,
+      "elevation": 28,
+      "mode": "campus",
+      "classico": {
+        "file": "imagens/classico/04-fachada.png",
+        "sha256": "1fcc1eaa55afe0363d9c0ab1817813cbec63b8c3c3948c090f96f2bdf33ac2f6",
+        "camera": {
+          "engine": "Canvas 2D · projeção axonométrica",
+          "target": [
+            -8,
+            -22
+          ],
+          "view": {
+            "x": -10.818518929443808,
+            "y": -27.159264293761016,
+            "z": 14.545454545454545,
+            "t": 0.5,
+            "k": 0.4694715627858908,
+            "hv": 1
+          },
+          "state": {
+            "mix": 0,
+            "focus": 0,
+            "floor": 1,
+            "room": null,
+            "hasRoute": false,
+            "route": null
+          },
+          "quality": {
+            "setting": "alta",
+            "tier": "alta",
+            "why": "escolha manual",
+            "info": {
+              "mem": 16,
+              "cores": 8,
+              "ms": 11.3,
+              "saveData": false
+            }
+          }
+        },
+        "preview": "previas/classico/04-fachada.jpg"
+      },
+      "novo": {
+        "file": "imagens/novo/04-fachada.png",
+        "sha256": "26f18ad66f74046c5f8af4b39cec5dbd6ba25f1b22ef6d10bafce06ab982254c",
+        "camera": {
+          "engine": "three.js r160 · perspectiva",
+          "target": [
+            -8,
+            3,
+            -22
+          ],
+          "position": [
+            34.25975221530206,
+            49.868401916952436,
+            55.35595755272101
+          ],
+          "fov": 38,
+          "elevation": 28,
+          "angle": 0.5,
+          "span": 110,
+          "stage": {
+            "abre": 0,
+            "ops": [
+              1,
+              1,
+              1
+            ],
+            "elos": [
+              1,
+              1
+            ],
+            "chegada": 0,
+            "plano": 0,
+            "iso": 0,
+            "esc": 1,
+            "corte": 99,
+            "isoMax": 1
+          }
+        },
+        "preview": "previas/novo/04-fachada.jpg"
+      },
+      "pair": "pares/04-fachada.jpg"
+    },
+    {
+      "key": "05-auditorio",
+      "title": "Auditório · vista lateral",
+      "note": "Volume único do auditório e sua ligação com o bloco principal.",
+      "center": [
+        -22,
+        -25
+      ],
+      "span": 105,
+      "angle": -1.1,
+      "elevation": 35,
+      "mode": "campus",
+      "classico": {
+        "file": "imagens/classico/05-auditorio.png",
+        "sha256": "b68bd2e99d95eed49a1eccbd3a5d43043b7a32bac07b9cf890f92bb98c94d4e5",
+        "camera": {
+          "engine": "Canvas 2D · projeção axonométrica",
+          "target": [
+            -22,
+            -25
+          ],
+          "view": {
+            "x": -17.711587579472788,
+            "y": -27.182665144159404,
+            "z": 15.238095238095237,
+            "t": -1.1,
+            "k": 0.573576436351046,
+            "hv": 1
+          },
+          "state": {
+            "mix": 0,
+            "focus": 0,
+            "floor": 1,
+            "room": null,
+            "hasRoute": false,
+            "route": null
+          },
+          "quality": {
+            "setting": "alta",
+            "tier": "alta",
+            "why": "escolha manual",
+            "info": {
+              "mem": 16,
+              "cores": 8,
+              "ms": 11.3,
+              "saveData": false
+            }
+          }
+        },
+        "preview": "previas/classico/05-auditorio.jpg"
+      },
+      "novo": {
+        "file": "imagens/novo/05-auditorio.png",
+        "sha256": "a0ec473dc33718f5f545b4ece85e63a38b3088bc48e33e16a53c54fd06e6bd57",
+        "camera": {
+          "engine": "three.js r160 · perspectiva",
+          "target": [
+            -22,
+            3,
+            -25
+          ],
+          "position": [
+            -91.56819772057995,
+            57.65863349720952,
+            10.407993778740174
+          ],
+          "fov": 38,
+          "elevation": 35,
+          "angle": -1.1,
+          "span": 105,
+          "stage": {
+            "abre": 0,
+            "ops": [
+              1,
+              1,
+              1
+            ],
+            "elos": [
+              1,
+              1
+            ],
+            "chegada": 0,
+            "plano": 0,
+            "iso": 0,
+            "esc": 1,
+            "corte": 99,
+            "isoMax": 1
+          }
+        },
+        "preview": "previas/novo/05-auditorio.jpg"
+      },
+      "pair": "pares/05-auditorio.jpg"
+    },
+    {
+      "key": "06-fundos-bloco",
+      "title": "Bloco principal · fundos",
+      "note": "Fachada posterior e circulação em direção ao Anexo.",
+      "center": [
+        -10,
+        -27
+      ],
+      "span": 110,
+      "angle": 3.64,
+      "elevation": 32,
+      "mode": "campus",
+      "classico": {
+        "file": "imagens/classico/06-fundos-bloco.png",
+        "sha256": "368fc540223d444d9aecd75c54c520bbd1b955d562ce94c61e497a48eed9d0f5",
+        "camera": {
+          "engine": "Canvas 2D · projeção axonométrica",
+          "target": [
+            -10,
+            -27
+          ],
+          "view": {
+            "x": -7.510271302850901,
+            "y": -22.425280068241406,
+            "z": 14.545454545454545,
+            "t": 3.64,
+            "k": 0.5299192642332049,
+            "hv": 1
+          },
+          "state": {
+            "mix": 0,
+            "focus": 0,
+            "floor": 1,
+            "room": null,
+            "hasRoute": false,
+            "route": null
+          },
+          "quality": {
+            "setting": "alta",
+            "tier": "alta",
+            "why": "escolha manual",
+            "info": {
+              "mem": 16,
+              "cores": 8,
+              "ms": 11.3,
+              "saveData": false
+            }
+          }
+        },
+        "preview": "previas/classico/06-fundos-bloco.jpg"
+      },
+      "novo": {
+        "file": "imagens/novo/06-fundos-bloco.png",
+        "sha256": "aefe2c53fdba4a54f8e989530462602469bffb60ea2e426240cbdda2e7641d7f",
+        "camera": {
+          "engine": "three.js r160 · perspectiva",
+          "target": [
+            -10,
+            3,
+            -27
+          ],
+          "position": [
+            -50.47100497321619,
+            55.90303189448895,
+            -101.36292690094095
+          ],
+          "fov": 38,
+          "elevation": 32,
+          "angle": 3.64,
+          "span": 110,
+          "stage": {
+            "abre": 0,
+            "ops": [
+              1,
+              1,
+              1
+            ],
+            "elos": [
+              1,
+              1
+            ],
+            "chegada": 0,
+            "plano": 0,
+            "iso": 0,
+            "esc": 1,
+            "corte": 99,
+            "isoMax": 1
+          }
+        },
+        "preview": "previas/novo/06-fundos-bloco.jpg"
+      },
+      "pair": "pares/06-fundos-bloco.jpg"
+    },
+    {
+      "key": "07-portaria",
+      "title": "Portaria · acesso ao campus",
+      "note": "Portões, guarita e início da passarela. A posição da guarita foi revista no modelo novo.",
+      "center": [
+        12,
+        43
+      ],
+      "span": 85,
+      "angle": 0.18,
+      "elevation": 35,
+      "mode": "campus",
+      "classico": {
+        "file": "imagens/classico/07-portaria.png",
+        "sha256": "49bcda6cbe508b30c5edae5209cf4b2a8b59e95fcf0f9e6ce39f75bf90a5b4e7",
+        "camera": {
+          "engine": "Canvas 2D · projeção axonométrica",
+          "target": [
+            12,
+            43
+          ],
+          "view": {
+            "x": 11.138525240334564,
+            "y": 38.2658295913096,
+            "z": 18.823529411764707,
+            "t": 0.18,
+            "k": 0.573576436351046,
+            "hv": 1
+          },
+          "state": {
+            "mix": 0,
+            "focus": 0,
+            "floor": 1,
+            "room": null,
+            "hasRoute": false,
+            "route": null
+          },
+          "quality": {
+            "setting": "alta",
+            "tier": "alta",
+            "why": "escolha manual",
+            "info": {
+              "mem": 16,
+              "cores": 8,
+              "ms": 11.3,
+              "saveData": false
+            }
+          }
+        },
+        "preview": "previas/classico/07-portaria.jpg"
+      },
+      "novo": {
+        "file": "imagens/novo/07-portaria.png",
+        "sha256": "b5143c72059c717d47183800525fe2eb17948268514767a09e6afef7013352ce",
+        "camera": {
+          "engine": "three.js r160 · perspectiva",
+          "target": [
+            12,
+            3,
+            43
+          ],
+          "position": [
+            23.313224136856768,
+            47.24746521202675,
+            105.17098102373825
+          ],
+          "fov": 38,
+          "elevation": 35,
+          "angle": 0.18,
+          "span": 85,
+          "stage": {
+            "abre": 0,
+            "ops": [
+              1,
+              1,
+              1
+            ],
+            "elos": [
+              1,
+              1
+            ],
+            "chegada": 0,
+            "plano": 0,
+            "iso": 0,
+            "esc": 1,
+            "corte": 99,
+            "isoMax": 1
+          }
+        },
+        "preview": "previas/novo/07-portaria.jpg"
+      },
+      "pair": "pares/07-portaria.jpg"
+    },
+    {
+      "key": "08-jardim",
+      "title": "Jardim · entrada e pátio",
+      "note": "Canteiros, caminhos e vegetação ao lado da entrada.",
+      "center": [
+        12,
+        24
+      ],
+      "span": 65,
+      "angle": 1.05,
+      "elevation": 55,
+      "mode": "campus",
+      "classico": {
+        "file": "imagens/classico/08-jardim.png",
+        "sha256": "d7aa24ffe0ddeced7270ab323ef6a6c390634fffcb23cdb5df61847b791578b5",
+        "camera": {
+          "engine": "Canvas 2D · projeção axonométrica",
+          "target": [
+            12,
+            24
+          ],
+          "view": {
+            "x": 9.077358081041586,
+            "y": 22.323515027819823,
+            "z": 24.615384615384617,
+            "t": 1.05,
+            "k": 0.8191520442889918,
+            "hv": 1
+          },
+          "state": {
+            "mix": 0,
+            "focus": 0,
+            "floor": 1,
+            "room": null,
+            "hasRoute": false,
+            "route": null
+          },
+          "quality": {
+            "setting": "alta",
+            "tier": "alta",
+            "why": "escolha manual",
+            "info": {
+              "mem": 16,
+              "cores": 8,
+              "ms": 11.3,
+              "saveData": false
+            }
+          }
+        },
+        "preview": "previas/classico/08-jardim.jpg"
+      },
+      "novo": {
+        "file": "imagens/novo/08-jardim.png",
+        "sha256": "ee44100965d4cdd52a2edd9cadf5bb9f34a21e269a54c860ff922d449c495369",
+        "camera": {
+          "engine": "three.js r160 · perspectiva",
+          "target": [
+            12,
+            3,
+            24
+          ],
+          "position": [
+            41.35038982243995,
+            51.32324001160657,
+            40.83596171866539
+          ],
+          "fov": 38,
+          "elevation": 55,
+          "angle": 1.05,
+          "span": 65,
+          "stage": {
+            "abre": 0,
+            "ops": [
+              1,
+              1,
+              1
+            ],
+            "elos": [
+              1,
+              1
+            ],
+            "chegada": 0,
+            "plano": 0,
+            "iso": 0,
+            "esc": 1,
+            "corte": 99,
+            "isoMax": 1
+          }
+        },
+        "preview": "previas/novo/08-jardim.jpg"
+      },
+      "pair": "pares/08-jardim.jpg"
+    },
+    {
+      "key": "09-entorno",
+      "title": "Entorno · BR-405 e vizinhança",
+      "note": "Apartamentos, Elétrica, Brisanet e acesso pela rodovia; posições vizinhas são aproximadas.",
+      "center": [
+        -35,
+        93
+      ],
+      "span": 250,
+      "angle": 3.4,
+      "elevation": 50,
+      "mode": "campus",
+      "classico": {
+        "file": "imagens/classico/09-entorno.png",
+        "sha256": "f30e76167950a646788813cf1e6827cc214f6ef439897014bf833587134f3094",
+        "camera": {
+          "engine": "Canvas 2D · projeção axonométrica",
+          "target": [
+            -35,
+            93
+          ],
+          "view": {
+            "x": -34.079304800224875,
+            "y": 96.48330052582195,
+            "z": 6.4,
+            "t": 3.4,
+            "k": 0.766044443118978,
+            "hv": 1
+          },
+          "state": {
+            "mix": 0,
+            "focus": 0,
+            "floor": 1,
+            "room": null,
+            "hasRoute": false,
+            "route": null
+          },
+          "quality": {
+            "setting": "alta",
+            "tier": "alta",
+            "why": "escolha manual",
+            "info": {
+              "mem": 16,
+              "cores": 8,
+              "ms": 11.3,
+              "saveData": false
+            }
+          }
+        },
+        "preview": "previas/classico/09-entorno.jpg"
+      },
+      "novo": {
+        "file": "imagens/novo/09-entorno.png",
+        "sha256": "73534f80140776d3a8766087195494ce68a6c0ebd572263ced4606d96dfd915e",
+        "camera": {
+          "engine": "three.js r160 · perspectiva",
+          "target": [
+            -35,
+            3,
+            93
+          ],
+          "position": [
+            -72.26888829144048,
+            176.808953475723,
+            -48.00077660237719
+          ],
+          "fov": 38,
+          "elevation": 50,
+          "angle": 3.4,
+          "span": 250,
+          "stage": {
+            "abre": 0,
+            "ops": [
+              1,
+              1,
+              1
+            ],
+            "elos": [
+              1,
+              1
+            ],
+            "chegada": 0,
+            "plano": 0,
+            "iso": 0,
+            "esc": 1,
+            "corte": 99,
+            "isoMax": 1
+          }
+        },
+        "preview": "previas/novo/09-entorno.jpg"
+      },
+      "pair": "pares/09-entorno.jpg"
+    },
+    {
+      "key": "10-esportes",
+      "title": "Campus · equipamentos e área esportiva",
+      "note": "Ginásio, piscina, quadras e blocos do fundo do terreno.",
+      "center": [
+        -85,
+        -170
+      ],
+      "span": 280,
+      "angle": 0.5,
+      "elevation": 55,
+      "mode": "campus",
+      "classico": {
+        "file": "imagens/classico/10-esportes.png",
+        "sha256": "caca2ca2e5733d2ec53972dccaa355d81d71efe9bbe1eb9448dff7979a693b99",
+        "camera": {
+          "engine": "Canvas 2D · projeção axonométrica",
+          "target": [
+            -85,
+            -170
+          ],
+          "view": {
+            "x": -86.61534662065834,
+            "y": -172.9568721554248,
+            "z": 5.714285714285714,
+            "t": 0.5,
+            "k": 0.8191520442889918,
+            "hv": 1
+          },
+          "state": {
+            "mix": 0,
+            "focus": 0,
+            "floor": 1,
+            "room": null,
+            "hasRoute": false,
+            "route": null
+          },
+          "quality": {
+            "setting": "alta",
+            "tier": "alta",
+            "why": "escolha manual",
+            "info": {
+              "mem": 16,
+              "cores": 8,
+              "ms": 11.3,
+              "saveData": false
+            }
+          }
+        },
+        "preview": "previas/classico/10-esportes.jpg"
+      },
+      "novo": {
+        "file": "imagens/novo/10-esportes.png",
+        "sha256": "bfe7e04c4c5713115706f38e9ac0b02e688624e788552ee4aa854494a9f35cd7",
+        "camera": {
+          "engine": "three.js r160 · perspectiva",
+          "target": [
+            -85,
+            3,
+            -170
+          ],
+          "position": [
+            -15.120680523281592,
+            211.16164928076677,
+            -42.08676369624516
+          ],
+          "fov": 38,
+          "elevation": 55,
+          "angle": 0.5,
+          "span": 280,
+          "stage": {
+            "abre": 0,
+            "ops": [
+              1,
+              1,
+              1
+            ],
+            "elos": [
+              1,
+              1
+            ],
+            "chegada": 0,
+            "plano": 0,
+            "iso": 0,
+            "esc": 1,
+            "corte": 99,
+            "isoMax": 1
+          }
+        },
+        "preview": "previas/novo/10-esportes.jpg"
+      },
+      "pair": "pares/10-esportes.jpg"
+    },
+    {
+      "key": "11-andares",
+      "title": "Bloco principal · três andares abertos",
+      "note": "Abertura nativa de cada motor: o clássico separa os pisos verticalmente; o novo também os recua em escada. Enquadramentos ajustados a essas aberturas.",
+      "center": [
+        -8,
+        -30
+      ],
+      "span": 140,
+      "angle": 0.62,
+      "elevation": 48,
+      "mode": "campus",
+      "kind": "stack",
+      "classico": {
+        "file": "imagens/classico/11-andares.png",
+        "sha256": "6c5bb1ebb9041a85e0ba120f46b54cf09906c4575dd3d230b508d3d842aa34a5",
+        "camera": {
+          "engine": "Canvas 2D · projeção axonométrica",
+          "target": [
+            -10.402362196886191,
+            -31.16506036625959
+          ],
+          "view": {
+            "x": -10.402362196886191,
+            "y": -31.16506036625959,
+            "z": 11.428571428571429,
+            "t": 0.62,
+            "k": 0.7431448254773941,
+            "hv": 1
+          },
+          "state": {
+            "mix": 1,
+            "focus": 0,
+            "floor": 1,
+            "room": null,
+            "hasRoute": false,
+            "route": null
+          },
+          "quality": {
+            "setting": "alta",
+            "tier": "alta",
+            "why": "escolha manual",
+            "info": {
+              "mem": 16,
+              "cores": 8,
+              "ms": 8.2,
+              "saveData": false
+            }
+          }
+        },
+        "preview": "previas/classico/11-andares.jpg"
+      },
+      "novo": {
+        "file": "imagens/novo/11-andares.png",
+        "sha256": "83cd607e2a939ded3090dc26781a33aaf4393c6a44e15a2d7fe9f166e06bf7ac",
+        "camera": {
+          "engine": "three.js r160 · perspectiva",
+          "target": [
+            -8,
+            9,
+            -58
+          ],
+          "position": [
+            51.98468739116458,
+            123.6569933102473,
+            26.022875228686075
+          ],
+          "fov": 38,
+          "elevation": 48,
+          "angle": 0.62,
+          "span": 170,
+          "stage": {
+            "abre": 1,
+            "ops": [
+              1,
+              1,
+              1
+            ],
+            "elos": [
+              1,
+              1
+            ],
+            "chegada": 0,
+            "plano": 0,
+            "iso": 0,
+            "esc": 1,
+            "corte": 99,
+            "isoMax": 1
+          }
+        },
+        "preview": "previas/novo/11-andares.jpg"
+      },
+      "pair": "pares/11-andares.jpg"
+    },
+    {
+      "key": "12-terreo",
+      "title": "Por dentro · térreo",
+      "note": "Mesmo pavimento: setores administrativos, recepção, auditório e circulação. No novo, o corte a 1,25 m expõe o interior; o clássico representa as salas em volumes.",
+      "center": [
+        -8,
+        -28
+      ],
+      "span": 105,
+      "angle": 1.42,
+      "elevation": 60,
+      "mode": "campus",
+      "kind": "floor",
+      "level": 0,
+      "connections": true,
+      "classico": {
+        "file": "imagens/classico/12-terreo.png",
+        "sha256": "df2e812d2311233fb03e6b73a067b21f1f871565b1b575d774a9f020c74a2085",
+        "camera": {
+          "engine": "Canvas 2D · projeção axonométrica",
+          "target": [
+            -8,
+            -28
+          ],
+          "view": {
+            "x": -9.050268985007719,
+            "y": -28.159588196506476,
+            "z": 15.238095238095237,
+            "t": 1.42,
+            "k": 0.8660254037844386,
+            "hv": 1
+          },
+          "state": {
+            "mix": 1,
+            "focus": 1,
+            "floor": 0,
+            "room": null,
+            "hasRoute": false,
+            "route": null
+          },
+          "quality": {
+            "setting": "alta",
+            "tier": "alta",
+            "why": "escolha manual",
+            "info": {
+              "mem": 16,
+              "cores": 8,
+              "ms": 8.2,
+              "saveData": false
+            }
+          }
+        },
+        "preview": "previas/classico/12-terreo.jpg"
+      },
+      "novo": {
+        "file": "imagens/novo/12-terreo.png",
+        "sha256": "e28192d6b25261f75730ef5c3e7e5e1bf1272b65a1c6979c5fdfd3b2553a52ea",
+        "camera": {
+          "engine": "three.js r160 · perspectiva",
+          "target": [
+            -8,
+            1,
+            -28
+          ],
+          "position": [
+            39.10649787660482,
+            83.5273880598463,
+            -20.842175531053847
+          ],
+          "fov": 38,
+          "elevation": 60,
+          "angle": 1.42,
+          "span": 105,
+          "stage": {
+            "abre": 1,
+            "ops": [
+              1,
+              0,
+              0
+            ],
+            "elos": [
+              1,
+              0
+            ],
+            "chegada": 0,
+            "plano": 0,
+            "iso": 0,
+            "esc": 0,
+            "corte": 1.25,
+            "isoMax": 1
+          }
+        },
+        "preview": "previas/novo/12-terreo.jpg"
+      },
+      "pair": "pares/12-terreo.jpg"
+    },
+    {
+      "key": "13-primeiro",
+      "title": "Por dentro · primeiro andar",
+      "note": "Salas, corredores e pátio interno vistos por cima; corte do novo a 1,25 m acima do piso.",
+      "center": [
+        -8,
+        -28
+      ],
+      "span": 105,
+      "angle": 1.42,
+      "elevation": 60,
+      "mode": "campus",
+      "kind": "floor",
+      "level": 1,
+      "connections": true,
+      "classico": {
+        "file": "imagens/classico/13-primeiro.png",
+        "sha256": "4e6eb49c979a6cad237e4bf7007891e61969fc46b94b2284cb19d4d462a4f004",
+        "camera": {
+          "engine": "Canvas 2D · projeção axonométrica",
+          "target": [
+            -8,
+            -28
+          ],
+          "view": {
+            "x": -9.050268985007719,
+            "y": -28.159588196506476,
+            "z": 15.238095238095237,
+            "t": 1.42,
+            "k": 0.8660254037844386,
+            "hv": 1
+          },
+          "state": {
+            "mix": 1,
+            "focus": 1,
+            "floor": 1,
+            "room": null,
+            "hasRoute": false,
+            "route": null
+          },
+          "quality": {
+            "setting": "alta",
+            "tier": "alta",
+            "why": "escolha manual",
+            "info": {
+              "mem": 16,
+              "cores": 8,
+              "ms": 8.2,
+              "saveData": false
+            }
+          }
+        },
+        "preview": "previas/classico/13-primeiro.jpg"
+      },
+      "novo": {
+        "file": "imagens/novo/13-primeiro.png",
+        "sha256": "9428c6df439e64697724529bc824eed30c4060c134043a742c96dc0f4aac34eb",
+        "camera": {
+          "engine": "three.js r160 · perspectiva",
+          "target": [
+            -8,
+            4.45,
+            -28
+          ],
+          "position": [
+            39.10649787660482,
+            86.9773880598463,
+            -20.842175531053847
+          ],
+          "fov": 38,
+          "elevation": 60,
+          "angle": 1.42,
+          "span": 105,
+          "stage": {
+            "abre": 1,
+            "ops": [
+              0,
+              1,
+              0
+            ],
+            "elos": [
+              1,
+              0
+            ],
+            "chegada": 0,
+            "plano": 0,
+            "iso": 0,
+            "esc": 0,
+            "corte": 4.7,
+            "isoMax": 1
+          }
+        },
+        "preview": "previas/novo/13-primeiro.jpg"
+      },
+      "pair": "pares/13-primeiro.jpg"
+    },
+    {
+      "key": "14-segundo",
+      "title": "Por dentro · segundo andar",
+      "note": "A mesma leitura do segundo pavimento, preservando a direção de observação.",
+      "center": [
+        -8,
+        -28
+      ],
+      "span": 105,
+      "angle": 1.42,
+      "elevation": 60,
+      "mode": "campus",
+      "kind": "floor",
+      "level": 2,
+      "connections": true,
+      "classico": {
+        "file": "imagens/classico/14-segundo.png",
+        "sha256": "ebc9d974195b0d41500be65db2581dc4f6bb03a7541d0b72a902f090b608360d",
+        "camera": {
+          "engine": "Canvas 2D · projeção axonométrica",
+          "target": [
+            -8,
+            -28
+          ],
+          "view": {
+            "x": -9.050268985007719,
+            "y": -28.159588196506476,
+            "z": 15.238095238095237,
+            "t": 1.42,
+            "k": 0.8660254037844386,
+            "hv": 1
+          },
+          "state": {
+            "mix": 1,
+            "focus": 1,
+            "floor": 2,
+            "room": null,
+            "hasRoute": false,
+            "route": null
+          },
+          "quality": {
+            "setting": "alta",
+            "tier": "alta",
+            "why": "escolha manual",
+            "info": {
+              "mem": 16,
+              "cores": 8,
+              "ms": 8.2,
+              "saveData": false
+            }
+          }
+        },
+        "preview": "previas/classico/14-segundo.jpg"
+      },
+      "novo": {
+        "file": "imagens/novo/14-segundo.png",
+        "sha256": "c861bcd928935fc56c0ebe4c740006b2974c305d14ba7d1c44628ec3859b8d46",
+        "camera": {
+          "engine": "three.js r160 · perspectiva",
+          "target": [
+            -8,
+            7.9,
+            -28
+          ],
+          "position": [
+            39.10649787660482,
+            90.42738805984631,
+            -20.842175531053847
+          ],
+          "fov": 38,
+          "elevation": 60,
+          "angle": 1.42,
+          "span": 105,
+          "stage": {
+            "abre": 1,
+            "ops": [
+              0,
+              0,
+              1
+            ],
+            "elos": [
+              1,
+              1
+            ],
+            "chegada": 0,
+            "plano": 0,
+            "iso": 0,
+            "esc": 0,
+            "corte": 8.15,
+            "isoMax": 1
+          }
+        },
+        "preview": "previas/novo/14-segundo.jpg"
+      },
+      "pair": "pares/14-segundo.jpg"
+    },
+    {
+      "key": "15-rampa",
+      "title": "Por dentro · rampa e circulação leste",
+      "note": "No clássico, a área da rampa é um plano com divisória. O novo acrescenta pistas inclinadas, paredes e patamares; a subida que chega ao primeiro andar fica visível.",
+      "center": [
+        13.09095,
+        -30.272035
+      ],
+      "span": 32,
+      "angle": 1.42,
+      "elevation": 62,
+      "mode": "campus",
+      "kind": "detail",
+      "level": 1,
+      "zone_kind": "ramp",
+      "connections": true,
+      "zone": "rampa",
+      "classico": {
+        "file": "imagens/classico/15-rampa.png",
+        "sha256": "4a03b15ea201a44bbb091ecb4537526188db147d6d84e93a203e75fab224f273",
+        "camera": {
+          "engine": "Canvas 2D · projeção axonométrica",
+          "target": [
+            13.09095,
+            -30.272035
+          ],
+          "view": {
+            "x": 12.060810013006561,
+            "y": -30.42856459862685,
+            "z": 50,
+            "t": 1.42,
+            "k": 0.8829475928589269,
+            "hv": 1
+          },
+          "state": {
+            "mix": 1,
+            "focus": 1,
+            "floor": 1,
+            "room": null,
+            "hasRoute": false,
+            "route": null
+          },
+          "quality": {
+            "setting": "alta",
+            "tier": "alta",
+            "why": "escolha manual",
+            "info": {
+              "mem": 16,
+              "cores": 8,
+              "ms": 8.2,
+              "saveData": false
+            }
+          }
+        },
+        "preview": "previas/classico/15-rampa.jpg"
+      },
+      "novo": {
+        "file": "imagens/novo/15-rampa.png",
+        "sha256": "a6ba9b95992619624e5553ce5c75d0b11178584bbd575c1a7fa6a6ea3ba6daa3",
+        "camera": {
+          "engine": "three.js r160 · perspectiva",
+          "target": [
+            13.09095,
+            4.45,
+            -30.272035
+          ],
+          "position": [
+            26.57066728792376,
+            30.09266003598579,
+            -28.223794213968308
+          ],
+          "fov": 38,
+          "elevation": 62,
+          "angle": 1.42,
+          "span": 32,
+          "stage": {
+            "abre": 1,
+            "ops": [
+              0,
+              1,
+              0
+            ],
+            "elos": [
+              1,
+              0
+            ],
+            "chegada": 0,
+            "plano": 0,
+            "iso": 0,
+            "esc": 0,
+            "corte": 4.7,
+            "isoMax": 1
+          }
+        },
+        "preview": "previas/novo/15-rampa.jpg"
+      },
+      "pair": "pares/15-rampa.jpg"
+    },
+    {
+      "key": "16-escada",
+      "title": "Por dentro · escada oeste",
+      "note": "Mesmo centro da planta: volume e símbolo no clássico, degraus e patamares no novo. A subida até o primeiro andar fica visível.",
+      "center": [
+        -20.517846000000002,
+        -33.863479999999996
+      ],
+      "span": 30,
+      "angle": 1.42,
+      "elevation": 62,
+      "mode": "campus",
+      "kind": "detail",
+      "level": 1,
+      "zone_kind": "stairs",
+      "connections": true,
+      "zone": "escada",
+      "classico": {
+        "file": "imagens/classico/16-escada.png",
+        "sha256": "08fe86b69758769339b47730c116b738849866bd5d256001eaf2bf9613494fe5",
+        "camera": {
+          "engine": "Canvas 2D · projeção axonométrica",
+          "target": [
+            -20.517846000000002,
+            -33.863479999999996
+          ],
+          "view": {
+            "x": -21.54798598699344,
+            "y": -34.02000959862684,
+            "z": 53.333333333333336,
+            "t": 1.42,
+            "k": 0.8829475928589269,
+            "hv": 1
+          },
+          "state": {
+            "mix": 1,
+            "focus": 1,
+            "floor": 1,
+            "room": null,
+            "hasRoute": false,
+            "route": null
+          },
+          "quality": {
+            "setting": "alta",
+            "tier": "alta",
+            "why": "escolha manual",
+            "info": {
+              "mem": 16,
+              "cores": 8,
+              "ms": 8.2,
+              "saveData": false
+            }
+          }
+        },
+        "preview": "previas/classico/16-escada.jpg"
+      },
+      "novo": {
+        "file": "imagens/novo/16-escada.png",
+        "sha256": "63e66eb0a0abf351ed24a0b5c0a68ceeb7ffd68b5113df13aad82593ac56236e",
+        "camera": {
+          "engine": "three.js r160 · perspectiva",
+          "target": [
+            -20.517846000000002,
+            4.45,
+            -33.863479999999996
+          ],
+          "position": [
+            -7.880611042571481,
+            28.489993783736683,
+            -31.943254263095294
+          ],
+          "fov": 38,
+          "elevation": 62,
+          "angle": 1.42,
+          "span": 30,
+          "stage": {
+            "abre": 1,
+            "ops": [
+              0,
+              1,
+              0
+            ],
+            "elos": [
+              1,
+              0
+            ],
+            "chegada": 0,
+            "plano": 0,
+            "iso": 0,
+            "esc": 0,
+            "corte": 4.7,
+            "isoMax": 1
+          }
+        },
+        "preview": "previas/novo/16-escada.jpg"
+      },
+      "pair": "pares/16-escada.jpg"
+    },
+    {
+      "key": "17-nadic",
+      "title": "Por dentro · sala dos bolsistas do NADIC",
+      "note": "Mesmo ambiente, identificado pela zona sala-nadic no primeiro andar. A representação de móveis existe somente no novo.",
+      "center": [
+        -2.0091480000000033,
+        -27.855972
+      ],
+      "span": 27,
+      "angle": 1.42,
+      "elevation": 58,
+      "mode": "campus",
+      "kind": "detail",
+      "level": 1,
+      "zone": "sala-nadic",
+      "classico": {
+        "file": "imagens/classico/17-nadic.png",
+        "sha256": "2c7b2bc54dcac7b9dda6c1c4d3aed9ca715e1e4398096bfad6ac5484c1cd98a9",
+        "camera": {
+          "engine": "Canvas 2D · projeção axonométrica",
+          "target": [
+            -2.0091480000000033,
+            -27.855972
+          ],
+          "view": {
+            "x": -3.0816810626245674,
+            "y": -28.0189432193744,
+            "z": 59.25925925925926,
+            "t": 1.42,
+            "k": 0.848048096156426,
+            "hv": 1
+          },
+          "state": {
+            "mix": 1,
+            "focus": 1,
+            "floor": 1,
+            "room": null,
+            "hasRoute": false,
+            "route": null
+          },
+          "quality": {
+            "setting": "alta",
+            "tier": "alta",
+            "why": "escolha manual",
+            "info": {
+              "mem": 16,
+              "cores": 8,
+              "ms": 11.3,
+              "saveData": false
+            }
+          }
+        },
+        "preview": "previas/classico/17-nadic.jpg"
+      },
+      "novo": {
+        "file": "imagens/novo/17-nadic.png",
+        "sha256": "95e45545b361ca2ff8ba5a5d09e0ce941e01b061d912e99b37c79dce6da0b60d",
+        "camera": {
+          "engine": "three.js r160 · perspectiva",
+          "target": [
+            -2.0091480000000033,
+            4.45,
+            -27.855972
+          ],
+          "position": [
+            10.828781500477776,
+            25.23080739141989,
+            -25.905250760865748
+          ],
+          "fov": 38,
+          "elevation": 58,
+          "angle": 1.42,
+          "span": 27,
+          "stage": {
+            "abre": 1,
+            "ops": [
+              0,
+              1,
+              0
+            ],
+            "elos": [
+              0,
+              0
+            ],
+            "chegada": 0,
+            "plano": 0,
+            "iso": 0,
+            "esc": 0,
+            "corte": 4.7,
+            "isoMax": 1
+          }
+        },
+        "preview": "previas/novo/17-nadic.jpg"
+      },
+      "pair": "pares/17-nadic.jpg"
+    },
+    {
+      "key": "18-planta",
+      "title": "Primeiro andar · leitura em planta",
+      "note": "Projeção superior do mesmo pavimento. No clássico, o modo 2D é nativo; no novo, a câmera é colocada quase na vertical sobre o corte.",
+      "center": [
+        -8,
+        -28
+      ],
+      "span": 105,
+      "angle": 1.42,
+      "elevation": 89.9,
+      "mode": "campus",
+      "kind": "flat",
+      "level": 1,
+      "classico": {
+        "file": "imagens/classico/18-planta.png",
+        "sha256": "8c5d0bf76e4e001b193e04709c6e633c031907b9032b7033afd0b7c33a2d8a61",
+        "camera": {
+          "engine": "Canvas 2D · projeção axonométrica",
+          "target": [
+            -8,
+            -28
+          ],
+          "view": {
+            "x": -8.909559621823583,
+            "y": -28.13820743231875,
+            "z": 15.238095238095237,
+            "t": 1.42,
+            "k": 1,
+            "hv": 0
+          },
+          "state": {
+            "mix": 1,
+            "focus": 1,
+            "floor": 1,
+            "room": null,
+            "hasRoute": false,
+            "route": null
+          },
+          "quality": {
+            "setting": "alta",
+            "tier": "alta",
+            "why": "escolha manual",
+            "info": {
+              "mem": 16,
+              "cores": 8,
+              "ms": 8.2,
+              "saveData": false
+            }
+          }
+        },
+        "preview": "previas/classico/18-planta.jpg"
+      },
+      "novo": {
+        "file": "imagens/novo/18-planta.png",
+        "sha256": "63ab615bdf960290d5af9ba9146f5ace81dddc074e96ac51deeef9377a798eba",
+        "camera": {
+          "engine": "three.js r160 · perspectiva",
+          "target": [
+            -8,
+            4.45,
+            -28
+          ],
+          "position": [
+            -7.835567386075338,
+            99.74427428207397,
+            -27.975014491832404
+          ],
+          "fov": 38,
+          "elevation": 89.9,
+          "angle": 1.42,
+          "span": 105,
+          "stage": {
+            "abre": 1,
+            "ops": [
+              0,
+              1,
+              0
+            ],
+            "elos": [
+              0,
+              0
+            ],
+            "chegada": 0,
+            "plano": 0,
+            "iso": 0,
+            "esc": 0,
+            "corte": 4.7,
+            "isoMax": 1
+          }
+        },
+        "preview": "previas/novo/18-planta.jpg"
+      },
+      "pair": "pares/18-planta.jpg"
+    },
+    {
+      "key": "19-app-evento",
+      "title": "No aplicativo · modo Evento",
+      "note": "Interface real em 390 × 844 px, tema claro e dados de exemplo. O enquadramento é o padrão de cada interface.",
+      "kind": "mobile",
+      "classico": {
+        "file": "imagens/classico/19-app-evento.png",
+        "sha256": "812df18f083bb3013876af7745e6a13f8ddf8ade9104b5af0d275a2cbdcd98cb",
+        "preview": "previas/classico/19-app-evento.jpg"
+      },
+      "novo": {
+        "file": "imagens/novo/19-app-evento.png",
+        "sha256": "c844c5e9fa00514d799beca734f19274d4796dd7527b04f6a7d5a8988a1787bf",
+        "preview": "previas/novo/19-app-evento.jpg"
+      }
+    },
+    {
+      "key": "20-app-andares",
+      "title": "No aplicativo · andares abertos",
+      "note": "Interface real em 390 × 844 px, tema claro e dados de exemplo. O enquadramento é o padrão de cada interface.",
+      "kind": "mobile",
+      "classico": {
+        "file": "imagens/classico/20-app-andares.png",
+        "sha256": "010d71dc845d4a12e1f6b336abe9703b69f52d4e33dd88f49bb355c0158c2476",
+        "preview": "previas/classico/20-app-andares.jpg"
+      },
+      "novo": {
+        "file": "imagens/novo/20-app-andares.png",
+        "sha256": "fc1099c90ad98e8e010c721cc0690090c29c884a52c8af874cbc9d75e5ab9109",
+        "preview": "previas/novo/20-app-andares.jpg"
+      }
+    }
+  ],
+  "browserErrors": []
+}

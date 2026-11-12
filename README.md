@@ -1,122 +1,93 @@
-# ETAL Connect
+<p align="center">
+  <img src="docs/marca/etal-logo.png" height="64" alt="ETAL · Encontro de Tecnologia do Alto Oeste Potiguar">
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/marca/nadic-logo-claro.svg">
+    <img src="docs/marca/nadic-logo.svg" height="58" alt="NADIC">
+  </picture>
+</p>
 
-**[Documentação visual do projeto →](DOCUMENTACAO.html)** — 22 slides dinâmicos com plantas e referências reais, app e mapa interativos, fluxos, PWA, arquitetura, banco e Swagger. Os detalhes ficam nas referências ao final; para regenerar, `npm run docs`.
+<h1 align="center">ETAL Connect</h1>
 
-Proposta de aplicativo para o **ETAL**, o Encontro de Tecnologia do Alto Oeste Potiguar, no IFRN Campus Pau dos Ferros. O NADIC desenvolve o app em parceria com o IFRN e o ETAL. A referência de funcionamento é o app do GO!RN: crachá, programação, presença, mapa e avisos num lugar só.
+<p align="center">
+  Crachá, programação, presença por QR e o mapa 3D do campus num app só.<br>
+  Proposta do <b>NADIC</b> para o <b>ETAL</b>, no IFRN Campus Pau dos Ferros.
+</p>
 
-<p>
-  <img src="docs/prints/01-login.png" width="180" alt="Tela de entrada com o crachá em branco no cordão">
-  <img src="docs/prints/03-inicio.png" width="180" alt="Início com o crachá e o credenciamento">
-  <img src="docs/prints/07-andares.png" width="180" alt="Os três andares do bloco principal em 3D">
-  <img src="docs/prints/09-como-chegar.png" width="180" alt="Rota da entrada até o laboratório">
+<p align="center">
+  <a href="docs/README.md"><b>Documentos e PDFs</b></a> ·
+  <a href="docs/pdf/ETAL-Connect-apresentacao.pdf">Apresentação (PDF)</a> ·
+  <a href="prototipo/qrs.html">QR Codes de teste</a> ·
+  <a href="#rodar">Rodar</a>
+</p>
+
+<p align="center">
+  <img src="docs/prints/01-entrada.png" width="160" alt="Entrada pelo crachá">
+  <img src="docs/prints/02-inicio.png" width="160" alt="Início com o crachá e a atividade de agora">
+  <img src="docs/prints/04-atividade.png" width="160" alt="Atividade com sala, vagas e mapa">
+  <img src="docs/prints/05-presenca.png" width="160" alt="Presença confirmada pela leitura do QR">
+  <img src="docs/prints/06-mapa-evento.png" width="160" alt="Mapa 3D no modo Evento">
 </p>
 
 ## O que o app faz
 
-- **Entrada pelo crachá.** A tela de entrada é um crachá em branco no cordão. Enquanto a pessoa digita, os dados aparecem nele; ao entrar, ele vira e mostra o crachá preenchido. Puxar o crachá para baixo abre o app. Quem é do IFRN entra com a matrícula, e nome, foto e curso vêm do SUAP pela biblioteca [suapy](https://github.com/kellyson71/suapy). Quem vem de fora cria uma conta de visitante.
-- **Crachá e credenciamento.** O crachá vira e mostra o QR. O credenciamento e a presença em cada atividade são registrados pela leitura do QR na sala.
-- **Programação.** Três dias de evento, com filtros, atividades salvas, palestrantes e materiais liberados depois da presença.
-- **Mapa do campus em 3D.** O campus inteiro foi feito a partir de um levantamento no Google Earth e de fotos. O modo Evento destaca o bloco principal, o auditório, a cantina, o pátio e o obelisco. "Como chegar" traça a rota da portaria (ou da sala da atividade em que você está) até a porta da sala e escolhe a entrada e a escada ou rampa mais rápidas.
-  - **Mapa padrão: o novo (`mapa3d/`, WebGL com three.js).** Prédios com textura das fotos, interior do bloco principal fiel às plantas, andares que se abrem em escada, abertura animada e rota que sobe de verdade pela rampa e pela escada.
-  - **Passear pelo campus.** Um personagem com a foto do SUAP no rosto anda pelo campus, os carros passam na BR-405 e os do estacionamento podem ser dirigidos. Personagem e carro são do [Sketchbook](https://github.com/swift502/Sketchbook) (swift502, licença MIT).
-  - **Mapa clássico guardado (`prototipo/campus3d.js`, Canvas).** É o mapa que o app usava até 11/11/2026. Continua no código e funcionando: Perfil → Personalizar → Mapa → *Clássico*, ou `?mapa=classico`. A exportação em arquivo único (`index.html` da raiz) e a qualidade *2D* usam sempre o clássico. `modelo-3d/` é uma cópia ainda mais antiga, de antes das otimizações.
-- **Quatro versões do 3D.** Completo, médio, leve e 2D. O app mede o aparelho e escolhe a versão; o teste de desempenho em Perfil → Personalizar mostra os quadros por segundo de cada uma.
-- **Lembretes.** Dez minutos antes da atividade, o app avisa com a sala, o andar e quantos minutos a pé ela fica da entrada, também como notificação do sistema.
-- **Funciona sem internet.** É instalável (PWA) e guarda o app no aparelho, inclusive o mapa. Isso conta porque a internet do campus costuma cair com o evento cheio.
-- **Painel da organização no computador** (`admin.html`). Visão geral com gráficos, planta ao vivo com a lotação de cada sala, programação com troca de sala, participantes com credenciamento manual e exportação em CSV, e envio de avisos. O que a equipe faz ali chega ao app aberto no mesmo navegador. O celular tem uma versão resumida do painel.
-- **Retrospectiva, colmeia de conquistas, campeonatos e temas.**
+- **Entrada pelo crachá.** Os dados aparecem no crachá enquanto a pessoa digita; puxar o crachá para baixo abre o app. Quem é do IFRN entra pelo SUAP (biblioteca [suapy](https://github.com/kellyson71/suapy)); quem vem de fora cria uma conta de visitante.
+- **Programação e agenda.** Três dias de evento, filtros, atividades salvas, palestrantes e materiais liberados depois da presença.
+- **Presença por QR.** Credenciamento na recepção e presença em cada atividade pela leitura do QR da sala.
+- **Mapa 3D do campus.** Feito a partir do levantamento e de fotos. O modo **Evento** mostra só o campus, com as partes do evento em cores; o modo **Campus** mostra tudo, inclusive o bloco por dentro. **Como chegar** traça a rota da portaria até a porta da sala, pela rampa ou pela escada. O mapa ainda esconde um segredo.
+- **Lembretes e uso sem internet.** Aviso dez minutos antes, com sala e caminho. O app é instalável (PWA) e abre sem rede.
+- **Painel da organização** (`admin.html`): lotação das salas ao vivo, troca de sala, credenciamento manual e avisos que chegam ao app.
 
-| | | | |
-|---|---|---|---|
-| <img src="docs/prints/02-visitante.png" width="170" alt="Crachá preenchido depois de entrar"> | <img src="docs/prints/04-agenda.png" width="170" alt="Agenda"> | <img src="docs/prints/05-lembrete.png" width="170" alt="Lembrete de atividade"> | <img src="docs/prints/06-mapa-evento.png" width="170" alt="Mapa no modo Evento"> |
-| Crachá preenchido | Agenda | Lembrete | Mapa: modo Evento |
-| <img src="docs/prints/08-campus.png" width="170" alt="Campus com as cores reais"> | <img src="docs/prints/10-painel-organizacao.png" width="170" alt="Painel da organização"> | <img src="docs/prints/11-real-e-exemplo.png" width="170" alt="O que é real e o que é exemplo"> | <img src="docs/prints/12-retrospectiva.png" width="170" alt="Retrospectiva"> |
-| Campus com as cores reais | Painel da organização | Real e exemplo | Retrospectiva |
-
-### Painel da organização
-
-<img src="docs/prints/13-painel-computador.png" width="720" alt="Visão geral do painel da organização">
-
-<img src="docs/prints/14-planta-ao-vivo.png" width="720" alt="Planta ao vivo com a lotação das salas">
-
-### Como a entrada foi escolhida
-
-Pesquisamos como os apps de eventos fazem a entrada:
-
-- **Doity, Brella e Whova** pedem o e-mail da inscrição.
-- **Bizzabo e Guidebook** dispensam a senha e mandam um link ou código.
-- **Web Summit Rio** guarda o ingresso como um QR no app.
-- **Whova** e outros apresentam o app antes de pedir conta.
-
-Com base nisso, testamos três propostas: Cartaz, Crachá e Explorar. Ficou a do crachá, que deixa claro para que serve a conta.
-
-<img src="docs/prints/15-propostas-de-entrada.png" width="720" alt="As três propostas de entrada lado a lado">
+<p align="center">
+  <img src="docs/prints/03-agenda.png" width="160" alt="Agenda em linha do tempo">
+  <img src="docs/prints/07-como-chegar.png" width="160" alt="Rota até a sala">
+  <img src="docs/prints/08-andares.png" width="160" alt="Os três andares do bloco principal">
+  <img src="docs/prints/09-campus.png" width="160" alt="Mapa no modo Campus">
+</p>
+<p align="center">
+  <img src="docs/prints/10-painel.png" width="720" alt="Painel da organização no computador">
+</p>
 
 ## Rodar
 
-Precisa de Python 3 e de acesso à internet na primeira execução.
+Precisa de Python 3 (e de internet na primeira vez, para instalar a suapy).
 
 ```sh
 npm run prototipo        # ou: sh prototipo/rodar.sh
 ```
 
-Abra http://127.0.0.1:8770 para o app e http://127.0.0.1:8770/admin.html para o painel da organização. Na primeira vez, o script cria o ambiente Python e instala a suapy.
-
-Para abrir no celular pela mesma rede Wi-Fi:
-
-```sh
-REDE=192.168.0.10 sh prototipo/rodar.sh   # troque pelo IP do computador
-```
-
-Pelo Wi-Fi a conexão é HTTP, sem criptografia. Use só contas de teste. A instalação e o uso sem internet exigem HTTPS ou o endereço 127.0.0.1.
-
-**Sem servidor:** `npm run export:html` gera o `index.html` da raiz, um arquivo único que abre por duplo clique. Nele o login do SUAP não funciona, mas dá para entrar como visitante ou com dados de exemplo.
-
-**Atalhos de teste:** `?tela=` abre direto numa tela (`home`, `agenda`, `atividade`, `mapa`, `bloco`, `campus`, `rota`, `org`, `sobre`, `visitante`, `perf`, `retro`…). Também há `?qualidade=alta|media|leve|simples`, `?fps=1`, `?tema=dark`, `?mapa=classico|novo` (escolhe o mapa) e `?intro=1` (repete a abertura do mapa novo).
+- App: http://127.0.0.1:8770 · Painel: http://127.0.0.1:8770/admin.html · QR Codes de teste: http://127.0.0.1:8770/qrs.html
+- **No celular, pelo Wi-Fi:** `REDE=<IP do computador> sh prototipo/rodar.sh` e abra `http://<IP>:8770`. É HTTP: use só contas de teste. Instalar e usar sem internet exige HTTPS ou 127.0.0.1.
+- **QR Codes de teste:** cada QR da página é um link `?qr=etal:<atividade>`. A câmera do celular abre o app e, depois da entrada, faz a leitura de exemplo. Com a API ligada, os QRs assinados ficam em `homologacao.html`.
+- **Sem servidor:** `npm run export:html` gera o `index.html` da raiz, que abre com duplo clique (sem login do SUAP).
+- **Atalhos:** `?tela=home|agenda|atividade|mapa|rota|org|sobre…`, `?mapa=classico`, `?tema=dark`, `?fps=1`.
 
 ## Estrutura
 
 | Pasta | O que tem |
 |---|---|
-| `prototipo/` | O app: `index.html`, `app.js` (telas), `admin.html` e `admin.js` (painel da organização), `app.css`, `campus3d.js` (mapa clássico, em Canvas), `mapa3d/` (cópia empacotada do mapa novo, gerada por `npm run pwa`), `data.js` (programação), `sw.js` e `manifest.webmanifest` (PWA), `server.py` (servidor e login no SUAP) |
-| `scripts/` | Geradores: planta do bloco (`build-principal-plan.py`, conferida por `check-principal-plan.py`), campus a partir do KML, sprites renderizados no Blender, cache offline (`build-pwa.py`) e exportação (`export-prototipo.py`) |
-| `referencias/` | Levantamento do campus em KML, imagens de referência da planta e modelos 3D (CC0) |
-| `docs/` | Contexto, fluxos, regras do mapa, propostas visuais e os prints |
-| `modelo-3d/` | Cópia congelada do mapa, de antes das otimizações |
-| `app/` | Primeira versão, em React (Vinext). Ficou como legado |
-
-Comandos úteis:
+| `prototipo/` | O app (telas em `app.js`, painel em `admin.js`, servidor e login do SUAP em `server.py`, PWA) |
+| `mapa3d/` | O mapa 3D (three.js), empacotado no app por `npm run pwa` |
+| `backend/`, `deploy/` | API FastAPI (SUAP, presença por QR assinado, avisos) e implantação com Caddy e PostgreSQL |
+| `docs/` | [Documentos e PDFs](docs/README.md), prints e a apresentação |
+| `scripts/` | Planta do bloco, cache offline, exportações, prints e PDFs |
 
 ```sh
-npm run planta   # regenera a planta do bloco e confere as regras
-npm run pwa      # atualiza a versão do cache offline depois de mudar o protótipo
+npm run planta     # regenera a planta do bloco e confere as regras
+npm run pwa        # atualiza o cache offline depois de mudar o protótipo
+npm run docs:pdf   # gera os PDFs da documentação
 ```
 
 ## Real e exemplo
 
 O app mostra isso em Perfil → Sobre este protótipo.
 
-- **Real:**
-  - O login pelo SUAP, com nome, foto, curso e matrícula. A senha não é gravada nem registrada.
-  - O mapa do campus e a planta do bloco principal.
-  - Os textos do ETAL, do NADIC e do IFRN.
-  - A conta de visitante, os lembretes e o uso sem internet. Esses três funcionam de verdade, mas ficam só no aparelho.
-- **Exemplo:**
-  - Seis atividades seguem o VII ETAL (novembro de 2025). As outras, e os nomes dos palestrantes delas, são inventados.
-  - A distribuição das atividades pelas salas e as vagas.
-  - Credenciamento, presença, certificados e materiais. Não há integração oficial.
-  - Campeonatos, avisos e os números do painel da organização.
-- **Aproximações:**
-  - As alturas dos prédios.
-  - A posição do obelisco e o desenho do riacho no pátio.
-  - O entorno do campus.
+- **Real:** login pelo SUAP (a senha não é gravada), o mapa do campus e a planta do bloco, os textos do ETAL, do NADIC e do IFRN, conta de visitante, lembretes e uso sem internet.
+- **Exemplo:** seis atividades seguem o VII ETAL (novembro de 2025); as outras são inventadas. Salas, vagas, presença, certificados, materiais, campeonatos, avisos e os números do painel. Nada disso é oficial.
+- **Aproximado:** alturas dos prédios, posição do obelisco e o entorno do campus.
 
 ## Créditos
 
-- Modelos de árvores, arbustos e casas: Kenney (Nature Kit e City Kit Suburban), CC0. Detalhes em `referencias/modelos/CREDITOS.txt`.
-- Fontes: Geologica e Onest, via Google Fonts.
-- Informações do evento: sites do ETAL, do NADIC e do IFRN Campus Pau dos Ferros.
+Árvores e casas: Kenney (CC0). Personagem e carro do passeio: [Sketchbook](https://github.com/swift502/Sketchbook) (MIT). Gerador de QR: [node-qrcode](https://github.com/soldair/node-qrcode) (MIT). Fontes: Geologica e Onest. Plantas de 2012: dissertação de Larissa Leiros de Souza (UFRN). Informações do evento: sites do ETAL, do NADIC e do IFRN Campus Pau dos Ferros.
 
-## Histórico
-
-O versionamento com git começou em 07/11/2026. Os commits anteriores a essa data foram montados a partir das datas de modificação dos arquivos. Cada commit reúne os arquivos modificados pela última vez naquele horário, no estado em que ficaram; as versões intermediárias não foram guardadas.
+O histórico no Git começa em 07/11/2026; os commits anteriores foram montados pelas datas de modificação dos arquivos.
