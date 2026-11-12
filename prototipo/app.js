@@ -55,6 +55,7 @@
     chat: '<path d="M21 12a8 8 0 0 1-8 8H4l2-3.500A8 8 0 1 1 21 12Z"/>',
     up: '<path d="m6 15 6-6 6 6"/>',
     moon: '<path d="M20 14.500A8.500 8.500 0 1 1 9.500 4a7 7 0 0 0 10.500 10.500Z"/>',
+    sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.500v2M12 19.500v2M2.500 12h2M19.500 12h2M5.300 5.300l1.400 1.400M17.300 17.300l1.400 1.400M5.300 18.700l1.400-1.400M17.300 6.700l1.400-1.400"/>',
     text: '<path d="M4 19 9 6l5 13M5.800 15h6.400M15 19l3-7 3 7M16 17h4"/>',
     mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
     contact: '<circle cx="9" cy="8" r="3.500"/><path d="M3 20a6 6 0 0 1 12 0M18 8v6M15 11h6"/>',
@@ -106,6 +107,13 @@
   const isNow = (x) => x.day === D.now.day && x.time <= D.now.time && D.now.time < x.end;
   /* Mapa novo: a rota sai da sala da atividade em que a pessoa está inscrita acontecendo agora; sem ela, da portaria. */
   const origemAgora = () => { const x = D.sessions.find((q) => S.saved.has(q.id) && isNow(q) && Number.isInteger(q.floor) && q.zone); return x ? { floor: x.floor, zone: x.zone, titulo: x.room || x.short || x.title } : null; };
+  /* a próxima atividade em que a pessoa está inscrita (a de agora conta até acabar); o mapa mostra só ela, numa pílula */
+  const proximaMinha = () => {
+    const nowMin = (() => { const [h, m] = D.now.time.split(':').map(Number); return h * 60 + m; })(); const fim = (x) => { const [h, m] = x.end.split(':').map(Number); return h * 60 + m; };
+    const x = D.sessions.filter((q) => S.saved.has(q.id) && Number.isInteger(q.floor) && q.zone && q.end && (q.day > D.now.day || (q.day === D.now.day && fim(q) > nowMin))).sort((a, b) => a.day - b.day || a.time.localeCompare(b.time))[0];
+    if (!x) return null; const dia = x.day === D.now.day ? (isNow(x) ? 'agora' : x.time) : `${dayOf(x.day).week} ${x.time}`;
+    return { id: x.id, title: x.short || x.title, time: x.time, floor: x.floor, zone: x.zone, quando: dia };
+  };
   const speakersList = () => { const seen = new Set(); return D.sessions.filter((x) => x.speakerShort && !seen.has(x.speakerShort) && seen.add(x.speakerShort)); };
   const hoursOf = (s) => { const [a, b] = [s.time, s.end].map((t) => { const [h, m] = t.split(':').map(Number); return h + m / 60; }); return b - a; };
   const seatLine = (s) => (!s.seats ? '' : s.taken >= s.seats ? 'Vagas esgotadas' : `${s.seats - s.taken} ${s.seats - s.taken === 1 ? 'vaga' : 'vagas'} de ${s.seats}`);
@@ -198,6 +206,7 @@
     const root = document.documentElement;
     const dark = opts.forceTheme ? opts.forceTheme === 'dark' : UI.mode === 'escuro' || (UI.mode === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
     root.dataset.theme = dark ? 'dark' : 'light';
+    document.dispatchEvent(new Event('etal:tema')); // o mapa (iframe) acompanha
     root.dataset.badge = UI.badge; root.dataset.motion = UI.motion;
     root.style.setProperty('--rk', { retos: 0.3, suaves: 1, redondos: 1.4 }[UI.corners] || 1);
     tokenNames.forEach((k) => root.style.removeProperty(k));
@@ -580,7 +589,8 @@
       mount: mountHome,
       html: `<section class="${UI.sky ? 'hm-sky' : 'hm-plain'}">${UI.sky ? skyArt() : ''}
           <header class="apphead"><span class="wm ${UI.sky ? 'on-sky' : ''}">${mark('mark xs')}<b>etal</b><span>connect</span></span>
-          <button class="iconbtn ${UI.sky ? 'on-sky' : ''}" data-go="notices" aria-label="Avisos, ${D.notices.filter((n) => n.fresh).length} novos">${ic('bell')}<u class="badge-num">${D.notices.filter((n) => n.fresh).length}</u></button></header>
+          <span class="hd-acts"><button class="iconbtn ${UI.sky ? 'on-sky' : ''}" data-act="tema" aria-label="${isDark() ? 'Usar o tema claro' : 'Usar o tema escuro'}">${ic(isDark() ? 'sun' : 'moon')}</button>
+          <button class="iconbtn ${UI.sky ? 'on-sky' : ''}" data-go="notices" aria-label="Avisos, ${D.notices.filter((n) => n.fresh).length} novos">${ic('bell')}<u class="badge-num">${D.notices.filter((n) => n.fresh).length}</u></button></span></header>
         </section>
         <div class="pad stack home">
           ${badge()}
@@ -600,6 +610,7 @@
           </article>
           ${UI.home.atalhos ? `<nav class="quick rv" aria-label="Atalhos">${actions.map(([i, t, a], n) => `<button ${a} style="--n:${n}"><span>${ic(i)}</span><em>${t}</em></button>`).join('')}</nav>` : ''}
 
+          ${!standalone() && !prefs.get('etal-instalar-oculto') ? `<div class="instalar rv"><button class="inst-main" data-act="install">${ic('download')}<span><b>Instale o ETAL Connect</b><small>Lembretes no celular e mapa sem internet</small></span></button><button class="inst-x" data-act="instalar-fechar" aria-label="Agora não">${ic('x')}</button></div>` : ''}
           ${UI.home.colmeia ? combCard() : ''}
 
           ${UI.home.agenda ? `<div class="sec rv"><h2>Sua agenda</h2><button data-act="mine">Ver tudo</button></div>
@@ -747,28 +758,41 @@
       };
     }
     /* bloco de cada tipo: palestra destaca quem fala; mesa mostra a roda de conversa; minicurso e oficina, o que se faz e o que levar */
-    const t = tipoDe(s);
+    /* Detalhe no padrão "bater o olho": tipo e título; quem; dois blocos grandes (quando e vagas); o mapa com a sala como
+       cartão (tocar leva até lá); o lembrete numa linha só. Os textos (sobre, o que se faz, o que levar, perguntas) vêm
+       depois, curtos, e a descrição abre com "Ler mais". */
+    const t = tipoDe(s); const lembrete = S.reminders.has(id);
     const quem = t.g === 'mesa'
-      ? `<section class="roda st" ${st(2)}><h2 class="h">Quem conversa</h2><ul>${pessoasDe(s).map((p, i) => `<li>${spAv(p)}<span><b>${p.name}</b><small>${i === 0 ? 'Mediação' : p.role}</small></span></li>`).join('')}</ul></section>`
-      : `<button class="teacher ${t.g === 'pal' ? 'quem-fala' : ''} st" ${st(2)} data-go="speaker" data-id="${id}">${spAv(s, t.g === 'pal')}<span>${t.g === 'pal' ? '<small>Quem fala</small>' : ''}<b>${s.speakerShort}</b><small>${s.role}</small></span>${ic('chev', 'i card-chev')}</button>`;
-    const perguntas = `<section class="block st" ${st(6)}><div class="sec"><h2>Perguntas</h2><button data-act="ask" data-id="${id}">Perguntar</button></div>${questionsOf(id)}</section>`;
+      ? `<section class="roda st" ${st(2)}><ul>${pessoasDe(s).map((p, i) => `<li>${spAv(p)}<span><b>${p.name}</b><small>${i === 0 ? 'Mediação' : p.role}</small></span></li>`).join('')}</ul></section>`
+      : `<button class="teacher ${t.g === 'pal' ? 'quem-fala' : ''} st" ${st(2)} data-go="speaker" data-id="${id}">${spAv(s, t.g === 'pal')}<span><b>${s.speakerShort}</b><small>${s.role}</small></span>${ic('chev', 'i card-chev')}</button>`;
+    const vagasRestam = s.seats ? Math.max(0, s.seats - s.taken) : null;
+    const blocos = `<div class="glance st" ${st(3)}>
+        <div class="gl-quando"><small>${d.week} · ${s.day} nov</small><b>${s.time}</b><span>até ${s.end}${duracao(s) ? ` · ${duracao(s)}` : ''}</span></div>
+        ${vagasRestam == null ? '' : `<div class="gl-vagas ${vagasRestam === 0 ? 'cheio' : vagasRestam <= 5 ? 'pouca' : ''}"><small>Vagas</small><b>${vagasRestam === 0 ? 'Esgotado' : vagasRestam}</b>${vagasRestam ? `<span>de ${s.seats}</span>` : ''}${seatBar(s)}</div>`}
+      </div>`;
+    const lugar = `<button class="lugar st" ${st(4)} ${mapAct(s)} aria-label="Ver ${s.room} no mapa"><canvas class="thumb3d"></canvas><span class="lg-tx"><b>${s.room}</b><small>${Number.isInteger(s.floor) ? floorOf(s.floor).label : ''}</small></span><span class="lg-ir">${ic('route')}Como chegar</span></button>`;
+    const lembrar = `<button class="remindrow st ${lembrete ? 'on' : ''}" ${st(5)} data-act="remind" data-id="${id}" aria-pressed="${lembrete}">${ic('alarm')}<span>${lembrete ? `Lembrete às ${hhmm(toMin(s.time) - LEAD)}` : `Lembrar ${LEAD} min antes`}</span><i class="switch"></i></button>`;
+    const sobre = s.description ? `<section class="sobre st" ${st(6)}><h2 class="h">Sobre</h2><p class="desc clamp" data-act="lermais">${s.description}</p></section>` : '';
+    /* "Notebook com Node.js instalado e conhecimentos básicos de JavaScript." vira dois itens */
+    const leva = (s.requirements || '').replace(/\.$/, '').split(/,\s*|\s+e\s+(?=[a-zà-ú]+\s)/i).filter(Boolean);
     const extra = t.g === 'mini'
-      ? `${s.learn?.length ? `<section class="block pratica st" ${st(6)}><h2 class="h">O que você vai fazer</h2><ul class="learn">${s.learn.map((l) => `<li>${ic('check')}<span>${l}</span></li>`).join('')}</ul></section>` : ''}${s.requirements ? `<div class="levar st" ${st(6)}>${ic('laptop')}<span><b>Leve para a sala</b><small>${s.requirements}</small></span></div>` : ''}`
-      : t.g === 'pal' || t.g === 'mesa' ? perguntas : '';
+      ? `${s.learn?.length ? `<section class="st" ${st(7)}><h2 class="h">O que você vai fazer</h2><ol class="passos-aula">${s.learn.map((l) => `<li>${l}</li>`).join('')}</ol></section>` : ''}${leva.length ? `<section class="levar st" ${st(8)}><h2 class="h">${ic('laptop')}Leve para a sala</h2><ul>${leva.map((l) => `<li>${l.charAt(0).toUpperCase() + l.slice(1)}</li>`).join('')}</ul></section>` : ''}`
+      : t.g === 'pal' || t.g === 'mesa' ? `<section class="block st" ${st(7)}><div class="sec"><h2>Perguntas</h2><button data-act="ask" data-id="${id}">Perguntar</button></div>${questionsOf(id)}</section>` : '';
     return {
       mount: mountThumb(s),
       html: `${header('', { right: `<button class="iconbtn bm ${S.saved.has(id) ? 'on' : ''}" data-act="save" data-id="${id}" aria-label="Salvar">${ic('bookmark')}</button>` })}
-      <div class="pad stack detail">
-        <span class="kind kind-tp tp-${t.k} st" ${st(0)}>${ic(t.icon)}${s.type}${duracao(s) ? ` · ${duracao(s)}` : ''}</span>
+      <div class="pad stack detail detalhe-v2">
+        <span class="kind kind-tp tp-${t.k} st" ${st(0)}>${ic(t.icon)}${s.type}</span>
         <h1 class="title-lg st" ${st(1)}>${s.title}</h1>
-        ${quem}
-        <ul class="info st" ${st(3)}><li>${ic('cal')}${d.long} · ${s.time} às ${s.end}</li><li>${ic('pin')}${whereOf(s)}</li>${t.formato ? `<li>${ic(t.icon)}${t.formato}</li>` : ''}<li>${ic('users')}<span>${seatLine(s)}</span>${seatBar(s)}</li></ul>
-        ${thumb(s, 4)}
-        <p class="desc st" ${st(5)}>${s.description}</p>
+        ${t.g === 'mesa' ? '' : quem}
+        ${blocos}
+        ${lugar}
+        ${t.g === 'mesa' ? quem.replace('<ul>', '<h2 class="h">Quem conversa</h2><ul>') : ''}
+        ${lembrar}
+        ${DEMO && lembrete ? `<button class="remindtest st" ${st(5)} data-act="remindtest" data-id="${id}">${ic('bell')}Ver como o lembrete chega</button>` : ''}
+        ${sobre}
         ${extra}
-        <button class="remindrow st ${S.reminders.has(id) ? 'on' : ''}" ${st(6)} data-act="remind" data-id="${id}" aria-pressed="${S.reminders.has(id)}">${ic('alarm')}<span>${S.reminders.has(id) ? `Lembrete às ${hhmm(toMin(s.time) - LEAD)}` : `Lembrar ${LEAD} minutos antes`}<small>${S.reminders.has(id) ? `Com sala e tempo a pé${notifState() === 'granted' ? '' : ', dentro do app'}` : 'Aviso com a sala e o caminho'}</small></span><i class="switch"></i></button>
-        ${S.reminders.has(id) ? `<button class="remindtest st" ${st(6)} data-act="remindtest" data-id="${id}">${ic('bell')}Ver como o lembrete chega</button>` : ''}
-        <div class="locked st" ${st(7)}>${ic('lock')}<span>${s.materials.length} materiais ficam disponíveis quando você registrar presença na sala.</span></div>
+        ${s.materials.length ? `<p class="locked st" ${st(9)}>${ic('lock')}${s.materials.length} ${s.materials.length === 1 ? 'material' : 'materiais'} depois da presença</p>` : ''}
       </div>
       <div class="cta-bar"><button class="btn primary big" data-act="scan">${ic('qr')}Registrar presença</button></div>`,
     };
@@ -819,7 +843,7 @@
      Evento (o passeio virou segredo do mapa). "Ver como celular" volta para a moldura; a escolha fica em etal-moldura. ---- */
   const wideMq = matchMedia('(min-width: 1000px) and (pointer: fine)');
   let palcoFrame = null, palcoPronto = false, palcoFila = null;
-  const dadosMapa = (extra = {}) => ({ type: 'etal:mapa:abrir', ...extra, origem: origemAgora(), foto: D.person.photo || null, nome: D.person.name || '', hour: skyHour, reduced: reduce, sessions: D.sessions.map((x) => ({ id: x.id, title: x.title, time: x.time, floor: x.floor, zone: x.zone })), rooms: Object.fromEntries(P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => [`${f.level}:${z.id}`, z.roomNumber]))) });
+  const dadosMapa = (extra = {}) => ({ type: 'etal:mapa:abrir', ...extra, tema: isDark() ? 'escuro' : 'claro', proxima: proximaMinha(), origem: origemAgora(), foto: D.person.photo || null, nome: D.person.name || '', hour: skyHour, reduced: reduce, sessions: D.sessions.map((x) => ({ id: x.id, title: x.title, time: x.time, floor: x.floor, zone: x.zone })), rooms: Object.fromEntries(P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => [`${f.level}:${z.id}`, z.roomNumber]))) });
   const palcoOn = () => document.documentElement.classList.contains('wide');
   function palcoEnviar(extra) { if (!palcoFrame) return; if (!palcoPronto) { palcoFila = extra; return; } palcoFrame.contentWindow.postMessage(dadosMapa(extra), location.origin); palcoFrame.focus(); }
   function telaGrande() {
@@ -829,7 +853,7 @@
     const host = $('#palco'), bt = $('#moldura-btn');
     if (bt) { bt.hidden = !wideMq.matches; bt.textContent = on ? 'Ver como celular' : 'Usar a tela toda'; bt.onclick = () => { localStorage.setItem('etal-moldura', on ? '1' : '0'); location.reload(); }; }
     if (!host) return;
-    if (on && !palcoFrame) { palcoFrame = document.createElement('iframe'); palcoFrame.title = 'Mapa do campus em tela grande'; palcoFrame.allow = 'fullscreen'; palcoFrame.src = 'mapa3d/index.html?aba=1'; host.append(palcoFrame); host.hidden = false; }
+    if (on && !palcoFrame) { palcoFrame = document.createElement('iframe'); palcoFrame.title = 'Mapa do campus em tela grande'; palcoFrame.allow = 'fullscreen'; palcoFrame.src = `mapa3d/index.html?aba=1&tema=${isDark() ? 'escuro' : 'claro'}`; document.addEventListener('etal:tema', () => palcoEnviar({})); host.append(palcoFrame); host.hidden = false; }
     if (!on && palcoFrame) { palcoFrame.remove(); palcoFrame = null; palcoPronto = false; host.hidden = true; }
   }
   /* o mapa avisa quando entra e sai do passeio: no celular ele fica com a tela toda */
@@ -849,19 +873,37 @@
       <ul class="next st" ${st(5)}>${D.sessions.filter((x) => Number.isInteger(x.floor) && x.zone && D.enrolled.includes(x.id)).slice(0, 4).map((n) => `<li data-act="openmap" data-floor="${n.floor}" data-zone="${n.zone}"><span class="date"><small>${dayOf(n.day).week}</small><b>${n.day}</b></span><span class="next-tx"><b>${n.short}</b><small>${n.time} · ${n.room}</small></span>${ic('chev')}</li>`).join('')}</ul>
     </div>`,
   });
+  /* O mapa 3D fica num iframe só, criado na primeira vez e nunca removido: trocar de aba apenas o esconde. Antes ele
+     era recriado a cada abertura da aba Mapa e o campus inteiro era montado de novo (vários segundos no celular). */
+  let mapaFixo = null, mapaPronto = false, mapaFila = null;
+  const dadosAba = (type, pedida = {}) => ({ type, ...pedida, tema: isDark() ? 'escuro' : 'claro', proxima: proximaMinha(), origem: origemAgora(), foto: D.person.photo || null, nome: D.person.name || '', hour: skyHour, reduced: reduce, sessions: D.sessions.map((x) => ({ id: x.id, title: x.title, time: x.time, floor: x.floor, zone: x.zone })), rooms: Object.fromEntries(P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => [`${f.level}:${z.id}`, z.roomNumber]))) });
+  function mapaFixoEnviar(type, pedida) {
+    if (!mapaPronto) { mapaFila = pedida; return; }
+    mapaFixo.querySelector('iframe').contentWindow.postMessage(dadosAba(type, pedida), location.origin);
+  }
+  function mapaFixoCriar() {
+    if (mapaFixo) return mapaFixo;
+    mapaFixo = document.createElement('div'); mapaFixo.className = 'mapa-fixo'; mapaFixo.hidden = true;
+    mapaFixo.innerHTML = `<iframe title="Mapa do campus" allow="fullscreen" src="mapa3d/index.html?aba=1&tema=${isDark() ? 'escuro' : 'claro'}"></iframe>`;
+    /* trocou o tema no app: o mapa acompanha */
+    document.addEventListener('etal:tema', () => { if (mapaPronto) mapaFixoEnviar('etal:mapa:sincronizar', {}); });
+    vp.appendChild(mapaFixo);
+    const frame = mapaFixo.querySelector('iframe');
+    window.addEventListener('message', (e) => {
+      if (e.origin !== location.origin || e.source !== frame.contentWindow || e.data?.type !== 'etal:mapa:pronto') return;
+      mapaPronto = true; frame.contentWindow.postMessage(dadosAba('etal:mapa:abrir', mapaFila || {}), location.origin); mapaFila = null;
+    });
+    return mapaFixo;
+  }
+  /* mostra o mapa só quando a tela visível é a do mapa (chamado por setChrome a cada troca de tela) */
+  const mapaFixoVer = (el) => { if (mapaFixo) mapaFixo.hidden = !el?.querySelector('[data-mapa-fixo]'); };
   const telaMapaNovo = () => (palcoOn() ? telaMapaAoLado() : {
-    html: '<div class="map-screen mapa-aba"><iframe title="Mapa do campus" allow="fullscreen" src="mapa3d/index.html?aba=1"></iframe></div>',
-    mount: (page) => {
-      const frame = page.querySelector('iframe'); if (!frame) return;
-      /* rota pedida por "Como chegar" (atividade ou sala) vai junto, uma vez */
-      const pedida = S.mapRoute && Number.isInteger(S.mapFloor) && S.mapZone ? { floor: S.mapFloor, zone: S.mapZone } : {}; S.mapRoute = false;
-      /* foto do SUAP e nome: vão para o rosto do personagem no passeio */
-      const dados = (type) => ({ type, ...pedida, origem: origemAgora(), foto: D.person.photo || null, nome: D.person.name || '', hour: skyHour, reduced: reduce, sessions: D.sessions.map((x) => ({ id: x.id, title: x.title, time: x.time, floor: x.floor, zone: x.zone })), rooms: Object.fromEntries(P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => [`${f.level}:${z.id}`, z.roomNumber]))) });
-      const ouvir = (e) => {
-        if (!frame.isConnected) { window.removeEventListener('message', ouvir); return; }
-        if (e.origin === location.origin && e.source === frame.contentWindow && e.data?.type === 'etal:mapa:pronto') frame.contentWindow.postMessage(dados('etal:mapa:abrir'), location.origin);
-      };
-      window.addEventListener('message', ouvir);
+    html: '<div class="map-screen mapa-aba" data-mapa-fixo></div>',
+    mount: () => {
+      const novo = !mapaFixo; mapaFixoCriar(); mapaFixo.hidden = false;
+      /* rota pedida por "Como chegar" (atividade ou sala) vai junto, uma vez; sem pedido, só sincroniza (salas, foto, hora) */
+      const pedida = S.mapRoute && Number.isInteger(S.mapFloor) && S.mapZone ? { floor: S.mapFloor, zone: S.mapZone, via: S.mapVia || null } : null; S.mapRoute = false;
+      if (pedida) mapaFixoEnviar('etal:mapa:abrir', pedida); else if (!novo && mapaPronto) mapaFixoEnviar('etal:mapa:sincronizar', {});
     },
   });
   Screens.campus = () => (mapaNovoOn() ? telaMapaNovo() : {
@@ -984,7 +1026,12 @@
   const hex2 = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
   const mixC = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
   const css = (c) => `rgb(${c.join(',')})`;
-  let skyHour = 14 + 2 / 60;
+  /* Relógio do app: segue a hora do aparelho, minuto a minuto (céu, luz do mapa, "agora" da agenda e lembretes). O dia
+     continua o do evento de exemplo (26 a 28/11), porque a programação é a de 2025. ?ceu=<hora>, mexer no horário do céu
+     ou no botão do sol fixa uma hora para demonstrar, até recarregar. */
+  const horaAparelho = () => { const d = new Date(); return d.getHours() + d.getMinutes() / 60; };
+  let skyHour = horaAparelho(), horaManual = false;
+  setInterval(() => { if (!horaManual && Math.abs(horaAparelho() - skyHour) > 0.5 / 60) { skyHour = horaAparelho(); applySky(); if (mapaPronto) mapaFixoEnviar('etal:mapa:sincronizar', {}); } }, 30000);
   const skyClock = () => { const m = Math.round(skyHour * 60); return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`; };
   /* O mapa 3D acompanha o horário do céu (noite, pôr do sol), a menos que a pessoa desligue em Personalizar. */
   const syncMapHour = () => window.Campus3D?.setHour?.(UI.mapHour ? skyHour : null);
@@ -1009,7 +1056,7 @@
     const m = (h - 18.6) / 5;
     st_.setProperty('--moon-x', `${14 + Math.max(0, Math.min(1, m)) * 56}%`);
     st_.setProperty('--moon-y', `${56 - Math.sin(Math.max(0, Math.min(1, m)) * 2.2) * 40}%`);
-    const clock = skyClock();
+    const clock = skyClock(); D.now.time = clock; // o "agora" da agenda segue o mesmo relógio
     const ck = $('#clock'); if (ck) ck.textContent = clock;
     const nc = $('#nowclock'); if (nc) nc.textContent = clock;
     const r = $('#skyr'); if (r && document.activeElement !== r) r.value = h;
@@ -1018,7 +1065,7 @@
   }
   let skyAnim = 0;
   function skyTo(target) {
-    cancelAnimationFrame(skyAnim);
+    cancelAnimationFrame(skyAnim); horaManual = true;
     if (reduce) { skyHour = target; applySky(); return; }
     const from = skyHour; const t0 = performance.now();
     const step = (n) => { const k = Math.min(1, (n - t0) / 1400); skyHour = from + (target - from) * (1 - (1 - k) ** 3); applySky(); if (k < 1) skyAnim = requestAnimationFrame(step); };
@@ -1364,10 +1411,10 @@
           <li data-go="personalizar">${ic('moon')}<span>Personalizar</span><em>${(THEMES[UI.theme] || THEMES.etal).name}</em>${ic('chev', 'i chev')}</li>
           ${standalone() ? '' : `<li data-act="install">${ic('download')}<span>Instalar o ETAL Connect</span><em>Sem internet</em>${ic('chev', 'i chev')}</li>`}
         </ul>
-        <div class="sec st" ${st(2)}><h2>Organização</h2></div>
+        ${orgDe() ? `<div class="sec st" ${st(2)}><h2>Organização</h2></div>
         <ul class="menu st" ${st(3)}>
-          <li data-go="org">${ic('building')}<span>Painel da organização</span><em>Equipe</em>${ic('chev', 'i chev')}</li>
-        </ul>
+          <li data-go="org">${ic('building')}<span>Painel da organização</span><em>${esc(orgDe().papel)}</em>${ic('chev', 'i chev')}</li>
+        </ul>` : ''}
         <div class="sec st" ${st(4)}><h2>Sobre</h2></div>
         <ul class="menu st" ${st(5)}>
           <li data-go="etal">${ic('info')}<span>O que é o ETAL</span>${ic('chev', 'i chev')}</li>
@@ -1381,6 +1428,7 @@
     html: `<header class="apphead"><h1 class="title">Perfil</h1></header>
       <div class="pad stack">
         <div class="me st" ${st(0)}>${meAv('av lg')}<div><strong>${esc(D.person.name)}</strong><span>${esc(D.person.courseFull)}</span><span>${esc(D.person.year)} · ${esc(D.person.id)}</span>${D.person.source === 'suap' ? `<span class="fromsuap">${ic('check')}Dados do SUAP</span>` : D.person.source === 'visitante' ? `<span class="fromsuap guest">${ic('users')}Conta de visitante</span>` : ''}</div></div>
+        ${orgDe() ? `<button class="org-cta st" ${st(1)} data-go="org">${ic('building')}<span><small>Você é da organização · ${esc(orgDe().papel)}</small><b>Painel da organização</b></span>${ic('chev')}</button>` : ''}
         <button class="retro-cta st" ${st(1)} data-act="retro">${comb('tiny')}<span><b>Minha retrospectiva</b><small>O que você fez e aprendeu no ETAL</small></span>${ic('chev')}</button>
         <ul class="menu st" ${st(1)}>
           <li data-go="credential">${ic('id')}<span>Minha credencial</span><em>${S.credAt ? 'Ativa' : 'Pendente'}</em>${ic('chev', 'i chev')}</li>
@@ -1408,39 +1456,84 @@
     }).join('');
     return `<svg class="ob-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Credenciamentos por hora hoje: ${rows.map(([h, v]) => `${h} h, ${v}`).join('; ')}"><path class="ob-base" d="M8 ${base + .5}H${W - 8}"/>${bars}</svg>`;
   }
+  /* ---- Organização: por matrícula (D.organizadores + os acrescentados no painel, em etal-org.organizadores) ---- */
+  const organizadores = () => { const extra = orgRead().organizadores || []; return [...D.organizadores, ...extra.filter((o) => !D.organizadores.some((d) => d.matricula === o.matricula))]; };
+  const orgDe = () => organizadores().find((o) => o.matricula === String(D.person.id || '')) || null;
+  const semAcesso = () => ({ html: `${header('Painel da organização')}<div class="pad stack"><div class="empty st" ${st(0)}>${illo('mark')}<h3>Só para a organização</h3><p>O painel abre para as matrículas cadastradas como organizadoras do ETAL.</p></div></div>` });
+  /* Painel no celular: números do momento e atalhos para o que a equipe faz durante o evento. */
   Screens.org = () => {
+    const eu = orgDe(); if (!eu) return semAcesso();
     const now = D.sessions.filter((x) => isNow(x) && x.seats);
     const present = (x) => Math.min(x.seats, Math.round(x.taken * 0.86 + 1));
     const inRooms = now.reduce((n, x) => n + present(x), 0);
-    const today = D.sessions.filter((x) => x.day === D.now.day && x.floor !== undefined && x.zone && !x.simple);
-    const sent = D.notices.filter((n) => n.org).length;
+    const o = orgRead(); const manuais = Object.keys(o.manuais || {}).length;
+    const ferramentas = [
+      ['bell', 'Enviar aviso', 'Para todo mundo, na hora', 'orgAviso'],
+      ['route', 'Trocar sala', 'E avisar os inscritos', 'orgSala'],
+      ['trophy', 'Campeonatos', 'Resultados, regras e chave', 'orgJogos'],
+      ['id', 'Credenciar', 'Cadastro manual de quem não consegue', 'orgCred'],
+      ['users', 'Equipe', `${organizadores().length} matrículas na organização`, 'orgEquipe'],
+    ];
     return {
       html: `${header('Painel da organização')}<div class="pad stack org">
-        <p class="org-demo st" ${st(0)}>${ic('info')}<span>Visão da equipe do ETAL. Números simulados para a demonstração; os avisos e trocas de sala valem só neste aparelho.</span></p>
-        <a class="org-desk st" ${st(0)} href="admin.html" target="_blank" rel="noopener">${ic('laptop')}<span><b>Painel completo no computador</b><small>Planta ao vivo, participantes e exportação em CSV</small></span>${ic('open')}</a>
+        <div class="org-eu st" ${st(0)}>${meAv('av')}<span><b>${esc(D.person.first || D.person.name)}</b><small>${esc(eu.papel)} · matrícula ${esc(eu.matricula)}</small></span></div>
         <div class="org-kpis st" ${st(1)}>
-          <div><b>${liveCred}</b><small>credenciados</small><em>de ${D.org.inscritos} inscritos</em></div>
+          <div><b>${liveCred + manuais}</b><small>credenciados</small><em>de ${D.org.inscritos} inscritos</em></div>
           <div><b>${inRooms}</b><small>pessoas em sala</small><em>${now.length} atividades agora</em></div>
-          <div><b>${Math.round((liveCred / D.org.inscritos) * 100)}%</b><small>de comparecimento</small><em>até ${skyClock()}</em></div>
-          <div><b>${sent}</b><small>avisos enviados</small><em>pela organização hoje</em></div>
         </div>
-        <section class="org-card st" ${st(2)}><h2>Credenciamento por hora</h2>${hourBars(D.org.porHora)}</section>
-        <section class="org-card st" ${st(3)}><h2>Lotação agora</h2>
-          ${now.length ? `<ul class="org-rooms">${now.map((x) => { const n = present(x); const pc = Math.round((n / x.seats) * 100); return `<li data-go="activity" data-id="${x.id}"><span><b>${esc(x.short)}</b><small>${esc(whereOf(x))}</small></span><span class="org-meter ${pc >= 90 ? 'full' : ''}"><i style="width:${pc}%"></i></span><em>${n}/${x.seats}</em></li>`; }).join('')}</ul>` : '<p class="org-none">Nenhuma atividade com vagas acontecendo agora.</p>'}
-        </section>
-        <form class="org-card st" ${st(4)} data-form="orgnotice"><h2>Enviar aviso</h2>
-          <label class="sr" for="ontitle">Título do aviso</label><input id="ontitle" maxlength="70" placeholder="Ex.: Palestra de encerramento às 17:00" required>
-          <label class="sr" for="ontext">Texto do aviso</label><textarea id="ontext" rows="2" maxlength="180" placeholder="Detalhes para quem está no evento"></textarea>
-          <button class="btn primary" type="submit">${ic('bell')}Enviar para todos</button>
-        </form>
-        <form class="org-card st" ${st(5)} data-form="orgroom"><h2>Trocar sala</h2>
-          <label class="field" for="orx"><span>Atividade</span><select id="orx">${today.map((x) => `<option value="${x.id}">${esc(x.short)} · ${esc(x.room)}</option>`).join('')}</select></label>
-          <label class="field" for="ory"><span>Nova sala</span><select id="ory">${roomsAll().map((r) => `<option value="${r.floor}|${r.zone}">${r.name} · ${floorOf(r.floor).label}</option>`).join('')}</select></label>
-          <button class="btn soft" type="submit">${ic('route')}Mudar e avisar os inscritos</button>
-        </form>
+        <div class="org-ferr st" ${st(2)}>${ferramentas.map(([i, t, sub, go]) => `<button data-go="${go}">${ic(i)}<b>${t}</b><small>${sub}</small></button>`).join('')}</div>
+        ${now.length ? `<section class="org-card st" ${st(3)}><h2>Lotação agora</h2><ul class="org-rooms">${now.map((x) => { const n = present(x); const pc = Math.round((n / x.seats) * 100); return `<li data-go="activity" data-id="${x.id}"><span><b>${esc(x.short)}</b><small>${esc(whereOf(x))}</small></span><span class="org-meter ${pc >= 90 ? 'full' : ''}"><i style="width:${pc}%"></i></span><em>${n}/${x.seats}</em></li>`; }).join('')}</ul></section>` : ''}
+        <a class="org-desk st" ${st(4)} href="admin.html" target="_blank" rel="noopener">${ic('laptop')}<span><b>Painel completo no computador</b><small>Planta ao vivo, participantes e CSV</small></span>${ic('open')}</a>
+        <p class="org-demo st" ${st(5)}>${ic('info')}<span>Demonstração: as mudanças valem para o app aberto neste aparelho e no painel do computador no mesmo navegador.</span></p>
       </div>`,
     };
   };
+  Screens.orgAviso = () => orgDe() ? { html: `${header('Enviar aviso')}<div class="pad stack org">
+      <form class="org-card st" ${st(0)} data-form="orgnotice">
+        <label class="field" for="ontitle"><span>Título</span><input id="ontitle" maxlength="70" placeholder="Ex.: Palestra de encerramento às 17:00" required></label>
+        <label class="field" for="ontext"><span>Texto</span><textarea id="ontext" rows="3" maxlength="180" placeholder="Detalhes para quem está no evento"></textarea></label>
+        <button class="btn primary" type="submit">${ic('bell')}Enviar para todos</button>
+      </form>
+      ${(orgRead().notices || []).length ? `<section class="org-card st" ${st(1)}><h2>Enviados</h2><ul class="org-lista">${orgRead().notices.slice(0, 6).map((n) => `<li><b>${esc(n.title)}</b><small>${esc(n.time || '')} · ${esc(n.text || '')}</small></li>`).join('')}</ul></section>` : ''}
+    </div>` } : semAcesso();
+  Screens.orgSala = () => { if (!orgDe()) return semAcesso(); const ativ = D.sessions.filter((x) => x.floor !== undefined && x.zone && !x.simple);
+    return { html: `${header('Trocar sala')}<div class="pad stack org">
+      <form class="org-card st" ${st(0)} data-form="orgroom">
+        <label class="field" for="orx"><span>Atividade</span><select id="orx">${ativ.map((x) => `<option value="${x.id}">${esc(dayOf(x.day).week)} ${x.time} · ${esc(x.short)} · ${esc(x.room)}</option>`).join('')}</select></label>
+        <label class="field" for="ory"><span>Nova sala</span><select id="ory">${roomsAll().map((r) => `<option value="${r.floor}|${r.zone}">${r.name} · ${floorOf(r.floor).label}</option>`).join('')}</select></label>
+        <button class="btn primary" type="submit">${ic('route')}Mudar e avisar os inscritos</button>
+      </form></div>` }; };
+  Screens.orgJogos = () => orgDe() ? { html: `${header('Campeonatos')}<div class="pad stack org">${D.tournaments.map((t, i) => { const stt = tourSt(t); const [k, l] = window.TOUR.status(stt); return `<button class="org-jogo st" ${st(i)} data-go="orgJogo" data-id="${t.id}"><span class="org-jogo-arte ${t.theme}">${gameArt(t)}</span><span><b>${esc(t.name)}</b><small>${l} · ${8 - stt.free}/8 na chave</small></span>${ic('chev')}</button>`; }).join('')}</div>` } : semAcesso();
+  /* Um campeonato: quem ganhou cada partida (toque no vencedor), abrir ou fechar a chave, inscrever ou tirar alguém e editar as regras. */
+  Screens.orgJogo = ({ id }) => {
+    if (!orgDe()) return semAcesso();
+    const t = D.tournaments.find((x) => x.id === id); const stt = tourSt(t); const R = window.TOUR.rounds(stt);
+    const partida = (m, nome) => `<li class="org-partida">${nome ? `<small>${nome}</small>` : ''}<div>${[m.a, m.b].map((p, w) => p ? `<button class="${m.w === w ? 'on' : m.w !== null ? 'fora' : ''}" ${m.a && m.b ? `data-act="orgres" data-t="${t.id}" data-k="${m.k}" data-w="${w}"` : 'disabled'}>${esc(p[0])}${m.w === w ? ic('check') : ''}</button>` : `<button disabled>—</button>`).join('<i>×</i>')}${m.w !== null ? `<button class="desf" data-act="orgres" data-t="${t.id}" data-k="${m.k}" data-w="" aria-label="Desfazer resultado">${ic('rotate')}</button>` : ''}</div></li>`;
+    return { html: `${header(t.name)}<div class="pad stack org">
+      <button class="org-switch st ${stt.open ? 'on' : ''}" ${st(0)} data-act="orgopen" data-t="${t.id}" aria-pressed="${stt.open}">${ic('trophy')}<span><b>Inscrições ${stt.open ? 'abertas' : 'fechadas'}</b><small>${stt.free} ${stt.free === 1 ? 'vaga livre' : 'vagas livres'}</small></span><i class="switch"></i></button>
+      <section class="org-card st" ${st(1)}><h2>Resultados</h2><p class="org-dica">Toque em quem ganhou. A chave e o app atualizam na hora.</p>
+        <ul class="org-partidas">${R.q.map((m, i) => partida(m, `Quartas · ${t.times[i]}`)).join('')}${R.s.map((m, i) => partida(m, `Semifinal ${i + 1}`)).join('')}${partida(R.f, 'Final')}</ul></section>
+      <section class="org-card st" ${st(2)}><h2>Jogadores</h2><ul class="org-lista">${stt.players.map((p, i) => p ? `<li><b>${esc(p[0])}</b><small>${esc(p[1])}${p[3] ? ` · ${esc(p[3])}` : ''}</small>${R.played ? '' : `<button class="org-x" data-act="orgrmjog" data-t="${t.id}" data-i="${i}" aria-label="Tirar ${esc(p[0])} da chave">${ic('x')}</button>`}</li>` : '').join('')}</ul>
+        ${stt.free ? `<form class="org-mini" data-form="orgjog" data-t="${t.id}"><h3>Inscrever alguém</h3><input name="nick" maxlength="14" placeholder="Apelido na chave" required><input name="nome" maxlength="40" placeholder="Nome" required><select name="pick">${t.picks.map((x) => `<option>${esc(x)}</option>`).join('')}</select><button class="btn soft" type="submit">${ic('plus')}Pôr na chave</button></form>` : ''}</section>
+      <form class="org-card st" ${st(3)} data-form="orgregra" data-t="${t.id}"><h2>Regras</h2><textarea name="regras" rows="5">${esc(stt.rules || t.rules)}</textarea><button class="btn soft" type="submit">Salvar regras</button></form>
+    </div>` };
+  };
+  Screens.orgCred = () => { if (!orgDe()) return semAcesso(); const man = Object.entries(orgRead().manuais || {});
+    return { html: `${header('Credenciar')}<div class="pad stack org">
+      <form class="org-card st" ${st(0)} data-form="orgcred"><p class="org-dica">Para quem não consegue entrar no app: o credenciamento fica registrado pela organização.</p>
+        <label class="field"><span>Nome</span><input name="nome" maxlength="60" required placeholder="Nome e sobrenome"></label>
+        <label class="field"><span>Matrícula ou documento</span><input name="mat" maxlength="20" required inputmode="numeric" placeholder="Ex.: 20231094010012"></label>
+        <button class="btn primary" type="submit">${ic('check')}Credenciar agora</button>
+      </form>
+      ${man.length ? `<section class="org-card st" ${st(1)}><h2>Credenciados pela organização</h2><ul class="org-lista">${man.map(([m, x]) => `<li><b>${esc(x.nome)}</b><small>${esc(m)} · ${esc(x.hora)}</small></li>`).join('')}</ul></section>` : ''}
+    </div>` }; };
+  Screens.orgEquipe = () => orgDe() ? { html: `${header('Equipe')}<div class="pad stack org">
+      <section class="org-card st" ${st(0)}><h2>Organizadores</h2><ul class="org-lista">${organizadores().map((o) => `<li><b>${esc(o.papel)}</b><small>matrícula ${esc(o.matricula)}</small></li>`).join('')}</ul></section>
+      <form class="org-card st" ${st(1)} data-form="orgequipe"><h2>Acrescentar</h2>
+        <label class="field"><span>Matrícula</span><input name="mat" maxlength="20" required inputmode="numeric"></label>
+        <label class="field"><span>Papel</span><input name="papel" maxlength="40" required placeholder="Ex.: Campeonatos, Recepção"></label>
+        <button class="btn soft" type="submit">${ic('plus')}Dar acesso ao painel</button>
+      </form></div>` } : semAcesso();
 
   /* ---- o que é real e o que é exemplo neste protótipo ---- */
   Screens.sobre = () => {
@@ -1572,20 +1665,53 @@
       </div>`,
   });
 
+  /* Cor de cada jogador (as mesmas em toda a tela): o jogador deixa de ser só iniciais laranja iguais às dos outros. */
+  const COR_JOG = ['#e8542b', '#3b82f6', '#16a34a', '#a855f7', '#f59e0b', '#ec4899', '#14b8a6', '#64748b'];
+  const corJog = (stt, p) => COR_JOG[Math.max(0, stt.players.indexOf(p)) % COR_JOG.length];
+  const avJog = (stt, p, cls = '') => p ? `<span class="jg-av ${cls}" style="--c:${corJog(stt, p)}">${esc(p[2])}</span>` : `<span class="jg-av vazio ${cls}"></span>`;
+  /* Situação de cada jogador na chave: campeão, eliminado (em que fase), na disputa (e contra quem joga a seguir). */
+  function situacao(stt, R, p) {
+    if (R.champ === p) return { k: 'champ', t: 'Campeão' };
+    const fases = [['nas quartas', R.q], ['na semifinal', R.s], ['na final', [R.f]]];
+    for (const [nome, ms] of fases) for (const m of ms) {
+      if (m.a !== p && m.b !== p) continue;
+      if (m.w !== null && m.win !== p) return { k: 'fora', t: `Eliminado ${nome}` };
+      if (m.w === null) { const adv = m.a === p ? m.b : m.a; return { k: 'vivo', t: adv ? `Joga contra ${adv[0]}` : 'Aguardando adversário' }; }
+    }
+    return { k: 'vivo', t: 'Na disputa' };
+  }
+  /* Chave em rodadas (padrão dos apps de torneio no celular): escolhe a fase e vê cada partida como um duelo. */
   function bracket(t, stt) {
     const R = window.TOUR.rounds(stt); const mine = D.person.id;
-    const side = (p, m, i) => { const cls = m.w === null ? '' : m.w === i ? 'win' : 'lose'; return p
-      ? `<div class="pl ${cls} ${p[4] === mine ? 'me' : ''}"><i>${esc(p[2])}</i><b>${esc(p[0])}</b>${m.w === i ? ic('check', 'i pl-ok') : ''}</div>`
-      : `<div class="pl open"><i></i><b>${m.k[0] === 'q' ? 'Vaga aberta' : 'A definir'}</b></div>`; };
-    const match = (m, label, k, cls = '') => `<div class="match ${cls} ${m.a && m.b ? '' : 'tbd'} ${m.w !== null ? 'done' : ''} st" ${st(3 + k)}>${label ? `<time>${label}</time>` : ''}${side(m.a, m, 0)}${side(m.b, m, 1)}</div>`;
-    /* Chave inteira na largura do celular: quartas, semifinais e final em três colunas ligadas por linhas. */
-    return `${R.champ ? `<div class="champ st" ${st(2)}>${ic('trophy')}<span><small>Campeão</small><b>${esc(R.champ[0])}</b><em>${esc(R.champ[1])}</em></span></div>` : ''}
-      <div class="bk3">
-        <h3 class="st" ${st(2)}>Quartas</h3><h3 class="st" ${st(2)}>Semifinal</h3><h3 class="st" ${st(2)}>Final</h3>
-        ${R.q.map((m, k) => `<div class="bk-cell q" style="grid-row:${k + 2}">${match(m, t.times[k], k)}</div>`).join('')}
-        ${R.s.map((m, k) => `<div class="bk-cell s" style="grid-row:${2 * k + 2}/span 2">${match(m, '', 4 + k)}</div>`).join('')}
-        <div class="bk-cell f" style="grid-row:2/span 4">${match(R.f, '', 6, 'final')}<span class="bk-cup ${R.champ ? 'on' : ''}">${ic('trophy')}</span></div>
-      </div>`;
+    const fases = [['q', 'Quartas', R.q], ['s', 'Semifinal', R.s], ['f', 'Final', [R.f]]];
+    const atual = fases.find(([, , ms]) => ms.some((m) => m.w === null && m.a && m.b))?.[0] || (R.champ ? 'f' : 'q');
+    const fase = S.tourRound && fases.some((f) => f[0] === S.tourRound) ? S.tourRound : atual;
+    const lado = (p, m, i) => { const res = m.w === null ? '' : m.w === i ? 'ganhou' : 'perdeu'; return p
+      ? `<div class="du-lado ${res} ${p[4] === mine ? 'eu' : ''}">${avJog(stt, p)}<b>${esc(p[0])}</b><small>${esc(p[3] || p[1])}</small>${m.w === i ? `<em>${ic('check')}Venceu</em>` : ''}</div>`
+      : `<div class="du-lado vazio">${avJog(stt, null)}<b>${m.k[0] === 'q' ? 'Vaga aberta' : 'A definir'}</b><small>${m.k[0] === 'q' ? 'inscreva-se' : 'vencedor da anterior'}</small></div>`; };
+    const hora = (m, i) => (m.k[0] === 'q' ? t.times[i] : '');
+    const duelo = (m, i) => { const minha = [m.a, m.b].some((p) => p && p[4] === mine);
+      return `<article class="duelo st ${minha ? 'minha' : ''} ${m.k === 'f' ? 'final' : ''}" ${st(3 + i)}>${minha ? '<span class="du-fita">Sua partida</span>' : ''}${lado(m.a, m, 0)}<div class="du-meio">${m.k === 'f' ? ic('trophy') : ''}<b>VS</b>${hora(m, i) ? `<time>${hora(m, i)}</time>` : ''}</div>${lado(m.b, m, 1)}</article>`; };
+    const ms = fases.find((f) => f[0] === fase)[2];
+    return `${R.champ ? `<div class="campeao st" ${st(2)}>${avJog(stt, R.champ, 'grande')}<span><small>${ic('trophy')}Campeão</small><b>${esc(R.champ[0])}</b><em>${esc(R.champ[1])}</em></span></div>` : ''}
+      <div class="fases st" ${st(2)}>${fases.map(([k, nome, l]) => { const feitas = l.filter((m) => m.w !== null).length; return `<button class="${k === fase ? 'on' : ''}" data-act="tourround" data-k="${k}"><b>${nome}</b><small>${feitas}/${l.length}</small></button>`; }).join('')}</div>
+      <div class="duelos">${ms.map(duelo).join('')}</div>`;
+  }
+  /* Jogadores: cor própria, escolha, situação na chave e o próximo adversário. */
+  function jogadores(t, stt, canJoin) {
+    const R = window.TOUR.rounds(stt);
+    return `<ul class="elenco">${stt.players.map((p, i) => p
+      ? (() => { const sit = situacao(stt, R, p); return `<li class="st ${p[4] === D.person.id ? 'eu' : ''} ${sit.k}" ${st(3 + i)} style="--c:${corJog(stt, p)}"><span class="el-num">${String(i + 1).padStart(2, '0')}</span>${avJog(stt, p, 'grande')}<span class="el-tx"><b>${esc(p[0])}${p[4] === D.person.id ? ' <u>você</u>' : ''}</b><small>${esc(p[1])}</small></span><span class="el-dir">${p[3] ? `<em>${esc(p[3])}</em>` : ''}<small class="el-sit">${sit.t}</small></span></li>`; })()
+      : `<li class="st vazio" ${st(3 + i)}>${canJoin ? `<button data-act="tourform" data-v="1"><span class="el-num">${String(i + 1).padStart(2, '0')}</span>${avJog(stt, null, 'grande')}<span class="el-tx"><b>Vaga aberta</b><small>Toque para entrar na chave</small></span>${ic('plus')}</button>` : `<span class="el-num">${String(i + 1).padStart(2, '0')}</span>${avJog(stt, null, 'grande')}<span class="el-tx"><b>Vaga</b><small>sem inscrito</small></span>`}</li>`).join('')}</ul>`;
+  }
+  /* Regras: como funciona em passos, regras em tópicos, horários e prêmio. A organização pode editar o texto pelo painel. */
+  function regras(t, stt) {
+    const texto = stt.rules || t.rules; const itens = texto.split(/(?<=\.)\s+/).map((x) => x.trim()).filter(Boolean);
+    const passos = [['trophy', 'Inscreva-se', 'pelo app, até a chave fechar'], ['qr', 'Faça o check-in', `no QR da ${t.place.split(' · ')[0]}`], ['swords', 'Jogue sua partida', t.format.split(' · ').slice(1).join(' · ') || t.format], ['award', 'Quem vence avança', 'até a final']];
+    return `<section class="st" ${st(3)}><h3 class="tr-h">Como funciona</h3><ol class="tr-passos">${passos.map(([i, b, sm]) => `<li>${ic(i)}<span><b>${b}</b><small>${esc(sm)}</small></span></li>`).join('')}</ol></section>
+      <section class="st" ${st(4)}><h3 class="tr-h">Regras</h3><ul class="tr-regras">${itens.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></section>
+      <section class="st" ${st(5)}><h3 class="tr-h">Horários das quartas</h3><div class="tr-horas">${t.times.map((h, i) => `<span><b>${h}</b><small>partida ${i + 1}</small></span>`).join('')}</div></section>
+      <div class="tr-premio st" ${st(6)}>${ic('trophy')}<span><small>Prêmio</small><b>${esc(t.prize)}</b></span></div>`;
   }
 
   /* Inscrição: apelido, escolha (personagem ou time) e como a pessoa quer jogar. */
@@ -1610,11 +1736,7 @@
     const tabs = [['chave', 'Chave'], ['jogadores', `Jogadores · ${8 - stt.free}`], ['regras', 'Regras']];
     const canJoin = stt.open && stt.free > 0 && !R.played && !me;
     const lvl = (p) => (p[5] !== undefined ? TOUR_LEVELS[p[5]] : '');
-    const body = tab === 'chave' ? bracket(t, stt)
-      : tab === 'jogadores' ? `<ul class="players">${stt.players.map((p, i) => (p
-        ? `<li class="st ${p[4] === D.person.id ? 'me' : ''}" ${st(3 + i)}><i>${esc(p[2])}</i><b>${esc(p[0])}</b><small>${esc(p[1])}</small>${p[3] ? `<em>${esc(p[3])}</em>` : ''}${p[4] === D.person.id ? '<u>Você</u>' : ''}</li>`
-        : `<li class="st open" ${st(3 + i)}>${canJoin ? `<button data-act="tourform" data-v="1"><i>+</i><b>Vaga aberta</b><small>Toque para entrar</small></button>` : '<i></i><b>Vaga</b><small>Sem inscrito</small>'}</li>`)).join('')}</ul>`
-        : `<dl class="rules st" ${st(3)}><div><dt>Formato</dt><dd>${t.format}</dd></div><div><dt>Vagas</dt><dd>${8 - stt.free} de 8</dd></div><div><dt>Local</dt><dd>${t.place}</dd></div><div><dt>Prêmio</dt><dd>${t.prize}</dd></div></dl><p class="desc st" ${st(4)}>${t.rules}</p>`;
+    const body = `<div class="tr-pad">${tab === 'chave' ? bracket(t, stt) : tab === 'jogadores' ? jogadores(t, stt, canJoin) : regras(t, stt)}</div>`;
     const cta = S.tourForm && canJoin ? tourForm(t, stt)
       : `<div class="t-actions st" ${st(1)}>
           ${me ? `<div class="t-in">${ic('check', 'i t-in-ok')}<span><b>Você está na chave como ${esc(me[0])}</b><small>${[me[3], lvl(me)].filter(Boolean).map(esc).join(' · ') || 'Inscrição confirmada'}</small></span>${R.played ? '' : `<button data-act="tourleave" data-id="${t.id}">Sair</button>`}</div>`
@@ -1714,13 +1836,37 @@
     setTimeout(() => d?.remove(), 400);
     if (API && root.dataset.mode !== 'meu') setTimeout(camStart, 300);
   }
+  /* Resultado da leitura por tipo de atividade. Regra: momento de destaque vai para a tela toda (credenciamento e
+     check-in no campeonato); presença em aula, palestra e mesa-redonda é uma folha que sobe sobre a câmera, com a cor do
+     tipo e a ação que importa ali (abrir a aula, perguntar ao palestrante, perguntar à mesa). Leitura repetida é curta. */
+  const KICK = { mini: 'Presença na aula', pal: 'Presença na palestra', mesa: 'Presença na mesa-redonda', camp: 'Check-in no campeonato', out: 'Presença registrada' };
   function roomResult(q, { again, first, c }) {
-    const s = byId(q);
-    return `<div class="sr-hero">${hxBadge(again ? 'muted' : '')}<div><small class="sr-kick">${again ? 'Presença já registrada' : first ? 'Participação e presença confirmadas' : 'Presença registrada'}</small><h2>${esc(s.short)}</h2><p>${esc(s.room)} · ${floorName(s.floor)} · ${again ? `desde ${S.present[q]}` : `às ${S.present[q]}`}</p></div></div>
-      <ul class="sr-facts"><li>${ic('file')}<span><b>${s.materials.length} materiais</b><small>liberados agora</small></span></li><li>${ic('clock')}<span><b>${s.time} às ${s.end}</b><small>${esc(s.type)}</small></span></li></ul>
-      ${c ? combRow(c) : ''}
-      <div class="sr-actions"><button class="btn primary big" data-act="scanopen" data-q="${q}">Abrir a aula</button><button class="btn soft" data-act="scanagain">${ic('qr')}Ler outro QR</button></div>`;
+    const s = byId(q); const t = tipoDe(s); const hora = again ? `desde ${S.present[q]}` : `às ${S.present[q]}`;
+    const hero = `<div class="sr-hero">${hxBadge(again ? 'muted' : `tp-${t.k}`)}<div><small class="sr-kick">${again ? 'Presença já registrada' : first ? 'Credenciado e presente' : KICK[t.g]}</small><h2>${esc(s.short)}</h2><p>${esc(s.room)} · ${floorName(s.floor)} · ${hora}</p></div></div>`;
+    const outro = `<button class="btn soft" data-act="scanagain">${ic('qr')}Ler outro QR</button>`;
+    if (again) return `${hero}<div class="sr-actions"><button class="btn primary big" data-act="scanopen" data-q="${q}">Abrir a atividade</button>${outro}</div>`;
+    const mats = s.materials?.length ? `<li>${ic('file')}<span><b>${s.materials.length} ${s.materials.length === 1 ? 'material' : 'materiais'}</b><small>liberados agora</small></span></li>` : '';
+    const corpo = {
+      mini: `<ul class="sr-facts">${mats}<li>${ic('clock')}<span><b>até ${s.end}</b><small>${duracao(s)} de aula</small></span></li></ul>`,
+      pal: `<div class="sr-quem">${spAv(s)}<span><b>${esc(s.speakerShort)}</b><small>${esc(s.role)}</small></span></div>${mats ? `<ul class="sr-facts">${mats}</ul>` : ''}`,
+      mesa: `<div class="sr-quem"><span class="ses-rostos">${pessoasDe(s).map((p) => spAv(p)).join('')}</span><span><b>${pessoasDe(s).length} na conversa</b><small>mediação de ${esc(s.speakerShort)}</small></span></div>`,
+    }[t.g] || '';
+    const acao = { mini: `<button class="btn primary big" data-act="scanopen" data-q="${q}">${ic('laptop')}Abrir a aula</button>`, pal: `<button class="btn primary big" data-act="scanask" data-q="${q}">${ic('chat')}Perguntar ao palestrante</button>`, mesa: `<button class="btn primary big" data-act="scanask" data-q="${q}">${ic('chat')}Perguntar à mesa</button>` }[t.g] || `<button class="btn primary big" data-act="scanopen" data-q="${q}">Abrir a atividade</button>`;
+    return `${hero}${corpo}${c ? combRow(c) : ''}<div class="sr-actions">${acao}${outro}</div>`;
   }
+  /* Campeonato: tela toda com a arte do jogo; diz se a pessoa está na chave (e contra quem joga) ou na torcida. */
+  Overlays.jogo = (s, c) => {
+    const t = D.tournaments.find((x) => x.id === s.tournament); const stt = tourSt(t); const i = tourMine(stt); const me = i >= 0;
+    const adv = me ? stt.players[i ^ 1] : null; const hora = me ? (t.times || [])[Math.floor(i / 2)] || t.time : null;
+    const linha = me ? (adv ? `Sua partida: ${hora}, contra ${esc(adv[0])}` : `Você está na chave · ${hora}`) : stt.open && stt.free ? `Você está na torcida. Ainda há ${stt.free} ${stt.free === 1 ? 'vaga' : 'vagas'} na chave.` : 'Você está na torcida.';
+    const botao = me ? 'Ver a chave' : stt.open && stt.free ? 'Quero jogar' : 'Ver a chave';
+    return `<div class="jogo ${t.theme}">${gameArt(t)}
+      <div class="jg-top">${hxBadge('big tp-camp')}<p class="jg-kick">Check-in feito</p>${titleOf(t, 'jg-logo')}<p class="jg-sub">${linha}</p></div>
+      <dl class="jg-facts"><div><dt>Sala</dt><dd>${esc(s.room)}</dd></div><div><dt>Formato</dt><dd>${esc(t.format.split(' · ')[0])}</dd></div><div><dt>Chave</dt><dd>${8 - stt.free}/8</dd></div></dl>
+      ${c ? `<div class="jg-comb">${combRow(c)}</div>` : ''}
+      <div class="w-actions"><button class="btn big w-main" data-act="closeov" data-then="tournament" data-then-id="${t.id}">${ic('trophy')}${botao}</button><button class="btn ghost" data-act="closeov">Continuar</button></div>
+    </div>`;
+  };
   function peerResult(p, { again, c }) {
     return `<div class="sr-hero"><span class="sr-peer"><b>${esc(p.initials)}</b><i>${ic('check')}</i></span><div><small class="sr-kick">${again ? 'Vocês já são contatos' : 'Contato adicionado'}</small><h2>${esc(p.name)}</h2><p>${esc(p.course)}</p></div></div>
       <div class="sr-tags"><span>${ic('star')}Interesse em ${esc(p.interest)}</span><span>${ic('contact')}Contato trocado agora</span></div>
@@ -1815,6 +1961,7 @@
     device.classList.toggle('sky-status', el._sky);
     if (!el._sky) device.classList.remove('sky-past');
     renderTabbar();
+    mapaFixoVer(el);
   }
   function show(el, mode) {
     const old = vp.querySelector('.page:not(.leaving)');
@@ -1981,12 +2128,12 @@
     b.innerHTML = `<span><b>Nova versão do app</b><small>As mudanças entram ao atualizar.</small></span><button data-act="update">Atualizar</button>`;
     b.classList.add('show');
   }
-  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); PWA.prompt = e; if (S.auth && S.tab === 'profile') rerender(); });
+  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); PWA.prompt = e; if (S.auth && (S.tab === 'profile' || S.tab === 'home')) rerender(); });
   window.addEventListener('appinstalled', () => { PWA.prompt = null; toast('ETAL Connect instalado'); });
   const standalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
   const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
   async function installApp() {
-    if (PWA.prompt) { PWA.prompt.prompt(); const r = await PWA.prompt.userChoice.catch(() => null); PWA.prompt = null; if (r?.outcome !== 'accepted') toast('Instalação cancelada'); rerender(); return; }
+    if (PWA.prompt) { PWA.prompt.prompt(); const r = await PWA.prompt.userChoice.catch(() => null); PWA.prompt = null; if (r?.outcome !== 'accepted') toast('Instalação cancelada'); else askNotify(); rerender(); return; }
     if (isIOS()) { notify('Instalar no iPhone', 'Toque em Compartilhar e depois em "Adicionar à Tela de Início".'); return; }
     notify('Instalar o app', swAllowed ? 'Abra o menu do navegador e toque em "Instalar app".' : 'A instalação precisa de HTTPS. Pelo Wi-Fi local, o app abre só no navegador.');
   }
@@ -2028,20 +2175,8 @@
     if (UI.view === '2d' || !mapaNovoOn()) return false;
     /* tela grande: a rota vai para o mapa ao lado, sem abrir outra janela por cima do app */
     if (palcoOn()) { palcoEnviar({ floor, zone, via: S.mapVia || null }); toast('Caminho traçado no mapa ao lado'); return true; }
-    const host = document.createElement('section'); host.className = 'mapa-novo'; host.setAttribute('role', 'dialog'); host.setAttribute('aria-label', 'Caminho pelo campus'); host.setAttribute('aria-modal', 'true');
-    const frame = document.createElement('iframe'); frame.title = 'Mapa do campus'; frame.allow = 'fullscreen'; frame.src = 'mapa3d/index.html';
-    const light = document.createElement('button'); light.className = 'mapa-novo-leve'; light.textContent = 'Mapa leve';
-    const previous = document.activeElement;
-    const close = () => { clearTimeout(timer); clearInterval(sync); window.removeEventListener('message', receive); document.removeEventListener('keydown', key); host.remove(); vp.inert = false; tabbar.inert = false; previous?.focus?.(); };
-    const payload = () => ({type:'etal:mapa:abrir', floor, zone, origem: origemAgora(), foto: D.person.photo || null, nome: D.person.name || '', via:S.mapVia || null, hour:skyHour, reduced:reduce, sessions:D.sessions.map(x=>({id:x.id,title:x.title,time:x.time,floor:x.floor,zone:x.zone})), rooms:Object.fromEntries(P.floors.flatMap(f=>f.zones.filter(z=>z.roomNumber).map(z=>[`${f.level}:${z.id}`,z.roomNumber]))) });
-    let ready = false, lastSync = '';
-    const receive = e => { if(e.origin!==location.origin || e.source!==frame.contentWindow) return; if(e.data?.type==='etal:mapa:pronto'){ ready=true;clearTimeout(timer);frame.contentWindow.postMessage(payload(),location.origin);light.textContent='Mapa leve'; } if(e.data?.type==='etal:mapa:fechar')navBack();if(e.data?.type==='etal:mapa:leve')useLight(); };
-    const useLight = () => { navBack(); setTimeout(fallback, 100); };
-    const key = e => { if(e.key==='Escape'){e.preventDefault();navBack();} };
-    const timer = setTimeout(()=>{if(!ready){light.textContent='Abrir mapa leve';toast('O modelo está demorando. O mapa leve está disponível.');}},15000);
-    const sync = setInterval(()=>{if(!ready)return;const data=payload();const stamp=JSON.stringify([data.sessions,data.rooms]);if(stamp!==lastSync){lastSync=stamp;frame.contentWindow.postMessage({...data,type:'etal:mapa:sincronizar'},location.origin);}},1500);
-    light.onclick=useLight;host.append(frame,light);device.append(host);vp.inert=true;tabbar.inert=true;
-    window.addEventListener('message',receive);document.addEventListener('keydown',key);navPush(close,'mapa-novo');frame.focus();return true;
+    /* usa o mesmo mapa da aba Mapa (já carregado), com a rota pedida; antes abria outro mapa por cima, montado do zero */
+    S.mapFloor = floor; S.mapZone = zone; S.mapRoute = true; switchTab('map', true); return true;
   }
   function runJourney() {
     const C = window.Campus3D; const [lvl, zone] = [S.mapFloor, S.mapZone];
@@ -2227,7 +2362,7 @@
     e.target.blur();
     ($('.fd-route', best) || best).click();
   });
-  document.addEventListener('input', (e) => { if (e.target.id === 'mapsky') { cancelAnimationFrame(skyAnim); skyHour = +e.target.value; applySky(); const o = $('#mapskyo'); if (o) o.textContent = skyClock(); } });
+  document.addEventListener('input', (e) => { if (e.target.id === 'mapsky') { cancelAnimationFrame(skyAnim); horaManual = true; skyHour = +e.target.value; applySky(); const o = $('#mapskyo'); if (o) o.textContent = skyClock(); } });
   document.addEventListener('input', (e) => { if (e.target.id === 'accentpick') { UI.accent = e.target.value; uiSave(); applyUI(); } });
   document.addEventListener('change', (e) => { if (e.target.id === 'accentpick') rerender(); });
   document.addEventListener('input', (e) => { if (e.target.id === 'fq') { if (e.target.value.trim()) S.finderMode = null; finderRender(); } });
@@ -2277,6 +2412,7 @@
       if (!again) S.present[q] = D.now.time;
       const c = takeNewComb();
       rerender();
+      if (!again && tipoDe(byId(q) || {}).g === 'camp' && byId(q)?.tournament) { openOverlay(Overlays.jogo(byId(q), c), 'welcome'); return; }
       scanSheet(roomResult(q, { again, first, c }));
     }, reduce ? 60 : 1500);
   }
@@ -2342,6 +2478,9 @@
         skyTo(n === undefined ? seq[0] : n);
         break;
       }
+      /* atalho do tema na home (o resto das opções continua em Perfil → Personalizar) */
+      case 'tema': UI.mode = isDark() ? 'claro' : 'escuro'; uiSave(); applyUI(); rerender(); break;
+      case 'lermais': el.classList.toggle('clamp'); break;
       case 'scan': openOverlay(Overlays.scan(el.dataset.mode || 'ler'), 'scan'); if ((el.dataset.mode || 'ler') === 'ler') setTimeout(camStart, 350); break;
       case 'camstart': camStart(); break;
       case 'suapoauth': el.classList.add('loading'); location.href = API.url('/api/auth/suap'); break;
@@ -2359,11 +2498,13 @@
       }
       case 'remindtest': deliver(byId(el.dataset.id), true); break;
       case 'install': installApp(); break;
+      case 'instalar-fechar': prefs.set('etal-instalar-oculto', '1'); el.closest('.instalar')?.remove(); toast('Dá para instalar depois em Perfil'); break;
       case 'update': if (PWA.waiting) { PWA.updating = true; PWA.waiting.postMessage({ type: 'skip' }); } else location.reload(); break;
       case 'vote': { const k = el.dataset.q; if (S.votes.has(k)) S.votes.delete(k); else S.votes.add(k); rerender(); break; }
       case 'ask': openOverlay(Overlays.ask(el.dataset.id), 'ask'); setTimeout(() => $('#qtext')?.focus({ preventScroll: true }), 480); break;
       case 'rate': S.ratings[el.dataset.id] = +el.dataset.n; rerender(); toast('Avaliação enviada'); break;
-      case 'closeov': closeOverlay(el.dataset.then ? () => push(el.dataset.then) : null); break;
+      case 'closeov': closeOverlay(el.dataset.then ? () => push(el.dataset.then, el.dataset.thenId ? { id: el.dataset.thenId } : undefined) : null); break;
+      case 'scanask': { const q = el.dataset.q; scanOpen(q); setTimeout(() => { openOverlay(Overlays.ask(q), 'ask'); setTimeout(() => $('#qtext')?.focus({ preventScroll: true }), 480); }, 650); break; }
       case 'simulate': if (API && el.dataset.q !== 'colega') demoQr(el.dataset.q); else scanResult(el.dataset.q); break;
       case 'scanopen': scanOpen(el.dataset.q); break;
       case 'scanagain': scanAgain(); break;
@@ -2440,6 +2581,13 @@
         break;
       }
       case 'tourtab': S.tourTab = el.dataset.k; rerender(); break;
+      case 'tourround': S.tourRound = el.dataset.k; rerender(); break;
+      case 'orgres': torneioSalvar(el.dataset.t, (T) => { const k = el.dataset.k; const w = el.dataset.w === '' ? null : +el.dataset.w;
+        /* mudar uma partida desfaz as que dependem dela */
+        const depois = k[0] === 'q' ? [`s${Math.floor(+k[1] / 2)}`, 'f'] : k[0] === 's' ? ['f'] : []; depois.forEach((d) => delete T.res[d]);
+        if (w === null) delete T.res[k]; else T.res[k] = w; }); rerender(); toast(el.dataset.w === '' ? 'Resultado desfeito' : 'Resultado salvo'); break;
+      case 'orgopen': torneioSalvar(el.dataset.t, (T) => { T.open = !T.open; }); rerender(); break;
+      case 'orgrmjog': torneioSalvar(el.dataset.t, (T) => { T.players[+el.dataset.i] = null; }); rerender(); toast('Jogador fora da chave'); break;
       case 'tourform': S.tourForm = el.dataset.v === '1' ? (S.tourForm || {}) : null; rerender(); break;
       case 'tourpick': {
         const nick = el.closest('form')?.querySelector('[name=nick]')?.value;
@@ -2508,6 +2656,17 @@
       D.notices.unshift({ time: skyClock(), title, text: text || 'Aviso da organização do ETAL.', fresh: true, org: true });
       const nid = `n${Date.now()}`; orgSeen.add(nid); orgWrite((o) => o.notices.unshift({ id: nid, time: skyClock(), title, text: text || 'Aviso da organização do ETAL.' }));
       rerender(); notify(title, text || 'Aviso da organização do ETAL.'); toast('Aviso enviado para todos');
+      return;
+    }
+    const ofm = e.target.closest('[data-form^="org"]');
+    if (ofm && ['orgjog', 'orgregra', 'orgcred', 'orgequipe'].includes(ofm.dataset.form)) {
+      e.preventDefault(); const f = new FormData(ofm); const v = (k) => String(f.get(k) || '').trim(); const tipo = ofm.dataset.form;
+      if (tipo === 'orgjog') { const nome = v('nome'); const ini = nome.split(/\s+/).map((w) => w[0]).slice(0, 2).join('').toUpperCase(); let ok = false;
+        torneioSalvar(ofm.dataset.t, (T) => { const i = T.players.findIndex((p) => !p); if (i >= 0) { T.players[i] = [v('nick'), nome, ini, v('pick'), `manual-${Date.now()}`]; ok = true; } });
+        rerender(); toast(ok ? `${v('nick')} entrou na chave` : 'A chave está completa'); }
+      if (tipo === 'orgregra') { torneioSalvar(ofm.dataset.t, (T) => { T.rules = v('regras'); }); toast('Regras salvas'); rerender(); }
+      if (tipo === 'orgcred') { const mat = v('mat'); orgWrite((o) => { o.manuais = { ...(o.manuais || {}), [mat]: { nome: v('nome'), hora: skyClock() } }; o.creds[mat] = skyClock(); }); rerender(); toast(`${v('nome').split(' ')[0]} credenciado às ${skyClock()}`); }
+      if (tipo === 'orgequipe') { orgWrite((o) => { o.organizadores = [...(o.organizadores || []).filter((x) => x.matricula !== v('mat')), { matricula: v('mat'), papel: v('papel') }]; }); rerender(); toast('Acesso ao painel liberado'); }
       return;
     }
     const orf = e.target.closest('[data-form="orgroom"]');
@@ -2589,7 +2748,7 @@
     }
   });
 
-  $('#skyr')?.addEventListener('input', (e) => { cancelAnimationFrame(skyAnim); skyHour = +e.target.value; applySky(); });
+  $('#skyr')?.addEventListener('input', (e) => { cancelAnimationFrame(skyAnim); horaManual = true; skyHour = +e.target.value; applySky(); });
   /* Resposta imediata ao toque em tudo que é clicável. */
   const PRESS = '[data-act],[data-go],a,.btn';
   let pressed = null;
@@ -2605,6 +2764,8 @@
      Avisos e trocas de sala feitos no painel ficam em etal-org e chegam aqui, mesmo com o app já aberto. */
   const ORG_KEY = 'etal-org'; const orgSeen = new Set();
   const orgRead = () => { try { return { notices: [], moves: {}, creds: {}, ...JSON.parse(localStorage.getItem(ORG_KEY)) }; } catch (_) { return { notices: [], moves: {}, creds: {} }; } };
+  /* grava o estado de um campeonato no etal-org (o mesmo que o painel do computador usa) */
+  function torneioSalvar(id, fn) { const t = D.tournaments.find((x) => x.id === id); const st0 = tourSt(t); orgWrite((o) => { const T = { open: st0.open, players: st0.players.slice(), res: { ...st0.res }, rules: st0.rules }; fn(T); o.torneios = { ...(o.torneios || {}), [id]: T }; }); }
   function orgWrite(fn) { const o = orgRead(); fn(o); try { localStorage.setItem(ORG_KEY, JSON.stringify(o)); } catch (_) { /* sem armazenamento */ } }
   /* Números de sala definidos no painel (etal-org.rooms, chave "andar:zona"). Troca na planta, nas atividades e no 3D. */
   function applyRoomNumbers(rooms) {
@@ -2806,7 +2967,7 @@
   if (history.state && history.state.etal) { navSkip += 1; history.go(-history.state.etal); }
   const qs = new URLSearchParams(location.search);
   if (qs.get('fps')) UI.fps = true;
-  if (qs.get('ceu')) skyHour = +qs.get('ceu');
+  if (qs.get('ceu')) { skyHour = +qs.get('ceu'); horaManual = true; }
   if (qs.get('tema')) UI.mode = qs.get('tema') === 'dark' ? 'escuro' : 'claro';
   if (qs.get('paleta')) UI.theme = qs.get('paleta');
   applyUI();
@@ -2849,7 +3010,7 @@
     colmeia: () => { ok(); S.present['react-native'] = D.now.time; S.ratings['react-native'] = 5; S.stacks.home.push({ s: 'colmeia' }); },
     'home-favos': () => { ok(); S.present['react-native'] = D.now.time; S.ratings['react-native'] = 5; },
     rota: () => { S.tab = 'map'; S.mapView = 'bloco'; S.mapFloor = 2; S.mapZone = 'labs-norte-2'; S.mapRoute = true; S.pending = true; S.journeying = true; },
-    qr: () => { setTimeout(() => openOverlay(Overlays.scan(), 'scan'), 300); },
+    qr: () => { setTimeout(() => { openOverlay(Overlays.scan(), 'scan'); setTimeout(camStart, 350); }, 300); },
     meuqr: () => { ok(); setTimeout(() => openOverlay(Overlays.scan('meu'), 'scan'), 300); },
     palestrantes: () => { S.stacks.home.push({ s: 'speakers' }); },
     certificados: () => { ok(); S.present['react-native'] = '14:03'; S.stacks.home.push({ s: 'certificates' }); },

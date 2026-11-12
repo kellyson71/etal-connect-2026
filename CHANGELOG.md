@@ -2,6 +2,16 @@
 
 O projeto segue o git flow: `main` tem só versões publicadas, `develop` junta as funcionalidades e cada uma nasce num ramo `feature/*`.
 
+## 0.9.0 (2026-11-12)
+
+- Agenda com card limpo por tipo (hexágono com o ícone, cores do logo do ETAL) e detalhe da atividade com hierarquia: quando, vagas e a sala no mapa primeiro, textos depois.
+- Leitura de QR por tipo: campeonato em tela toda com a arte do jogo; aula, palestra e mesa-redonda numa folha com a ação certa.
+- Campeonato redesenhado: chave em rodadas com duelos, elenco com a situação de cada jogador e regras em passos.
+- Organização por matrícula: painel em destaque no Perfil, só para organizadores, com resultados, regras, inscrição manual, troca de sala, avisos, credenciamento manual e equipe pelo celular.
+- O app segue a hora do aparelho; tema claro/escuro num toque na home, acompanhado pelo mapa; convite leve para instalar o app.
+- Mapa: um só, mantido entre as abas (não recarrega); andar em foco mais perto; auditório se abre com o térreo; rota do auditório pelo pátio e pela passagem entre os canteiros; próxima atividade numa pílula; cartão de rota enxuto.
+- Servidor local em HTTPS (`HTTPS=1`) para testar o leitor de QR no celular.
+
 ## 0.8.0 (2026-11-11)
 
 - Mapa 3D abre mais rápido: um programa de shader por tipo de material (o véu do evento gerava um por cor), shaders e texturas preparados durante o carregamento.
