@@ -22,6 +22,10 @@ HOSTS = {f'127.0.0.1:{PORT}', f'localhost:{PORT}'}
 REDE = os.environ.get('REDE', '').strip()
 if REDE:
     HOSTS.add(f'{REDE}:{PORT}')
+# HTTPS=1 (com REDE): serve em HTTPS com o certificado de prototipo/.certs/ (rodar.sh gera com mkcert). O celular só
+# libera a câmera do leitor de QR em HTTPS; o certificado é local, então o navegador avisa uma vez e é preciso aceitar.
+HTTPS = os.environ.get('HTTPS', '') == '1'
+ESQUEMA = 'https' if HTTPS else 'http'
 API = os.environ.get('ETAL_API', '').strip().rstrip('/')
 TYPES = {'.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
          '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp',
@@ -102,7 +106,7 @@ class Handler(BaseHTTPRequestHandler):
         # Bloqueia DNS rebinding e chamadas de outros sites ao servidor local.
         origin = self.headers.get('Origin')
         host = self.headers.get('Host', '')
-        return host in HOSTS and (origin is None or origin == f'http://{host}')
+        return host in HOSTS and (origin is None or origin == f'{ESQUEMA}://{host}')
 
     def do_GET(self):
         if self.headers.get('Host', '') not in HOSTS:
@@ -144,5 +148,11 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == '__main__':
-    print(f'ETAL Connect em http://{REDE or "127.0.0.1"}:{PORT}')
-    ThreadingHTTPServer(('0.0.0.0' if REDE else '127.0.0.1', PORT), Handler).serve_forever()
+    srv = ThreadingHTTPServer(('0.0.0.0' if REDE else '127.0.0.1', PORT), Handler)
+    if HTTPS:
+        import ssl
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        ctx.load_cert_chain(ROOT / '.certs/rede.pem', ROOT / '.certs/rede-key.pem')
+        srv.socket = ctx.wrap_socket(srv.socket, server_side=True)
+    print(f'ETAL Connect em {ESQUEMA}://{REDE or "127.0.0.1"}:{PORT}', flush=True)
+    srv.serve_forever()
