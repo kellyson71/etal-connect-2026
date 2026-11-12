@@ -10,6 +10,8 @@
 
   /* ---------- ícones ---------- */
   const IC = {
+    open: '<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
+    moon: '<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/>', sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/>', more: '<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>',
     home: '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1Z"/>',
     map: '<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z"/><path d="M9 4v14M15 6v14"/>',
     cal: '<rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/>',
@@ -93,17 +95,31 @@
     ['visao', 'Visão geral', 'home'], ['planta', 'Planta ao vivo', 'map'], ['programacao', 'Programação', 'cal'],
     ['participantes', 'Participantes', 'users'], ['salas', 'Salas', 'grid'], ['campeonatos', 'Campeonatos', 'trophy'], ['avisos', 'Avisos', 'bell'],
   ];
-  const state = { day: D.now.day, ptype: 'todos', pstat: 'todos', q: '', limit: 40, floor: 2, room: null, ref: 'off', refOp: 0.55 };
-  /* Plantas de 2012 (dissertação de Larissa Leiros de Souza, UFRN), recortadas no contorno do prédio.
-     Na sobreposição, o recorte ocupa o retângulo do bloco na planta esquemática: alinhamento aproximado. */
-  const REF = { src: (l) => `assets/ref2012/andar-${l}.png`, box: (l) => [[0, 0, 974, 621], [1.5, 1.5, 964, 619], [-2, -1, 972, 622]][l], credit: 'Plantas de 2012: Larissa Leiros de Souza, dissertação de mestrado (UFRN), figuras 9 a 11.' };
+  const state = { day: D.now.day, ptype: 'todos', pstat: 'todos', q: '', limit: 40, floor: 2, room: null };
   const current = () => (SECTIONS.find(([k]) => `#${k}` === location.hash) || SECTIONS[0])[0];
+  /* No celular a barra lateral vira uma barra de abas embaixo: as quatro seções do dia a dia e "Mais" (as outras). */
+  const PRINCIPAIS = ['visao', 'planta', 'programacao', 'participantes'];
+  const CURTO = { visao: 'Início', planta: 'Planta', programacao: 'Agenda', participantes: 'Pessoas' };
   function nav() {
     const k = current();
-    $('#nav').innerHTML = SECTIONS.map(([id, t, i]) => `<a href="#${id}" ${id === k ? 'aria-current="page"' : ''}>${ic(i)}${t}${id === 'avisos' && ORG.notices.length ? `<em>${ORG.notices.length}</em>` : id === 'planta' ? `<em title="atividades acontecendo agora">${D.sessions.filter(isNow).length}</em>` : ''}</a>`).join('');
+    const extra = !PRINCIPAIS.includes(k);
+    $('#nav').innerHTML = SECTIONS.map(([id, t, i]) => `<a href="#${id}" class="${PRINCIPAIS.includes(id) ? '' : 'extra'}" ${id === k ? 'aria-current="page"' : ''}>${ic(i)}<span data-curto="${CURTO[id] || t}">${t}</span>${id === 'avisos' && ORG.notices.length ? `<em>${ORG.notices.length}</em>` : id === 'planta' ? `<em title="atividades acontecendo agora">${D.sessions.filter(isNow).length}</em>` : ''}</a>`).join('')
+      + `<button type="button" class="mais ${extra ? 'on' : ''}" data-act="mais">${ic('more')}<span>Mais</span></button>`;
     $('#title').textContent = SECTIONS.find(([id]) => id === k)[1];
   }
-  $('#clock').textContent = `${dayOf(D.now.day).long} · ${D.now.time}, horário do evento`;
+  function maisSheet() {
+    const dlg = $('#dlg'); dlg.className = 'sheet';
+    dlg.innerHTML = `<nav class="mais-lista">${SECTIONS.filter(([id]) => !PRINCIPAIS.includes(id)).map(([id, t, i]) => `<a href="#${id}" data-act="close">${ic(i)}${t}</a>`).join('')}<a href="./" target="_blank" rel="noopener">${ic('open')}Abrir o app</a></nav>`;
+    dlg.showModal(); dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); }, { once: true });
+  }
+  /* Tema: o mesmo do app (etal-ui), com um botão no topo para trocar. */
+  const temaEscuro = () => { try { const m = JSON.parse(localStorage.getItem('etal-ui'))?.mode; return m === 'escuro' || ((!m || m === 'auto') && matchMedia('(prefers-color-scheme: dark)').matches); } catch (_) { return matchMedia('(prefers-color-scheme: dark)').matches; } };
+  function aplicarTema() { const d = temaEscuro(); document.documentElement.dataset.theme = d ? 'dark' : 'light'; const b = $('#tema'); if (b) { b.innerHTML = ic(d ? 'sun' : 'moon'); b.setAttribute('aria-label', d ? 'Usar o tema claro' : 'Usar o tema escuro'); } }
+  function trocarTema() { let u = {}; try { u = JSON.parse(localStorage.getItem('etal-ui')) || {}; } catch (_) { /* vazio */ } u.mode = temaEscuro() ? 'claro' : 'escuro'; try { localStorage.setItem('etal-ui', JSON.stringify(u)); } catch (_) { /* opcional */ } aplicarTema(); }
+  aplicarTema();
+  /* Tabelas no celular viram cartões: cada célula ganha o nome da coluna (CSS mostra quando a tela é estreita). */
+  function rotularTabelas() { view.querySelectorAll('table').forEach((t) => { const hs = [...t.querySelectorAll('thead th')].map((h) => h.textContent.trim()); t.querySelectorAll('tbody tr').forEach((tr) => [...tr.children].forEach((td, i) => { if (td.tagName === 'TD' && hs[i]) td.dataset.l = hs[i]; })); }); }
+  $('#clock').textContent = `${dayOf(D.now.day).week} ${D.now.day} nov · ${D.now.time}`;
 
   /* ---------- gráficos ---------- */
   const tip = $('#tip');
@@ -162,17 +178,17 @@
       const now = D.sessions.filter((x) => isNow(x) && x.seats); const inRooms = now.reduce((n, x) => n + present(x), 0);
       const cred = credCount(); const vis = PEOPLE.filter((p) => !p.ifrn).length;
       return `<div class="grid g-kpi">
-          <section class="card kpi"><b>${cred}</b><span>credenciados</span><small>de ${PEOPLE.length} inscritos</small><span class="bar"><i style="width:${(cred / PEOPLE.length) * 100}%"></i></span></section>
-          <section class="card kpi"><b>${inRooms}</b><span>pessoas em sala agora</span><small>em ${now.length} atividades com vagas</small></section>
-          <section class="card kpi"><b>${vis}</b><span>visitantes inscritos</span><small>${Math.round((vis / PEOPLE.length) * 100)}% do público, de ${new Set(PEOPLE.filter((p) => !p.ifrn).map((p) => p.city)).size} cidades</small></section>
-          <section class="card kpi"><b>${ORG.notices.length}</b><span>avisos enviados</span><small>pela organização hoje</small></section>
+          <section class="card kpi"><b>${cred}</b><span>credenciados de ${PEOPLE.length}</span><span class="bar"><i style="width:${(cred / PEOPLE.length) * 100}%"></i></span></section>
+          <section class="card kpi"><b>${inRooms}</b><span>em sala agora</span></section>
+          <section class="card kpi"><b>${vis}</b><span>visitantes</span></section>
+          <section class="card kpi"><b>${ORG.notices.length}</b><span>avisos enviados</span></section>
         </div>
         <div class="grid g-2 mt">
-          <section class="card"><h2>Credenciamento por hora <small>hoje, até ${D.now.time}</small></h2><p class="sub">O pico foi às ${D.org.porHora.reduce((a, b) => (b[1] > a[1] ? b : a))[0]}h, antes da abertura das atividades da manhã.</p>${hourChart(hourRows())}</section>
-          <section class="card"><h2>De onde vem o público</h2><p class="sub">Quem é do IFRN e quem veio de fora.</p>${originRows()}<h2 class="mt">Cidades dos visitantes</h2><p class="sub">As seis com mais inscritos.</p>${cityBars()}</section>
+          <section class="card"><h2>Credenciamento por hora</h2>${hourChart(hourRows())}</section>
+          <section class="card"><h2>De onde vem o público</h2>${originRows()}<h2 class="mt">Cidades dos visitantes</h2>${cityBars()}</section>
         </div>
         <div class="grid g-2 mt">
-          <section class="card"><h2>Acontecendo agora <small>${now.length} atividades</small></h2>${nowTable(now)}</section>
+          <section class="card"><h2>Acontecendo agora</h2>${nowTable(now)}</section>
           <section class="card"><h2>Últimos avisos <small><button class="btn ghost" data-act="compose" type="button">Enviar aviso</button></small></h2>${feed(4)}</section>
         </div>`;
     },
@@ -193,38 +209,32 @@
       const sel = state.room && today.filter((x) => x.zone === state.room);
       const zr = state.room && f.zones.find((z) => z.id === state.room); const zname = zr && (zr.roomNumber ? roomName(zr) : zr.label);
       return `<section class="card"><div class="toolbar"><div class="seg" role="group" aria-label="Andar">${P.floors.map((q) => `<button type="button" data-act="floor" data-v="${q.level}" aria-pressed="${q.level === state.floor}">${q.label}</button>`).join('')}</div>
-          <span class="count">${today.filter(isNow).length} atividades agora neste andar · ${dayOf(D.now.day).long}, ${D.now.time}</span></div>
-        <div class="toolbar ref-bar"><span class="lbl">Planta de 2012</span><div class="seg" role="group" aria-label="Planta de 2012">${[['off', 'Desligada'], ['sobre', 'Sobreposta'], ['lado', 'Lado a lado']].map(([v, t]) => `<button type="button" data-act="ref" data-v="${v}" aria-pressed="${state.ref === v}">${t}</button>`).join('')}</div>
-          ${state.ref === 'sobre' ? `<label class="ref-op">Opacidade <input type="range" min="0.15" max="1" step="0.05" value="${state.refOp}" data-ref-op></label>` : ''}${state.ref !== 'off' ? `<small class="ref-note">Registro histórico; o uso das salas mudou. ${state.ref === 'sobre' ? 'A planta do app foi traçada sobre estas figuras.' : ''}</small>` : ''}</div>
-        <div class="plan-wrap"><div><div class="plan"><svg viewBox="${P.viewBox || '0 0 900 430'}" role="img" aria-label="Planta do ${f.label} com a lotação das salas">${P.defs}${f.svg}${state.ref === 'sobre' ? `<image class="ref-img" href="${REF.src(f.level)}" x="${REF.box(f.level)[0]}" y="${REF.box(f.level)[1]}" width="${REF.box(f.level)[2]}" height="${REF.box(f.level)[3]}" preserveAspectRatio="none" opacity="${state.refOp}" style="mix-blend-mode:multiply;pointer-events:none"/>` : ''}${overlays}</svg></div>
-          ${state.ref === 'lado' ? `<figure class="ref-side"><img src="${REF.src(f.level)}" alt="Planta de 2012 do ${f.label}, com os nomes dos ambientes na época"><figcaption>${REF.credit}</figcaption></figure>` : state.ref === 'sobre' ? `<p class="ref-cap">${REF.credit}</p>` : ''}
-          <div class="plan-legend"><span>Lotação</span><span class="ramp">${RAMP.map((c) => `<i style="background:${c}"></i>`).join('')}</span><span>vazia → cheia</span><span class="pill full">${ic('alert')}90% ou mais</span><span class="pill ifrn">Tracejado: começa mais tarde</span></div></div>
+          <span class="count">${today.filter(isNow).length} agora</span></div>
+        <div class="plan-wrap"><div><div class="plan"><svg viewBox="${P.viewBox || '0 0 900 430'}" role="img" aria-label="Planta do ${f.label} com a lotação das salas">${P.defs}${f.svg}${overlays}</svg></div>
+          <div class="plan-legend"><span>Lotação</span><span class="ramp">${RAMP.map((c) => `<i style="background:${c}"></i>`).join('')}</span><span>vazia → cheia</span><span class="pill full">${ic('alert')}90% ou mais</span><span class="pill ifrn">Tracejado: mais tarde</span></div></div>
           <aside class="room-panel">${zr ? `<h3>${esc(zname)}</h3><p>${f.label} · ${sel.length ? `${sel.length} ${sel.length === 1 ? 'atividade' : 'atividades'} hoje` : 'sem atividades hoje'}</p>
             <ul>${sel.map((x) => `<li><b>${esc(x.short)}</b>${x.time} às ${x.end} · ${statusOf(x)}${x.seats ? `<div class="mt"><small>Inscritos</small>${meter(x)}${isNow(x) ? `<small>${present(x)} em sala agora</small>` : ''}</div>` : ''}<div class="mt"><button class="btn soft sm" data-act="move" data-id="${x.id}" type="button">${ic('route')}Trocar sala</button></div></li>`).join('')}</ul>`
-            : `<h3>Escolha uma sala</h3><p>As salas coloridas têm atividade agora. Clique numa delas para ver a lotação e trocar a sala, se precisar.</p>`}</aside></div></section>`;
+            : `<h3>Toque numa sala colorida</h3>`}</aside></div></section>`;
     },
     salas() {
       const KIND = { classroom: 'Sala de aula', laboratory: 'Laboratório', staff: 'Professores', office: 'Setor' };
       const status = (z) => (z.orgNumber ? '<span class="pill ifrn">Definido pela organização</span>'
         : z.confirmed ? `<span class="pill ok">${ic('check')}Confirmado</span>` : '<span class="pill wait">Demonstrativo</span>');
       const used = (f, z) => D.sessions.filter((x) => x.floor === f.level && x.zone === z.id).length;
-      const rows = P.floors.map((f) => `<tbody><tr class="grp"><th colspan="6">${f.label}</th></tr>${f.zones.filter((z) => z.roomNumber).map((z) => {
+      const rows = P.floors.map((f) => `<tbody><tr class="grp"><th colspan="5">${f.label}</th></tr>${f.zones.filter((z) => z.roomNumber).map((z) => {
         const k = `${f.level}:${z.id}`; const n = used(f, z);
-        return `<tr><td class="title"><b>${esc(z.name || KIND[z.kind] || z.kind)}</b><small>${esc(z.description || '')}</small></td>
+        return `<tr><td class="title"><b>${esc(z.name || KIND[z.kind] || z.kind)}</b></td>
           <td><input class="num-in" data-room-num="${k}" value="${esc(z.roomNumber)}" aria-label="Número de ${esc(roomName(z))}, ${f.label}" maxlength="12" inputmode="text"></td>
-          <td>${status(z)}</td><td class="src">${z.source ? `${esc(z.source)}${z.url ? ` <a href="${z.url}" target="_blank" rel="noopener">Fonte</a>` : ''}` : '<small>Sem fonte. Número de exemplo.</small>'}</td>
-          <td class="num">${n ? `${n} ${n === 1 ? 'atividade' : 'atividades'}` : '—'}</td>
+          <td>${status(z)}</td> <td class="num">${n ? `${n} ${n === 1 ? 'atividade' : 'atividades'}` : '—'}</td>
           <td class="r">${ORG.rooms[k] ? `<button class="btn ghost sm" type="button" data-act="roomreset" data-k="${k}">Restaurar</button>` : ''}</td></tr>`;
       }).join('')}</tbody>`).join('');
-      const all = P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber)); const conf = all.filter((z) => z.confirmed).length; const org = all.filter((z) => z.orgNumber).length;
-      return `<section class="card"><h2>Numeração das salas <small>${all.length} ambientes · ${conf} confirmados por fonte · ${org} definidos aqui</small></h2>
-        <p class="sub">Os números demonstrativos ainda não foram conferidos no campus. Corrija aqui o que a equipe souber: o app aberto neste navegador atualiza a planta, as atividades e o mapa 3D na hora. Deixe o campo vazio para voltar ao número original.</p>
-        <div class="tbl-wrap"><table class="rooms"><thead><tr><th>Ambiente</th><th>Número</th><th>Situação</th><th>Fonte</th><th>Atividades</th><th></th></tr></thead>${rows}</table></div></section>`;
+            return `<section class="card"><h2>Números das salas</h2>
+        <div class="tbl-wrap"><table class="rooms"><thead><tr><th>Ambiente</th><th>Número</th><th>Situação</th><th>Atividades</th><th></th></tr></thead>${rows}</table></div></section>`;
     },
     programacao() {
       const list = D.sessions.filter((x) => x.day === state.day).sort((a, b) => a.time.localeCompare(b.time));
       return `<section class="card"><div class="toolbar"><div class="seg" role="group" aria-label="Dia">${D.days.map((d) => `<button type="button" data-act="day" data-v="${d.day}" aria-pressed="${d.day === state.day}">${d.week} ${d.day}</button>`).join('')}</div>
-        <span class="count">${list.length} atividades · ${list.filter((x) => x.demo).length} de exemplo</span><button class="btn soft sm" data-act="csv" data-v="programacao" type="button">${ic('download')}Exportar CSV</button></div>
+        <span class="count">${list.length} atividades</span><button class="btn soft sm" data-act="csv" data-v="programacao" type="button">${ic('download')}Exportar CSV</button></div>
         <div class="tbl-wrap"><table><thead><tr><th>Horário</th><th>Atividade</th><th>Tipo</th><th>Local</th><th>Inscritos</th><th>Situação</th><th></th></tr></thead><tbody>
         ${list.map((x) => `<tr><td class="num">${x.time}–${x.end}</td><td class="title"><b>${esc(x.title)}</b><small>${esc(x.speaker || 'Organização')}</small></td><td>${esc(x.type)}</td><td>${esc(where(x))}</td><td>${x.seats ? meter(x) : '<small>sem limite</small>'}</td><td>${statusOf(x)}</td>
           <td class="r">${x.floor !== undefined && !isPast(x) ? `<button class="btn ghost sm" data-act="move" data-id="${x.id}" type="button">Trocar sala</button>` : ''}</td></tr>`).join('')}
@@ -246,10 +256,10 @@
         </tbody></table></div>${list.length > state.limit ? `<p class="empty"><button class="btn soft" data-act="more" type="button">Mostrar mais ${Math.min(40, list.length - state.limit)}</button></p>` : ''}`
         : `<p class="empty">Ninguém encontrado. Confira o nome, a matrícula ou o e-mail.</p>`}</section>`;
     },
-    campeonatos() { return `<p class="sub lead">As mudanças aparecem na hora no app aberto neste navegador.</p>${D.tournaments.map(tourCard).join('')}`; },
+    campeonatos() { return D.tournaments.map(tourCard).join(''); },
     avisos() {
       const opts = D.sessions.filter((x) => x.day === D.now.day && !isPast(x) && x.seats);
-      return `<div class="grid g-2"><section class="card"><h2>Enviar aviso</h2><p class="sub">Chega para quem está com o app aberto e fica na tela Avisos.</p>
+      return `<div class="grid g-2"><section class="card"><h2>Enviar aviso</h2>
           <form class="compose" data-form="notice"><label class="fld">Título<input name="title" maxlength="70" required placeholder="Ex.: Palestra de encerramento às 17:00"></label>
           <label class="fld">Texto<textarea name="text" rows="3" maxlength="200" placeholder="Detalhes para quem está no evento"></textarea></label>
           <label class="fld">Para quem<select name="to"><option value="">Todos os participantes</option>${opts.map((x) => `<option value="${x.id}">Inscritos em ${esc(x.short)} (${x.taken})</option>`).join('')}</select></label>
@@ -326,7 +336,7 @@
     save(); render(); toast('Aviso enviado');
   }
   function moveDialog(id) {
-    const x = D.sessions.find((s) => s.id === id); const dlg = $('#dlg');
+    const x = D.sessions.find((s) => s.id === id); const dlg = $('#dlg'); dlg.className = '';
     const busy = new Set(D.sessions.filter((s) => s.id !== id && s.day === x.day && s.floor !== undefined && toMin(s.time) < toMin(x.end) && toMin(x.time) < toMin(s.end)).map((s) => `${s.floor}|${s.zone}`));
     dlg.innerHTML = `<form method="dialog" data-form="move" data-id="${id}"><h2>Trocar sala</h2><p>${esc(x.title)} · hoje em ${esc(where(x))}, das ${x.time} às ${x.end}.</p>
       <label class="fld">Nova sala<select name="room">${roomsAll().map((r) => { const k = `${r.floor}|${r.zone}`; return `<option value="${k}" ${busy.has(k) || (r.zone === x.zone && r.floor === x.floor) ? 'disabled' : ''}>${r.name} · ${floorLabel(r.floor)}${busy.has(k) ? ' (ocupada no horário)' : ''}</option>`; }).join('')}</select></label>
@@ -345,9 +355,10 @@
   document.addEventListener('click', (e) => {
     const el = e.target.closest('[data-act]'); if (!el) return;
     const a = el.dataset.act;
+    if (a === 'mais') { maisSheet(); return; }
+    if (a === 'tema') { trocarTema(); return; }
     if (a === 'compose') { location.hash = '#avisos'; setTimeout(() => $('[name=title]')?.focus(), 60); }
     if (a === 'floor') { state.floor = +el.dataset.v; state.room = null; render(); }
-    if (a === 'ref') { state.ref = el.dataset.v; render(); }
     if (a === 'roomreset') { if (API) { API.put('/api/org/salas', { [el.dataset.k]: '' }).catch((x) => toast(x.message)); return; } delete ORG.rooms[el.dataset.k]; save(); applyRooms(); render(); toast('Número restaurado'); }
     if (a === 'room') { state.room = el.dataset.zone; render(); }
     if (a === 'day') { state.day = +el.dataset.v; render(); }
@@ -391,7 +402,6 @@
     }
   });
   document.addEventListener('input', (e) => {
-    if (e.target.matches('[data-ref-op]')) { state.refOp = +e.target.value; const im = $('.ref-img'); if (im) im.setAttribute('opacity', state.refOp); }
   });
   /* Número de sala: salva ao sair do campo ou com Enter. */
   /* Jogador do campeonato: salva ao sair do campo. Apelido vazio tira a pessoa da chave. */
@@ -415,7 +425,7 @@
   });
   $('#q').addEventListener('input', (e) => { state.q = e.target.value; state.limit = 40; if (current() !== 'participantes') location.hash = '#participantes'; else render(); });
 
-  function render() { nav(); view.innerHTML = Views[current()](); }
+  function render() { nav(); view.innerHTML = Views[current()](); rotularTabelas(); }
   window.addEventListener('hashchange', () => { render(); view.focus({ preventScroll: true }); window.scrollTo(0, 0); });
   /* Com o servidor ligado: só a organização entra; programação, numeração e avisos vêm da API e se atualizam ao vivo. */
   async function apiStart() {
