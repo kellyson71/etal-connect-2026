@@ -223,3 +223,90 @@ table.rooms td.src a{font-weight:600}
 .tm-p.none{background:none;border:1.5px dashed #cfd8e6;color:var(--muted);font-size:13px;cursor:default}
 .tm-champ{display:flex;align-items:center;gap:8px;margin:4px 0 0;padding:10px 12px;border-radius:12px;background:#fff6dc;color:#6b4a00;font-size:14px}
 .tm-champ svg{width:20px;height:20px}
+
+/* ---------- tema escuro (o mesmo do app: etal-ui) ---------- */
+:root[data-theme="dark"]{--side:#0b1430;--side-2:#16224a;--bg:#0e1932;--card:#182648;--ink:#e8eefb;--ink-2:#c3cbe0;--muted:#94a4c6;--line:#27365e;--s-ifrn:#8fb0ee;--focus:#8fb0ee;color-scheme:dark}
+:root[data-theme="dark"] .card{box-shadow:none}
+:root[data-theme="dark"] td{border-bottom-color:#22305a}
+:root[data-theme="dark"] tbody tr:hover td{background:#1d2c55}
+:root[data-theme="dark"] .btn.soft{background:#22325a;color:#c9d8ff}
+:root[data-theme="dark"] .btn.primary{background:#3f64b5}
+:root[data-theme="dark"] .hbars .track{background:#22305a}
+:root[data-theme="dark"] .search input,:root[data-theme="dark"] input,:root[data-theme="dark"] select,:root[data-theme="dark"] textarea{background:#12204a;border-color:var(--line);color:var(--ink)}
+:root[data-theme="dark"] dialog{background:var(--card);color:var(--ink)}
+:root[data-theme="dark"] .plan svg{filter:brightness(.92)}
+.btn.icon{width:42px;height:42px;padding:0;background:var(--card);color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
+.btn.icon svg{width:19px;height:19px}
+#nav .mais{display:none}
+.top h1{font-size:22px}
+
+/* ---------- celular e tablet: barra de abas embaixo, tabelas viram cartões ---------- */
+@media (max-width: 860px){
+  .shell{display:block}
+  .side{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:20;height:auto;flex-direction:row;padding:6px 6px max(6px,env(safe-area-inset-bottom));gap:0;border-top:1px solid rgba(255,255,255,.08)}
+  .side-brand,.side-foot{display:none}
+  #nav{flex:1;flex-direction:row;justify-content:space-around;gap:2px}
+  #nav a,#nav .mais{flex:1;flex-direction:column;gap:3px;padding:7px 2px;border-radius:12px;font-size:11px;font-weight:600;text-align:center;position:relative;min-width:0}
+  #nav a span,#nav .mais span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  #nav a.extra{display:none}
+  #nav .mais{display:flex;align-items:center;background:none;border:0;color:#c9d6f2}
+  #nav .mais.on{background:#fff;color:var(--side)}
+  #nav a em{position:absolute;top:2px;right:calc(50% - 22px);margin:0;padding:0 5px;font-size:10px}
+  #nav a[aria-current="page"]{background:#fff}
+  :root[data-theme="dark"] #nav a[aria-current="page"],:root[data-theme="dark"] #nav .mais.on{background:#2b3d72;color:#fff}
+  .main{padding:14px 14px calc(84px + env(safe-area-inset-bottom))}
+  .top{flex-wrap:wrap;gap:10px}
+  .top>div{flex:1 1 auto}
+  .top h1{font-size:20px}
+  .top p{font-size:12.5px}
+  .top .btn.primary span{display:none}
+  .top .btn.primary{width:42px;height:42px;padding:0}
+  .search{order:5;flex:1 1 100%}
+  .search input{width:100%}
+  .g-kpi{grid-template-columns:1fr 1fr;gap:10px}
+  .g-2,.g-3{grid-template-columns:1fr}
+  .grid{gap:12px}
+  .card{padding:14px;border-radius:16px}
+  .kpi b{font-size:26px}
+  .toolbar{flex-wrap:wrap;gap:8px}
+  .toolbar .seg{overflow-x:auto;max-width:100%}
+  .plan-wrap{display:flex!important;flex-direction:column;gap:12px}
+  .room-panel{position:static!important;width:auto!important}
+  .hbars li{grid-template-columns:90px 1fr 34px}
+  /* tabelas: cada linha vira um cartão com o nome da coluna ao lado do valor */
+  .tbl-wrap{overflow:visible;margin:0}
+  .tbl-wrap table,.tbl-wrap tbody,.tbl-wrap tr,.tbl-wrap td{display:block;width:100%}
+  .tbl-wrap thead{display:none}
+  .tbl-wrap tr{padding:10px 0;border-bottom:1px solid var(--line)}
+  .tbl-wrap tr:last-child{border-bottom:0}
+  .tbl-wrap tr.grp th{display:block;padding:12px 0 2px;border:0;background:none}
+  .tbl-wrap td{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:4px 0;border:0;text-align:right}
+  .tbl-wrap td[data-l]::before{content:attr(data-l);flex:none;font-size:12px;font-weight:600;color:var(--muted);text-align:left}
+  .tbl-wrap td.title{display:block;text-align:left;padding-bottom:6px}
+  .tbl-wrap td.title::before{display:none}
+  .tbl-wrap td:empty{display:none}
+  .tbl-wrap td.r{justify-content:flex-start}
+  .tbl-wrap td.r::before{display:none}
+  .tbl-wrap .meter{min-width:0;flex:1;max-width:220px}
+  tbody tr:hover td{background:none}
+  dialog{width:calc(100vw - 24px);max-width:none}
+}
+/* folha "Mais" do celular */
+dialog.sheet{position:fixed;margin:auto auto 0;bottom:0;width:100%;max-width:520px;border:0;border-radius:22px 22px 0 0;padding:14px 14px max(18px,env(safe-area-inset-bottom));background:var(--card);color:var(--ink)}
+dialog.sheet::backdrop{background:rgba(10,18,40,.45)}
+.mais-lista{display:flex;flex-direction:column}
+.mais-lista a{display:flex;align-items:center;gap:12px;padding:14px 10px;border-radius:12px;color:var(--ink);text-decoration:none;font-weight:600}
+.mais-lista a svg{width:20px;height:20px;color:var(--s-ifrn)}
+.mais-lista a:hover{background:var(--bg)}
+
+#view:focus{outline:none}
+@media (max-width: 860px){
+  #nav a span{font-size:0}
+  #nav a span::after{content:attr(data-curto);font-size:11px}
+  #nav .mais{justify-content:center;min-height:0;font:600 11px var(--ui);cursor:pointer}
+  #nav .mais svg{width:19px;height:19px}
+}
+:root[data-theme="dark"] .seg{background:#12204a}
+:root[data-theme="dark"] .seg button{color:var(--muted)}
+:root[data-theme="dark"] .seg button[aria-pressed="true"]{background:#2b3d72;color:#fff}
+:root[data-theme="dark"] .pill{filter:saturate(.9)}
