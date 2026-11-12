@@ -18,16 +18,14 @@
     <nav id="nav"></nav>
     <div class="side-foot">
       <a href="./" target="_blank" rel="noopener">Abrir o app ao lado</a>
-      <small>Os avisos e as trocas de sala chegam ao app aberto neste navegador.</small>
     </div>
   </aside>
   <div class="main">
     <header class="top">
       <div><h1 id="title">Visão geral</h1><p id="clock"></p></div>
       <label class="search"><span class="sr">Buscar participante</span><input id="q" type="search" placeholder="Buscar participante, matrícula ou e-mail" autocomplete="off"></label>
-      <button class="btn primary" data-act="compose" type="button">Enviar aviso</button>
+      <button class="btn icon" id="tema" data-act="tema" type="button" aria-label="Trocar o tema"></button><button class="btn primary" data-act="compose" type="button" aria-label="Enviar aviso"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg><span>Enviar aviso</span></button>
     </header>
-    <p class="demo-note" role="note">Demonstração: participantes e números são simulados. As mudanças ficam só neste navegador.</p>
     <main id="view" tabindex="-1"></main>
   </div>
 </div>
