@@ -68,12 +68,18 @@ async function carregar(url) { const nome = url.split('/').pop(); const tag = do
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const stage = document.querySelector('.stage'); if (!stage) return;
   let stepTimer = 0, raceRun = 0; const cache = {};
-  function steps(root) {
+  /* Slides com etapas (data-steps="N"): cada "próximo" mostra a etapa seguinte no mesmo slide; depois da última, muda
+     de slide. A raiz ganha a classe s<k>; [data-step] fica .on até a etapa atual e .atual só nela. Chegando de trás,
+     abre na última etapa. Itens com data-ir="k" (a lista de passos) pulam direto para a etapa. */
+  function steps(root, slide) {
     clearInterval(stepTimer); if (!root) return;
-    const n = +root.dataset.steps, ms = +root.dataset.interval || 1500; let s = -1;
-    const set = (k) => { for (let i = 0; i <= n; i++) root.classList.toggle('s' + i, i === k); root.querySelectorAll('[data-step]').forEach((el) => el.classList.toggle('on', +el.dataset.step <= k)); };
-    const tick = () => { s = (s + 1) % (n + 1 + (root.matches('.qrf') ? 0 : 0)); set(s); };
-    if (reduce) { set(n - 1); return; } tick(); stepTimer = setInterval(tick, ms);
+    const n = +root.dataset.steps; let k = 0;
+    const set = (j) => { k = j; for (let i = 0; i < n; i++) root.classList.toggle('s' + i, i === k); root.dataset.etapa = k;
+      root.querySelectorAll('[data-step]').forEach((el) => { el.classList.toggle('on', +el.dataset.step <= k); el.classList.toggle('atual', +el.dataset.step === k); }); };
+    root.querySelectorAll('[data-ir]').forEach((el) => { el.style.cursor = 'pointer'; el.onclick = () => set(+el.dataset.ir); });
+    const deTras = window.direcaoSlide < 0; window.direcaoSlide = 0;
+    set(deTras ? n - 1 : 0);
+    window.etapasSlide = { slide, passo(dir) { const j = k + dir; if (j < 0 || j >= n) return false; set(j); return true; } };
   }
   async function race(canvas) {
     const run = ++raceRun; const url = canvas.dataset.race;
@@ -115,7 +121,7 @@ async function carregar(url) { const nome = url.split('/').pop(); const tag = do
     const win = d.escolha; slide.querySelector(`.race-row.${win}`)?.classList.add('win'); slide.querySelector('.race-win')?.classList.add('on');
     setTimeout(() => { if (run === raceRun && slide.classList.contains('active')) race(canvas); }, 5000);
   }
-  function enter(slide) { steps(slide.querySelector('[data-steps]')); const c = slide.querySelector('canvas[data-race]'); if (c) race(c); else raceRun++; }
+  function enter(slide) { steps(slide.querySelector('[data-steps]'), slide); const c = slide.querySelector('canvas[data-race]'); if (c) race(c); else raceRun++; }
   new MutationObserver((list) => list.forEach((m) => { if (m.target.classList?.contains('slide') && m.target.classList.contains('active') && !String(m.oldValue).includes('active')) enter(m.target); }))
     .observe(stage, { subtree: true, attributes: true, attributeFilter: ['class'], attributeOldValue: true });
   const first = document.querySelector('.slide.active'); if (first) enter(first);
