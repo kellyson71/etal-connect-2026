@@ -747,28 +747,41 @@
       };
     }
     /* bloco de cada tipo: palestra destaca quem fala; mesa mostra a roda de conversa; minicurso e oficina, o que se faz e o que levar */
-    const t = tipoDe(s);
+    /* Detalhe no padrão "bater o olho": tipo e título; quem; dois blocos grandes (quando e vagas); o mapa com a sala como
+       cartão (tocar leva até lá); o lembrete numa linha só. Os textos (sobre, o que se faz, o que levar, perguntas) vêm
+       depois, curtos, e a descrição abre com "Ler mais". */
+    const t = tipoDe(s); const lembrete = S.reminders.has(id);
     const quem = t.g === 'mesa'
-      ? `<section class="roda st" ${st(2)}><h2 class="h">Quem conversa</h2><ul>${pessoasDe(s).map((p, i) => `<li>${spAv(p)}<span><b>${p.name}</b><small>${i === 0 ? 'Mediação' : p.role}</small></span></li>`).join('')}</ul></section>`
-      : `<button class="teacher ${t.g === 'pal' ? 'quem-fala' : ''} st" ${st(2)} data-go="speaker" data-id="${id}">${spAv(s, t.g === 'pal')}<span>${t.g === 'pal' ? '<small>Quem fala</small>' : ''}<b>${s.speakerShort}</b><small>${s.role}</small></span>${ic('chev', 'i card-chev')}</button>`;
-    const perguntas = `<section class="block st" ${st(6)}><div class="sec"><h2>Perguntas</h2><button data-act="ask" data-id="${id}">Perguntar</button></div>${questionsOf(id)}</section>`;
+      ? `<section class="roda st" ${st(2)}><ul>${pessoasDe(s).map((p, i) => `<li>${spAv(p)}<span><b>${p.name}</b><small>${i === 0 ? 'Mediação' : p.role}</small></span></li>`).join('')}</ul></section>`
+      : `<button class="teacher ${t.g === 'pal' ? 'quem-fala' : ''} st" ${st(2)} data-go="speaker" data-id="${id}">${spAv(s, t.g === 'pal')}<span><b>${s.speakerShort}</b><small>${s.role}</small></span>${ic('chev', 'i card-chev')}</button>`;
+    const vagasRestam = s.seats ? Math.max(0, s.seats - s.taken) : null;
+    const blocos = `<div class="glance st" ${st(3)}>
+        <div class="gl-quando"><small>${d.week} · ${s.day} nov</small><b>${s.time}</b><span>até ${s.end}${duracao(s) ? ` · ${duracao(s)}` : ''}</span></div>
+        ${vagasRestam == null ? '' : `<div class="gl-vagas ${vagasRestam === 0 ? 'cheio' : vagasRestam <= 5 ? 'pouca' : ''}"><small>Vagas</small><b>${vagasRestam === 0 ? 'Esgotado' : vagasRestam}</b>${vagasRestam ? `<span>de ${s.seats}</span>` : ''}${seatBar(s)}</div>`}
+      </div>`;
+    const lugar = `<button class="lugar st" ${st(4)} ${mapAct(s)} aria-label="Ver ${s.room} no mapa"><canvas class="thumb3d"></canvas><span class="lg-tx"><b>${s.room}</b><small>${Number.isInteger(s.floor) ? floorOf(s.floor).label : ''}</small></span><span class="lg-ir">${ic('route')}Como chegar</span></button>`;
+    const lembrar = `<button class="remindrow st ${lembrete ? 'on' : ''}" ${st(5)} data-act="remind" data-id="${id}" aria-pressed="${lembrete}">${ic('alarm')}<span>${lembrete ? `Lembrete às ${hhmm(toMin(s.time) - LEAD)}` : `Lembrar ${LEAD} min antes`}</span><i class="switch"></i></button>`;
+    const sobre = s.description ? `<section class="sobre st" ${st(6)}><h2 class="h">Sobre</h2><p class="desc clamp" data-act="lermais">${s.description}</p></section>` : '';
+    /* "Notebook com Node.js instalado e conhecimentos básicos de JavaScript." vira dois itens */
+    const leva = (s.requirements || '').replace(/\.$/, '').split(/,\s*|\s+e\s+(?=[a-zà-ú]+\s)/i).filter(Boolean);
     const extra = t.g === 'mini'
-      ? `${s.learn?.length ? `<section class="block pratica st" ${st(6)}><h2 class="h">O que você vai fazer</h2><ul class="learn">${s.learn.map((l) => `<li>${ic('check')}<span>${l}</span></li>`).join('')}</ul></section>` : ''}${s.requirements ? `<div class="levar st" ${st(6)}>${ic('laptop')}<span><b>Leve para a sala</b><small>${s.requirements}</small></span></div>` : ''}`
-      : t.g === 'pal' || t.g === 'mesa' ? perguntas : '';
+      ? `${s.learn?.length ? `<section class="st" ${st(7)}><h2 class="h">O que você vai fazer</h2><ol class="passos-aula">${s.learn.map((l) => `<li>${l}</li>`).join('')}</ol></section>` : ''}${leva.length ? `<section class="levar st" ${st(8)}><h2 class="h">${ic('laptop')}Leve para a sala</h2><ul>${leva.map((l) => `<li>${l.charAt(0).toUpperCase() + l.slice(1)}</li>`).join('')}</ul></section>` : ''}`
+      : t.g === 'pal' || t.g === 'mesa' ? `<section class="block st" ${st(7)}><div class="sec"><h2>Perguntas</h2><button data-act="ask" data-id="${id}">Perguntar</button></div>${questionsOf(id)}</section>` : '';
     return {
       mount: mountThumb(s),
       html: `${header('', { right: `<button class="iconbtn bm ${S.saved.has(id) ? 'on' : ''}" data-act="save" data-id="${id}" aria-label="Salvar">${ic('bookmark')}</button>` })}
-      <div class="pad stack detail">
-        <span class="kind kind-tp tp-${t.k} st" ${st(0)}>${ic(t.icon)}${s.type}${duracao(s) ? ` · ${duracao(s)}` : ''}</span>
+      <div class="pad stack detail detalhe-v2">
+        <span class="kind kind-tp tp-${t.k} st" ${st(0)}>${ic(t.icon)}${s.type}</span>
         <h1 class="title-lg st" ${st(1)}>${s.title}</h1>
-        ${quem}
-        <ul class="info st" ${st(3)}><li>${ic('cal')}${d.long} · ${s.time} às ${s.end}</li><li>${ic('pin')}${whereOf(s)}</li>${t.formato ? `<li>${ic(t.icon)}${t.formato}</li>` : ''}<li>${ic('users')}<span>${seatLine(s)}</span>${seatBar(s)}</li></ul>
-        ${thumb(s, 4)}
-        <p class="desc st" ${st(5)}>${s.description}</p>
+        ${t.g === 'mesa' ? '' : quem}
+        ${blocos}
+        ${lugar}
+        ${t.g === 'mesa' ? quem.replace('<ul>', '<h2 class="h">Quem conversa</h2><ul>') : ''}
+        ${lembrar}
+        ${DEMO && lembrete ? `<button class="remindtest st" ${st(5)} data-act="remindtest" data-id="${id}">${ic('bell')}Ver como o lembrete chega</button>` : ''}
+        ${sobre}
         ${extra}
-        <button class="remindrow st ${S.reminders.has(id) ? 'on' : ''}" ${st(6)} data-act="remind" data-id="${id}" aria-pressed="${S.reminders.has(id)}">${ic('alarm')}<span>${S.reminders.has(id) ? `Lembrete às ${hhmm(toMin(s.time) - LEAD)}` : `Lembrar ${LEAD} minutos antes`}<small>${S.reminders.has(id) ? `Com sala e tempo a pé${notifState() === 'granted' ? '' : ', dentro do app'}` : 'Aviso com a sala e o caminho'}</small></span><i class="switch"></i></button>
-        ${S.reminders.has(id) ? `<button class="remindtest st" ${st(6)} data-act="remindtest" data-id="${id}">${ic('bell')}Ver como o lembrete chega</button>` : ''}
-        <div class="locked st" ${st(7)}>${ic('lock')}<span>${s.materials.length} materiais ficam disponíveis quando você registrar presença na sala.</span></div>
+        ${s.materials.length ? `<p class="locked st" ${st(9)}>${ic('lock')}${s.materials.length} ${s.materials.length === 1 ? 'material' : 'materiais'} depois da presença</p>` : ''}
       </div>
       <div class="cta-bar"><button class="btn primary big" data-act="scan">${ic('qr')}Registrar presença</button></div>`,
     };
@@ -849,19 +862,35 @@
       <ul class="next st" ${st(5)}>${D.sessions.filter((x) => Number.isInteger(x.floor) && x.zone && D.enrolled.includes(x.id)).slice(0, 4).map((n) => `<li data-act="openmap" data-floor="${n.floor}" data-zone="${n.zone}"><span class="date"><small>${dayOf(n.day).week}</small><b>${n.day}</b></span><span class="next-tx"><b>${n.short}</b><small>${n.time} · ${n.room}</small></span>${ic('chev')}</li>`).join('')}</ul>
     </div>`,
   });
+  /* O mapa 3D fica num iframe só, criado na primeira vez e nunca removido: trocar de aba apenas o esconde. Antes ele
+     era recriado a cada abertura da aba Mapa e o campus inteiro era montado de novo (vários segundos no celular). */
+  let mapaFixo = null, mapaPronto = false, mapaFila = null;
+  const dadosAba = (type, pedida = {}) => ({ type, ...pedida, origem: origemAgora(), foto: D.person.photo || null, nome: D.person.name || '', hour: skyHour, reduced: reduce, sessions: D.sessions.map((x) => ({ id: x.id, title: x.title, time: x.time, floor: x.floor, zone: x.zone })), rooms: Object.fromEntries(P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => [`${f.level}:${z.id}`, z.roomNumber]))) });
+  function mapaFixoEnviar(type, pedida) {
+    if (!mapaPronto) { mapaFila = pedida; return; }
+    mapaFixo.querySelector('iframe').contentWindow.postMessage(dadosAba(type, pedida), location.origin);
+  }
+  function mapaFixoCriar() {
+    if (mapaFixo) return mapaFixo;
+    mapaFixo = document.createElement('div'); mapaFixo.className = 'mapa-fixo'; mapaFixo.hidden = true;
+    mapaFixo.innerHTML = '<iframe title="Mapa do campus" allow="fullscreen" src="mapa3d/index.html?aba=1"></iframe>';
+    vp.appendChild(mapaFixo);
+    const frame = mapaFixo.querySelector('iframe');
+    window.addEventListener('message', (e) => {
+      if (e.origin !== location.origin || e.source !== frame.contentWindow || e.data?.type !== 'etal:mapa:pronto') return;
+      mapaPronto = true; frame.contentWindow.postMessage(dadosAba('etal:mapa:abrir', mapaFila || {}), location.origin); mapaFila = null;
+    });
+    return mapaFixo;
+  }
+  /* mostra o mapa só quando a tela visível é a do mapa (chamado por setChrome a cada troca de tela) */
+  const mapaFixoVer = (el) => { if (mapaFixo) mapaFixo.hidden = !el?.querySelector('[data-mapa-fixo]'); };
   const telaMapaNovo = () => (palcoOn() ? telaMapaAoLado() : {
-    html: '<div class="map-screen mapa-aba"><iframe title="Mapa do campus" allow="fullscreen" src="mapa3d/index.html?aba=1"></iframe></div>',
-    mount: (page) => {
-      const frame = page.querySelector('iframe'); if (!frame) return;
-      /* rota pedida por "Como chegar" (atividade ou sala) vai junto, uma vez */
-      const pedida = S.mapRoute && Number.isInteger(S.mapFloor) && S.mapZone ? { floor: S.mapFloor, zone: S.mapZone } : {}; S.mapRoute = false;
-      /* foto do SUAP e nome: vão para o rosto do personagem no passeio */
-      const dados = (type) => ({ type, ...pedida, origem: origemAgora(), foto: D.person.photo || null, nome: D.person.name || '', hour: skyHour, reduced: reduce, sessions: D.sessions.map((x) => ({ id: x.id, title: x.title, time: x.time, floor: x.floor, zone: x.zone })), rooms: Object.fromEntries(P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => [`${f.level}:${z.id}`, z.roomNumber]))) });
-      const ouvir = (e) => {
-        if (!frame.isConnected) { window.removeEventListener('message', ouvir); return; }
-        if (e.origin === location.origin && e.source === frame.contentWindow && e.data?.type === 'etal:mapa:pronto') frame.contentWindow.postMessage(dados('etal:mapa:abrir'), location.origin);
-      };
-      window.addEventListener('message', ouvir);
+    html: '<div class="map-screen mapa-aba" data-mapa-fixo></div>',
+    mount: () => {
+      const novo = !mapaFixo; mapaFixoCriar(); mapaFixo.hidden = false;
+      /* rota pedida por "Como chegar" (atividade ou sala) vai junto, uma vez; sem pedido, só sincroniza (salas, foto, hora) */
+      const pedida = S.mapRoute && Number.isInteger(S.mapFloor) && S.mapZone ? { floor: S.mapFloor, zone: S.mapZone, via: S.mapVia || null } : null; S.mapRoute = false;
+      if (pedida) mapaFixoEnviar('etal:mapa:abrir', pedida); else if (!novo && mapaPronto) mapaFixoEnviar('etal:mapa:sincronizar', {});
     },
   });
   Screens.campus = () => (mapaNovoOn() ? telaMapaNovo() : {
@@ -984,7 +1013,12 @@
   const hex2 = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
   const mixC = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
   const css = (c) => `rgb(${c.join(',')})`;
-  let skyHour = 14 + 2 / 60;
+  /* Relógio do app: segue a hora do aparelho, minuto a minuto (céu, luz do mapa, "agora" da agenda e lembretes). O dia
+     continua o do evento de exemplo (26 a 28/11), porque a programação é a de 2025. ?ceu=<hora>, mexer no horário do céu
+     ou no botão do sol fixa uma hora para demonstrar, até recarregar. */
+  const horaAparelho = () => { const d = new Date(); return d.getHours() + d.getMinutes() / 60; };
+  let skyHour = horaAparelho(), horaManual = false;
+  setInterval(() => { if (!horaManual && Math.abs(horaAparelho() - skyHour) > 0.5 / 60) { skyHour = horaAparelho(); applySky(); if (mapaPronto) mapaFixoEnviar('etal:mapa:sincronizar', {}); } }, 30000);
   const skyClock = () => { const m = Math.round(skyHour * 60); return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`; };
   /* O mapa 3D acompanha o horário do céu (noite, pôr do sol), a menos que a pessoa desligue em Personalizar. */
   const syncMapHour = () => window.Campus3D?.setHour?.(UI.mapHour ? skyHour : null);
@@ -1009,7 +1043,7 @@
     const m = (h - 18.6) / 5;
     st_.setProperty('--moon-x', `${14 + Math.max(0, Math.min(1, m)) * 56}%`);
     st_.setProperty('--moon-y', `${56 - Math.sin(Math.max(0, Math.min(1, m)) * 2.2) * 40}%`);
-    const clock = skyClock();
+    const clock = skyClock(); D.now.time = clock; // o "agora" da agenda segue o mesmo relógio
     const ck = $('#clock'); if (ck) ck.textContent = clock;
     const nc = $('#nowclock'); if (nc) nc.textContent = clock;
     const r = $('#skyr'); if (r && document.activeElement !== r) r.value = h;
@@ -1018,7 +1052,7 @@
   }
   let skyAnim = 0;
   function skyTo(target) {
-    cancelAnimationFrame(skyAnim);
+    cancelAnimationFrame(skyAnim); horaManual = true;
     if (reduce) { skyHour = target; applySky(); return; }
     const from = skyHour; const t0 = performance.now();
     const step = (n) => { const k = Math.min(1, (n - t0) / 1400); skyHour = from + (target - from) * (1 - (1 - k) ** 3); applySky(); if (k < 1) skyAnim = requestAnimationFrame(step); };
@@ -1815,6 +1849,7 @@
     device.classList.toggle('sky-status', el._sky);
     if (!el._sky) device.classList.remove('sky-past');
     renderTabbar();
+    mapaFixoVer(el);
   }
   function show(el, mode) {
     const old = vp.querySelector('.page:not(.leaving)');
@@ -2028,20 +2063,8 @@
     if (UI.view === '2d' || !mapaNovoOn()) return false;
     /* tela grande: a rota vai para o mapa ao lado, sem abrir outra janela por cima do app */
     if (palcoOn()) { palcoEnviar({ floor, zone, via: S.mapVia || null }); toast('Caminho traçado no mapa ao lado'); return true; }
-    const host = document.createElement('section'); host.className = 'mapa-novo'; host.setAttribute('role', 'dialog'); host.setAttribute('aria-label', 'Caminho pelo campus'); host.setAttribute('aria-modal', 'true');
-    const frame = document.createElement('iframe'); frame.title = 'Mapa do campus'; frame.allow = 'fullscreen'; frame.src = 'mapa3d/index.html';
-    const light = document.createElement('button'); light.className = 'mapa-novo-leve'; light.textContent = 'Mapa leve';
-    const previous = document.activeElement;
-    const close = () => { clearTimeout(timer); clearInterval(sync); window.removeEventListener('message', receive); document.removeEventListener('keydown', key); host.remove(); vp.inert = false; tabbar.inert = false; previous?.focus?.(); };
-    const payload = () => ({type:'etal:mapa:abrir', floor, zone, origem: origemAgora(), foto: D.person.photo || null, nome: D.person.name || '', via:S.mapVia || null, hour:skyHour, reduced:reduce, sessions:D.sessions.map(x=>({id:x.id,title:x.title,time:x.time,floor:x.floor,zone:x.zone})), rooms:Object.fromEntries(P.floors.flatMap(f=>f.zones.filter(z=>z.roomNumber).map(z=>[`${f.level}:${z.id}`,z.roomNumber]))) });
-    let ready = false, lastSync = '';
-    const receive = e => { if(e.origin!==location.origin || e.source!==frame.contentWindow) return; if(e.data?.type==='etal:mapa:pronto'){ ready=true;clearTimeout(timer);frame.contentWindow.postMessage(payload(),location.origin);light.textContent='Mapa leve'; } if(e.data?.type==='etal:mapa:fechar')navBack();if(e.data?.type==='etal:mapa:leve')useLight(); };
-    const useLight = () => { navBack(); setTimeout(fallback, 100); };
-    const key = e => { if(e.key==='Escape'){e.preventDefault();navBack();} };
-    const timer = setTimeout(()=>{if(!ready){light.textContent='Abrir mapa leve';toast('O modelo está demorando. O mapa leve está disponível.');}},15000);
-    const sync = setInterval(()=>{if(!ready)return;const data=payload();const stamp=JSON.stringify([data.sessions,data.rooms]);if(stamp!==lastSync){lastSync=stamp;frame.contentWindow.postMessage({...data,type:'etal:mapa:sincronizar'},location.origin);}},1500);
-    light.onclick=useLight;host.append(frame,light);device.append(host);vp.inert=true;tabbar.inert=true;
-    window.addEventListener('message',receive);document.addEventListener('keydown',key);navPush(close,'mapa-novo');frame.focus();return true;
+    /* usa o mesmo mapa da aba Mapa (já carregado), com a rota pedida; antes abria outro mapa por cima, montado do zero */
+    S.mapFloor = floor; S.mapZone = zone; S.mapRoute = true; switchTab('map', true); return true;
   }
   function runJourney() {
     const C = window.Campus3D; const [lvl, zone] = [S.mapFloor, S.mapZone];
@@ -2227,7 +2250,7 @@
     e.target.blur();
     ($('.fd-route', best) || best).click();
   });
-  document.addEventListener('input', (e) => { if (e.target.id === 'mapsky') { cancelAnimationFrame(skyAnim); skyHour = +e.target.value; applySky(); const o = $('#mapskyo'); if (o) o.textContent = skyClock(); } });
+  document.addEventListener('input', (e) => { if (e.target.id === 'mapsky') { cancelAnimationFrame(skyAnim); horaManual = true; skyHour = +e.target.value; applySky(); const o = $('#mapskyo'); if (o) o.textContent = skyClock(); } });
   document.addEventListener('input', (e) => { if (e.target.id === 'accentpick') { UI.accent = e.target.value; uiSave(); applyUI(); } });
   document.addEventListener('change', (e) => { if (e.target.id === 'accentpick') rerender(); });
   document.addEventListener('input', (e) => { if (e.target.id === 'fq') { if (e.target.value.trim()) S.finderMode = null; finderRender(); } });
@@ -2342,6 +2365,7 @@
         skyTo(n === undefined ? seq[0] : n);
         break;
       }
+      case 'lermais': el.classList.toggle('clamp'); break;
       case 'scan': openOverlay(Overlays.scan(el.dataset.mode || 'ler'), 'scan'); if ((el.dataset.mode || 'ler') === 'ler') setTimeout(camStart, 350); break;
       case 'camstart': camStart(); break;
       case 'suapoauth': el.classList.add('loading'); location.href = API.url('/api/auth/suap'); break;
@@ -2589,7 +2613,7 @@
     }
   });
 
-  $('#skyr')?.addEventListener('input', (e) => { cancelAnimationFrame(skyAnim); skyHour = +e.target.value; applySky(); });
+  $('#skyr')?.addEventListener('input', (e) => { cancelAnimationFrame(skyAnim); horaManual = true; skyHour = +e.target.value; applySky(); });
   /* Resposta imediata ao toque em tudo que é clicável. */
   const PRESS = '[data-act],[data-go],a,.btn';
   let pressed = null;
@@ -2806,7 +2830,7 @@
   if (history.state && history.state.etal) { navSkip += 1; history.go(-history.state.etal); }
   const qs = new URLSearchParams(location.search);
   if (qs.get('fps')) UI.fps = true;
-  if (qs.get('ceu')) skyHour = +qs.get('ceu');
+  if (qs.get('ceu')) { skyHour = +qs.get('ceu'); horaManual = true; }
   if (qs.get('tema')) UI.mode = qs.get('tema') === 'dark' ? 'escuro' : 'claro';
   if (qs.get('paleta')) UI.theme = qs.get('paleta');
   applyUI();

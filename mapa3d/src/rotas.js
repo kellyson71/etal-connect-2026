@@ -65,9 +65,12 @@ export function doorOf(level, z) {
 const ENTRANCES = {
   principal: { name: 'entrada principal', plan: PLAN.entrances.principal, campus: [START, [13.3, 11], [15, -4], [18.4, -11.5]] },
   auditorio: { name: 'entrada do auditório', plan: [181, 482], // a porta fica de frente para o caminho calçado, no trecho curvo
-    campus: [START, [13.3, 11], [-23, 8], [-27, -8], [-30, -19.4]] },
+    /* pelo caminho de verdade: atravessa o pátio coberto até o canto noroeste e segue pela calçada rente à fachada, entre
+       o canteiro de palmeiras e o prédio, até a porta de vidro (antes cortava o canteiro, por cima dos arbustos) */
+    campus: [START, [13.3, 11], [-18.5, -14.5], [-22.5, -18.2], [-30, -19.4]] },
   anexo: { name: 'entrada do Anexo', plan: PLAN.entrances.anexo, campus: [START, [13.3, 11], [-23, 8], [-27, -8], [-48, -13], [-49.5, -50], [-50, -68], [-44.6, -66], [-39, -61.5], [-27, -60], [-20, -56], [-17.8, -52]] }, // porta de vidro norte do bloco
 };
+const SO_PELA = {};
 const VERTS = (() => {
   const f = PLAN.floors[1]; const st = f.zones.find((q) => q.kind === 'stairs'); const E = escadaPlanta(st, PLAN.world.sy);
   return {
@@ -101,7 +104,7 @@ function cadeiaDePortas(level, z, prof = 0) {
    sempre sair da portaria. */
 const CAMINHOS = [
   [START, [13, 11], [15, -4], [18.4, -11.5]], [START, [13, 11], [6, 3]], [START, [13, 11], [19, 3]], [START, [13, 11], [-24, 11], [-30, 9]],
-  [START, [13, 11], [-23, 8], [-27, -8], [-30, -19.4]], [[-27, -8], [-48, -13], [-52.5, -24]],
+  [START, [13, 11], [-18.5, -14.5], [-22.5, -18.2], [-30, -19.4]], [START, [13, 11], [-23, 8], [-27, -8]], [[-27, -8], [-48, -13], [-52.5, -24]],
   [[-48, -13], [-49.5, -50], [-50.5, -58.5], [-59, -58.5]], [[-49.5, -50], [-50, -68], [-41, -74], [-37.5, -80], [-32.5, -81.5]],
   [[-50.5, -58.5], [-61.5, -57.8]], [[-50, -68], [-44.6, -66], [-38.5, -62], [-37.8, -65]], [[-44.6, -66], [-39, -61.5], [-28, -61.5], [-22.5, -66]],
   [[-39, -61.5], [-27, -60], [-20, -56], [-17.8, -52]], [START, [13, 30], [12.6, 16]],
@@ -184,7 +187,9 @@ export function rota(dest, origem = null, forcar = null) {
     if (t) tenta({ ...t, pts: [...src.cadeia.slice(0, -1).map((q) => P3(q, src.level)), ...t.pts, ...alvo.cadeia.slice(1).map((q) => P3(q, alvo.level))], iEntrada: 0, entrada: null, iSobe: t.iSobe + src.cadeia.length - 1, iChega: t.iChega + src.cadeia.length - 1 });
   } else if (alvo) {
     /* da portaria a uma sala: escolhe a entrada */
-    Object.values(ENTRANCES).forEach((e) => { const t = trechoDentro(0, e.plan, alvo.level, alvo.cadeia[0], forcar); if (!t) return; const fora3 = campus3(e.campus); const n = fora3.length; tenta({ ...t, custo: t.custo + polyLen(e.campus), pts: [...fora3, ...t.pts, ...alvo.cadeia.slice(1).map((q) => P3(q, alvo.level))], iEntrada: n - 1, entrada: e.name, iSobe: t.iSobe < 0 ? -1 : t.iSobe + n, iChega: t.iChega < 0 ? -1 : t.iChega + n }); });
+    /* o auditório só se entra pela porta de vidro dele (informado pelo usuário), nunca atravessando o bloco */
+    const entradas = SO_PELA[alvo.zona?.id] ? [ENTRANCES[SO_PELA[alvo.zona.id]]] : Object.values(ENTRANCES);
+    entradas.forEach((e) => { const t = trechoDentro(0, e.plan, alvo.level, alvo.cadeia[0], forcar); if (!t) return; const fora3 = campus3(e.campus); const n = fora3.length; tenta({ ...t, custo: t.custo + polyLen(e.campus), pts: [...fora3, ...t.pts, ...alvo.cadeia.slice(1).map((q) => P3(q, alvo.level))], iEntrada: n - 1, entrada: e.name, iSobe: t.iSobe < 0 ? -1 : t.iSobe + n, iChega: t.iChega < 0 ? -1 : t.iChega + n }); });
   } else if (src) {
     /* de uma sala a um lugar de fora: sai pela entrada que der o menor caminho */
     Object.values(ENTRANCES).forEach((e) => {

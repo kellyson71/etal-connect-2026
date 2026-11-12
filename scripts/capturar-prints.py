@@ -14,8 +14,8 @@ from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'docs/prints'
-BASE = sys.argv[1] if len(sys.argv) > 1 else 'http://127.0.0.1:8770'
-CEL = dict(viewport={'width': 390, 'height': 844}, device_scale_factor=2, is_mobile=True, has_touch=True,
+BASE = sys.argv[1] if len(sys.argv) > 1 else 'http://127.0.0.1:8770'  # com HTTPS=1: https://<ip>:8770
+CEL = dict(ignore_https_errors=True, viewport={'width': 390, 'height': 844}, device_scale_factor=2, is_mobile=True, has_touch=True,
            reduced_motion='reduce', service_workers='block', locale='pt-BR')
 PERFIL = "sessionStorage.setItem('etal-perfil', JSON.stringify({ name: 'Maria Clara Fernandes', first: 'Maria Clara', initials: 'MC', course: 'Informática', year: '3º ano', id: '20231094010012', campus: 'Pau dos Ferros' }))"
 
@@ -30,14 +30,18 @@ def salvar(png, nome, largura=None):
     print(nome, f'{(OUT / nome).stat().st_size // 1024} KB')
 
 
+CEU = 14.04  # o app segue o relógio do aparelho; as prints usam sempre o começo da tarde
+com_ceu = lambda url: url + ('&' if '?' in url else '?') + f'ceu={CEU}'
+
+
 def tela(ctx, url, nome, espera=1600, antes=None):
-    p = ctx.new_page(); p.goto(BASE + url); p.wait_for_timeout(espera)
+    p = ctx.new_page(); p.goto(BASE + com_ceu(url)); p.wait_for_timeout(espera)
     if antes: antes(p)
     tmp = OUT / ('_' + nome); p.screenshot(path=str(tmp)); p.close(); salvar(tmp, nome)
 
 
 def mapa(ctx, nome, acao=None, espera=4000):
-    p = ctx.new_page(); p.goto(BASE + '/?tela=mapa')
+    p = ctx.new_page(); p.goto(BASE + com_ceu('/?tela=mapa'))
     fr = None
     for _ in range(240):
         p.wait_for_timeout(500)
@@ -58,7 +62,7 @@ def main():
         tela(c, '/?tela=agenda', '03-agenda.png')
         tela(c, '/?tela=atividade', '04-atividade.png')
         # QR lido pela câmera do celular: o link abre o app e confirma a presença (exemplo)
-        p = c.new_page(); p.goto(BASE + '/'); p.evaluate(PERFIL); p.goto(BASE + '/?qr=etal:react-native'); p.wait_for_timeout(4200)
+        p = c.new_page(); p.goto(BASE + '/'); p.evaluate(PERFIL); p.goto(BASE + com_ceu('/?qr=etal:react-native')); p.wait_for_timeout(4200)
         tmp = OUT / '_05'; p.screenshot(path=str(tmp) + '.png'); p.close(); salvar(str(tmp) + '.png', '05-presenca.png')
         mapa(c, '06-mapa-evento.png')
         mapa(c, '07-como-chegar.png', "window.CampusNovo.route(2, 'labs-norte-2'); setTimeout(() => window.MAPA3D.viagem.pular(), 300)", 7000)
