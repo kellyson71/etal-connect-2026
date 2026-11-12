@@ -105,7 +105,23 @@ export function iniciarInterface(ctx) {
     $('#px-quando').textContent = `Sua próxima · ${proxima.quando || proxima.time}`; $('#px-titulo').textContent = proxima.title;
   }
   $('#proxima').onclick = () => { if (!proxima) return; select({ kind: 'activity', level: proxima.floor, id: proxima.zone, title: proxima.title, sub: `${proxima.time} · ${nomeAndar(proxima.floor)}`, activity: proxima }); ir(); };
+  const salaAtividades = document.createElement('section'); salaAtividades.id = 'sala-atividades'; salaAtividades.hidden = true;
+  $('#meta').after(salaAtividades);
+  function listarAtividades(it) {
+    const rows = sessoes.filter((s) => it.kind === 'place' ? s.place === it.id : s.floor === it.level && s.zone === it.id).sort((a,b) => a.day - b.day || a.time.localeCompare(b.time));
+    salaAtividades.replaceChildren(); salaAtividades.hidden = !rows.length;
+    $('#cartao').classList.remove('recolhido'); $('#recolher').setAttribute('aria-expanded', 'true');
+    for (const s of rows) {
+      const b = document.createElement('button'); b.type = 'button';
+      const title = document.createElement('b'); title.textContent = s.title;
+      const when = document.createElement('small'); when.textContent = `${s.day} nov · ${s.time} · ${s.type || 'Atividade'}`;
+      b.append(title, when);
+      b.onclick = () => { if (parent !== window) parent.postMessage({ type: 'etal:mapa:atividade', id: s.id }, location.origin); else aviso(s.title + ' · ' + when.textContent); };
+      salaAtividades.append(b);
+    }
+  }
   function select(it, { voar = true } = {}) {
+    listarAtividades(it);
     selecionado = it; $('#proxima').hidden = true; percurso = null; viagem.limpar(); $('#resultados').hidden = true; $('#busca').blur();
     if (it.kind === 'perto') { const r = maisPerto('bebedouro', origem); if (!r) { aviso('Nenhum bebedouro com caminho.'); return; } return select({ kind: 'ponto', id: r.ponto.id, title: 'Bebedouro', sub: r.ponto.onde }); }
     $('#titulo').textContent = it.title; $('#descricao').textContent = it.sub; $('#limpar').hidden = false;
@@ -140,7 +156,7 @@ export function iniciarInterface(ctx) {
     return true;
   }
   const r0Origem = (r) => (r?.origem ? `Saída: ${origem.titulo}` : 'Saída: Portaria');
-  function limpar() { viagem.limpar(); mostrarOrigem(); selecionado = null; setTimeout(mostrarProxima); document.body.classList.remove('em-viagem'); percurso = null; selecionado = null; $('#titulo').textContent = 'Seu próximo encontro'; $('#descricao').textContent = 'Escolha uma sala, atividade ou lugar para ver o caminho.'; $('#meta').textContent = 'Campus Pau dos Ferros · programação demonstrativa'; $('#ir').disabled = true; ['pular', 'repetir', 'etapas', 'limpar', 'via-wrap', 'etapas-texto'].forEach((id) => ($('#' + id).hidden = true)); $('#etapa-atual').textContent = ''; if (modo === 'andares') abrirAndares(); else fecharAndares(modo === 'campus' ? campusPose() : eventoPose()); }
+  function limpar() { salaAtividades.hidden = true; viagem.limpar(); mostrarOrigem(); selecionado = null; setTimeout(mostrarProxima); document.body.classList.remove('em-viagem'); percurso = null; selecionado = null; $('#titulo').textContent = 'Seu próximo encontro'; $('#descricao').textContent = 'Escolha uma sala, atividade ou lugar para ver o caminho.'; $('#meta').textContent = 'Campus Pau dos Ferros'; $('#ir').disabled = true; ['pular', 'repetir', 'etapas', 'limpar', 'via-wrap', 'etapas-texto'].forEach((id) => ($('#' + id).hidden = true)); $('#etapa-atual').textContent = ''; if (modo === 'andares') abrirAndares(); else fecharAndares(modo === 'campus' ? campusPose() : eventoPose()); }
 
   $('#busca').addEventListener('input', () => {
     const q = norm($('#busca').value).trim(); $('#resultados').replaceChildren(); $('#resultados').hidden = !q; if (!q) return;
@@ -269,7 +285,7 @@ export function iniciarInterface(ctx) {
     if (e.origin !== location.origin || e.source !== parent || !['etal:mapa:abrir', 'etal:mapa:sincronizar'].includes(e.data?.type)) return;
     const d = e.data; if (Array.isArray(d.sessions)) sessoes = d.sessions; if (d.tema === 'escuro' || d.tema === 'claro') document.documentElement.dataset.tema = d.tema; if ('proxima' in d) { proxima = d.proxima && Number.isInteger(d.proxima.floor) ? d.proxima : null; mostrarProxima(); } if ('foto' in d || 'nome' in d) passeio.setFoto(d.foto, d.nome); api.syncRooms(d.rooms); if ('origem' in d) api.setOrigem(d.origem);
     if (d.hour != null) hora(d.hour); // o app manda a hora do aparelho (ou a escolhida no céu)
-    if (d.type === 'etal:mapa:sincronizar') return; if (d.reduced != null) $('#reduzir').checked = !!d.reduced;
+    if (selecionado) listarAtividades(selecionado); if (d.type === 'etal:mapa:sincronizar') return; if (d.reduced != null) $('#reduzir').checked = !!d.reduced;
     /* o app pode pedir um modo (tela grande do computador) e uma rota tira o mapa do passeio */
     if (typeof d.mode === 'string' && ['evento', 'andares', 'campus', 'passear'].includes(d.mode) && d.mode !== modo) setMode(d.mode);
     if (Number.isInteger(d.floor) && typeof d.zone === 'string' && modo === 'passear') setMode('evento');

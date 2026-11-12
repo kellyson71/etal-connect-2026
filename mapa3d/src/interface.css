@@ -236,3 +236,11 @@ body.em-viagem #proxima,body.abertura #proxima{display:none}
   body.dedao #proxima b{font-size:13.5px}
   body.dedao #proxima .px-ir{width:calc(var(--alt) - 8px);height:calc(var(--alt) - 8px)}
 }
+
+/* Todas as atividades da sala; o cartão continua acessível em lugares sem rota. */
+#cartao:has(#ir:disabled):has(#sala-atividades:not([hidden])){display:block}
+#sala-atividades{display:grid;gap:4px;max-height:190px;overflow:auto;margin:8px 0 12px}
+#sala-atividades[hidden]{display:none}
+#sala-atividades button{display:grid;text-align:left;gap:4px;padding:10px 12px;border-radius:12px;background:var(--fundo,#edf1f7);color:inherit;border:1px solid #8883;white-space:normal}
+#sala-atividades b{font-size:14px;line-height:1.3}#sala-atividades small{opacity:.7;font-size:12px}
+:root[data-tema=escuro] #sala-atividades button{background:#ffffff0a}
