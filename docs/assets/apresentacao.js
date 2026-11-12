@@ -68,6 +68,11 @@
   function stopCurrent() {
     slides[current].querySelectorAll('[data-demo]').forEach(unmount);
   }
+  /* Slides com etapas (a animação da rota): o "próximo" e o "anterior" passam primeiro pelas etapas do slide. */
+  function avancar(dir) {
+    const h = window.etapasSlide; if (h && h.slide === slides[current] && h.passo(dir)) return;
+    window.direcaoSlide = dir; go(current + dir);
+  }
   function go(index, updateHash = true) {
     const target = Math.max(0, Math.min(slides.length - 1, index));
     const old = slides[current];
@@ -126,8 +131,8 @@
     if (outlineDialog.open) outlineDialog.close();
     go(Number(button.dataset.go));
   }));
-  previous.addEventListener('click', () => go(current - 1));
-  next.addEventListener('click', () => go(current + 1));
+  previous.addEventListener('click', () => avancar(-1));
+  next.addEventListener('click', () => avancar(1));
   document.querySelectorAll('[data-references]').forEach(button => button.addEventListener('click', () => references()));
   document.querySelector('[data-outline]')?.addEventListener('click', () => openDialog(outlineDialog));
   document.querySelectorAll('dialog').forEach(dialog => {
@@ -250,8 +255,8 @@
   document.addEventListener('keydown', event => {
     if (document.querySelector('dialog[open]') || event.ctrlKey || event.metaKey || event.altKey || /^(INPUT|TEXTAREA|SELECT|SUMMARY)$/.test(event.target.tagName)) return;
     if (event.key === ' ' && /^(BUTTON|A)$/.test(event.target.tagName)) return;
-    if (['ArrowRight','PageDown',' '].includes(event.key)) {event.preventDefault();go(current+1);}
-    if (['ArrowLeft','PageUp'].includes(event.key)) {event.preventDefault();go(current-1);}
+    if (['ArrowRight','PageDown',' '].includes(event.key)) {event.preventDefault();avancar(1);}
+    if (['ArrowLeft','PageUp'].includes(event.key)) {event.preventDefault();avancar(-1);}
     if (event.key === 'Home') {event.preventDefault();go(0);}
     if (event.key === 'End') {event.preventDefault();go(slides.length-1);}
     if (event.key.toLowerCase() === 'f') document.querySelector('[data-fullscreen]').click();
@@ -261,7 +266,7 @@
     event.preventDefault();
     if (performance.now()-changedAt < 900) {wheelDelta=0;return;}
     wheelDelta += event.deltaY;
-    if (Math.abs(wheelDelta)>65) {go(current+(wheelDelta>0?1:-1));wheelDelta=0;}
+    if (Math.abs(wheelDelta)>65) {avancar(wheelDelta>0?1:-1);changedAt=performance.now();wheelDelta=0;}
   },{passive:false});
   shell.addEventListener('touchstart', event => {
     if (event.target.closest('input,button,[data-demo]')) return;
@@ -270,7 +275,7 @@
   shell.addEventListener('touchend', event => {
     if (!touchStart) return;
     const dx=event.changedTouches[0].clientX-touchStart.x,dy=event.changedTouches[0].clientY-touchStart.y;
-    if (Math.abs(dx)>55 && Math.abs(dx)>Math.abs(dy)) go(current+(dx<0?1:-1));
+    if (Math.abs(dx)>55 && Math.abs(dx)>Math.abs(dy)) avancar(dx<0?1:-1);
     touchStart=null;
   },{passive:true});
   window.addEventListener('hashchange',fromHash);
