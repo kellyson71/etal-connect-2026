@@ -910,6 +910,12 @@
      "zoneId": "wc-auditorio"
     },
     {
+     "x": 118,
+     "y": 302,
+     "axis": "h",
+     "zoneId": "auditorio"
+    },
+    {
      "x": 306,
      "y": 113,
      "axis": "h",

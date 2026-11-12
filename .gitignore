@@ -78,3 +78,6 @@ prototipo/mapa3d/
 # PNGs originais da comparação dos mapas (75 MB): ficam só na máquina; hashes em evidencias.json
 /docs/comparacao-modelos/imagens/
 /docs/comparacao-modelos/*.zip
+
+# certificados locais do modo HTTPS do protótipo
+/prototipo/.certs/

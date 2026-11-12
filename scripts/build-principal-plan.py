@@ -265,7 +265,8 @@ floors = [ground(), first(), second()]
 # Portas medidas nas figuras de 2012 (vãos nas paredes dos corredores, quase sempre em pares junto da divisa).
 # Direção e Gabinete abrem para a sala de Estar, que é aberta para a circulação.
 DOORS = {
- 0: {'rh': (306, N1), 'comunicacao': (386, N1), 'extensao-pesquisa': (511, N1),
+ 0: {'auditorio': (118, 302),  # porta dupla do hall curvo para a plateia (a rota termina nela)
+     'rh': (306, N1), 'comunicacao': (386, N1), 'extensao-pesquisa': (511, N1),
      'dep-academico': (528, N1), 'assuntos-estudantis': (653, N1),
      'estudos-servidores': (386, I1[0]), 'sala-servidores': (511, I1[0]), 'coordenacoes': (528, I1[0]), 'registro-academico': (653, I1[0]),
      'secretaria-academica': (332, I1[0]), 'diretor': (270, I2[0]), 'gabinete': (298, 336, 'v'), 'estar': (341, 370, 'v'),

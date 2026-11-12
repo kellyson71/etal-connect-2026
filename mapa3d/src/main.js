@@ -172,8 +172,9 @@ function quadro(now) {
 function tamanho() { const w = canvas.clientWidth, h = canvas.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); pedir(); }
 addEventListener('resize', tamanho); tamanho();
 
-const hr = $('#hora'); hr.addEventListener('input', () => { const h = +hr.value; sessionStorage.setItem('mapa3d-hora', hr.value); $('#horaTxt').textContent = String(Math.floor(h)).padStart(2, '0') + 'h' + (h % 1 ? '30' : '00'); hora(h); });
-hr.value = sessionStorage.getItem('mapa3d-hora') || 15; hr.dispatchEvent(new Event('input'));
+const hr = $('#hora'); hr.addEventListener('input', (e) => { const h = +hr.value; if (e.isTrusted) sessionStorage.setItem('mapa3d-hora', hr.value); $('#horaTxt').textContent = String(Math.floor(h)).padStart(2, '0') + 'h' + (h % 1 ? '30' : '00'); hora(h); });
+/* hora do aparelho (de meia em meia hora, como o controle); quem mexe no controle fixa a hora até fechar a aba */
+{ const d = new Date(); hr.value = sessionStorage.getItem('mapa3d-hora') || Math.min(22, Math.max(5, Math.round((d.getHours() + d.getMinutes() / 60) * 2) / 2)); } hr.dispatchEvent(new Event('input'));
 requestAnimationFrame(() => { const i = renderer.info; $('#info').textContent = `${tris(scene).toLocaleString('pt-BR')} triângulos · ${i.render.calls} chamadas · montado em ${tMontagem} ms`; });
 window.MAPA3D = { passeio, prepararCampus, verCampus, viagem, palco, interior, estilo, principal, scene, camera, controls, renderer, irPara, VISTAS, hora, M, T };
 interfaceMapa = iniciarInterface({ scene, camera, controls, renderer, principal, interior, palco, estilo, viagem, passeio, veg, entorno, sol, pedir, hora, irPara, VISTAS, prepararCampus, verCampus, predios: gPredios, detalhes: det.grupo });
