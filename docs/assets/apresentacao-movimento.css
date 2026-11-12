@@ -469,3 +469,20 @@
 .phone-frame.lg video{border-radius:36px}
 .slide.active .d-phone .phone-frame.lg{animation:d-sobe .9s cubic-bezier(.2,.8,.2,1) both}
 @keyframes d-sobe{from{transform:translateY(40px) scale(.96);opacity:0}to{transform:none;opacity:1}}
+/* "Como a rota é calculada": seis atos com os dados do código do mapa (rota-completa.json) */
+.rc{display:grid;grid-template-columns:1fr 360px;gap:30px;flex:1;align-items:center}
+.rc-stage{position:relative;aspect-ratio:1600/1100;border-radius:18px;overflow:hidden;background:linear-gradient(180deg,#f7f9fc,#eef2f7);box-shadow:0 24px 60px -36px rgba(20,41,66,.6)}
+.rc-canvas{position:absolute;inset:0;width:100%;height:100%}
+.rc-leg{position:absolute;left:18px;top:16px;max-width:70%;padding:10px 16px;border-radius:14px;background:rgba(255,255,255,.92);box-shadow:0 8px 24px -14px rgba(20,41,66,.5)}
+.rc-leg b{display:block;font:800 22px/1.15 Manrope,system-ui,sans-serif;color:var(--navy)}
+.rc-leg small{display:block;margin-top:3px;font-size:14px;color:#52627e;min-height:1.2em}
+.rc-steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.rc-steps li{display:grid;grid-template-columns:44px 1fr;column-gap:12px;align-items:center;padding:8px 10px;border-radius:14px;transition:background .35s,transform .35s}
+.rc-steps li span{grid-row:span 2;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:#eef2f7;transition:background .35s}
+.rc-steps li .icon{width:22px;height:22px;stroke:#52627e}
+.rc-steps li b{font:700 17px Manrope,system-ui,sans-serif;color:var(--navy)}
+.rc-steps li small{font-size:13px;color:#66738f}
+.rc-steps li.on{background:#fff;transform:translateX(-6px);box-shadow:0 10px 26px -18px rgba(20,41,66,.6)}
+.rc-steps li.on span{background:#5c9e43}
+.rc-steps li.on .icon{stroke:#fff}
+@media print{.rc-steps li{transform:none!important}}
