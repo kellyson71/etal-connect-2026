@@ -30,12 +30,13 @@ export function iniciarInterface(ctx) {
   const eventoPose = () => enquadrar(camera, [[-70, -60], [32, -55], [32, 48], [-60, 30]].map(([x, z]) => new THREE.Vector3(x, 0, z)), { e: 50, min: 50 });
   const andaresPose = (foco = null) => foco == null
     ? enquadrar(camera, [0, 1, 2].flatMap((l) => interior.contorno(l, 1)), { e: 42, min: 40, folga: 1.04 })
-    : enquadrar(camera, interior.contorno(foco, 1), { e: 48, min: 34, folga: 1.22 }); // o andar na posição dele na escadinha, com os vizinhos em volta
+    : enquadrar(camera, foco === 0 ? PLAN.floors[0].outlinePts.map((p) => { const w = wp(p); return new THREE.Vector3(w[0], 0, w[1]); }) : interior.contorno(foco, 1), { e: 54, min: 26, folga: 1.02 }); // o térreo inclui o auditório // bem perto do andar escolhido, na posição dele na escadinha
   const planoPose = (l) => { const pts = interior.contorno(l, 0); return enquadrar(camera, pts, { e: 89, a: 0, min: 34, folga: 1.02 }); };
   /* Com um andar em foco, ele desce até a altura real dentro do prédio (escada desfeita); os de baixo ficam fantasmas
      e os de cima somem. Sem foco, os três se abrem em escada. */
   /* com um andar em foco a escadinha continua montada: ele fica inteiro e os outros dois esmaecem */
-  const opsDe = (foco) => [0, 1, 2].map((l) => (foco == null || l === foco ? 1 : 0.4));
+  /* com um andar em foco os outros quase somem (antes ficavam a 40% e disputavam a atenção) */
+  const opsDe = (foco) => [0, 1, 2].map((l) => (foco == null || l === foco ? 1 : 0.12));
   async function abrirAndares(foco = null, achatar = false, real = false) {
     viagem.limpar(); if (!real) { andarFoco = foco; andarReal = null; } plano2d = achatar && foco != null;
     marcarAndar();
@@ -43,8 +44,8 @@ export function iniciarInterface(ctx) {
     const sala = selecionado && selecionado.kind !== 'ponto' && selecionado.kind !== 'place' && (foco == null || selecionado.level === foco);
     palco.set({ isoMax: modo === 'campus' ? 0.55 : 1 });
     /* vindo do prédio fechado, primeiro ele se abre em escada (os três andares) e só depois o andar escolhido desce */
-    if (foco != null && palco.estado().abre < 0.9 && !$('#reduzir').checked) await palco.ir({ abre: 1, esc: 1, corte: 99, ops: [1, 1, 1], elos: [1, 1], plano: 0, chegada: 0 }, andaresPose(null), 1300);
-    await palco.ir({ abre: 1, esc: plano2d ? 0 : 1, corte: 99, ops, elos: plano2d ? [0, 0] : foco == null ? [1, 1] : [0.4, 0.4], plano: plano2d ? 1 : 0, chegada: sala ? 1 : 0 }, plano2d ? planoPose(foco) : andaresPose(foco), ms(palco.estado().abre > 0.9 ? 750 : 1300));
+    /* vindo do prédio fechado, vai direto ao andar num movimento só (antes parava na escadinha inteira no meio do caminho) */
+    await palco.ir({ abre: 1, esc: plano2d ? 0 : 1, corte: 99, ops, elos: plano2d ? [0, 0] : foco == null ? [1, 1] : [0.12, 0.12], plano: plano2d ? 1 : 0, chegada: sala ? 1 : 0 }, plano2d ? planoPose(foco) : andaresPose(foco), ms(palco.estado().abre > 0.9 ? 750 : 1500));
   }
   async function fecharAndares(p) { viagem.limpar(); andarFoco = null; andarReal = null; plano2d = false; marcarAndar(); await palco.ir({ abre: 0, esc: 1, corte: 99, ops: [1, 1, 1], elos: [1, 1], plano: 0, chegada: 0 }, p, ms(1100)); }
   /* Por dentro, sem maquete: o prédio real é cortado logo acima das salas do andar (salas, portas, piso dos corredores,
@@ -92,7 +93,7 @@ export function iniciarInterface(ctx) {
   const destinoDe = (it) => (it.kind === 'ponto' ? { ponto: it.id } : { level: it.level, zonaId: it.id });
   function mostrarOrigem() {
     $('#origem').textContent = origem ? `Saída: ${origem.titulo}` : 'Saída: Portaria';
-    $('#trocar-origem').hidden = !origemAtividade; $('#trocar-origem').textContent = origem ? 'sair da portaria' : 'sair da minha atividade';
+    $('#trocar-origem').hidden = !origemAtividade; $('#trocar-origem').textContent = origem ? 'usar a portaria' : 'sair da minha sala';
   }
   let origemAtividade = null;
   function select(it, { voar = true } = {}) {
@@ -177,14 +178,14 @@ export function iniciarInterface(ctx) {
   $('#recolher').onclick = () => { const c = $('#cartao').classList.toggle('recolhido'); $('#recolher').setAttribute('aria-expanded', !c); };
   $('#trocar-origem').onclick = () => { origem = origem ? null : origemAtividade; mostrarOrigem(); if (selecionado) { const it = selecionado; select(it); } };
   document.addEventListener('mapa:etapa', (e) => { $('#etapa-atual').textContent = e.detail.text; });
-  document.addEventListener('mapa:chegada', () => { document.body.classList.remove('em-viagem'); $('#pular').hidden = true; $('#repetir').hidden = false; $('#etapa-atual').textContent = percurso?.zona ? 'Chegou · a porta está marcada' : 'Chegou'; });
+  document.addEventListener('mapa:chegada', () => { document.body.classList.remove('em-viagem'); $('#pular').hidden = true; $('#repetir').hidden = false; $('#etapa-atual').textContent = 'Você chegou'; });
 
   /* ---------- modos, andares, 2D, legenda ---------- */
   document.querySelectorAll('[data-modo]').forEach((b) => (b.onclick = () => setMode(b.dataset.modo)));
   document.querySelectorAll('[data-nivel]').forEach((b) => b.addEventListener('click', () => { const l = b.dataset.nivel === 'tudo' ? null : +b.dataset.nivel; if (modo === 'andares') abrirAndares(l, plano2d && l != null); else verDentro(l); }));
   $('#flat').onclick = () => { const l = andarFoco ?? selecionado?.level ?? 0; abrirAndares(l, !plano2d); };
   $('#p-sair').onclick = () => setMode('evento');
-  $('#legenda').replaceChildren(...LEGENDA.map(([cor, nome, sub]) => { const b = document.createElement('button'); b.className = 'leg ' + cor; b.innerHTML = `<i></i><span><b>${nome}</b><small>${sub}</small></span>`; b.onclick = () => focarParte(nome); return b; }));
+  $('#legenda').replaceChildren(...LEGENDA.map(([cor, nome, sub]) => { const b = document.createElement('button'); b.className = 'leg ' + cor; b.innerHTML = `<i></i><span><b data-curto="${nome.split(' ')[0]}">${nome}</b><small>${sub}</small></span>`; b.onclick = () => focarParte(nome); return b; }));
   function focarParte(nome) {
     const ids = { 'Bloco principal': 'principal', Auditório: 'principal', Cantina: 'cantina', Pátio: 'patio' }; const b = [...BUILDINGS, ...COVERS].find((x) => x.id === ids[nome]); if (!b) return;
     palco.ir({}, enquadrar(camera, b.p.map((q) => new THREE.Vector3(q[0], 0, q[1])), { e: 50, min: 40 }), ms(900));
@@ -258,8 +259,8 @@ export function iniciarInterface(ctx) {
   window.addEventListener('message', (e) => {
     if (e.origin !== location.origin || e.source !== parent || !['etal:mapa:abrir', 'etal:mapa:sincronizar'].includes(e.data?.type)) return;
     const d = e.data; if (Array.isArray(d.sessions)) sessoes = d.sessions; if ('foto' in d || 'nome' in d) passeio.setFoto(d.foto, d.nome); api.syncRooms(d.rooms); if ('origem' in d) api.setOrigem(d.origem);
-    if (d.type === 'etal:mapa:sincronizar') return;
-    if (d.hour != null) hora(d.hour); if (d.reduced != null) $('#reduzir').checked = !!d.reduced;
+    if (d.hour != null) hora(d.hour); // o app manda a hora do aparelho (ou a escolhida no céu)
+    if (d.type === 'etal:mapa:sincronizar') return; if (d.reduced != null) $('#reduzir').checked = !!d.reduced;
     /* o app pode pedir um modo (tela grande do computador) e uma rota tira o mapa do passeio */
     if (typeof d.mode === 'string' && ['evento', 'andares', 'campus', 'passear'].includes(d.mode) && d.mode !== modo) setMode(d.mode);
     if (Number.isInteger(d.floor) && typeof d.zone === 'string' && modo === 'passear') setMode('evento');
