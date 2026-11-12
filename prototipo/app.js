@@ -1607,7 +1607,7 @@
   const floorName = (f) => (f ? `${f}º andar` : 'Térreo');
   const SPOTS = {
     recepcao: { name: 'Recepção', sign: 'Credenciamento', where: 'Térreo', icon: 'id', seed: 21 },
-    'react-native': { name: 'Lab 203', sign: 'React Native com Expo', where: '2º andar', icon: 'qr', seed: 34 },
+    'react-native': { get name() { return byId('react-native')?.room || 'Lab'; }, sign: 'React Native com Expo', where: '2º andar', icon: 'qr', seed: 34 }, // a sala segue a programação (o painel pode trocar)
     'saude-mental': { name: 'Auditório', sign: 'Saúde mental na era da IA', where: 'Térreo', icon: 'mic', seed: 47 },
     colega: { name: 'Colega', sign: 'Crachá de participante', where: 'Trocar contato', icon: 'contact', seed: 58 },
   };
