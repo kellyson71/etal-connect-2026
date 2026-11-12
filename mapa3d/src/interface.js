@@ -96,8 +96,17 @@ export function iniciarInterface(ctx) {
     $('#trocar-origem').hidden = !origemAtividade; $('#trocar-origem').textContent = origem ? 'usar a portaria' : 'sair da minha sala';
   }
   let origemAtividade = null;
+  /* Próxima atividade sua (o app manda): uma pílula com o nome, a hora e o ícone de rota. Sem ela, nada aparece até a
+     pessoa escolher um destino (o cartão grande "Seu próximo encontro" saiu: era texto demais). */
+  let proxima = null;
+  function mostrarProxima() {
+    const b = $('#proxima'); const livre = !selecionado && !document.body.classList.contains('em-viagem') && modo !== 'passear';
+    b.hidden = !(proxima && livre); if (b.hidden) return;
+    $('#px-quando').textContent = `Sua próxima · ${proxima.quando || proxima.time}`; $('#px-titulo').textContent = proxima.title;
+  }
+  $('#proxima').onclick = () => { if (!proxima) return; select({ kind: 'activity', level: proxima.floor, id: proxima.zone, title: proxima.title, sub: `${proxima.time} · ${nomeAndar(proxima.floor)}`, activity: proxima }); ir(); };
   function select(it, { voar = true } = {}) {
-    selecionado = it; percurso = null; viagem.limpar(); $('#resultados').hidden = true; $('#busca').blur();
+    selecionado = it; $('#proxima').hidden = true; percurso = null; viagem.limpar(); $('#resultados').hidden = true; $('#busca').blur();
     if (it.kind === 'perto') { const r = maisPerto('bebedouro', origem); if (!r) { aviso('Nenhum bebedouro com caminho.'); return; } return select({ kind: 'ponto', id: r.ponto.id, title: 'Bebedouro', sub: r.ponto.onde }); }
     $('#titulo').textContent = it.title; $('#descricao').textContent = it.sub; $('#limpar').hidden = false;
     ['pular', 'repetir', 'etapas', 'etapas-texto'].forEach((id) => ($('#' + id).hidden = true)); $('#etapa-atual').textContent = '';
@@ -131,7 +140,7 @@ export function iniciarInterface(ctx) {
     return true;
   }
   const r0Origem = (r) => (r?.origem ? `Saída: ${origem.titulo}` : 'Saída: Portaria');
-  function limpar() { viagem.limpar(); mostrarOrigem(); document.body.classList.remove('em-viagem'); percurso = null; selecionado = null; $('#titulo').textContent = 'Seu próximo encontro'; $('#descricao').textContent = 'Escolha uma sala, atividade ou lugar para ver o caminho.'; $('#meta').textContent = 'Campus Pau dos Ferros · programação demonstrativa'; $('#ir').disabled = true; ['pular', 'repetir', 'etapas', 'limpar', 'via-wrap', 'etapas-texto'].forEach((id) => ($('#' + id).hidden = true)); $('#etapa-atual').textContent = ''; if (modo === 'andares') abrirAndares(); else fecharAndares(modo === 'campus' ? campusPose() : eventoPose()); }
+  function limpar() { viagem.limpar(); mostrarOrigem(); selecionado = null; setTimeout(mostrarProxima); document.body.classList.remove('em-viagem'); percurso = null; selecionado = null; $('#titulo').textContent = 'Seu próximo encontro'; $('#descricao').textContent = 'Escolha uma sala, atividade ou lugar para ver o caminho.'; $('#meta').textContent = 'Campus Pau dos Ferros · programação demonstrativa'; $('#ir').disabled = true; ['pular', 'repetir', 'etapas', 'limpar', 'via-wrap', 'etapas-texto'].forEach((id) => ($('#' + id).hidden = true)); $('#etapa-atual').textContent = ''; if (modo === 'andares') abrirAndares(); else fecharAndares(modo === 'campus' ? campusPose() : eventoPose()); }
 
   $('#busca').addEventListener('input', () => {
     const q = norm($('#busca').value).trim(); $('#resultados').replaceChildren(); $('#resultados').hidden = !q; if (!q) return;
@@ -165,8 +174,8 @@ export function iniciarInterface(ctx) {
   {
     const mq = matchMedia('(max-width: 600px)'); const doca = document.createElement('div'); doca.id = 'doca'; document.body.append(doca);
     const arrumar = () => {
-      if (mq.matches) { doca.append($('#andares'), $('#cartao'), $('#busca-wrap'), $('#modos')); document.body.classList.add('dedao'); }
-      else { $('#topo').insertBefore($('#busca-wrap'), $('#ajustes-btn')); document.body.append($('#andares'), $('#cartao'), $('#modos')); document.body.classList.remove('dedao'); }
+      if (mq.matches) { doca.append($('#andares'), $('#cartao'), $('#proxima'), $('#busca-wrap'), $('#modos')); document.body.classList.add('dedao'); }
+      else { $('#topo').insertBefore($('#busca-wrap'), $('#ajustes-btn')); document.body.append($('#andares'), $('#cartao'), $('#proxima'), $('#modos')); document.body.classList.remove('dedao'); }
     };
     arrumar(); mq.addEventListener('change', arrumar);
   }
@@ -258,7 +267,7 @@ export function iniciarInterface(ctx) {
   window.CampusNovo = api;
   window.addEventListener('message', (e) => {
     if (e.origin !== location.origin || e.source !== parent || !['etal:mapa:abrir', 'etal:mapa:sincronizar'].includes(e.data?.type)) return;
-    const d = e.data; if (Array.isArray(d.sessions)) sessoes = d.sessions; if ('foto' in d || 'nome' in d) passeio.setFoto(d.foto, d.nome); api.syncRooms(d.rooms); if ('origem' in d) api.setOrigem(d.origem);
+    const d = e.data; if (Array.isArray(d.sessions)) sessoes = d.sessions; if ('proxima' in d) { proxima = d.proxima && Number.isInteger(d.proxima.floor) ? d.proxima : null; mostrarProxima(); } if ('foto' in d || 'nome' in d) passeio.setFoto(d.foto, d.nome); api.syncRooms(d.rooms); if ('origem' in d) api.setOrigem(d.origem);
     if (d.hour != null) hora(d.hour); // o app manda a hora do aparelho (ou a escolhida no céu)
     if (d.type === 'etal:mapa:sincronizar') return; if (d.reduced != null) $('#reduzir').checked = !!d.reduced;
     /* o app pode pedir um modo (tela grande do computador) e uma rota tira o mapa do passeio */

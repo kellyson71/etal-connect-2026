@@ -73,6 +73,9 @@ export function construirVegetacao(M, { vasos = [], vasosDentro = [], flores = [
   /* Correções do usuário: nada de árvore no caminho da entrada (elas ficam à esquerda, sombreando as motos);
      na calçada da frente, só as que ficam junto ao muro; no pátio entre os blocos não são tão grandes. */
   const arvores = listaArvores().filter((t) => !(t.x > 8.6 && t.x < 18 && t.y > 9 && t.y < 47.5) && !(t.tipo !== undefined && t.y > 49 && t.y < 67) && !(t.x > 14 && t.x < 33 && t.y > -18.5 && t.y < -8) && !(Math.hypot(t.x - 42.5, t.y - 37.5) < 3 || Math.hypot(t.x - 39, t.y - 27.5) < 3));
+  /* as duas passagens entre os canteiros a oeste do pátio (do pátio para a calçada do auditório) ficam livres: três
+     árvores do satélite caíam bem no meio delas (pedido do usuário, 12/11/2026) */
+  [[-28, -6], [-31.6, 1.5], [-26.6, 2.3]].forEach(([x, y]) => { const i = arvores.findIndex((t) => Math.hypot(t.x - x, t.y - y) < 1.2); if (i >= 0) arvores.splice(i, 1); });
   [[7.4, 17], [7.2, 25.5], [7.4, 34], [7.2, 42]].forEach(([x, y]) => arvores.push({ x, y, r: 3, tone: 1 }));
   [[42.5, 37.5], [39, 27.5]].forEach(([x, y]) => arvores.push({ x, y, r: 3.1, tone: 0 }));
   CANTEIROS_ANEXO.forEach((k) => arvores.push({ x: k.c[0], y: k.c[1], r: 1.5, tone: 2 }));

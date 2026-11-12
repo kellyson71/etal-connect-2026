@@ -5299,6 +5299,13 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
   const isNow = (x) => x.day === D.now.day && x.time <= D.now.time && D.now.time < x.end;
   /* Mapa novo: a rota sai da sala da atividade em que a pessoa está inscrita acontecendo agora; sem ela, da portaria. */
   const origemAgora = () => { const x = D.sessions.find((q) => S.saved.has(q.id) && isNow(q) && Number.isInteger(q.floor) && q.zone); return x ? { floor: x.floor, zone: x.zone, titulo: x.room || x.short || x.title } : null; };
+  /* a próxima atividade em que a pessoa está inscrita (a de agora conta até acabar); o mapa mostra só ela, numa pílula */
+  const proximaMinha = () => {
+    const nowMin = (() => { const [h, m] = D.now.time.split(':').map(Number); return h * 60 + m; })(); const fim = (x) => { const [h, m] = x.end.split(':').map(Number); return h * 60 + m; };
+    const x = D.sessions.filter((q) => S.saved.has(q.id) && Number.isInteger(q.floor) && q.zone && q.end && (q.day > D.now.day || (q.day === D.now.day && fim(q) > nowMin))).sort((a, b) => a.day - b.day || a.time.localeCompare(b.time))[0];
+    if (!x) return null; const dia = x.day === D.now.day ? (isNow(x) ? 'agora' : x.time) : `${dayOf(x.day).week} ${x.time}`;
+    return { id: x.id, title: x.short || x.title, time: x.time, floor: x.floor, zone: x.zone, quando: dia };
+  };
   const speakersList = () => { const seen = new Set(); return D.sessions.filter((x) => x.speakerShort && !seen.has(x.speakerShort) && seen.add(x.speakerShort)); };
   const hoursOf = (s) => { const [a, b] = [s.time, s.end].map((t) => { const [h, m] = t.split(':').map(Number); return h + m / 60; }); return b - a; };
   const seatLine = (s) => (!s.seats ? '' : s.taken >= s.seats ? 'Vagas esgotadas' : `${s.seats - s.taken} ${s.seats - s.taken === 1 ? 'vaga' : 'vagas'} de ${s.seats}`);
@@ -6025,7 +6032,7 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
      Evento (o passeio virou segredo do mapa). "Ver como celular" volta para a moldura; a escolha fica em etal-moldura. ---- */
   const wideMq = matchMedia('(min-width: 1000px) and (pointer: fine)');
   let palcoFrame = null, palcoPronto = false, palcoFila = null;
-  const dadosMapa = (extra = {}) => ({ type: 'etal:mapa:abrir', ...extra, origem: origemAgora(), foto: D.person.photo || null, nome: D.person.name || '', hour: skyHour, reduced: reduce, sessions: D.sessions.map((x) => ({ id: x.id, title: x.title, time: x.time, floor: x.floor, zone: x.zone })), rooms: Object.fromEntries(P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => [`${f.level}:${z.id}`, z.roomNumber]))) });
+  const dadosMapa = (extra = {}) => ({ type: 'etal:mapa:abrir', ...extra, proxima: proximaMinha(), origem: origemAgora(), foto: D.person.photo || null, nome: D.person.name || '', hour: skyHour, reduced: reduce, sessions: D.sessions.map((x) => ({ id: x.id, title: x.title, time: x.time, floor: x.floor, zone: x.zone })), rooms: Object.fromEntries(P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => [`${f.level}:${z.id}`, z.roomNumber]))) });
   const palcoOn = () => document.documentElement.classList.contains('wide');
   function palcoEnviar(extra) { if (!palcoFrame) return; if (!palcoPronto) { palcoFila = extra; return; } palcoFrame.contentWindow.postMessage(dadosMapa(extra), location.origin); palcoFrame.focus(); }
   function telaGrande() {
@@ -6058,7 +6065,7 @@ window.DATA.placeOrder.splice(1, 0, 'obelisco');
   /* O mapa 3D fica num iframe só, criado na primeira vez e nunca removido: trocar de aba apenas o esconde. Antes ele
      era recriado a cada abertura da aba Mapa e o campus inteiro era montado de novo (vários segundos no celular). */
   let mapaFixo = null, mapaPronto = false, mapaFila = null;
-  const dadosAba = (type, pedida = {}) => ({ type, ...pedida, origem: origemAgora(), foto: D.person.photo || null, nome: D.person.name || '', hour: skyHour, reduced: reduce, sessions: D.sessions.map((x) => ({ id: x.id, title: x.title, time: x.time, floor: x.floor, zone: x.zone })), rooms: Object.fromEntries(P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => [`${f.level}:${z.id}`, z.roomNumber]))) });
+  const dadosAba = (type, pedida = {}) => ({ type, ...pedida, proxima: proximaMinha(), origem: origemAgora(), foto: D.person.photo || null, nome: D.person.name || '', hour: skyHour, reduced: reduce, sessions: D.sessions.map((x) => ({ id: x.id, title: x.title, time: x.time, floor: x.floor, zone: x.zone })), rooms: Object.fromEntries(P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => [`${f.level}:${z.id}`, z.roomNumber]))) });
   function mapaFixoEnviar(type, pedida) {
     if (!mapaPronto) { mapaFila = pedida; return; }
     mapaFixo.querySelector('iframe').contentWindow.postMessage(dadosAba(type, pedida), location.origin);
