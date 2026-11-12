@@ -23,6 +23,7 @@ Leia `DOCUMENTACAO.html`, `docs/contexto.html`, `docs/mapas.html` e `docs/proxim
 ## Protótipo (`prototipo/`)
 
 - Tela grande (11/11/2026): em computador (largura ≥ 1000 px e mouse) o app abre sem a moldura de celular, numa coluna à esquerda, com o mapa novo ocupando o resto da tela no modo Evento (`html.wide`, `telaGrande`, `#palco` em `app.js`). O botão "Ver como celular" (ou `?moldura`) volta para a moldura; a escolha fica em `etal-moldura`. Nesse modo a aba Mapa e "Como chegar" comandam o mapa ao lado (`palcoEnviar`). A regra "somente mockup do celular" passou a valer para o modo com moldura.
+- Tipos de atividade (11/11/2026): `TIPOS` em `app.js` define cor, ícone, card na agenda e bloco no detalhe de cada tipo. Palestra destaca quem fala (e já aceita perguntas); mesa-redonda mostra a roda (`guests` na programação, mediação primeiro); minicurso e oficina (mesmo filtro) mostram vagas, o que se faz e o que levar; campeonato é um card com a arte do jogo e abre a chave. Filtros da agenda por tipo (`g`). Tipo novo: uma linha em `TIPOS`, um card em `CARDS` (agenda) e, se precisar, um bloco no detalhe; o resto vira parada simples.
 - Home (11/11/2026): cenário em camadas em `skyline()`, atalhos em pílulas, seções com a classe `rv` entram ao rolar (`mountHome`). Colmeia: `comb()`, `combHex()`, `COMB_ICONS` (um desenho por conquista) e degradês em `combDefs()`.
 
 - Abrir com `prototipo/rodar.sh` (http://127.0.0.1:8770). Atalhos de teste: `?tela=`, `?qualidade=alta|media|simples`, `?tema=dark`, `?paleta=mel`.

@@ -87,13 +87,28 @@
   };
   const goOf = (x) => (x.tournament ? `data-go="tournament" data-id="${x.tournament}"` : `data-go="activity" data-id="${x.id}"`);
   const mapAct = (x) => (x.place ? `data-act="openplace" data-id="${x.place}"` : `data-act="openmap" data-floor="${x.floor}" data-zone="${x.zone}"`);
+  /* Tipos de atividade: cada um tem cor (classe tp-*), ícone, card próprio na agenda e um bloco próprio no detalhe.
+     g é o filtro da agenda (oficina anda junto com minicurso: as duas são mão na massa). Tipos novos entram aqui;
+     o que não estiver na lista vira uma parada simples (credenciamento, intervalo, abertura…). */
+  const TIPOS = {
+    Palestra: { k: 'pal', g: 'pal', icon: 'mic', plural: 'Palestras', formato: 'Uma pessoa fala; perguntas no fim' },
+    'Mesa-redonda': { k: 'mesa', g: 'mesa', icon: 'chat', plural: 'Mesas', formato: 'Conversa entre convidados; a plateia pergunta' },
+    Minicurso: { k: 'mini', g: 'mini', icon: 'laptop', plural: 'Minicursos', formato: 'Aula prática, no computador' },
+    Oficina: { k: 'ofi', g: 'mini', icon: 'laptop', plural: 'Oficinas', formato: 'Mão na massa, em grupo' },
+    Campeonato: { k: 'camp', g: 'camp', icon: 'trophy', plural: 'Campeonatos', formato: 'Chave eliminatória' },
+  };
+  const TIPOS_G = new Set(['pal', 'mesa', 'mini', 'camp']);
+  const tipoDe = (x) => TIPOS[x.type] || { k: 'out', g: 'out', icon: 'cal', formato: '' };
+  const duracao = (x) => { if (!x.end) return ''; const [a, b] = [x.time, x.end].map((t) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; }); const d = b - a; return d >= 60 ? `${Math.floor(d / 60)}h${d % 60 ? String(d % 60).padStart(2, '0') : ''}` : `${d} min`; };
+  const pessoasDe = (x) => [{ name: x.speakerShort, initials: x.initials, role: x.role }, ...(x.guests || [])].filter((p) => p.name);
+  const leva = (x) => /notebook|computador/i.test(x.requirements || '');
   const whereOf = (x) => (x.floor === undefined ? x.room : `${x.room} · ${floorOf(x.floor).label}`);
   const isNow = (x) => x.day === D.now.day && x.time <= D.now.time && D.now.time < x.end;
   /* Mapa novo: a rota sai da sala da atividade em que a pessoa está inscrita acontecendo agora; sem ela, da portaria. */
   const origemAgora = () => { const x = D.sessions.find((q) => S.saved.has(q.id) && isNow(q) && Number.isInteger(q.floor) && q.zone); return x ? { floor: x.floor, zone: x.zone, titulo: x.room || x.short || x.title } : null; };
   const speakersList = () => { const seen = new Set(); return D.sessions.filter((x) => x.speakerShort && !seen.has(x.speakerShort) && seen.add(x.speakerShort)); };
   const hoursOf = (s) => { const [a, b] = [s.time, s.end].map((t) => { const [h, m] = t.split(':').map(Number); return h + m / 60; }); return b - a; };
-  const seatLine = (s) => (!s.seats ? '' : s.taken >= s.seats ? 'Vagas esgotadas' : `${s.seats - s.taken} vagas de ${s.seats}`);
+  const seatLine = (s) => (!s.seats ? '' : s.taken >= s.seats ? 'Vagas esgotadas' : `${s.seats - s.taken} ${s.seats - s.taken === 1 ? 'vaga' : 'vagas'} de ${s.seats}`);
   const seatBar = (s) => !s.seats ? '' : `<span class="seats ${s.taken >= s.seats ? 'full' : ''}"><i style="width:${Math.round((s.taken / s.seats) * 100)}%"></i></span>`;
   /* Ilustrações dos estados vazios: colmeia em traço fino, sempre com o motivo da tela. */
   /* Favo sendo preenchido: a célula do meio traz o motivo da tela, e as outras acendem em sequência. */
@@ -619,18 +634,27 @@
   Screens.agenda = () => {
     const day = S.agendaDay, f = S.agendaFilter;
     let list = D.sessions.filter((s) => s.day === day);
-    if (['Minicurso', 'Palestra', 'Oficina'].includes(f)) list = list.filter((s) => s.type === f);
+    if (['pal', 'mesa', 'mini', 'camp'].includes(f)) list = list.filter((s) => tipoDe(s).g === f);
     if (f === 'saved') list = list.filter((s) => S.saved.has(s.id));
     const slots = [...new Set(list.map((s) => s.time))];
     const idx = D.days.findIndex((d) => d.day === day);
-    const filters = [['all', 'Tudo'], ['saved', 'Minhas'], ['Minicurso', 'Minicursos'], ['Palestra', 'Palestras'], ['Oficina', 'Oficinas']];
+    const filters = [['all', 'Tudo'], ['saved', 'Minhas'], ['pal', 'Palestras'], ['mesa', 'Mesas'], ['mini', 'Minicursos'], ['camp', 'Campeonatos']].filter(([k]) => !TIPOS_G.has(k) || D.sessions.some((x) => tipoDe(x).g === k));
 /* Cada tipo tem a sua cor (a mesma do filtro) e a fileira é curta: tipo e até que horas, título, quem e onde, vagas. */
-    const tp = (t) => ({ Minicurso: 'mini', Palestra: 'pal', Oficina: 'ofi' })[t] || 'out';
-    const vagas = (s) => (!s.seats ? '' : s.taken >= s.seats ? '<span class="ag-vagas full">Lotado</span>' : `<span class="ag-vagas ${s.seats - s.taken <= 5 ? 'low' : ''}">${s.seats - s.taken} vagas</span>`);
-    const row = (s) => s.simple
-      ? `<li class="ag-stop" ${goOf(s)}><div class="ag-tx"><h4>${s.title}</h4><p>${s.room}</p></div>${ic('chev', 'i card-chev')}</li>`
-      : `<li class="tp-${tp(s.type)} ${S.saved.has(s.id) ? 'mine' : ''} ${isNow(s) ? 'now' : ''}" ${goOf(s)}><div class="ag-tx"><span class="ag-kind"><i></i>${s.type}${s.end ? ` · até ${s.end}` : ''}</span><h4>${s.title}</h4><p>${s.speakerShort} · ${s.room}</p></div>
-          <div class="ag-side"><button class="bm ${S.saved.has(s.id) ? 'on' : ''}" data-act="save" data-id="${s.id}" aria-label="${S.saved.has(s.id) ? 'Remover dos salvos' : 'Salvar'}">${ic('bookmark')}</button>${vagas(s)}</div></li>`;
+    const tp = (k) => (TIPOS_G.has(k) ? k : 'out');
+    const vagas = (s) => (!s.seats ? '' : s.taken >= s.seats ? '<span class="ag-vagas full">Lotado</span>' : `<span class="ag-vagas ${s.seats - s.taken <= 5 ? 'low' : ''}">${s.seats - s.taken} ${s.seats - s.taken === 1 ? 'vaga' : 'vagas'}</span>`);
+    /* um card por tipo: palestra destaca quem fala; mesa, quem conversa; minicurso e oficina, vagas e o que levar;
+       campeonato abre a chave, com a arte do jogo */
+    const bm = (s) => `<button class="bm ${S.saved.has(s.id) ? 'on' : ''}" data-act="save" data-id="${s.id}" aria-label="${S.saved.has(s.id) ? 'Remover dos salvos' : 'Salvar'}">${ic('bookmark')}</button>`;
+    const kind = (s) => { const t = tipoDe(s); return `<span class="ag-kind">${ic(t.icon)}${s.type}${duracao(s) ? ` · ${duracao(s)}` : ''}</span>`; };
+    const cls = (s) => `tp-${tipoDe(s).k} ${S.saved.has(s.id) ? 'mine' : ''} ${isNow(s) ? 'now' : ''}`;
+    const CARDS = {
+      pal: (s) => `<li class="${cls(s)} ag-pal" ${goOf(s)}><div class="ag-tx">${kind(s)}<h4>${s.title}</h4><div class="ag-who">${spAv(s)}<span><b>${s.speakerShort}</b><small>${s.role} · ${s.room}</small></span></div></div><div class="ag-side">${bm(s)}${vagas(s)}</div></li>`,
+      mesa: (s) => { const ps = pessoasDe(s); return `<li class="${cls(s)} ag-mesa" ${goOf(s)}><div class="ag-tx">${kind(s)}<h4>${s.title}</h4><div class="ag-who"><span class="ag-rodada">${ps.slice(0, 4).map((p) => spAv(p)).join('')}</span><span><b>${s.speakerShort.split(' ')[0]} e mais ${ps.length - 1}</b><small>Mediação · ${s.room}</small></span></div></div><div class="ag-side">${bm(s)}${vagas(s)}</div></li>`; },
+      mini: (s) => `<li class="${cls(s)} ag-mini" ${goOf(s)}><div class="ag-tx">${kind(s)}<h4>${s.title}</h4><p>${s.speakerShort} · ${s.room}</p><div class="ag-pratica">${seatBar(s)}<span>${seatLine(s)}</span>${leva(s) ? `<em>${ic('laptop')}Leve notebook</em>` : ''}</div></div><div class="ag-side">${bm(s)}</div></li>`,
+      camp: (s) => { const t = D.tournaments.find((x) => x.id === s.tournament); if (!t) return CARDS.out(s); const n = tourSt(t).players.filter(Boolean).length; return `<li class="${cls(s)} ag-camp ${t.theme}" ${goOf(s)}><span class="ag-arte">${t.logo ? `<img src="${t.logo}" alt="">` : ic('trophy')}</span><div class="ag-tx">${kind(s)}<h4>${t.name}</h4><p>${t.format} · ${n} na chave · ${s.room}</p></div>${ic('chev', 'i card-chev')}</li>`; },
+      out: (s) => `<li class="ag-stop" ${goOf(s)}><div class="ag-tx"><h4>${s.title}</h4><p>${s.room}</p></div>${ic('chev', 'i card-chev')}</li>`,
+    };
+    const row = (s) => (CARDS[tipoDe(s).g] || CARDS.out)(s);
     const agora = list.filter(isNow).length; const meus = D.sessions.filter((x) => x.day === day && S.saved.has(x.id)).length;
     const dia = dayOf(day);
     return {
@@ -638,7 +662,7 @@
       <div class="pad stack agenda">
         <div class="days st" style="--i:0;--k:${idx}"><i class="days-ind"></i>${D.days.map((d) => `<button class="${d.day === day ? 'on' : ''}" data-act="day" data-day="${d.day}">${d.week}<b>${d.day}</b></button>`).join('')}</div>
         <p class="ag-resumo st" ${st(1)}><b>${dia.long ? dia.long.split(',')[0] : dia.week}</b><span>${list.length} ${list.length === 1 ? 'atividade' : 'atividades'}${agora ? ` · <em>${agora} agora</em>` : ''}${meus ? ` · ${meus} ${meus === 1 ? 'sua' : 'suas'}` : ''}</span></p>
-        <div class="chips ag-chips st" ${st(1)}>${filters.map(([k, t]) => `<button class="${k === f ? 'on' : ''} f-${tp(k)}" data-act="filter" data-f="${k}">${['Minicurso', 'Palestra', 'Oficina'].includes(k) ? '<i></i>' : ''}${k === 'saved' ? ic('bookmark') : ''}${t}</button>`).join('')}</div>
+        <div class="chips ag-chips st" ${st(1)}>${filters.map(([k, t]) => `<button class="${k === f ? 'on' : ''} f-${tp(k)}" data-act="filter" data-f="${k}">${TIPOS_G.has(k) ? '<i></i>' : ''}${k === 'saved' ? ic('bookmark') : ''}${t}</button>`).join('')}</div>
         <div class="agenda-list ag-trilho" data-swap>
         ${slots.length ? slots.map((t, si) => { const noSlot = list.filter((s) => s.time === t); const vivo = noSlot.some(isNow); return `<div class="slot st ${vivo ? 'now' : ''}" ${st(2 + si)}><time>${t}${vivo ? '<em>agora</em>' : ''}</time><div>${noSlot.filter((s) => S.saved.has(s.id)).length > 1 ? `<p class="clash">${ic('info')}Você salvou mais de uma atividade neste horário.</p>` : ''}<ul class="ag">${noSlot.map(row).join('')}</ul></div></div>`; }).join('')
           : f === 'saved' ? savedEmpty(day) : `<div class="empty st" ${st(2)}>${illo('mark')}<h3>Nada neste dia</h3><p>Escolha outro filtro para ver mais atividades.</p><button class="btn soft" data-act="filter" data-f="all">Ver tudo</button></div>`}
@@ -715,16 +739,26 @@
         </div>`,
       };
     }
+    /* bloco de cada tipo: palestra destaca quem fala; mesa mostra a roda de conversa; minicurso e oficina, o que se faz e o que levar */
+    const t = tipoDe(s);
+    const quem = t.g === 'mesa'
+      ? `<section class="roda st" ${st(2)}><h2 class="h">Quem conversa</h2><ul>${pessoasDe(s).map((p, i) => `<li>${spAv(p)}<span><b>${p.name}</b><small>${i === 0 ? 'Mediação' : p.role}</small></span></li>`).join('')}</ul></section>`
+      : `<button class="teacher ${t.g === 'pal' ? 'quem-fala' : ''} st" ${st(2)} data-go="speaker" data-id="${id}">${spAv(s, t.g === 'pal')}<span>${t.g === 'pal' ? '<small>Quem fala</small>' : ''}<b>${s.speakerShort}</b><small>${s.role}</small></span>${ic('chev', 'i card-chev')}</button>`;
+    const perguntas = `<section class="block st" ${st(6)}><div class="sec"><h2>Perguntas</h2><button data-act="ask" data-id="${id}">Perguntar</button></div>${questionsOf(id)}</section>`;
+    const extra = t.g === 'mini'
+      ? `${s.learn?.length ? `<section class="block pratica st" ${st(6)}><h2 class="h">O que você vai fazer</h2><ul class="learn">${s.learn.map((l) => `<li>${ic('check')}<span>${l}</span></li>`).join('')}</ul></section>` : ''}${s.requirements ? `<div class="levar st" ${st(6)}>${ic('laptop')}<span><b>Leve para a sala</b><small>${s.requirements}</small></span></div>` : ''}`
+      : t.g === 'pal' || t.g === 'mesa' ? perguntas : '';
     return {
       mount: mountThumb(s),
       html: `${header('', { right: `<button class="iconbtn bm ${S.saved.has(id) ? 'on' : ''}" data-act="save" data-id="${id}" aria-label="Salvar">${ic('bookmark')}</button>` })}
       <div class="pad stack detail">
-        <span class="kind st" ${st(0)}>${s.type}</span>
+        <span class="kind kind-tp tp-${t.k} st" ${st(0)}>${ic(t.icon)}${s.type}${duracao(s) ? ` · ${duracao(s)}` : ''}</span>
         <h1 class="title-lg st" ${st(1)}>${s.title}</h1>
-        <button class="teacher st" ${st(2)} data-go="speaker" data-id="${id}">${spAv(s)}<span><b>${s.speakerShort}</b><small>${s.role}</small></span>${ic('chev', 'i card-chev')}</button>
-        <ul class="info st" ${st(3)}><li>${ic('cal')}${d.long} · ${s.time} às ${s.end}</li><li>${ic('pin')}${whereOf(s)}</li><li>${ic('users')}<span>${seatLine(s)}</span>${seatBar(s)}</li></ul>
+        ${quem}
+        <ul class="info st" ${st(3)}><li>${ic('cal')}${d.long} · ${s.time} às ${s.end}</li><li>${ic('pin')}${whereOf(s)}</li>${t.formato ? `<li>${ic(t.icon)}${t.formato}</li>` : ''}<li>${ic('users')}<span>${seatLine(s)}</span>${seatBar(s)}</li></ul>
         ${thumb(s, 4)}
         <p class="desc st" ${st(5)}>${s.description}</p>
+        ${extra}
         <button class="remindrow st ${S.reminders.has(id) ? 'on' : ''}" ${st(6)} data-act="remind" data-id="${id}" aria-pressed="${S.reminders.has(id)}">${ic('alarm')}<span>${S.reminders.has(id) ? `Lembrete às ${hhmm(toMin(s.time) - LEAD)}` : `Lembrar ${LEAD} minutos antes`}<small>${S.reminders.has(id) ? `Com sala e tempo a pé${notifState() === 'granted' ? '' : ', dentro do app'}` : 'Aviso com a sala e o caminho'}</small></span><i class="switch"></i></button>
         ${S.reminders.has(id) ? `<button class="remindtest st" ${st(6)} data-act="remindtest" data-id="${id}">${ic('bell')}Ver como o lembrete chega</button>` : ''}
         <div class="locked st" ${st(7)}>${ic('lock')}<span>${s.materials.length} materiais ficam disponíveis quando você registrar presença na sala.</span></div>
