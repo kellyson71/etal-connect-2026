@@ -1672,10 +1672,10 @@
   /* Situação de cada jogador na chave: campeão, eliminado (em que fase), na disputa (e contra quem joga a seguir). */
   function situacao(stt, R, p) {
     if (R.champ === p) return { k: 'champ', t: 'Campeão' };
-    const fases = [['quartas', R.q], ['semifinal', R.s], ['final', [R.f]]];
+    const fases = [['nas quartas', R.q], ['na semifinal', R.s], ['na final', [R.f]]];
     for (const [nome, ms] of fases) for (const m of ms) {
       if (m.a !== p && m.b !== p) continue;
-      if (m.w !== null && m.win !== p) return { k: 'fora', t: `Eliminado na ${nome}` };
+      if (m.w !== null && m.win !== p) return { k: 'fora', t: `Eliminado ${nome}` };
       if (m.w === null) { const adv = m.a === p ? m.b : m.a; return { k: 'vivo', t: adv ? `Joga contra ${adv[0]}` : 'Aguardando adversário' }; }
     }
     return { k: 'vivo', t: 'Na disputa' };
