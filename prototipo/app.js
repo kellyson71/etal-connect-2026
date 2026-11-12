@@ -642,17 +642,24 @@
 /* Cada tipo tem a sua cor (a mesma do filtro) e a fileira é curta: tipo e até que horas, título, quem e onde, vagas. */
     const tp = (k) => (TIPOS_G.has(k) ? k : 'out');
     const vagas = (s) => (!s.seats ? '' : s.taken >= s.seats ? '<span class="ag-vagas full">Lotado</span>' : `<span class="ag-vagas ${s.seats - s.taken <= 5 ? 'low' : ''}">${s.seats - s.taken} ${s.seats - s.taken === 1 ? 'vaga' : 'vagas'}</span>`);
-    /* um card por tipo: palestra destaca quem fala; mesa, quem conversa; minicurso e oficina, vagas e o que levar;
-       campeonato abre a chave, com a arte do jogo */
+    /* Card no padrão dos apps de evento (Whova, Sched, Google I/O): título forte, uma linha só com quem e onde, o
+       marcador à direita. O tipo aparece no hexágono colorido (as cores são as dos hexágonos do logo do ETAL), não em
+       texto; a legenda das cores são os filtros logo acima. Vagas só aparecem quando acabando ou esgotadas. */
     const bm = (s) => `<button class="bm ${S.saved.has(s.id) ? 'on' : ''}" data-act="save" data-id="${s.id}" aria-label="${S.saved.has(s.id) ? 'Remover dos salvos' : 'Salvar'}">${ic('bookmark')}</button>`;
-    const kind = (s) => { const t = tipoDe(s); return `<span class="ag-kind">${ic(t.icon)}${s.type}${duracao(s) ? ` · ${duracao(s)}` : ''}</span>`; };
-    const cls = (s) => `tp-${tipoDe(s).k} ${S.saved.has(s.id) ? 'mine' : ''} ${isNow(s) ? 'now' : ''}`;
+    const hexa = (s) => `<span class="ses-hex" role="img" aria-label="${s.type}"><svg viewBox="-20 -20 40 40" aria-hidden="true"><path d="M0-18.5 16-9.25v18.5L0 18.5-16 9.25v-18.5Z"/></svg>${ic(tipoDe(s).icon)}</span>`;
+    const selo = (s) => { /* "agora" já aparece na linha do tempo */ if (!s.seats) return ''; const n = s.seats - s.taken; return n <= 0 ? '<span class="ses-selo cheio">Esgotado</span>' : n <= 5 ? `<span class="ses-selo pouca">${n === 1 ? 'Última vaga' : `Últimas ${n}`}</span>` : ''; };
+    const rosto = (s) => { const ps = pessoasDe(s); return ps.length > 1 ? `<span class="ses-rostos">${ps.slice(0, 3).map((p) => spAv(p)).join('')}</span>` : spAv(s); };
+    const card = (s, quem) => `<li class="ses tp-${tipoDe(s).k} ${S.saved.has(s.id) ? 'mine' : ''}" ${goOf(s)}>${hexa(s)}<div class="ses-tx"><h4>${s.title}</h4><p class="ses-meta">${rosto(s)}${quem ? `<span class="ses-quem">${quem}</span>` : ''}<span class="ses-onde">${s.room}</span></p>${selo(s)}</div>${bm(s)}</li>`;
+    /* selo curto do campeonato: só o que importa para decidir (vagas, ao vivo, fim) */
+    const chipCurto = (stt) => { const [k, l] = window.TOUR.status(stt); const curto = (l.match(/\d+ vagas?/) || [l.split(' · ')[0]])[0]; return `<span class="t-chip ${k}">${k === 'live' ? '<i></i>' : ''}${curto}</span>`; };
     const CARDS = {
-      pal: (s) => `<li class="${cls(s)} ag-pal" ${goOf(s)}><div class="ag-tx">${kind(s)}<h4>${s.title}</h4><div class="ag-who">${spAv(s)}<span><b>${s.speakerShort}</b><small>${s.role} · ${s.room}</small></span></div></div><div class="ag-side">${bm(s)}${vagas(s)}</div></li>`,
-      mesa: (s) => { const ps = pessoasDe(s); return `<li class="${cls(s)} ag-mesa" ${goOf(s)}><div class="ag-tx">${kind(s)}<h4>${s.title}</h4><div class="ag-who"><span class="ag-rodada">${ps.slice(0, 4).map((p) => spAv(p)).join('')}</span><span><b>${s.speakerShort.split(' ')[0]} e mais ${ps.length - 1}</b><small>Mediação · ${s.room}</small></span></div></div><div class="ag-side">${bm(s)}${vagas(s)}</div></li>`; },
-      mini: (s) => `<li class="${cls(s)} ag-mini" ${goOf(s)}><div class="ag-tx">${kind(s)}<h4>${s.title}</h4><p>${s.speakerShort} · ${s.room}</p><div class="ag-pratica">${seatBar(s)}<span>${seatLine(s)}</span>${leva(s) ? `<em>${ic('laptop')}Leve notebook</em>` : ''}</div></div><div class="ag-side">${bm(s)}</div></li>`,
-      camp: (s) => { const t = D.tournaments.find((x) => x.id === s.tournament); if (!t) return CARDS.out(s); const n = tourSt(t).players.filter(Boolean).length; return `<li class="${cls(s)} ag-camp ${t.theme}" ${goOf(s)}><span class="ag-arte">${t.logo ? `<img src="${t.logo}" alt="">` : ic('trophy')}</span><div class="ag-tx">${kind(s)}<h4>${t.name}</h4><p>${t.format} · ${n} na chave · ${s.room}</p></div>${ic('chev', 'i card-chev')}</li>`; },
-      out: (s) => `<li class="ag-stop" ${goOf(s)}><div class="ag-tx"><h4>${s.title}</h4><p>${s.room}</p></div>${ic('chev', 'i card-chev')}</li>`,
+      pal: (s) => card(s, s.speakerShort),
+      mesa: (s) => card(s, ''), // os rostos já dizem quem conversa
+      mini: (s) => card(s, s.speakerShort),
+      /* campeonato: a arte do jogo (o banner do FIFA, a do Mortal Kombat) é o card */
+      camp: (s) => { const t = D.tournaments.find((x) => x.id === s.tournament); if (!t) return CARDS.out(s); const stt = tourSt(t); const me = tourMine(stt) >= 0;
+        return `<li class="ses-camp ${t.theme}" ${goOf(s)}>${gameArt(t)}<span class="ses-camp-tx">${titleOf(t)}<small>${s.room} · ${t.format}</small></span><span class="ses-camp-chip">${me ? `<span class="t-chip me">${ic('check')}Na chave</span>` : chipCurto(stt)}</span></li>`; },
+      out: (s) => `<li class="ses-pausa" ${goOf(s)}><span>${s.title}</span><small>${s.room}</small></li>`,
     };
     const row = (s) => (CARDS[tipoDe(s).g] || CARDS.out)(s);
     const agora = list.filter(isNow).length; const meus = D.sessions.filter((x) => x.day === day && S.saved.has(x.id)).length;
