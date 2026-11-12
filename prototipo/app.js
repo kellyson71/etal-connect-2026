@@ -55,6 +55,7 @@
     chat: '<path d="M21 12a8 8 0 0 1-8 8H4l2-3.500A8 8 0 1 1 21 12Z"/>',
     up: '<path d="m6 15 6-6 6 6"/>',
     moon: '<path d="M20 14.500A8.500 8.500 0 1 1 9.500 4a7 7 0 0 0 10.500 10.500Z"/>',
+    sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.500v2M12 19.500v2M2.500 12h2M19.500 12h2M5.300 5.300l1.400 1.400M17.300 17.300l1.400 1.400M5.300 18.700l1.400-1.400M17.300 6.700l1.400-1.400"/>',
     text: '<path d="M4 19 9 6l5 13M5.800 15h6.400M15 19l3-7 3 7M16 17h4"/>',
     mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
     contact: '<circle cx="9" cy="8" r="3.500"/><path d="M3 20a6 6 0 0 1 12 0M18 8v6M15 11h6"/>',
@@ -205,6 +206,7 @@
     const root = document.documentElement;
     const dark = opts.forceTheme ? opts.forceTheme === 'dark' : UI.mode === 'escuro' || (UI.mode === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
     root.dataset.theme = dark ? 'dark' : 'light';
+    document.dispatchEvent(new Event('etal:tema')); // o mapa (iframe) acompanha
     root.dataset.badge = UI.badge; root.dataset.motion = UI.motion;
     root.style.setProperty('--rk', { retos: 0.3, suaves: 1, redondos: 1.4 }[UI.corners] || 1);
     tokenNames.forEach((k) => root.style.removeProperty(k));
@@ -587,7 +589,8 @@
       mount: mountHome,
       html: `<section class="${UI.sky ? 'hm-sky' : 'hm-plain'}">${UI.sky ? skyArt() : ''}
           <header class="apphead"><span class="wm ${UI.sky ? 'on-sky' : ''}">${mark('mark xs')}<b>etal</b><span>connect</span></span>
-          <button class="iconbtn ${UI.sky ? 'on-sky' : ''}" data-go="notices" aria-label="Avisos, ${D.notices.filter((n) => n.fresh).length} novos">${ic('bell')}<u class="badge-num">${D.notices.filter((n) => n.fresh).length}</u></button></header>
+          <span class="hd-acts"><button class="iconbtn ${UI.sky ? 'on-sky' : ''}" data-act="tema" aria-label="${isDark() ? 'Usar o tema claro' : 'Usar o tema escuro'}">${ic(isDark() ? 'sun' : 'moon')}</button>
+          <button class="iconbtn ${UI.sky ? 'on-sky' : ''}" data-go="notices" aria-label="Avisos, ${D.notices.filter((n) => n.fresh).length} novos">${ic('bell')}<u class="badge-num">${D.notices.filter((n) => n.fresh).length}</u></button></span></header>
         </section>
         <div class="pad stack home">
           ${badge()}
@@ -839,7 +842,7 @@
      Evento (o passeio virou segredo do mapa). "Ver como celular" volta para a moldura; a escolha fica em etal-moldura. ---- */
   const wideMq = matchMedia('(min-width: 1000px) and (pointer: fine)');
   let palcoFrame = null, palcoPronto = false, palcoFila = null;
-  const dadosMapa = (extra = {}) => ({ type: 'etal:mapa:abrir', ...extra, proxima: proximaMinha(), origem: origemAgora(), foto: D.person.photo || null, nome: D.person.name || '', hour: skyHour, reduced: reduce, sessions: D.sessions.map((x) => ({ id: x.id, title: x.title, time: x.time, floor: x.floor, zone: x.zone })), rooms: Object.fromEntries(P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => [`${f.level}:${z.id}`, z.roomNumber]))) });
+  const dadosMapa = (extra = {}) => ({ type: 'etal:mapa:abrir', ...extra, tema: isDark() ? 'escuro' : 'claro', proxima: proximaMinha(), origem: origemAgora(), foto: D.person.photo || null, nome: D.person.name || '', hour: skyHour, reduced: reduce, sessions: D.sessions.map((x) => ({ id: x.id, title: x.title, time: x.time, floor: x.floor, zone: x.zone })), rooms: Object.fromEntries(P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => [`${f.level}:${z.id}`, z.roomNumber]))) });
   const palcoOn = () => document.documentElement.classList.contains('wide');
   function palcoEnviar(extra) { if (!palcoFrame) return; if (!palcoPronto) { palcoFila = extra; return; } palcoFrame.contentWindow.postMessage(dadosMapa(extra), location.origin); palcoFrame.focus(); }
   function telaGrande() {
@@ -849,7 +852,7 @@
     const host = $('#palco'), bt = $('#moldura-btn');
     if (bt) { bt.hidden = !wideMq.matches; bt.textContent = on ? 'Ver como celular' : 'Usar a tela toda'; bt.onclick = () => { localStorage.setItem('etal-moldura', on ? '1' : '0'); location.reload(); }; }
     if (!host) return;
-    if (on && !palcoFrame) { palcoFrame = document.createElement('iframe'); palcoFrame.title = 'Mapa do campus em tela grande'; palcoFrame.allow = 'fullscreen'; palcoFrame.src = 'mapa3d/index.html?aba=1'; host.append(palcoFrame); host.hidden = false; }
+    if (on && !palcoFrame) { palcoFrame = document.createElement('iframe'); palcoFrame.title = 'Mapa do campus em tela grande'; palcoFrame.allow = 'fullscreen'; palcoFrame.src = `mapa3d/index.html?aba=1&tema=${isDark() ? 'escuro' : 'claro'}`; document.addEventListener('etal:tema', () => palcoEnviar({})); host.append(palcoFrame); host.hidden = false; }
     if (!on && palcoFrame) { palcoFrame.remove(); palcoFrame = null; palcoPronto = false; host.hidden = true; }
   }
   /* o mapa avisa quando entra e sai do passeio: no celular ele fica com a tela toda */
@@ -872,7 +875,7 @@
   /* O mapa 3D fica num iframe só, criado na primeira vez e nunca removido: trocar de aba apenas o esconde. Antes ele
      era recriado a cada abertura da aba Mapa e o campus inteiro era montado de novo (vários segundos no celular). */
   let mapaFixo = null, mapaPronto = false, mapaFila = null;
-  const dadosAba = (type, pedida = {}) => ({ type, ...pedida, proxima: proximaMinha(), origem: origemAgora(), foto: D.person.photo || null, nome: D.person.name || '', hour: skyHour, reduced: reduce, sessions: D.sessions.map((x) => ({ id: x.id, title: x.title, time: x.time, floor: x.floor, zone: x.zone })), rooms: Object.fromEntries(P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => [`${f.level}:${z.id}`, z.roomNumber]))) });
+  const dadosAba = (type, pedida = {}) => ({ type, ...pedida, tema: isDark() ? 'escuro' : 'claro', proxima: proximaMinha(), origem: origemAgora(), foto: D.person.photo || null, nome: D.person.name || '', hour: skyHour, reduced: reduce, sessions: D.sessions.map((x) => ({ id: x.id, title: x.title, time: x.time, floor: x.floor, zone: x.zone })), rooms: Object.fromEntries(P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => [`${f.level}:${z.id}`, z.roomNumber]))) });
   function mapaFixoEnviar(type, pedida) {
     if (!mapaPronto) { mapaFila = pedida; return; }
     mapaFixo.querySelector('iframe').contentWindow.postMessage(dadosAba(type, pedida), location.origin);
@@ -880,7 +883,9 @@
   function mapaFixoCriar() {
     if (mapaFixo) return mapaFixo;
     mapaFixo = document.createElement('div'); mapaFixo.className = 'mapa-fixo'; mapaFixo.hidden = true;
-    mapaFixo.innerHTML = '<iframe title="Mapa do campus" allow="fullscreen" src="mapa3d/index.html?aba=1"></iframe>';
+    mapaFixo.innerHTML = `<iframe title="Mapa do campus" allow="fullscreen" src="mapa3d/index.html?aba=1&tema=${isDark() ? 'escuro' : 'claro'}"></iframe>`;
+    /* trocou o tema no app: o mapa acompanha */
+    document.addEventListener('etal:tema', () => { if (mapaPronto) mapaFixoEnviar('etal:mapa:sincronizar', {}); });
     vp.appendChild(mapaFixo);
     const frame = mapaFixo.querySelector('iframe');
     window.addEventListener('message', (e) => {
@@ -1755,13 +1760,37 @@
     setTimeout(() => d?.remove(), 400);
     if (API && root.dataset.mode !== 'meu') setTimeout(camStart, 300);
   }
+  /* Resultado da leitura por tipo de atividade. Regra: momento de destaque vai para a tela toda (credenciamento e
+     check-in no campeonato); presença em aula, palestra e mesa-redonda é uma folha que sobe sobre a câmera, com a cor do
+     tipo e a ação que importa ali (abrir a aula, perguntar ao palestrante, perguntar à mesa). Leitura repetida é curta. */
+  const KICK = { mini: 'Presença na aula', pal: 'Presença na palestra', mesa: 'Presença na mesa-redonda', camp: 'Check-in no campeonato', out: 'Presença registrada' };
   function roomResult(q, { again, first, c }) {
-    const s = byId(q);
-    return `<div class="sr-hero">${hxBadge(again ? 'muted' : '')}<div><small class="sr-kick">${again ? 'Presença já registrada' : first ? 'Participação e presença confirmadas' : 'Presença registrada'}</small><h2>${esc(s.short)}</h2><p>${esc(s.room)} · ${floorName(s.floor)} · ${again ? `desde ${S.present[q]}` : `às ${S.present[q]}`}</p></div></div>
-      <ul class="sr-facts"><li>${ic('file')}<span><b>${s.materials.length} materiais</b><small>liberados agora</small></span></li><li>${ic('clock')}<span><b>${s.time} às ${s.end}</b><small>${esc(s.type)}</small></span></li></ul>
-      ${c ? combRow(c) : ''}
-      <div class="sr-actions"><button class="btn primary big" data-act="scanopen" data-q="${q}">Abrir a aula</button><button class="btn soft" data-act="scanagain">${ic('qr')}Ler outro QR</button></div>`;
+    const s = byId(q); const t = tipoDe(s); const hora = again ? `desde ${S.present[q]}` : `às ${S.present[q]}`;
+    const hero = `<div class="sr-hero">${hxBadge(again ? 'muted' : `tp-${t.k}`)}<div><small class="sr-kick">${again ? 'Presença já registrada' : first ? 'Credenciado e presente' : KICK[t.g]}</small><h2>${esc(s.short)}</h2><p>${esc(s.room)} · ${floorName(s.floor)} · ${hora}</p></div></div>`;
+    const outro = `<button class="btn soft" data-act="scanagain">${ic('qr')}Ler outro QR</button>`;
+    if (again) return `${hero}<div class="sr-actions"><button class="btn primary big" data-act="scanopen" data-q="${q}">Abrir a atividade</button>${outro}</div>`;
+    const mats = s.materials?.length ? `<li>${ic('file')}<span><b>${s.materials.length} ${s.materials.length === 1 ? 'material' : 'materiais'}</b><small>liberados agora</small></span></li>` : '';
+    const corpo = {
+      mini: `<ul class="sr-facts">${mats}<li>${ic('clock')}<span><b>até ${s.end}</b><small>${duracao(s)} de aula</small></span></li></ul>`,
+      pal: `<div class="sr-quem">${spAv(s)}<span><b>${esc(s.speakerShort)}</b><small>${esc(s.role)}</small></span></div>${mats ? `<ul class="sr-facts">${mats}</ul>` : ''}`,
+      mesa: `<div class="sr-quem"><span class="ses-rostos">${pessoasDe(s).map((p) => spAv(p)).join('')}</span><span><b>${pessoasDe(s).length} na conversa</b><small>mediação de ${esc(s.speakerShort)}</small></span></div>`,
+    }[t.g] || '';
+    const acao = { mini: `<button class="btn primary big" data-act="scanopen" data-q="${q}">${ic('laptop')}Abrir a aula</button>`, pal: `<button class="btn primary big" data-act="scanask" data-q="${q}">${ic('chat')}Perguntar ao palestrante</button>`, mesa: `<button class="btn primary big" data-act="scanask" data-q="${q}">${ic('chat')}Perguntar à mesa</button>` }[t.g] || `<button class="btn primary big" data-act="scanopen" data-q="${q}">Abrir a atividade</button>`;
+    return `${hero}${corpo}${c ? combRow(c) : ''}<div class="sr-actions">${acao}${outro}</div>`;
   }
+  /* Campeonato: tela toda com a arte do jogo; diz se a pessoa está na chave (e contra quem joga) ou na torcida. */
+  Overlays.jogo = (s, c) => {
+    const t = D.tournaments.find((x) => x.id === s.tournament); const stt = tourSt(t); const i = tourMine(stt); const me = i >= 0;
+    const adv = me ? stt.players[i ^ 1] : null; const hora = me ? (t.times || [])[Math.floor(i / 2)] || t.time : null;
+    const linha = me ? (adv ? `Sua partida: ${hora}, contra ${esc(adv[0])}` : `Você está na chave · ${hora}`) : stt.open && stt.free ? `Você está na torcida. Ainda há ${stt.free} ${stt.free === 1 ? 'vaga' : 'vagas'} na chave.` : 'Você está na torcida.';
+    const botao = me ? 'Ver a chave' : stt.open && stt.free ? 'Quero jogar' : 'Ver a chave';
+    return `<div class="jogo ${t.theme}">${gameArt(t)}
+      <div class="jg-top">${hxBadge('big tp-camp')}<p class="jg-kick">Check-in feito</p>${titleOf(t, 'jg-logo')}<p class="jg-sub">${linha}</p></div>
+      <dl class="jg-facts"><div><dt>Sala</dt><dd>${esc(s.room)}</dd></div><div><dt>Formato</dt><dd>${esc(t.format.split(' · ')[0])}</dd></div><div><dt>Chave</dt><dd>${8 - stt.free}/8</dd></div></dl>
+      ${c ? `<div class="jg-comb">${combRow(c)}</div>` : ''}
+      <div class="w-actions"><button class="btn big w-main" data-act="closeov" data-then="tournament" data-then-id="${t.id}">${ic('trophy')}${botao}</button><button class="btn ghost" data-act="closeov">Continuar</button></div>
+    </div>`;
+  };
   function peerResult(p, { again, c }) {
     return `<div class="sr-hero"><span class="sr-peer"><b>${esc(p.initials)}</b><i>${ic('check')}</i></span><div><small class="sr-kick">${again ? 'Vocês já são contatos' : 'Contato adicionado'}</small><h2>${esc(p.name)}</h2><p>${esc(p.course)}</p></div></div>
       <div class="sr-tags"><span>${ic('star')}Interesse em ${esc(p.interest)}</span><span>${ic('contact')}Contato trocado agora</span></div>
@@ -2307,6 +2336,7 @@
       if (!again) S.present[q] = D.now.time;
       const c = takeNewComb();
       rerender();
+      if (!again && tipoDe(byId(q) || {}).g === 'camp' && byId(q)?.tournament) { openOverlay(Overlays.jogo(byId(q), c), 'welcome'); return; }
       scanSheet(roomResult(q, { again, first, c }));
     }, reduce ? 60 : 1500);
   }
@@ -2372,6 +2402,8 @@
         skyTo(n === undefined ? seq[0] : n);
         break;
       }
+      /* atalho do tema na home (o resto das opções continua em Perfil → Personalizar) */
+      case 'tema': UI.mode = isDark() ? 'claro' : 'escuro'; uiSave(); applyUI(); rerender(); break;
       case 'lermais': el.classList.toggle('clamp'); break;
       case 'scan': openOverlay(Overlays.scan(el.dataset.mode || 'ler'), 'scan'); if ((el.dataset.mode || 'ler') === 'ler') setTimeout(camStart, 350); break;
       case 'camstart': camStart(); break;
@@ -2394,7 +2426,8 @@
       case 'vote': { const k = el.dataset.q; if (S.votes.has(k)) S.votes.delete(k); else S.votes.add(k); rerender(); break; }
       case 'ask': openOverlay(Overlays.ask(el.dataset.id), 'ask'); setTimeout(() => $('#qtext')?.focus({ preventScroll: true }), 480); break;
       case 'rate': S.ratings[el.dataset.id] = +el.dataset.n; rerender(); toast('Avaliação enviada'); break;
-      case 'closeov': closeOverlay(el.dataset.then ? () => push(el.dataset.then) : null); break;
+      case 'closeov': closeOverlay(el.dataset.then ? () => push(el.dataset.then, el.dataset.thenId ? { id: el.dataset.thenId } : undefined) : null); break;
+      case 'scanask': { const q = el.dataset.q; scanOpen(q); setTimeout(() => { openOverlay(Overlays.ask(q), 'ask'); setTimeout(() => $('#qtext')?.focus({ preventScroll: true }), 480); }, 650); break; }
       case 'simulate': if (API && el.dataset.q !== 'colega') demoQr(el.dataset.q); else scanResult(el.dataset.q); break;
       case 'scanopen': scanOpen(el.dataset.q); break;
       case 'scanagain': scanAgain(); break;
