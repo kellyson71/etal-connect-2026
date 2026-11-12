@@ -235,10 +235,10 @@ slide('offline','Sem internet','05 / Apêndice técnico',f"""
 """,'Service worker (sw.js) guarda os arquivos do app e do mapa no aparelho','', 'app-home.png', 'Sem internet')
 
 slide('rotas','Como a rota é calculada','05 / Apêndice técnico',f"""
-<div class="algo"><div class="algo-stage reveal"><img src="{{assets}}/fontes/planta-atual-0.svg" alt="Planta do térreo"><canvas class="algo-canvas" width="1920" height="1320" data-algo="{{assets}}/rota-dijkstra.json"></canvas>
-<div class="algo-result"><b>72 m</b><small>≈ 1 min a pé</small></div></div>
-<ol class="algo-steps">{''.join(f'<li class="reveal" style="--i:{n+2}"><span>{icon(ic)}</span><b>{t}</b></li>' for n,(ic,t) in enumerate([('grid','Grade de 33 cm só nos corredores'),('route','Dijkstra: o caminho de menor custo'),('walk','Parede e curva custam mais'),('clock','metros ÷ 75 = minutos')]))}</ol></div>
-""",'Mesma regra do app (campus3d.js, gridPath) · entrada principal → sala 001','', 'fontes/planta-atual-0.svg', 'Como a rota é calculada')
+<div class="rc"><div class="rc-stage reveal"><canvas class="rc-canvas" width="1600" height="1100" data-rota="{{assets}}/rota-completa.json"></canvas>
+<div class="rc-leg"><b data-rc-titulo>Calçadas: Dijkstra</b><small data-rc-sub></small></div></div>
+<ol class="rc-steps">{''.join(f'<li class="reveal" style="--i:{n+2}" data-rc-ato="{n}"><span>{icon(ic)}</span><b>{t}</b><small>{sub}</small></li>' for n,(ic,t,sub) in enumerate([('route','Calçadas','Dijkstra a partir da portaria'),('compass','Qual entrada','calçada + caminho dentro'),('grid','Térreo','A* na grade dos corredores'),('layers','Escada ou rampa','subir escada pesa 1,6 ×'),('grid','2º andar','A* até a porta'),('walk','Rota inteira','metros ÷ 75 = minutos')]))}</ol></div>
+""",'Mesmo código do mapa (mapa3d/src/rotas.js, explicar) · portaria → Lab 210, 2º andar','', 'fontes/planta-atual-0.svg', 'Como a rota é calculada')
 
 slide('escada-rampa','Escada ou rampa?','05 / Apêndice técnico',f"""
 <div class="race"><canvas class="race-canvas" width="1500" height="1150" data-race="{{assets}}/rota-escada-rampa.json"></canvas>
@@ -311,6 +311,16 @@ def add_dividers():
     SLIDES[:] = out
 
 
+def dados_embutidos():
+    """Os dados das animações vão dentro do HTML: aberto com duplo clique (file://), o navegador não deixa buscar JSON."""
+    out = ''
+    for nome in ['rota-completa.json', 'rota-escada-rampa.json']:
+        arq = ROOT / 'docs/assets' / nome
+        if arq.exists():
+            out += f'<script type="application/json" data-dados="{nome}">' + arq.read_text().replace('</', '<\\/') + '</script>'
+    return out
+
+
 def render(root):
     add_dividers()
     assets, demos = root+'docs/assets', root+'docs/demos'
@@ -328,7 +338,7 @@ def render(root):
 +<dialog class="outline-dialog" id="outline"><header class="modal-head"><h2>Uma visita por dentro do projeto.</h2><button data-close aria-label="Fechar índice">{icon('close')}</button></header><div class="modal-body outline-grid">{''.join(outline)}</div></dialog>
 +<dialog class="reference-dialog" id="references"><header class="modal-head"><h2>Fontes, documentos e detalhes.</h2><button data-close aria-label="Fechar referências">{icon('close')}</button></header><div class="modal-body">{refs}</div></dialog>
 +<dialog class="lightbox" id="lightbox"><header class="modal-head"><span data-image-title></span><button data-close aria-label="Fechar imagem">{icon('close')}</button></header><img alt=""><p class="image-credit" data-image-credit></p></dialog>
-+<script src="{assets}/apresentacao.js"></script><script src="{assets}/apresentacao-movimento.js"></script></body></html>'''.replace('\n+', '\n')
++{dados_embutidos()}<script src="{assets}/apresentacao.js"></script><script src="{assets}/apresentacao-movimento.js"></script></body></html>'''.replace('\n+', '\n')
     return html.replace('{assets}',assets).replace('{demos}',demos).replace('{root}',root)
 
 

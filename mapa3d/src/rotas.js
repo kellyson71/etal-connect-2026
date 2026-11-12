@@ -10,9 +10,10 @@ const SCALE = (PLAN.world.sx + PLAN.world.sy) / 2;
 const polyLen = (L) => L.slice(1).reduce((n, q, i) => n + Math.hypot(q[0] - L[i][0], q[1] - L[i][1]), 0);
 
 const PATHS = new Map();
-export function gridPath(level, start, goal) {
+/* trace (opcional): recebe a ordem em que o A* visitou a grade e o caminho antes de alisar (animação da apresentação) */
+export function gridPath(level, start, goal, trace = null) {
   if (!PLAN.floors[level] || !start || !goal) return null;
-  const cacheKey = `${level}|${start}|${goal}`; if (PATHS.has(cacheKey)) return PATHS.get(cacheKey);
+  const cacheKey = `${level}|${start}|${goal}`; if (!trace && PATHS.has(cacheKey)) return PATHS.get(cacheKey);
   const f = PLAN.floors[level]; const STEP = 5;
   f.corridors.forEach((c) => { if (c.points && !c.poly) c.poly = c.points.split(' ').map((q) => q.split(',').map(Number)); });
   const inC = (x, y) => f.corridors.some((c) => (c.poly ? inPoly(x, y, c.poly) : x >= c.x && x <= c.x + c.w && y >= c.y && y <= c.y + c.h));
@@ -28,7 +29,7 @@ export function gridPath(level, start, goal) {
   const pop = () => {const first=open[0],last=open.pop();if(open.length){let i=0;while(i*2+1<open.length){let c=i*2+1;if(c+1<open.length&&open[c+1].value<open[c].value)c++;if(open[c].value>=last.value)break;open[i]=open[c];i=c;}open[i]=last;}return first.point;};
   const heuristic = p => Math.hypot(p[0]-g[0],p[1]-g[1]);push(s,heuristic(s));
   while (open.length) {
-    const u = pop(); const ku = key(...u); if (seen.has(ku)) continue; seen.add(ku);
+    const u = pop(); const ku = key(...u); if (seen.has(ku)) continue; seen.add(ku); trace?.visitados.push(u);
     if (u[0] === g[0] && u[1] === g[1]) break;
     [[STEP, 0], [-STEP, 0], [0, STEP], [0, -STEP]].forEach(([dx, dy]) => {
       const v = [u[0] + dx, u[1] + dy]; if (!inC(v[0], v[1]) || !segment(u,v)) return;
@@ -49,7 +50,8 @@ export function gridPath(level, start, goal) {
     for (let j = simple.length - 1; j > at + 1; j--) if (segment(simple[at], simple[j])) { next = j; break; }
     clean.push(simple[next]); at = next;
   }
-  PATHS.set(cacheKey, clean); return clean;
+  if (trace) { trace.grade = full; trace.final = clean; } else PATHS.set(cacheKey, clean);
+  return clean;
 }
 export const zonaDe = (level, id) => PLAN.floors[level]?.zones.find((z) => z.id === id || z.roomNumber === String(id));
 /* Porta da sala: a que a planta liga a ela; sem essa ligação, a porta mais próxima da sala (salas que abrem para
@@ -123,12 +125,12 @@ const GRAFO = (() => {
   return { nos, ares, no: (p) => nos.findIndex((q) => Math.hypot(q[0] - p[0], q[1] - p[1]) < 1.5) };
 })();
 /* menor caminho externo entre dois pontos que estão no grafo */
-function caminhoFora(a, b) {
-  const s = GRAFO.no(a), g = GRAFO.no(b); if (s < 0 || g < 0) return null;
+function caminhoFora(a, b, trace = null) {
+  const s = GRAFO.no(a), g = GRAFO.no(b); if (s < 0 || (g < 0 && !trace)) return null;
   const dist = new Map([[s, 0]]), prev = new Map(), feito = new Set();
   while (true) {
     let u = -1, du = Infinity; dist.forEach((d, k) => { if (!feito.has(k) && d < du) { du = d; u = k; } });
-    if (u < 0) return null; if (u === g) break; feito.add(u);
+    if (u < 0) return null; trace?.push([u, du, prev.get(u) ?? -1]); if (u === g) break; feito.add(u);
     GRAFO.ares.get(u).forEach(([v, d]) => { if (du + d < (dist.get(v) ?? Infinity)) { dist.set(v, du + d); prev.set(v, u); } });
   }
   const out = []; let c = g; while (c !== undefined) { out.unshift(GRAFO.nos[c]); c = prev.get(c); }
@@ -190,7 +192,8 @@ export function rota(dest, origem = null, forcar = null) {
     /* da portaria a uma sala: escolhe a entrada */
     /* o auditório só se entra pela porta de vidro dele (informado pelo usuário), nunca atravessando o bloco */
     const entradas = SO_PELA[alvo.zona?.id] ? [ENTRANCES[SO_PELA[alvo.zona.id]]] : Object.values(ENTRANCES);
-    entradas.forEach((e) => { const t = trechoDentro(0, e.plan, alvo.level, alvo.cadeia[0], forcar); if (!t) return; const fora3 = campus3(e.campus); const n = fora3.length; tenta({ ...t, custo: t.custo + polyLen(e.campus), pts: [...fora3, ...t.pts, ...alvo.cadeia.slice(1).map((q) => P3(q, alvo.level))], iEntrada: n - 1, entrada: e.name, iSobe: t.iSobe < 0 ? -1 : t.iSobe + n, iChega: t.iChega < 0 ? -1 : t.iChega + n }); });
+    /* da portaria até a porta pelo menor caminho nas calçadas (Dijkstra no grafo); sem ligação, o traçado da entrada */
+    entradas.forEach((e) => { const t = trechoDentro(0, e.plan, alvo.level, alvo.cadeia[0], forcar); if (!t) return; const ext = caminhoFora(START, e.campus.at(-1)) || e.campus; const fora3 = campus3(ext); const n = fora3.length; tenta({ ...t, custo: t.custo + polyLen(ext), pts: [...fora3, ...t.pts, ...alvo.cadeia.slice(1).map((q) => P3(q, alvo.level))], iEntrada: n - 1, entrada: e.name, iSobe: t.iSobe < 0 ? -1 : t.iSobe + n, iChega: t.iChega < 0 ? -1 : t.iChega + n }); });
   } else if (src) {
     /* de uma sala a um lugar de fora: sai pela entrada que der o menor caminho */
     Object.values(ENTRANCES).forEach((e) => {
@@ -228,4 +231,25 @@ export function planejar(level, zonaId, forcar, origem = null) { return rota({ l
 export function maisPerto(prefixo, origem = null) {
   let best = null; Object.keys(PONTOS).filter((k) => k.startsWith(prefixo)).forEach((k) => { const r = rota({ ponto: k }, origem); if (r && (!best || r.metros < best.metros)) best = r; });
   return best;
+}
+
+/* Cada etapa de uma rota, para a animação da apresentação (scripts/gerar-rota-apresentacao.mjs): o Dijkstra nas
+   calçadas (ordem de visita), o custo de cada entrada, escada contra rampa e o A* de cada andar (células visitadas,
+   caminho da grade e caminho alisado). Usa as mesmas funções da rota de verdade. */
+export function explicar(dest) {
+  const r = rota(dest); if (!r) return null;
+  const alvo = alvoDentro(dest); const porta = alvo.cadeia[0];
+  const ordem = []; const destinos = Object.values(ENTRANCES).map((e) => GRAFO.no(e.campus.at(-1)));
+  caminhoFora(START, [1e6, 1e6], ordem); // sem destino: o Dijkstra varre o grafo inteiro, na ordem de distância
+  const nos = GRAFO.nos.map((p) => p.slice()); const arestas = []; GRAFO.ares.forEach((l, a) => l.forEach(([b]) => { if (a < b) arestas.push([a, b]); }));
+  const entradas = Object.entries(ENTRANCES).map(([id, e], i) => {
+    const ext = caminhoFora(START, e.campus.at(-1)) || e.campus; const t = trechoDentro(0, e.plan, alvo.level, porta, null);
+    return { id, nome: e.name, no: destinos[i], fora: Math.round(polyLen(ext)), dentro: t ? Math.round(t.custo) : null, total: t ? Math.round(t.custo + polyLen(ext)) : null, via: t?.via || null };
+  });
+  const e = Object.values(ENTRANCES).find((x) => x.name === r.entrada) || ENTRANCES.principal;
+  const vias = ['escada', 'rampa'].map((v) => { const t = trechoDentro(0, e.plan, alvo.level, porta, v); return { via: v, custo: t ? Math.round(t.custo) : null, peso: VERTS[v].weight }; });
+  const V = VERTS[r.via || 'rampa'];
+  const andar = (level, a, b) => { const tr = { level, visitados: [], grade: null, final: null }; gridPath(level, a, b, tr); return tr; };
+  const andares = r.via ? [andar(0, e.plan, V.foot), andar(alvo.level, V.foot, porta)] : [andar(0, e.plan, porta)];
+  return { inicio: START, nos, arestas, ordem, entradas, escolhida: r.entrada, vias, via: r.via, andares, subida: { foot: V.foot, loop: V.loop }, rota: r };
 }
