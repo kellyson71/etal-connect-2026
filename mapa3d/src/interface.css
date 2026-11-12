@@ -215,3 +215,24 @@ body.pc #p-hora{display:grid!important}
 #proxima .px-ir svg{width:20px;height:20px}
 body.dedao #proxima{position:static;max-width:none;width:100%;justify-content:space-between}
 body.em-viagem #proxima,body.abertura #proxima{display:none}
+
+/* tema escuro (o app manda o tema dele; sozinho, segue o aparelho) */
+:root[data-tema=escuro]{--ink:#e8eefb;--muted:#94a4c6;--paper:#182648;--accent:#3f64b5;--line:#2b3a63;color-scheme:dark}
+:root[data-tema=escuro] body{background:#0e1932}
+:root[data-tema=escuro] button:hover{background:#22325a}
+:root[data-tema=escuro] #legenda .leg{background:var(--paper);border-color:var(--line)}
+:root[data-tema=escuro] #legenda .leg small{color:var(--muted)}
+:root[data-tema=escuro] #carga{background:#0e1932!important;color:#e8eefb!important}
+:root[data-tema=escuro] .cg-hex path{stroke:#2b3a63}
+:root[data-tema=escuro] .cg-hex .cg-tr,:root[data-tema=escuro] .cg-barra u{stroke:#8fb0ee;background:#8fb0ee}
+:root[data-tema=escuro] .cg-barra{background:#2b3a63}
+/* celular: a próxima atividade fica no alto, no lugar da legenda das cores (as pílulas sobre os prédios já dizem o que é cada um) */
+@media(max-width:600px){
+  body.dedao #legenda{display:none}
+  body.dedao #proxima{position:fixed;top:max(12px,env(safe-area-inset-top));left:calc(12px + var(--alt) + 8px);right:calc(12px + var(--alt) + 8px);height:var(--alt);max-width:none;width:auto;padding:0 4px 0 14px;gap:8px;justify-content:space-between}
+  body.dedao.sem-voltar #proxima{left:calc(12px + var(--alt) + 8px);right:12px}
+  body.dedao #proxima .px-tx{flex-direction:row;align-items:baseline;gap:6px;min-width:0}
+  body.dedao #proxima small{flex:none}
+  body.dedao #proxima b{font-size:13.5px}
+  body.dedao #proxima .px-ir{width:calc(var(--alt) - 8px);height:calc(var(--alt) - 8px)}
+}
