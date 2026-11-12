@@ -174,7 +174,7 @@ export function iniciarInterface(ctx) {
   {
     const mq = matchMedia('(max-width: 600px)'); const doca = document.createElement('div'); doca.id = 'doca'; document.body.append(doca);
     const arrumar = () => {
-      if (mq.matches) { doca.append($('#andares'), $('#cartao'), $('#proxima'), $('#busca-wrap'), $('#modos')); document.body.classList.add('dedao'); }
+      if (mq.matches) { doca.append($('#andares'), $('#cartao'), $('#busca-wrap'), $('#modos')); document.body.classList.add('dedao'); }
       else { $('#topo').insertBefore($('#busca-wrap'), $('#ajustes-btn')); document.body.append($('#andares'), $('#cartao'), $('#proxima'), $('#modos')); document.body.classList.remove('dedao'); }
     };
     arrumar(); mq.addEventListener('change', arrumar);
@@ -267,7 +267,7 @@ export function iniciarInterface(ctx) {
   window.CampusNovo = api;
   window.addEventListener('message', (e) => {
     if (e.origin !== location.origin || e.source !== parent || !['etal:mapa:abrir', 'etal:mapa:sincronizar'].includes(e.data?.type)) return;
-    const d = e.data; if (Array.isArray(d.sessions)) sessoes = d.sessions; if ('proxima' in d) { proxima = d.proxima && Number.isInteger(d.proxima.floor) ? d.proxima : null; mostrarProxima(); } if ('foto' in d || 'nome' in d) passeio.setFoto(d.foto, d.nome); api.syncRooms(d.rooms); if ('origem' in d) api.setOrigem(d.origem);
+    const d = e.data; if (Array.isArray(d.sessions)) sessoes = d.sessions; if (d.tema === 'escuro' || d.tema === 'claro') document.documentElement.dataset.tema = d.tema; if ('proxima' in d) { proxima = d.proxima && Number.isInteger(d.proxima.floor) ? d.proxima : null; mostrarProxima(); } if ('foto' in d || 'nome' in d) passeio.setFoto(d.foto, d.nome); api.syncRooms(d.rooms); if ('origem' in d) api.setOrigem(d.origem);
     if (d.hour != null) hora(d.hour); // o app manda a hora do aparelho (ou a escolhida no céu)
     if (d.type === 'etal:mapa:sincronizar') return; if (d.reduced != null) $('#reduzir').checked = !!d.reduced;
     /* o app pode pedir um modo (tela grande do computador) e uma rota tira o mapa do passeio */
