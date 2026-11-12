@@ -62,12 +62,13 @@ export function doorOf(level, z) {
   const perto = doors.slice().sort((a, b) => d(a) - d(b))[0];
   return perto && d(perto) < 6 ? [perto.x, perto.y] : [(bb[0] + bb[2]) / 2, (bb[1] + bb[3]) / 2];
 }
+const AUD_FORA = [START, [13.3, 11], [-19.5, -5.15], [-29.8, -5.15], [-30.4, -12], [-30.4, -18.4], [-30, -19.4]];
 const ENTRANCES = {
   principal: { name: 'entrada principal', plan: PLAN.entrances.principal, campus: [START, [13.3, 11], [15, -4], [18.4, -11.5]] },
   auditorio: { name: 'entrada do auditório', plan: [181, 482], // a porta fica de frente para o caminho calçado, no trecho curvo
-    /* pelo caminho de verdade: atravessa o pátio coberto até o canto noroeste e segue pela calçada rente à fachada, entre
-       o canteiro de palmeiras e o prédio, até a porta de vidro (antes cortava o canteiro, por cima dos arbustos) */
-    campus: [START, [13.3, 11], [-18.5, -14.5], [-22.5, -18.2], [-30, -19.4]] },
+    /* pelo caminho de verdade (usuário, 12/11/2026): atravessa o pátio coberto, sai pela passagem entre o canteiro de
+       palmeiras e o canteiro do meio e segue rente ao canteiro até a porta de vidro. Não há calçada colada na fachada. */
+    campus: AUD_FORA },
   anexo: { name: 'entrada do Anexo', plan: PLAN.entrances.anexo, campus: [START, [13.3, 11], [-23, 8], [-27, -8], [-48, -13], [-49.5, -50], [-50, -68], [-44.6, -66], [-39, -61.5], [-27, -60], [-20, -56], [-17.8, -52]] }, // porta de vidro norte do bloco
 };
 const SO_PELA = {};
@@ -104,7 +105,7 @@ function cadeiaDePortas(level, z, prof = 0) {
    sempre sair da portaria. */
 const CAMINHOS = [
   [START, [13, 11], [15, -4], [18.4, -11.5]], [START, [13, 11], [6, 3]], [START, [13, 11], [19, 3]], [START, [13, 11], [-24, 11], [-30, 9]],
-  [START, [13, 11], [-18.5, -14.5], [-22.5, -18.2], [-30, -19.4]], [START, [13, 11], [-23, 8], [-27, -8]], [[-27, -8], [-48, -13], [-52.5, -24]],
+  AUD_FORA, [START, [13, 11], [-23, 8], [-27, -8]], [[-27, -8], [-48, -13], [-52.5, -24]],
   [[-48, -13], [-49.5, -50], [-50.5, -58.5], [-59, -58.5]], [[-49.5, -50], [-50, -68], [-41, -74], [-37.5, -80], [-32.5, -81.5]],
   [[-50.5, -58.5], [-61.5, -57.8]], [[-50, -68], [-44.6, -66], [-38.5, -62], [-37.8, -65]], [[-44.6, -66], [-39, -61.5], [-28, -61.5], [-22.5, -66]],
   [[-39, -61.5], [-27, -60], [-20, -56], [-17.8, -52]], [START, [13, 30], [12.6, 16]],

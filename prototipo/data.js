@@ -132,7 +132,7 @@ window.TOUR = {
     const o = ((org && org.torneios) || {})[t.id] || {};
     const players = (o.players || t.players).slice(0, 8).map((p) => p || null);
     while (players.length < 8) players.push(null);
-    return { open: o.open !== false, players, res: { ...(o.res || {}) }, free: players.filter((p) => !p).length };
+    return { open: o.open !== false, players, res: { ...(o.res || {}) }, free: players.filter((p) => !p).length, rules: o.rules || null };
   },
   /* Monta as rodadas: quem ganha uma partida aparece na seguinte. w = 0 ou 1 (lado que venceu). */
   rounds(st) {
@@ -213,6 +213,12 @@ window.DATA.combs = [
 /* Campus ao vivo: números demonstrativos. */
 window.DATA.liveBase = { credenciados: 312 };
 /* Painel da organização: números simulados. */
+/* Organização por matrícula: quem está aqui vê o painel da organização no Perfil, em destaque, e pode mexer no evento
+   pelo celular. Matrículas de exemplo (a primeira é a da pessoa de demonstração); o painel acrescenta outras. */
+window.DATA.organizadores = [
+  { matricula: '20231094010012', papel: 'Coordenação geral' },
+  { matricula: '20221094010008', papel: 'Campeonatos' },
+];
 window.DATA.org = { inscritos: 480, porHora: [[7, 38], [8, 96], [9, 71], [10, 34], [11, 15], [12, 9], [13, 49]] };
 
 /* Resto do campus: fora da programação do evento. Nomes e andares informados pelo usuário. */
