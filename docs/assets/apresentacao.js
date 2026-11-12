@@ -11,6 +11,7 @@
   const lightbox = document.getElementById('lightbox');
   const assetBase = new URL('.', document.currentScript.src);
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  const fullscreenMode = matchMedia('(display-mode: fullscreen)');
   const aliases = {README:'visao',estado:'verificacao',casos:'jornada',entrada:'jornada',agenda:'app',persistencia:'arquitetura',modos:'offline',implantacao:'arquitetura','api-exemplo':'api','01-requisitos':'processo','02-casos-de-uso':'jornada','03-banco-de-dados':'banco','04-arquitetura':'arquitetura','05-api':'api','06-testes':'verificacao'};
   let current = 0;
   let changedAt = 0;
@@ -40,6 +41,7 @@
   }
 
   function fit() {
+    document.documentElement.classList.toggle('presenting', !!document.fullscreenElement || fullscreenMode.matches);
     const box = shell.getBoundingClientRect();
     document.documentElement.style.setProperty('--scale', Math.min(box.width / 1440, box.height / 810));
     requestAnimationFrame(drawDatabase);
@@ -281,5 +283,6 @@
   window.addEventListener('hashchange',fromHash);
   window.addEventListener('resize',fit);
   window.addEventListener('fullscreenchange',fit);
+  fullscreenMode.addEventListener('change',fit);
   fit();go(0,false);fromHash();
 })();

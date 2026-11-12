@@ -15,6 +15,7 @@ O projeto cresceu por experimentação e ajustes no protótipo. Não houve reuni
 | Arquitetura e modos do app | [Estrutura e execução](04-arquitetura.md) |
 | Modelo do banco, em partes | [Persistência](03-banco-de-dados.md) e dicionário da apresentação |
 | Swagger e chamada real | [API](05-api.md) e tabela de rotas da apresentação |
+| Eventos e inscrições no SUAP | [Investigação da API e da Área do Participante](investigacao-suap-eventos.md) |
 | Evidências e próximos passos | [Verificação](06-testes.md) |
 | Plantas, satélite e lógica de localização | [Mapa e fontes](07-mapa-e-fontes.md) |
 | PWA, alternativa nativa e demos dos slides | [PWA e apresentação](08-pwa-e-apresentacao.md) |
