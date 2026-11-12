@@ -62,3 +62,16 @@ async def ao_vivo(request: Request):
             canal.sair(q)
 
     return StreamingResponse(fluxo(), media_type='text/event-stream', headers={'Cache-Control': 'no-store', 'X-Accel-Buffering': 'no'})
+
+
+@rota.get('/cenario-demo')
+def cenario_demo(db: Session = Depends(sessao)):
+    from fastapi import HTTPException
+    from ..config import config
+    from ..modelos import CenarioDemo
+    if not config().demo:
+        raise HTTPException(404)
+    cenario = db.get(CenarioDemo, 'vii-etal')
+    if not cenario:
+        raise HTTPException(404)
+    return {k: cenario.dados.get(k) for k in ('event', 'tournaments', 'posts')}

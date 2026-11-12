@@ -1,0 +1,573 @@
+{
+  "event": {
+    "id": 8528,
+    "name": "VII ETAL",
+    "year": 2025,
+    "source": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+    "dates": [
+      "2025-11-26",
+      "2025-11-27",
+      "2025-11-28"
+    ],
+    "notice": "Programação de 2025. Salas, campeonatos, resultados e publicações preparados para demonstração."
+  },
+  "tournaments": [
+    {
+      "id": "mk",
+      "name": "Mortal Kombat 11",
+      "theme": "mk",
+      "banner": "assets/games/mk11.jpg",
+      "day": 27,
+      "time": "14:00",
+      "place": "Sala 102 · 1º andar",
+      "floor": 1,
+      "zone": "sala-norte-1",
+      "room": "Sala 102",
+      "format": "1 × 1 · melhor de 3",
+      "tagline": "Campeonato do encontro.",
+      "rules": "1. Chave eliminatória de oito jogadores.\n2. Cada duelo é melhor de três lutas; final em melhor de cinco.\n3. Dois rounds por luta, 90 segundos e configurações iguais para todos.\n4. Quem perdeu pode trocar de personagem; quem venceu mantém.\n5. Atraso de 5 minutos resulta em W.O.; pausas e falhas técnicas são decididas pela organização.",
+      "prize": "Premiação do campeonato",
+      "demo": true,
+      "players": [
+        [
+          "Lucas.exe",
+          "Lucas Emanuel Nogueira de Queiroz",
+          "LE",
+          "Scorpion",
+          "demo-player-0"
+        ],
+        [
+          "Andrea",
+          "Andrea Gabriely Vidal Feitosa",
+          "AG",
+          "Sub-Zero",
+          "demo-player-1"
+        ],
+        [
+          "Maria V.",
+          "Maria Vitória de Sousa Pereira",
+          "MV",
+          "Liu Kang",
+          "demo-player-2"
+        ],
+        [
+          "Chico",
+          "Francisco Leocássio da Silva",
+          "FL",
+          "Kitana",
+          "demo-player-3"
+        ],
+        [
+          "Ana B.",
+          "Ana Beatriz",
+          "AB",
+          "Raiden",
+          "demo-player-4"
+        ],
+        [
+          "Caio",
+          "Caio Enzo",
+          "CE",
+          "Jade",
+          "demo-player-5"
+        ],
+        [
+          "Júlia",
+          "Júlia Costa",
+          "JC",
+          "Johnny Cage",
+          "demo-player-6"
+        ],
+        [
+          "Ravi",
+          "Ravi Lima",
+          "RL",
+          "Sonya",
+          "demo-player-7"
+        ]
+      ],
+      "pickLabel": "Personagem",
+      "picks": [
+        "Scorpion",
+        "Sub-Zero",
+        "Liu Kang",
+        "Kitana",
+        "Raiden",
+        "Jade",
+        "Johnny Cage",
+        "Sonya",
+        "Ainda não sei"
+      ],
+      "times": [
+        "14:00",
+        "14:20",
+        "14:40",
+        "15:00"
+      ],
+      "teamSize": 1,
+      "open": false,
+      "res": {
+        "q0": 0,
+        "q1": 0,
+        "q2": 1,
+        "q3": 0,
+        "s0": 0,
+        "s1": 1,
+        "f": 0
+      }
+    },
+    {
+      "id": "fifa",
+      "name": "FIFA",
+      "theme": "fifa",
+      "banner": "assets/games/fifa.jpg",
+      "day": 27,
+      "time": "14:00",
+      "place": "Sala 103 · 1º andar",
+      "floor": 1,
+      "zone": "sala-norte-2",
+      "room": "Sala 103",
+      "format": "1 × 1 · mata-mata",
+      "tagline": "Campeonato do encontro.",
+      "rules": "1. Oito jogadores; eliminatória simples em partida única.\n2. Partidas com 6 minutos por tempo, velocidade normal e elencos iguais para todos.\n3. Empate vai para prorrogação e pênaltis.\n4. Sem seleções ou equipes personalizadas; pausas só com a bola parada.\n5. Confira o controle antes da partida. A edição do FIFA será a disponível na estação do campeonato.",
+      "prize": "Premiação do campeonato",
+      "demo": true,
+      "players": [
+        [
+          "Lucas.exe",
+          "Lucas Emanuel Nogueira de Queiroz",
+          "LE",
+          "Real Madrid",
+          "demo-player-0"
+        ],
+        [
+          "Andrea",
+          "Andrea Gabriely Vidal Feitosa",
+          "AG",
+          "Barcelona",
+          "demo-player-1"
+        ],
+        [
+          "Maria V.",
+          "Maria Vitória de Sousa Pereira",
+          "MV",
+          "Manchester City",
+          "demo-player-2"
+        ],
+        [
+          "Chico",
+          "Francisco Leocássio da Silva",
+          "FL",
+          "PSG",
+          "demo-player-3"
+        ],
+        [
+          "Ana B.",
+          "Ana Beatriz",
+          "AB",
+          "Flamengo",
+          "demo-player-4"
+        ],
+        [
+          "Caio",
+          "Caio Enzo",
+          "CE",
+          "Palmeiras",
+          "demo-player-5"
+        ]
+      ],
+      "pickLabel": "Time",
+      "picks": [
+        "Real Madrid",
+        "Barcelona",
+        "Manchester City",
+        "PSG",
+        "Flamengo",
+        "Palmeiras",
+        "Bayern",
+        "Liverpool",
+        "Ainda não sei"
+      ],
+      "times": [
+        "14:00",
+        "14:20",
+        "14:40",
+        "15:00"
+      ],
+      "teamSize": 1,
+      "open": true,
+      "res": {}
+    },
+    {
+      "id": "valorant",
+      "name": "VALORANT",
+      "theme": "valorant",
+      "banner": "assets/games/valorant.jpg",
+      "day": 27,
+      "time": "14:00",
+      "place": "Sala 108 · 1º andar",
+      "floor": 1,
+      "zone": "sala-interna-sul-0",
+      "room": "Sala 108",
+      "format": "5 × 5 · equipes",
+      "tagline": "Campeonato do encontro.",
+      "rules": "1. Oito equipes, cada uma com cinco jogadores e um capitão.\n2. A chave representa equipes; o capitão faz a inscrição e apresenta a escalação à organização.\n3. Melhor de um mapa até a final; final melhor de três, se houver tempo.\n4. Mapas e lados definidos por veto; configurações competitivas e prorrogação ativada.\n5. Proibidos cheats, exploração de bugs e comunicação ofensiva; falhas técnicas são tratadas pela equipe.",
+      "prize": "Premiação do campeonato",
+      "demo": true,
+      "players": [
+        [
+          "Equipe Lucas.exe",
+          "Lucas Emanuel Nogueira de Queiroz",
+          "LE",
+          "Duelista",
+          "demo-player-0"
+        ],
+        [
+          "Equipe Andrea",
+          "Andrea Gabriely Vidal Feitosa",
+          "AG",
+          "Controlador",
+          "demo-player-1"
+        ],
+        [
+          "Equipe Maria V.",
+          "Maria Vitória de Sousa Pereira",
+          "MV",
+          "Sentinela",
+          "demo-player-2"
+        ],
+        [
+          "Equipe Chico",
+          "Francisco Leocássio da Silva",
+          "FL",
+          "Iniciador",
+          "demo-player-3"
+        ],
+        [
+          "Equipe Ana B.",
+          "Ana Beatriz",
+          "AB",
+          "Duelista",
+          "demo-player-4"
+        ],
+        [
+          "Equipe Caio",
+          "Caio Enzo",
+          "CE",
+          "Controlador",
+          "demo-player-5"
+        ]
+      ],
+      "pickLabel": "Função",
+      "picks": [
+        "Duelista",
+        "Controlador",
+        "Sentinela",
+        "Iniciador",
+        "Ainda não sei"
+      ],
+      "times": [
+        "14:00",
+        "14:20",
+        "14:40",
+        "15:00"
+      ],
+      "teamSize": 5,
+      "open": true,
+      "res": {}
+    },
+    {
+      "id": "gh3",
+      "name": "Guitar Hero III",
+      "theme": "guitarhero3",
+      "banner": "assets/games/guitarhero3.jpg",
+      "day": 27,
+      "time": "14:00",
+      "place": "Sala 105 · 1º andar",
+      "floor": 1,
+      "zone": "sala-oeste-sul",
+      "room": "Sala 105",
+      "format": "1 × 1 · duelo por pontos",
+      "tagline": "Campeonato do encontro.",
+      "rules": "1. Chave de oito jogadores, em duelos melhor de três músicas.\n2. Mesma música e dificuldade para os dois jogadores; padrão Difícil.\n3. Ganha cada música quem alcançar a maior pontuação; empate usa maior sequência de notas.\n4. Cada jogador escolhe uma música da lista da estação; desempate por sorteio.\n5. Sem modificadores, cheats ou pausas; os controles são testados antes do duelo.",
+      "prize": "Premiação do campeonato",
+      "demo": true,
+      "players": [
+        [
+          "Lucas.exe",
+          "Lucas Emanuel Nogueira de Queiroz",
+          "LE",
+          "Difícil",
+          "demo-player-0"
+        ],
+        [
+          "Andrea",
+          "Andrea Gabriely Vidal Feitosa",
+          "AG",
+          "Expert",
+          "demo-player-1"
+        ],
+        [
+          "Maria V.",
+          "Maria Vitória de Sousa Pereira",
+          "MV",
+          "Difícil",
+          "demo-player-2"
+        ],
+        [
+          "Chico",
+          "Francisco Leocássio da Silva",
+          "FL",
+          "Expert",
+          "demo-player-3"
+        ],
+        [
+          "Ana B.",
+          "Ana Beatriz",
+          "AB",
+          "Difícil",
+          "demo-player-4"
+        ],
+        [
+          "Caio",
+          "Caio Enzo",
+          "CE",
+          "Expert",
+          "demo-player-5"
+        ],
+        [
+          "Júlia",
+          "Júlia Costa",
+          "JC",
+          "Difícil",
+          "demo-player-6"
+        ],
+        [
+          "Ravi",
+          "Ravi Lima",
+          "RL",
+          "Expert",
+          "demo-player-7"
+        ]
+      ],
+      "pickLabel": "Dificuldade",
+      "picks": [
+        "Difícil",
+        "Expert",
+        "Ainda não sei"
+      ],
+      "times": [
+        "14:00",
+        "14:20",
+        "14:40",
+        "15:00"
+      ],
+      "teamSize": 1,
+      "open": false,
+      "res": {
+        "q0": 0,
+        "q1": 0,
+        "q2": 1,
+        "q3": 0,
+        "s0": 1,
+        "s1": 1,
+        "f": 0
+      }
+    }
+  ],
+  "posts": [
+    {
+      "id": "demo-encontro",
+      "author": "demo-ana",
+      "handle": "ana.beatriz",
+      "name": "Ana Beatriz",
+      "initials": "AB",
+      "photo": "assets/community/avatar-ana.svg",
+      "text": "Saí do Game Maker com um joguinho funcionando! Colisão, personagem andando e aquela vontade de continuar em casa. Minicurso muito foda 🕹️",
+      "activity": "game-maker",
+      "day": 27,
+      "images": [
+        {
+          "src": "assets/community/projeto.jpg",
+          "alt": "Notebook com projeto de programação",
+          "caption": "O primeiro jogo a gente não esquece"
+        }
+      ],
+      "likes": 18,
+      "time": "Há pouco",
+      "role": "Participante",
+      "tag": "No evento",
+      "demo": true
+    },
+    {
+      "id": "demo-projeto",
+      "author": "demo-lucas",
+      "handle": "lucas.gabriel",
+      "name": "Lucas Emanuel Nogueira de Queiroz",
+      "initials": "LE",
+      "photo": "assets/community/avatar-lucas.svg",
+      "text": "Ganhei o MK11! A final foi apertada demais. Valeu pra quem ficou torcendo 🏆",
+      "activity": "jogo-mk",
+      "day": 27,
+      "images": [
+        {
+          "src": "assets/games/mk11.jpg",
+          "alt": "Arte de Mortal Kombat 11"
+        }
+      ],
+      "likes": 32,
+      "time": "Há pouco",
+      "role": "Participante",
+      "tag": "No evento",
+      "demo": true
+    },
+    {
+      "id": "demo-dica",
+      "author": "demo-julia",
+      "handle": "julia.costa",
+      "name": "Júlia Costa",
+      "initials": "JC",
+      "photo": "assets/community/avatar-julia.svg",
+      "text": "Aprendi a criar uma API com FastAPI e já saí testando as rotas na documentação. Agora quero ligar isso no meu próximo projeto!",
+      "activity": "fastapi",
+      "day": 26,
+      "images": [
+        {
+          "src": "assets/community/equipe.jpg",
+          "alt": "Equipe trabalhando com notebooks"
+        },
+        {
+          "src": "assets/community/ideias.jpg",
+          "alt": "Conversa sobre um projeto"
+        }
+      ],
+      "likes": 14,
+      "time": "Há pouco",
+      "role": "Participante",
+      "tag": "No evento",
+      "demo": true
+    },
+    {
+      "id": "demo-fifa",
+      "author": "demo-andrea",
+      "handle": "andrea.gabriely",
+      "name": "Andrea Gabriely Vidal Feitosa",
+      "initials": "AG",
+      "photo": "assets/community/avatar-ana.svg",
+      "text": "Passei da primeira fase do FIFA e já tô me achando profissional 😂 Quem vai acompanhar a próxima partida?",
+      "activity": "jogo-fifa",
+      "day": 27,
+      "images": [
+        {
+          "src": "assets/games/fifa.jpg",
+          "alt": "Arte de FIFA"
+        }
+      ],
+      "likes": 21,
+      "time": "Há pouco",
+      "role": "Participante",
+      "tag": "No evento",
+      "demo": true
+    },
+    {
+      "id": "demo-valorant",
+      "author": "demo-chico",
+      "handle": "francisco.leocassio",
+      "name": "Francisco Leocássio da Silva",
+      "initials": "FL",
+      "photo": "assets/community/avatar-lucas.svg",
+      "text": "Equipe fechada pro Valorant! Hoje é dia de jogar junto e fazer amizade com a galera do campus.",
+      "activity": "jogo-valorant",
+      "day": 27,
+      "images": [
+        {
+          "src": "assets/games/valorant.jpg",
+          "alt": "Arte de VALORANT"
+        }
+      ],
+      "likes": 11,
+      "time": "Há pouco",
+      "role": "Participante",
+      "tag": "No evento",
+      "demo": true
+    },
+    {
+      "id": "demo-gh3",
+      "author": "demo-maria-v",
+      "handle": "maria.vitoria",
+      "name": "Maria Vitória de Sousa Pereira",
+      "initials": "MV",
+      "photo": "assets/community/avatar-julia.svg",
+      "text": "Levei o Guitar Hero III! Minha mão quase travou na última música, mas deu bom 🎸🏆",
+      "activity": "jogo-gh3",
+      "day": 27,
+      "images": [
+        {
+          "src": "assets/games/guitarhero3.jpg",
+          "alt": "Capa de Guitar Hero III"
+        }
+      ],
+      "likes": 28,
+      "time": "Há pouco",
+      "role": "Participante",
+      "tag": "No evento",
+      "demo": true
+    }
+  ],
+  "organizers": [
+    {
+      "matricula": "20231094010012",
+      "papel": "Coordenação geral"
+    },
+    {
+      "matricula": "20221094010008",
+      "papel": "Campeonatos"
+    },
+    {
+      "matricula": "20251094040030",
+      "papel": "Desenvolvimento do app"
+    }
+  ],
+  "people": [
+    {
+      "id": "demo-player-0",
+      "name": "Lucas Emanuel Nogueira de Queiroz",
+      "initials": "LE"
+    },
+    {
+      "id": "demo-player-1",
+      "name": "Andrea Gabriely Vidal Feitosa",
+      "initials": "AG"
+    },
+    {
+      "id": "demo-player-2",
+      "name": "Maria Vitória de Sousa Pereira",
+      "initials": "MV"
+    },
+    {
+      "id": "demo-player-3",
+      "name": "Francisco Leocássio da Silva",
+      "initials": "FL"
+    },
+    {
+      "id": "demo-player-4",
+      "name": "Ana Beatriz",
+      "initials": "AB"
+    },
+    {
+      "id": "demo-player-5",
+      "name": "Caio Enzo",
+      "initials": "CE"
+    },
+    {
+      "id": "demo-player-6",
+      "name": "Júlia Costa",
+      "initials": "JC"
+    },
+    {
+      "id": "demo-player-7",
+      "name": "Ravi Lima",
+      "initials": "RL"
+    }
+  ]
+}

@@ -6,12 +6,13 @@ from email.message import EmailMessage
 from urllib.parse import urlencode
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, Query
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from .. import suap_portal
 from ..config import config
 from ..db import sessao
 from ..limite import limitar
@@ -70,7 +71,7 @@ def _pessoa_suap(d: dict, db: Session) -> Pessoa | None:
 
 
 @rota.get('/suap/retorno')
-def suap_retorno(request: Request, code: str = '', state: str = '', db: Session = Depends(sessao)):
+def suap_retorno(request: Request, code: str = Query('', description='Código fornecido pelo SUAP após autorizar. Não preencher manualmente.'), state: str = Query('', description='Estado fornecido pelo SUAP; precisa coincidir com o cookie temporário do início do fluxo.'), db: Session = Depends(sessao)):
     c = config()
     if not code or not state or state != request.cookies.get(ESTADO):
         return RedirectResponse(f'{publica(request)}/?login=erro', 302)
@@ -99,8 +100,8 @@ def suap_retorno(request: Request, code: str = '', state: str = '', db: Session 
 
 
 class LoginSuap(BaseModel):
-    matricula: str = Field(min_length=3, max_length=40)
-    senha: str = Field(min_length=1, max_length=200)
+    matricula: str = Field(min_length=3, max_length=40, description='Sua matrícula do SUAP. Substitua o exemplo antes de executar.', examples=['SUA_MATRICULA'])
+    senha: str = Field(min_length=1, max_length=200, description='Senha atual do SUAP. Usada apenas durante a autenticação; não é gravada no banco.', examples=['SUA_SENHA'], json_schema_extra={'format':'password'})
 
 
 @rota.post('/suap/senha', dependencies=[Depends(limitar('suap-senha', 8))])
@@ -126,12 +127,16 @@ def suap_senha(l: LoginSuap, response: Response, db: Session = Depends(sessao)):
     if not p:
         raise HTTPException(502, 'O SUAP não informou a matrícula.')
     abrir_sessao(response, p)
+    if config().suap_portal:
+        portal_token = secrets.token_urlsafe(32)
+        if suap_portal.connect(f'{p.id}:{portal_token}', base, l.matricula.strip(), l.senha):
+            response.set_cookie('etal_suap_portal', portal_token, max_age=1200, httponly=True, secure=config().cookie_seguro, samesite='lax', path='/api')
     return {'ok': True}
 
 
 class Visitante(BaseModel):
-    nome: str = Field(min_length=2, max_length=200)
-    email: EmailStr
+    nome: str = Field(min_length=2, max_length=200, description='Nome que será usado no cadastro de visitante.', examples=['Pessoa Visitante'])
+    email: EmailStr = Field(description='Endereço para receber o link de entrada.', examples=['visitante@example.com'])
     instituicao: str | None = Field(default=None, max_length=200)
     cidade: str | None = Field(default=None, max_length=120)
 
@@ -174,7 +179,7 @@ def visitante(v: Visitante, request: Request, db: Session = Depends(sessao)):
 
 
 @rota.get('/link')
-def link(request: Request, t: str = '', db: Session = Depends(sessao)):
+def link(request: Request, t: str = Query('', description='Token do link enviado por e-mail. Uso único, válido por 30 minutos.'), db: Session = Depends(sessao)):
     c = config()
     la = db.scalar(select(LinkAcesso).where(LinkAcesso.token_hash == hash_token(t))) if t else None
     if not la or la.usado_em or la.expira_em < agora():
@@ -187,10 +192,10 @@ def link(request: Request, t: str = '', db: Session = Depends(sessao)):
 
 
 class Dev(BaseModel):
-    nome: str = 'Pessoa de Teste'
-    matricula: str | None = None
-    organizacao: bool = False
-    codigo: str = ''
+    nome: str = Field(default='Pessoa de Teste', description='Nome fictício para o ambiente de teste.')
+    matricula: str | None = Field(default=None, description='Identificador opcional do cadastro de teste. Não autentica no SUAP.')
+    organizacao: bool = Field(default=False, description='Concede acesso de organização no ambiente de teste.')
+    codigo: str = Field(default='', description='Código ETAL_SENHA_HOMOLOGACAO, caso configurado pelo responsável.')
 
 
 @rota.post('/dev')
@@ -211,6 +216,10 @@ def dev(d: Dev, request: Request, response: Response, db: Session = Depends(sess
 
 
 @rota.post('/sair')
-def sair(response: Response):
+def sair(response: Response, request: Request, db: Session = Depends(sessao)):
+    from ..seguranca import pessoa_atual
+    try: suap_portal.discard(f"{pessoa_atual(request, db).id}:{request.cookies.get('etal_suap_portal', '')}")
+    except HTTPException: pass
+    response.delete_cookie('etal_suap_portal', path='/api')
     fechar_sessao(response)
     return {'ok': True}

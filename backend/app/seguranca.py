@@ -5,6 +5,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from fastapi import Depends, HTTPException, Request, Response
+from fastapi.security import APIKeyCookie
 from itsdangerous import BadSignature, URLSafeSerializer, URLSafeTimedSerializer
 from sqlalchemy.orm import Session
 
@@ -14,6 +15,7 @@ from .modelos import Pessoa
 
 COOKIE = 'etal_sessao'
 DURACAO = 60 * 60 * 24 * 30  # 30 dias
+SESSAO_COOKIE = APIKeyCookie(name=COOKIE, scheme_name='SessaoETAL', auto_error=False, description='Cookie HttpOnly criado pelo login. Entre pelo app ou execute POST /api/auth/suap/senha. O navegador envia a sessão automaticamente; Authorize não faz o login nem cria este cookie.')
 
 
 def _sessoes():
@@ -25,6 +27,7 @@ def _qrs():
 
 
 def abrir_sessao(resp: Response, pessoa: Pessoa) -> None:
+    resp.delete_cookie('etal_suap_portal', path='/api')
     resp.set_cookie(COOKIE, _sessoes().dumps(pessoa.id), max_age=DURACAO, httponly=True,
                     secure=config().cookie_seguro, samesite='lax', path='/')
 
@@ -33,8 +36,9 @@ def fechar_sessao(resp: Response) -> None:
     resp.delete_cookie(COOKIE, path='/')
 
 
-def pessoa_atual(request: Request, db: Session = Depends(sessao)) -> Pessoa:
-    raw = request.cookies.get(COOKIE)
+def pessoa_atual(request: Request, db: Session = Depends(sessao), cookie: str | None = Depends(SESSAO_COOKIE)) -> Pessoa:
+    # As chamadas internas (logout) não passam pela injeção de dependências.
+    raw = cookie if isinstance(cookie, str) else request.cookies.get(COOKIE)
     if not raw:
         raise HTTPException(401, 'Entre para continuar.')
     try:

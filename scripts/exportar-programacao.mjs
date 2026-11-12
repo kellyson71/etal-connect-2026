@@ -11,7 +11,7 @@ const ctx = { window: {} }; ctx.window.window = ctx.window; vm.createContext(ctx
 for (const f of ['plan-data.js', 'data.js']) vm.runInContext(fs.readFileSync(path.join(root, 'prototipo', f), 'utf8').replace(/\bwindow\./g, 'window.'), ctx);
 const D = ctx.window.DATA;
 const date = (d) => `${ano}-${String(mes).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-const sessions = D.sessions.map((s) => ({ ...s, date: date(s.day), taken: undefined, demo: undefined }));
+const sessions = D.sessions.map((s) => ({ ...s, date: date(s.day), taken: undefined, demo: s.demo, referenceTaken: s.taken }));
 const out = { event: { name: 'ETAL', days: D.days.map((d) => ({ ...d, date: date(d.day) })) }, sessions };
 fs.mkdirSync(path.join(root, 'backend/seed'), { recursive: true });
 fs.writeFileSync(path.join(root, 'backend/seed/programacao.json'), JSON.stringify(out, null, 1) + '\n');

@@ -14,7 +14,7 @@ from sqlalchemy import select
 from .db import SessionLocal, criar_tabelas
 from .modelos import Atividade, Pessoa
 
-CAMPOS = {'id', 'type', 'title', 'short', 'description', 'speaker', 'role', 'date', 'day', 'time', 'end', 'floor', 'zone', 'room', 'seats', 'taken', 'demo'}
+CAMPOS = {'id', 'type', 'title', 'short', 'description', 'speaker', 'role', 'date', 'day', 'time', 'end', 'floor', 'zone', 'room', 'seats', 'taken'}
 
 
 def programacao(arquivo: str) -> int:
@@ -27,7 +27,10 @@ def programacao(arquivo: str) -> int:
             a.descricao, a.palestrante, a.papel_palestrante = s.get('description'), s.get('speaker'), s.get('role')
             a.data, a.inicio, a.fim = date.fromisoformat(s['date']), s['time'], s['end']
             a.andar, a.zona, a.sala, a.vagas = s.get('floor'), s.get('zone'), s.get('room'), s.get('seats')
+            anexos = [m for m in ((a.extra or {}).get('materials') or []) if m.get('file')]  # arquivos enviados pelo painel ficam
             a.extra = {k: v for k, v in s.items() if k not in CAMPOS}
+            if anexos:
+                a.extra = {**a.extra, 'materials': [*(a.extra.get('materials') or []), *[m for m in anexos if m not in (a.extra.get('materials') or [])]]}
             db.add(a)
             n += 1
         db.commit()
