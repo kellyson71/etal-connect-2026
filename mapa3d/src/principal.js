@@ -320,11 +320,11 @@ export function construirPrincipal(M) {
       if (zona.kind === 'auditorium') {
         /* porta dupla do auditório, para o hall */
         const pa = wp([118, 302]); const inn = sala(L, z, zona, AUD_H - 1.9, true, [pa], null, 1.8);
-        [[-0.89, 1], [0.89, -1]].forEach(([u, sg]) => portas.push(folhaPorta(gDet[0], M, { x: pa[0] + u, y: pa[1] - 0.195, z, ux: sg, uy: 0, larg: 0.88, alt: 2.09, k: 0 })));
+        [[-0.89, 1], [0.89, -1]].forEach(([u, sg]) => portas.push(folhaPorta(gNiveis[0], M, { x: pa[0] + u, y: pa[1] - 0.195, z, ux: sg, uy: 0, larg: 0.88, alt: 2.09, k: 0 })));
         const xs = inn.map((q) => q[0]), ys = inn.map((q) => q[1]); const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
         L.box('palco', (x0 + x1) / 2, y0 + 2.2, x1 - x0 - 0.4, 4.2, z, z + 0.85);
         const n = 11, passo = (y1 - y0 - 7.2) / n;
-        for (let i = 0; i < n; i++) [-1, 1].forEach((s) => { const w = (x1 - x0) / 2 - 1.3; D.box('poltrona', (x0 + x1) / 2 + s * (w / 2 + 0.6), y0 + 6 + i * passo, w, 0.55, z, z + 0.45 + i * 0.05); D.box('poltrona', (x0 + x1) / 2 + s * (w / 2 + 0.6), y0 + 6.3 + i * passo, w, 0.12, z + 0.45, z + 0.95 + i * 0.05); });
+        for (let i = 0; i < n; i++) [-1, 1].forEach((s) => { const w = (x1 - x0) / 2 - 1.3; L.box('poltrona', (x0 + x1) / 2 + s * (w / 2 + 0.6), y0 + 6 + i * passo, w, 0.55, z, z + 0.45 + i * 0.05); L.box('poltrona', (x0 + x1) / 2 + s * (w / 2 + 0.6), y0 + 6.3 + i * passo, w, 0.12, z + 0.45, z + 0.95 + i * 0.05); });
         return;
       }
       /* a recepção é o hall da entrada: piso aberto com o balcão (abaixo), sem paredes nem tampa */
@@ -338,7 +338,7 @@ export function construirPrincipal(M) {
     /* Portas (foto do corredor): batente cinza embutido na parede da sala, folha cinza-azulada com visor, bandeira em cima
        e capacho no corredor. A parede fica do lado da sala; o lado certo sai da própria planta. */
     const salas = f.zones.filter((q) => !['courtyard', 'ramp', 'stairs', 'lounge', 'wall'].includes(q.kind)).map((q) => zonePoly(q));
-    f.doors.forEach((d) => {
+    f.doors.filter((d) => d.zoneId !== 'auditorio').forEach((d) => { // o auditório tem a porta dupla própria
       const h = d.axis === 'h'; const lado = [1, -1].find((s) => salas.some((pl) => inPoly(d.x + (h ? 0 : s * 4), d.y + (h ? s * 4 : 0), pl))) || 1;
       const c = wp([d.x, d.y]); const ang = h ? 0 : Math.PI / 2; const at = (u, v) => (h ? [c[0] + u, c[1] + v * lado] : [c[0] + v * lado, c[1] + u]);
       const cx = (u, v, w, dd, h0, h1, mat) => { const q = at(u, v); L.box(mat, q[0], q[1], w, dd, h0, h1, ang); };
@@ -353,7 +353,7 @@ export function construirPrincipal(M) {
       const pos = [], uv = [], R2 = rng(431 + k * 17); const SX = WORLD.sx, SY = WORLD.sy;
       const toPlan = (w) => [(w[0] - WORLD.x0) / SX, (w[1] - WORLD.y0) / SY];
       const cel = [[0, 0.5], [0.5, 0.5], [0, 0], [0.5, 0]];
-      f.doors.forEach((d) => {
+      f.doors.filter((d) => d.zoneId !== 'auditorio').forEach((d) => { // o auditório tem a porta dupla própria
         const h = d.axis === 'h'; const lado = [1, -1].find((s) => salas.some((pl) => inPoly(d.x + (h ? 0 : s * 4), d.y + (h ? s * 4 : 0), pl))) || 1;
         const c = wp([d.x, d.y]); const at = (u, v) => (h ? [c[0] + u, c[1] + v * lado] : [c[0] + v * lado, c[1] + u]);
         const C = h ? [0, -lado] : [-lado, 0]; const T = [C[1], -C[0]]; // tangente com a frente virada para o corredor
@@ -517,9 +517,13 @@ export function construirPrincipal(M) {
   const planos = [0, 1, 2].map(() => new THREE.Plane(new THREE.Vector3(0, -1, 0), 99));
   /* todos os materiais do bloco com dois planos (o segundo nunca corta): um tipo de programa a menos para compilar */
   const NUNCA = new THREE.Plane(new THREE.Vector3(0, -1, 0), 1e5);
+  /* auditório e caixa da entrada (casca): com o bloco aberto perdem o telhado e são cortados um pouco acima da porta,
+     para mostrar a plateia, o palco, o hall curvo e os banheiros do auditório */
+  const planoCasca = new THREE.Plane(new THREE.Vector3(0, -1, 0), 1e5); const matsCasca = [];
   const matsNivel = [[], [], []], matsSubida = [[], []];
   const preparar = (raiz) => raiz.traverse((o) => {
-    if (!o.isMesh) return; const era = o.material; o.material = o.material.clone(); o.material.clippingPlanes = [plano, NUNCA]; if (era === M.vidroAceso) acesos.push(o.material);
+    if (!o.isMesh) return; const era = o.material; o.material = o.material.clone(); o.material.clippingPlanes = [plano, NUNCA];
+    { let q = o; while (q && q !== gCasca) q = q.parent; if (q === gCasca) { o.material.clippingPlanes = [plano, planoCasca]; matsCasca.push(o.material); } } if (era === M.vidroAceso) acesos.push(o.material);
     for (let k = 0; k < 3; k++) { let p = o; while (p && p !== gNiveis[k] && p !== gSubidas[k]) p = p.parent; if (p === gNiveis[k]) { o.material.clippingPlanes = [plano, planos[k]]; matsNivel[k].push(o.material); }
       /* paredes de dentro vistas dos dois lados: cortadas pelo plano, o miolo delas não fica vazado. O azulejo de fora
          fica de um lado só (dos dois lados ele brigava com a face de dentro e piscava). */
@@ -563,6 +567,8 @@ export function construirPrincipal(M) {
   function escalonar({ corte = 99, aberto = false, t = 0, ops = [1, 1, 1], elos = [1, 1], plano2d = 0 }) {
     const gy = FH + (GAP_Y - FH) * t, gb = BACK * t, s = 1 - 0.88 * plano2d;
     grupo.visible = true; cortar(corte); gCobertura.visible = !aberto;
+    /* auditório aberto junto com o térreo: sem telhado, paredes cortadas na altura das salas, esmaece com o térreo */
+    gTetosBaixos.visible = !aberto; planoCasca.constant = aberto ? (FH - 0.22) * s : 1e5; gCasca.visible = ops[0] > 0.001; opacidade(matsCasca, ops[0]);
     gNiveis.forEach((g, k) => {
       g.position.set(0, k * gy - k * FH * s, -k * gb); g.scale.y = s; g.visible = ops[k] > 0.001; opacidade(matsNivel[k], ops[k]);
       planos[k].constant = aberto ? Math.max(k * gy + (FH - 0.22) * s, corte) : 99;
