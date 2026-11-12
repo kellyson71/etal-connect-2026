@@ -193,3 +193,13 @@ body.pc #p-hora{display:grid!important}
   body.dedao #legenda .leg b{font-size:12px}
 }
 @media(max-width:600px){body.dedao #legenda .leg{flex:1 1 auto;min-width:0;padding:0 3px;gap:4px}body.dedao #legenda .leg b{font-size:11.5px}body.dedao #legenda .leg i{width:8px;height:8px}}
+
+/* cartão da rota: só o essencial; repetir, etapas e limpar viram ícones (o texto quebrava o botão principal) */
+#cartao .acoes{flex-wrap:nowrap}
+#cartao .acoes .primary{flex:1;min-width:0}
+#cartao .acoes .ico{flex:none;width:var(--alt,44px);min-width:var(--alt,44px);padding:0;display:grid;place-items:center}
+#cartao .acoes .ico svg{width:20px;height:20px}
+#cartao .acoes .ico[hidden]{display:none}
+#trocar-origem{font-size:12px}
+/* legenda no celular: nomes curtos (os longos eram cortados e encostavam nas bolinhas) */
+@media(max-width:600px){body.dedao #legenda .leg b{font-size:0}body.dedao #legenda .leg b::after{content:attr(data-curto);font-size:12px}body.dedao #legenda .leg{justify-content:center;gap:5px}}
