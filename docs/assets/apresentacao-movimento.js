@@ -132,7 +132,7 @@ async function carregar(url) { const nome = url.split('/').pop(); const tag = do
   let run = 0; const cache = {};
   const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
   const cl = (t) => Math.max(0, Math.min(1, t));
-  const ATOS = [[0, 4.6], [4.6, 7.4], [7.4, 12.6], [12.6, 15.4], [15.4, 19.6], [19.6, 25]]; const FIM = 29;
+  const ATOS = [[0, 4.6], [4.6, 7.4], [7.4, 12.6], [12.6, 15.4], [15.4, 19.6], [19.6, 25]];
   const COR = { tinta: '#142942', verde: '#5c9e43', claro: '#c8ef9d', azul: '#3b6ac2', ambar: '#e8a825', laranja: '#e8542b' };
   /* soFinal: só o último quadro (a rota inteira), para o PDF e para a visão geral dos slides */
   async function animar(canvas, soFinal = false) {
@@ -223,12 +223,23 @@ async function carregar(url) { const nome = url.split('/').pop(); const tag = do
       const t6 = cl((t - ATOS[5][0]) / (ATOS[5][1] - ATOS[5][0])); cena3d(t6);
       legenda('A rota inteira', t6 < 0.95 ? 'Calçada, térreo, escada pelo 1º andar e 2º andar' : `${d.rota.metros} m · cerca de ${d.rota.minutos} min a pé (metros ÷ 75)`);
     }
-    if (reduce || soFinal) { quadro(ATOS[5][1] - 0.01); return; }
-    const t0 = performance.now();
-    await new Promise((ok) => { const f = (now) => { if (me !== run) return ok(); const t = (now - t0) / 1000; quadro(Math.min(t, ATOS[5][1] - 0.001)); if (t < FIM) requestAnimationFrame(f); else ok(); }; requestAnimationFrame(f); });
-    if (me === run && slide.classList.contains('active')) animar(canvas);
+    if (soFinal) { quadro(ATOS[5][1] - 0.01); return; }
+    /* Por etapas: cada "próximo" toca um ato e para no fim dele; depois do último, o próximo clique muda de slide.
+       Voltar repete o ato anterior. Chegando de trás (do slide seguinte), começa na rota inteira. */
+    let atual = -1, quadroId = 0;
+    const tocar = (k, instante = false) => {
+      atual = k; cancelAnimationFrame(quadroId); const [a, b] = ATOS[k]; const fim = b - 0.001;
+      if (instante || reduce) { quadro(fim); return; }
+      const t0 = performance.now();
+      const f = (now) => { if (me !== run) return; const t = Math.min(fim, a + (now - t0) / 1000); quadro(t); if (t < fim) quadroId = requestAnimationFrame(f); };
+      quadroId = requestAnimationFrame(f);
+    };
+    passos.forEach((p) => { p.style.cursor = 'pointer'; p.onclick = () => tocar(+p.dataset.rcAto); });
+    window.etapasSlide = { slide, passo(dir) { if (me !== run) return false; const k = atual + dir; if (k < 0 || k >= ATOS.length) return false; tocar(k); return true; } };
+    const veioDeTras = window.direcaoSlide < 0; window.direcaoSlide = 0;
+    if (veioDeTras) tocar(ATOS.length - 1, true); else tocar(0);
   }
-  function enter(slide) { const c = slide.querySelector('canvas[data-rota]'); if (c) animar(c); else run++; }
+  function enter(slide) { const c = slide.querySelector('canvas[data-rota]'); if (c) animar(c); else { run++; if (window.etapasSlide?.slide !== slide) window.etapasSlide = null; } }
   document.querySelectorAll('canvas[data-rota]').forEach((c) => animar(c, true));
   new MutationObserver((list) => list.forEach((m) => { if (m.target.classList?.contains('slide') && m.target.classList.contains('active') && !String(m.oldValue).includes('active')) enter(m.target); }))
     .observe(stage, { subtree: true, attributes: true, attributeFilter: ['class'], attributeOldValue: true });
