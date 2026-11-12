@@ -1,0 +1,15 @@
+# O site da Vercel só precisa do protótipo, do mapa, dos scripts de build e da API.
+docs/
+referencias/
+modelo-3d/
+mapa3d-cartoon/
+app/
+exportacao/
+tmp/
+publico/
+node_modules/
+**/.venv/
+backend/*.db
+backend/tests/
+index.html
+DOCUMENTACAO.html

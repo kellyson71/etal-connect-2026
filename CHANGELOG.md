@@ -2,6 +2,16 @@
 
 O projeto segue o git flow: `main` tem só versões publicadas, `develop` junta as funcionalidades e cada uma nasce num ramo `feature/*`.
 
+## 0.8.0 (2026-11-11)
+
+- Mapa 3D abre mais rápido: um programa de shader por tipo de material (o véu do evento gerava um por cor), shaders e texturas preparados durante o carregamento.
+- Modo Evento só com o campus, sem o bairro em volta e sem o que há dentro das salas; o modo Campus monta tudo na primeira vez, com câmera mais baixa, toque nos prédios e arraste limitado ao campus.
+- O passeio virou segredo do mapa (e só é baixado quando alguém o acha). No computador, o mapa abre no modo Evento.
+- QR Codes de teste numa página só (`qrs.html`): a câmera do celular abre o app e faz a leitura depois da entrada.
+- Agenda redesenhada: card limpo por tipo de atividade (palestra, mesa-redonda, minicurso e oficina, campeonato), com as cores dos hexágonos do logo do ETAL; campeonatos com a arte de cada jogo. Detalhe com bloco próprio por tipo.
+- Documentação em PDF (`docs/pdf/`) com índice em `docs/README.md`; PDFs mais leves; comparação dos mapas de 204 MB para 7,5 MB.
+- README mais curto, com os logos do ETAL e do NADIC e prints novas.
+
 ## 0.7.0 (2026-11-11)
 
 - Modo Passear no mapa: personagem com a foto do SUAP no rosto, carros passando na BR-405 e estacionados que dá para dirigir (modelos do Sketchbook, MIT).
