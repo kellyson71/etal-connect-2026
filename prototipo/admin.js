@@ -266,7 +266,7 @@
     const st = T.state(tourOf(id), ORG); fn(st);
     /* resultado que ficou sem os dois jogadores deixa de valer */
     const R = T.rounds(st); [...R.q, ...R.s, R.f].forEach((m) => { if (m.w === null) delete st.res[m.k]; });
-    ORG.torneios = { ...(ORG.torneios || {}), [id]: { open: st.open, players: st.players, res: st.res } };
+    ORG.torneios = { ...(ORG.torneios || {}), [id]: { ...((ORG.torneios || {})[id] || {}), open: st.open, players: st.players, res: st.res } }; // mantém as regras editadas no celular
     save(); render();
   }
   const ini = (name) => name.trim().split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('') || '?';

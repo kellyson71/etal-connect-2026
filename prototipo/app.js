@@ -1411,10 +1411,10 @@
           <li data-go="personalizar">${ic('moon')}<span>Personalizar</span><em>${(THEMES[UI.theme] || THEMES.etal).name}</em>${ic('chev', 'i chev')}</li>
           ${standalone() ? '' : `<li data-act="install">${ic('download')}<span>Instalar o ETAL Connect</span><em>Sem internet</em>${ic('chev', 'i chev')}</li>`}
         </ul>
-        <div class="sec st" ${st(2)}><h2>Organização</h2></div>
+        ${orgDe() ? `<div class="sec st" ${st(2)}><h2>Organização</h2></div>
         <ul class="menu st" ${st(3)}>
-          <li data-go="org">${ic('building')}<span>Painel da organização</span><em>Equipe</em>${ic('chev', 'i chev')}</li>
-        </ul>
+          <li data-go="org">${ic('building')}<span>Painel da organização</span><em>${esc(orgDe().papel)}</em>${ic('chev', 'i chev')}</li>
+        </ul>` : ''}
         <div class="sec st" ${st(4)}><h2>Sobre</h2></div>
         <ul class="menu st" ${st(5)}>
           <li data-go="etal">${ic('info')}<span>O que é o ETAL</span>${ic('chev', 'i chev')}</li>
@@ -1428,6 +1428,7 @@
     html: `<header class="apphead"><h1 class="title">Perfil</h1></header>
       <div class="pad stack">
         <div class="me st" ${st(0)}>${meAv('av lg')}<div><strong>${esc(D.person.name)}</strong><span>${esc(D.person.courseFull)}</span><span>${esc(D.person.year)} · ${esc(D.person.id)}</span>${D.person.source === 'suap' ? `<span class="fromsuap">${ic('check')}Dados do SUAP</span>` : D.person.source === 'visitante' ? `<span class="fromsuap guest">${ic('users')}Conta de visitante</span>` : ''}</div></div>
+        ${orgDe() ? `<button class="org-cta st" ${st(1)} data-go="org">${ic('building')}<span><small>Você é da organização · ${esc(orgDe().papel)}</small><b>Painel da organização</b></span>${ic('chev')}</button>` : ''}
         <button class="retro-cta st" ${st(1)} data-act="retro">${comb('tiny')}<span><b>Minha retrospectiva</b><small>O que você fez e aprendeu no ETAL</small></span>${ic('chev')}</button>
         <ul class="menu st" ${st(1)}>
           <li data-go="credential">${ic('id')}<span>Minha credencial</span><em>${S.credAt ? 'Ativa' : 'Pendente'}</em>${ic('chev', 'i chev')}</li>
@@ -1455,39 +1456,84 @@
     }).join('');
     return `<svg class="ob-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Credenciamentos por hora hoje: ${rows.map(([h, v]) => `${h} h, ${v}`).join('; ')}"><path class="ob-base" d="M8 ${base + .5}H${W - 8}"/>${bars}</svg>`;
   }
+  /* ---- Organização: por matrícula (D.organizadores + os acrescentados no painel, em etal-org.organizadores) ---- */
+  const organizadores = () => { const extra = orgRead().organizadores || []; return [...D.organizadores, ...extra.filter((o) => !D.organizadores.some((d) => d.matricula === o.matricula))]; };
+  const orgDe = () => organizadores().find((o) => o.matricula === String(D.person.id || '')) || null;
+  const semAcesso = () => ({ html: `${header('Painel da organização')}<div class="pad stack"><div class="empty st" ${st(0)}>${illo('mark')}<h3>Só para a organização</h3><p>O painel abre para as matrículas cadastradas como organizadoras do ETAL.</p></div></div>` });
+  /* Painel no celular: números do momento e atalhos para o que a equipe faz durante o evento. */
   Screens.org = () => {
+    const eu = orgDe(); if (!eu) return semAcesso();
     const now = D.sessions.filter((x) => isNow(x) && x.seats);
     const present = (x) => Math.min(x.seats, Math.round(x.taken * 0.86 + 1));
     const inRooms = now.reduce((n, x) => n + present(x), 0);
-    const today = D.sessions.filter((x) => x.day === D.now.day && x.floor !== undefined && x.zone && !x.simple);
-    const sent = D.notices.filter((n) => n.org).length;
+    const o = orgRead(); const manuais = Object.keys(o.manuais || {}).length;
+    const ferramentas = [
+      ['bell', 'Enviar aviso', 'Para todo mundo, na hora', 'orgAviso'],
+      ['route', 'Trocar sala', 'E avisar os inscritos', 'orgSala'],
+      ['trophy', 'Campeonatos', 'Resultados, regras e chave', 'orgJogos'],
+      ['id', 'Credenciar', 'Cadastro manual de quem não consegue', 'orgCred'],
+      ['users', 'Equipe', `${organizadores().length} matrículas na organização`, 'orgEquipe'],
+    ];
     return {
       html: `${header('Painel da organização')}<div class="pad stack org">
-        <p class="org-demo st" ${st(0)}>${ic('info')}<span>Visão da equipe do ETAL. Números simulados para a demonstração; os avisos e trocas de sala valem só neste aparelho.</span></p>
-        <a class="org-desk st" ${st(0)} href="admin.html" target="_blank" rel="noopener">${ic('laptop')}<span><b>Painel completo no computador</b><small>Planta ao vivo, participantes e exportação em CSV</small></span>${ic('open')}</a>
+        <div class="org-eu st" ${st(0)}>${meAv('av')}<span><b>${esc(D.person.first || D.person.name)}</b><small>${esc(eu.papel)} · matrícula ${esc(eu.matricula)}</small></span></div>
         <div class="org-kpis st" ${st(1)}>
-          <div><b>${liveCred}</b><small>credenciados</small><em>de ${D.org.inscritos} inscritos</em></div>
+          <div><b>${liveCred + manuais}</b><small>credenciados</small><em>de ${D.org.inscritos} inscritos</em></div>
           <div><b>${inRooms}</b><small>pessoas em sala</small><em>${now.length} atividades agora</em></div>
-          <div><b>${Math.round((liveCred / D.org.inscritos) * 100)}%</b><small>de comparecimento</small><em>até ${skyClock()}</em></div>
-          <div><b>${sent}</b><small>avisos enviados</small><em>pela organização hoje</em></div>
         </div>
-        <section class="org-card st" ${st(2)}><h2>Credenciamento por hora</h2>${hourBars(D.org.porHora)}</section>
-        <section class="org-card st" ${st(3)}><h2>Lotação agora</h2>
-          ${now.length ? `<ul class="org-rooms">${now.map((x) => { const n = present(x); const pc = Math.round((n / x.seats) * 100); return `<li data-go="activity" data-id="${x.id}"><span><b>${esc(x.short)}</b><small>${esc(whereOf(x))}</small></span><span class="org-meter ${pc >= 90 ? 'full' : ''}"><i style="width:${pc}%"></i></span><em>${n}/${x.seats}</em></li>`; }).join('')}</ul>` : '<p class="org-none">Nenhuma atividade com vagas acontecendo agora.</p>'}
-        </section>
-        <form class="org-card st" ${st(4)} data-form="orgnotice"><h2>Enviar aviso</h2>
-          <label class="sr" for="ontitle">Título do aviso</label><input id="ontitle" maxlength="70" placeholder="Ex.: Palestra de encerramento às 17:00" required>
-          <label class="sr" for="ontext">Texto do aviso</label><textarea id="ontext" rows="2" maxlength="180" placeholder="Detalhes para quem está no evento"></textarea>
-          <button class="btn primary" type="submit">${ic('bell')}Enviar para todos</button>
-        </form>
-        <form class="org-card st" ${st(5)} data-form="orgroom"><h2>Trocar sala</h2>
-          <label class="field" for="orx"><span>Atividade</span><select id="orx">${today.map((x) => `<option value="${x.id}">${esc(x.short)} · ${esc(x.room)}</option>`).join('')}</select></label>
-          <label class="field" for="ory"><span>Nova sala</span><select id="ory">${roomsAll().map((r) => `<option value="${r.floor}|${r.zone}">${r.name} · ${floorOf(r.floor).label}</option>`).join('')}</select></label>
-          <button class="btn soft" type="submit">${ic('route')}Mudar e avisar os inscritos</button>
-        </form>
+        <div class="org-ferr st" ${st(2)}>${ferramentas.map(([i, t, sub, go]) => `<button data-go="${go}">${ic(i)}<b>${t}</b><small>${sub}</small></button>`).join('')}</div>
+        ${now.length ? `<section class="org-card st" ${st(3)}><h2>Lotação agora</h2><ul class="org-rooms">${now.map((x) => { const n = present(x); const pc = Math.round((n / x.seats) * 100); return `<li data-go="activity" data-id="${x.id}"><span><b>${esc(x.short)}</b><small>${esc(whereOf(x))}</small></span><span class="org-meter ${pc >= 90 ? 'full' : ''}"><i style="width:${pc}%"></i></span><em>${n}/${x.seats}</em></li>`; }).join('')}</ul></section>` : ''}
+        <a class="org-desk st" ${st(4)} href="admin.html" target="_blank" rel="noopener">${ic('laptop')}<span><b>Painel completo no computador</b><small>Planta ao vivo, participantes e CSV</small></span>${ic('open')}</a>
+        <p class="org-demo st" ${st(5)}>${ic('info')}<span>Demonstração: as mudanças valem para o app aberto neste aparelho e no painel do computador no mesmo navegador.</span></p>
       </div>`,
     };
   };
+  Screens.orgAviso = () => orgDe() ? { html: `${header('Enviar aviso')}<div class="pad stack org">
+      <form class="org-card st" ${st(0)} data-form="orgnotice">
+        <label class="field" for="ontitle"><span>Título</span><input id="ontitle" maxlength="70" placeholder="Ex.: Palestra de encerramento às 17:00" required></label>
+        <label class="field" for="ontext"><span>Texto</span><textarea id="ontext" rows="3" maxlength="180" placeholder="Detalhes para quem está no evento"></textarea></label>
+        <button class="btn primary" type="submit">${ic('bell')}Enviar para todos</button>
+      </form>
+      ${(orgRead().notices || []).length ? `<section class="org-card st" ${st(1)}><h2>Enviados</h2><ul class="org-lista">${orgRead().notices.slice(0, 6).map((n) => `<li><b>${esc(n.title)}</b><small>${esc(n.time || '')} · ${esc(n.text || '')}</small></li>`).join('')}</ul></section>` : ''}
+    </div>` } : semAcesso();
+  Screens.orgSala = () => { if (!orgDe()) return semAcesso(); const ativ = D.sessions.filter((x) => x.floor !== undefined && x.zone && !x.simple);
+    return { html: `${header('Trocar sala')}<div class="pad stack org">
+      <form class="org-card st" ${st(0)} data-form="orgroom">
+        <label class="field" for="orx"><span>Atividade</span><select id="orx">${ativ.map((x) => `<option value="${x.id}">${esc(dayOf(x.day).week)} ${x.time} · ${esc(x.short)} · ${esc(x.room)}</option>`).join('')}</select></label>
+        <label class="field" for="ory"><span>Nova sala</span><select id="ory">${roomsAll().map((r) => `<option value="${r.floor}|${r.zone}">${r.name} · ${floorOf(r.floor).label}</option>`).join('')}</select></label>
+        <button class="btn primary" type="submit">${ic('route')}Mudar e avisar os inscritos</button>
+      </form></div>` }; };
+  Screens.orgJogos = () => orgDe() ? { html: `${header('Campeonatos')}<div class="pad stack org">${D.tournaments.map((t, i) => { const stt = tourSt(t); const [k, l] = window.TOUR.status(stt); return `<button class="org-jogo st" ${st(i)} data-go="orgJogo" data-id="${t.id}"><span class="org-jogo-arte ${t.theme}">${gameArt(t)}</span><span><b>${esc(t.name)}</b><small>${l} · ${8 - stt.free}/8 na chave</small></span>${ic('chev')}</button>`; }).join('')}</div>` } : semAcesso();
+  /* Um campeonato: quem ganhou cada partida (toque no vencedor), abrir ou fechar a chave, inscrever ou tirar alguém e editar as regras. */
+  Screens.orgJogo = ({ id }) => {
+    if (!orgDe()) return semAcesso();
+    const t = D.tournaments.find((x) => x.id === id); const stt = tourSt(t); const R = window.TOUR.rounds(stt);
+    const partida = (m, nome) => `<li class="org-partida">${nome ? `<small>${nome}</small>` : ''}<div>${[m.a, m.b].map((p, w) => p ? `<button class="${m.w === w ? 'on' : m.w !== null ? 'fora' : ''}" ${m.a && m.b ? `data-act="orgres" data-t="${t.id}" data-k="${m.k}" data-w="${w}"` : 'disabled'}>${esc(p[0])}${m.w === w ? ic('check') : ''}</button>` : `<button disabled>—</button>`).join('<i>×</i>')}${m.w !== null ? `<button class="desf" data-act="orgres" data-t="${t.id}" data-k="${m.k}" data-w="" aria-label="Desfazer resultado">${ic('rotate')}</button>` : ''}</div></li>`;
+    return { html: `${header(t.name)}<div class="pad stack org">
+      <button class="org-switch st ${stt.open ? 'on' : ''}" ${st(0)} data-act="orgopen" data-t="${t.id}" aria-pressed="${stt.open}">${ic('trophy')}<span><b>Inscrições ${stt.open ? 'abertas' : 'fechadas'}</b><small>${stt.free} ${stt.free === 1 ? 'vaga livre' : 'vagas livres'}</small></span><i class="switch"></i></button>
+      <section class="org-card st" ${st(1)}><h2>Resultados</h2><p class="org-dica">Toque em quem ganhou. A chave e o app atualizam na hora.</p>
+        <ul class="org-partidas">${R.q.map((m, i) => partida(m, `Quartas · ${t.times[i]}`)).join('')}${R.s.map((m, i) => partida(m, `Semifinal ${i + 1}`)).join('')}${partida(R.f, 'Final')}</ul></section>
+      <section class="org-card st" ${st(2)}><h2>Jogadores</h2><ul class="org-lista">${stt.players.map((p, i) => p ? `<li><b>${esc(p[0])}</b><small>${esc(p[1])}${p[3] ? ` · ${esc(p[3])}` : ''}</small>${R.played ? '' : `<button class="org-x" data-act="orgrmjog" data-t="${t.id}" data-i="${i}" aria-label="Tirar ${esc(p[0])} da chave">${ic('x')}</button>`}</li>` : '').join('')}</ul>
+        ${stt.free ? `<form class="org-mini" data-form="orgjog" data-t="${t.id}"><h3>Inscrever alguém</h3><input name="nick" maxlength="14" placeholder="Apelido na chave" required><input name="nome" maxlength="40" placeholder="Nome" required><select name="pick">${t.picks.map((x) => `<option>${esc(x)}</option>`).join('')}</select><button class="btn soft" type="submit">${ic('plus')}Pôr na chave</button></form>` : ''}</section>
+      <form class="org-card st" ${st(3)} data-form="orgregra" data-t="${t.id}"><h2>Regras</h2><textarea name="regras" rows="5">${esc(stt.rules || t.rules)}</textarea><button class="btn soft" type="submit">Salvar regras</button></form>
+    </div>` };
+  };
+  Screens.orgCred = () => { if (!orgDe()) return semAcesso(); const man = Object.entries(orgRead().manuais || {});
+    return { html: `${header('Credenciar')}<div class="pad stack org">
+      <form class="org-card st" ${st(0)} data-form="orgcred"><p class="org-dica">Para quem não consegue entrar no app: o credenciamento fica registrado pela organização.</p>
+        <label class="field"><span>Nome</span><input name="nome" maxlength="60" required placeholder="Nome e sobrenome"></label>
+        <label class="field"><span>Matrícula ou documento</span><input name="mat" maxlength="20" required inputmode="numeric" placeholder="Ex.: 20231094010012"></label>
+        <button class="btn primary" type="submit">${ic('check')}Credenciar agora</button>
+      </form>
+      ${man.length ? `<section class="org-card st" ${st(1)}><h2>Credenciados pela organização</h2><ul class="org-lista">${man.map(([m, x]) => `<li><b>${esc(x.nome)}</b><small>${esc(m)} · ${esc(x.hora)}</small></li>`).join('')}</ul></section>` : ''}
+    </div>` }; };
+  Screens.orgEquipe = () => orgDe() ? { html: `${header('Equipe')}<div class="pad stack org">
+      <section class="org-card st" ${st(0)}><h2>Organizadores</h2><ul class="org-lista">${organizadores().map((o) => `<li><b>${esc(o.papel)}</b><small>matrícula ${esc(o.matricula)}</small></li>`).join('')}</ul></section>
+      <form class="org-card st" ${st(1)} data-form="orgequipe"><h2>Acrescentar</h2>
+        <label class="field"><span>Matrícula</span><input name="mat" maxlength="20" required inputmode="numeric"></label>
+        <label class="field"><span>Papel</span><input name="papel" maxlength="40" required placeholder="Ex.: Campeonatos, Recepção"></label>
+        <button class="btn soft" type="submit">${ic('plus')}Dar acesso ao painel</button>
+      </form></div>` } : semAcesso();
 
   /* ---- o que é real e o que é exemplo neste protótipo ---- */
   Screens.sobre = () => {
@@ -1619,20 +1665,53 @@
       </div>`,
   });
 
+  /* Cor de cada jogador (as mesmas em toda a tela): o jogador deixa de ser só iniciais laranja iguais às dos outros. */
+  const COR_JOG = ['#e8542b', '#3b82f6', '#16a34a', '#a855f7', '#f59e0b', '#ec4899', '#14b8a6', '#64748b'];
+  const corJog = (stt, p) => COR_JOG[Math.max(0, stt.players.indexOf(p)) % COR_JOG.length];
+  const avJog = (stt, p, cls = '') => p ? `<span class="jg-av ${cls}" style="--c:${corJog(stt, p)}">${esc(p[2])}</span>` : `<span class="jg-av vazio ${cls}"></span>`;
+  /* Situação de cada jogador na chave: campeão, eliminado (em que fase), na disputa (e contra quem joga a seguir). */
+  function situacao(stt, R, p) {
+    if (R.champ === p) return { k: 'champ', t: 'Campeão' };
+    const fases = [['quartas', R.q], ['semifinal', R.s], ['final', [R.f]]];
+    for (const [nome, ms] of fases) for (const m of ms) {
+      if (m.a !== p && m.b !== p) continue;
+      if (m.w !== null && m.win !== p) return { k: 'fora', t: `Eliminado na ${nome}` };
+      if (m.w === null) { const adv = m.a === p ? m.b : m.a; return { k: 'vivo', t: adv ? `Joga contra ${adv[0]}` : 'Aguardando adversário' }; }
+    }
+    return { k: 'vivo', t: 'Na disputa' };
+  }
+  /* Chave em rodadas (padrão dos apps de torneio no celular): escolhe a fase e vê cada partida como um duelo. */
   function bracket(t, stt) {
     const R = window.TOUR.rounds(stt); const mine = D.person.id;
-    const side = (p, m, i) => { const cls = m.w === null ? '' : m.w === i ? 'win' : 'lose'; return p
-      ? `<div class="pl ${cls} ${p[4] === mine ? 'me' : ''}"><i>${esc(p[2])}</i><b>${esc(p[0])}</b>${m.w === i ? ic('check', 'i pl-ok') : ''}</div>`
-      : `<div class="pl open"><i></i><b>${m.k[0] === 'q' ? 'Vaga aberta' : 'A definir'}</b></div>`; };
-    const match = (m, label, k, cls = '') => `<div class="match ${cls} ${m.a && m.b ? '' : 'tbd'} ${m.w !== null ? 'done' : ''} st" ${st(3 + k)}>${label ? `<time>${label}</time>` : ''}${side(m.a, m, 0)}${side(m.b, m, 1)}</div>`;
-    /* Chave inteira na largura do celular: quartas, semifinais e final em três colunas ligadas por linhas. */
-    return `${R.champ ? `<div class="champ st" ${st(2)}>${ic('trophy')}<span><small>Campeão</small><b>${esc(R.champ[0])}</b><em>${esc(R.champ[1])}</em></span></div>` : ''}
-      <div class="bk3">
-        <h3 class="st" ${st(2)}>Quartas</h3><h3 class="st" ${st(2)}>Semifinal</h3><h3 class="st" ${st(2)}>Final</h3>
-        ${R.q.map((m, k) => `<div class="bk-cell q" style="grid-row:${k + 2}">${match(m, t.times[k], k)}</div>`).join('')}
-        ${R.s.map((m, k) => `<div class="bk-cell s" style="grid-row:${2 * k + 2}/span 2">${match(m, '', 4 + k)}</div>`).join('')}
-        <div class="bk-cell f" style="grid-row:2/span 4">${match(R.f, '', 6, 'final')}<span class="bk-cup ${R.champ ? 'on' : ''}">${ic('trophy')}</span></div>
-      </div>`;
+    const fases = [['q', 'Quartas', R.q], ['s', 'Semifinal', R.s], ['f', 'Final', [R.f]]];
+    const atual = fases.find(([, , ms]) => ms.some((m) => m.w === null && m.a && m.b))?.[0] || (R.champ ? 'f' : 'q');
+    const fase = S.tourRound && fases.some((f) => f[0] === S.tourRound) ? S.tourRound : atual;
+    const lado = (p, m, i) => { const res = m.w === null ? '' : m.w === i ? 'ganhou' : 'perdeu'; return p
+      ? `<div class="du-lado ${res} ${p[4] === mine ? 'eu' : ''}">${avJog(stt, p)}<b>${esc(p[0])}</b><small>${esc(p[3] || p[1])}</small>${m.w === i ? `<em>${ic('check')}Venceu</em>` : ''}</div>`
+      : `<div class="du-lado vazio">${avJog(stt, null)}<b>${m.k[0] === 'q' ? 'Vaga aberta' : 'A definir'}</b><small>${m.k[0] === 'q' ? 'inscreva-se' : 'vencedor da anterior'}</small></div>`; };
+    const hora = (m, i) => (m.k[0] === 'q' ? t.times[i] : '');
+    const duelo = (m, i) => { const minha = [m.a, m.b].some((p) => p && p[4] === mine);
+      return `<article class="duelo st ${minha ? 'minha' : ''} ${m.k === 'f' ? 'final' : ''}" ${st(3 + i)}>${minha ? '<span class="du-fita">Sua partida</span>' : ''}${lado(m.a, m, 0)}<div class="du-meio">${m.k === 'f' ? ic('trophy') : ''}<b>VS</b>${hora(m, i) ? `<time>${hora(m, i)}</time>` : ''}</div>${lado(m.b, m, 1)}</article>`; };
+    const ms = fases.find((f) => f[0] === fase)[2];
+    return `${R.champ ? `<div class="campeao st" ${st(2)}>${avJog(stt, R.champ, 'grande')}<span><small>${ic('trophy')}Campeão</small><b>${esc(R.champ[0])}</b><em>${esc(R.champ[1])}</em></span></div>` : ''}
+      <div class="fases st" ${st(2)}>${fases.map(([k, nome, l]) => { const feitas = l.filter((m) => m.w !== null).length; return `<button class="${k === fase ? 'on' : ''}" data-act="tourround" data-k="${k}"><b>${nome}</b><small>${feitas}/${l.length}</small></button>`; }).join('')}</div>
+      <div class="duelos">${ms.map(duelo).join('')}</div>`;
+  }
+  /* Jogadores: cor própria, escolha, situação na chave e o próximo adversário. */
+  function jogadores(t, stt, canJoin) {
+    const R = window.TOUR.rounds(stt);
+    return `<ul class="elenco">${stt.players.map((p, i) => p
+      ? (() => { const sit = situacao(stt, R, p); return `<li class="st ${p[4] === D.person.id ? 'eu' : ''} ${sit.k}" ${st(3 + i)} style="--c:${corJog(stt, p)}"><span class="el-num">${String(i + 1).padStart(2, '0')}</span>${avJog(stt, p, 'grande')}<span class="el-tx"><b>${esc(p[0])}${p[4] === D.person.id ? ' <u>você</u>' : ''}</b><small>${esc(p[1])}</small></span><span class="el-dir">${p[3] ? `<em>${esc(p[3])}</em>` : ''}<small class="el-sit">${sit.t}</small></span></li>`; })()
+      : `<li class="st vazio" ${st(3 + i)}>${canJoin ? `<button data-act="tourform" data-v="1"><span class="el-num">${String(i + 1).padStart(2, '0')}</span>${avJog(stt, null, 'grande')}<span class="el-tx"><b>Vaga aberta</b><small>Toque para entrar na chave</small></span>${ic('plus')}</button>` : `<span class="el-num">${String(i + 1).padStart(2, '0')}</span>${avJog(stt, null, 'grande')}<span class="el-tx"><b>Vaga</b><small>sem inscrito</small></span>`}</li>`).join('')}</ul>`;
+  }
+  /* Regras: como funciona em passos, regras em tópicos, horários e prêmio. A organização pode editar o texto pelo painel. */
+  function regras(t, stt) {
+    const texto = stt.rules || t.rules; const itens = texto.split(/(?<=\.)\s+/).map((x) => x.trim()).filter(Boolean);
+    const passos = [['trophy', 'Inscreva-se', 'pelo app, até a chave fechar'], ['qr', 'Faça o check-in', `no QR da ${t.place.split(' · ')[0]}`], ['swords', 'Jogue sua partida', t.format.split(' · ').slice(1).join(' · ') || t.format], ['award', 'Quem vence avança', 'até a final']];
+    return `<section class="st" ${st(3)}><h3 class="tr-h">Como funciona</h3><ol class="tr-passos">${passos.map(([i, b, sm]) => `<li>${ic(i)}<span><b>${b}</b><small>${esc(sm)}</small></span></li>`).join('')}</ol></section>
+      <section class="st" ${st(4)}><h3 class="tr-h">Regras</h3><ul class="tr-regras">${itens.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></section>
+      <section class="st" ${st(5)}><h3 class="tr-h">Horários das quartas</h3><div class="tr-horas">${t.times.map((h, i) => `<span><b>${h}</b><small>partida ${i + 1}</small></span>`).join('')}</div></section>
+      <div class="tr-premio st" ${st(6)}>${ic('trophy')}<span><small>Prêmio</small><b>${esc(t.prize)}</b></span></div>`;
   }
 
   /* Inscrição: apelido, escolha (personagem ou time) e como a pessoa quer jogar. */
@@ -1657,11 +1736,7 @@
     const tabs = [['chave', 'Chave'], ['jogadores', `Jogadores · ${8 - stt.free}`], ['regras', 'Regras']];
     const canJoin = stt.open && stt.free > 0 && !R.played && !me;
     const lvl = (p) => (p[5] !== undefined ? TOUR_LEVELS[p[5]] : '');
-    const body = tab === 'chave' ? bracket(t, stt)
-      : tab === 'jogadores' ? `<ul class="players">${stt.players.map((p, i) => (p
-        ? `<li class="st ${p[4] === D.person.id ? 'me' : ''}" ${st(3 + i)}><i>${esc(p[2])}</i><b>${esc(p[0])}</b><small>${esc(p[1])}</small>${p[3] ? `<em>${esc(p[3])}</em>` : ''}${p[4] === D.person.id ? '<u>Você</u>' : ''}</li>`
-        : `<li class="st open" ${st(3 + i)}>${canJoin ? `<button data-act="tourform" data-v="1"><i>+</i><b>Vaga aberta</b><small>Toque para entrar</small></button>` : '<i></i><b>Vaga</b><small>Sem inscrito</small>'}</li>`)).join('')}</ul>`
-        : `<dl class="rules st" ${st(3)}><div><dt>Formato</dt><dd>${t.format}</dd></div><div><dt>Vagas</dt><dd>${8 - stt.free} de 8</dd></div><div><dt>Local</dt><dd>${t.place}</dd></div><div><dt>Prêmio</dt><dd>${t.prize}</dd></div></dl><p class="desc st" ${st(4)}>${t.rules}</p>`;
+    const body = `<div class="tr-pad">${tab === 'chave' ? bracket(t, stt) : tab === 'jogadores' ? jogadores(t, stt, canJoin) : regras(t, stt)}</div>`;
     const cta = S.tourForm && canJoin ? tourForm(t, stt)
       : `<div class="t-actions st" ${st(1)}>
           ${me ? `<div class="t-in">${ic('check', 'i t-in-ok')}<span><b>Você está na chave como ${esc(me[0])}</b><small>${[me[3], lvl(me)].filter(Boolean).map(esc).join(' · ') || 'Inscrição confirmada'}</small></span>${R.played ? '' : `<button data-act="tourleave" data-id="${t.id}">Sair</button>`}</div>`
@@ -2506,6 +2581,13 @@
         break;
       }
       case 'tourtab': S.tourTab = el.dataset.k; rerender(); break;
+      case 'tourround': S.tourRound = el.dataset.k; rerender(); break;
+      case 'orgres': torneioSalvar(el.dataset.t, (T) => { const k = el.dataset.k; const w = el.dataset.w === '' ? null : +el.dataset.w;
+        /* mudar uma partida desfaz as que dependem dela */
+        const depois = k[0] === 'q' ? [`s${Math.floor(+k[1] / 2)}`, 'f'] : k[0] === 's' ? ['f'] : []; depois.forEach((d) => delete T.res[d]);
+        if (w === null) delete T.res[k]; else T.res[k] = w; }); rerender(); toast(el.dataset.w === '' ? 'Resultado desfeito' : 'Resultado salvo'); break;
+      case 'orgopen': torneioSalvar(el.dataset.t, (T) => { T.open = !T.open; }); rerender(); break;
+      case 'orgrmjog': torneioSalvar(el.dataset.t, (T) => { T.players[+el.dataset.i] = null; }); rerender(); toast('Jogador fora da chave'); break;
       case 'tourform': S.tourForm = el.dataset.v === '1' ? (S.tourForm || {}) : null; rerender(); break;
       case 'tourpick': {
         const nick = el.closest('form')?.querySelector('[name=nick]')?.value;
@@ -2574,6 +2656,17 @@
       D.notices.unshift({ time: skyClock(), title, text: text || 'Aviso da organização do ETAL.', fresh: true, org: true });
       const nid = `n${Date.now()}`; orgSeen.add(nid); orgWrite((o) => o.notices.unshift({ id: nid, time: skyClock(), title, text: text || 'Aviso da organização do ETAL.' }));
       rerender(); notify(title, text || 'Aviso da organização do ETAL.'); toast('Aviso enviado para todos');
+      return;
+    }
+    const ofm = e.target.closest('[data-form^="org"]');
+    if (ofm && ['orgjog', 'orgregra', 'orgcred', 'orgequipe'].includes(ofm.dataset.form)) {
+      e.preventDefault(); const f = new FormData(ofm); const v = (k) => String(f.get(k) || '').trim(); const tipo = ofm.dataset.form;
+      if (tipo === 'orgjog') { const nome = v('nome'); const ini = nome.split(/\s+/).map((w) => w[0]).slice(0, 2).join('').toUpperCase(); let ok = false;
+        torneioSalvar(ofm.dataset.t, (T) => { const i = T.players.findIndex((p) => !p); if (i >= 0) { T.players[i] = [v('nick'), nome, ini, v('pick'), `manual-${Date.now()}`]; ok = true; } });
+        rerender(); toast(ok ? `${v('nick')} entrou na chave` : 'A chave está completa'); }
+      if (tipo === 'orgregra') { torneioSalvar(ofm.dataset.t, (T) => { T.rules = v('regras'); }); toast('Regras salvas'); rerender(); }
+      if (tipo === 'orgcred') { const mat = v('mat'); orgWrite((o) => { o.manuais = { ...(o.manuais || {}), [mat]: { nome: v('nome'), hora: skyClock() } }; o.creds[mat] = skyClock(); }); rerender(); toast(`${v('nome').split(' ')[0]} credenciado às ${skyClock()}`); }
+      if (tipo === 'orgequipe') { orgWrite((o) => { o.organizadores = [...(o.organizadores || []).filter((x) => x.matricula !== v('mat')), { matricula: v('mat'), papel: v('papel') }]; }); rerender(); toast('Acesso ao painel liberado'); }
       return;
     }
     const orf = e.target.closest('[data-form="orgroom"]');
@@ -2671,6 +2764,8 @@
      Avisos e trocas de sala feitos no painel ficam em etal-org e chegam aqui, mesmo com o app já aberto. */
   const ORG_KEY = 'etal-org'; const orgSeen = new Set();
   const orgRead = () => { try { return { notices: [], moves: {}, creds: {}, ...JSON.parse(localStorage.getItem(ORG_KEY)) }; } catch (_) { return { notices: [], moves: {}, creds: {} }; } };
+  /* grava o estado de um campeonato no etal-org (o mesmo que o painel do computador usa) */
+  function torneioSalvar(id, fn) { const t = D.tournaments.find((x) => x.id === id); const st0 = tourSt(t); orgWrite((o) => { const T = { open: st0.open, players: st0.players.slice(), res: { ...st0.res }, rules: st0.rules }; fn(T); o.torneios = { ...(o.torneios || {}), [id]: T }; }); }
   function orgWrite(fn) { const o = orgRead(); fn(o); try { localStorage.setItem(ORG_KEY, JSON.stringify(o)); } catch (_) { /* sem armazenamento */ } }
   /* Números de sala definidos no painel (etal-org.rooms, chave "andar:zona"). Troca na planta, nas atividades e no 3D. */
   function applyRoomNumbers(rooms) {
