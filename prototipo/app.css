@@ -1943,3 +1943,43 @@ html.passeio-cheio .statusbar{height:0!important;padding:0}
 .levar b{display:block;font-size:14px;color:var(--ink)}
 .levar small{font-size:13px}
 @media (prefers-color-scheme:dark){.ses-selo.pouca{background:#3a2c12;color:#ffd27a}}
+
+/* mapa 3D da aba Mapa: um iframe só, que fica vivo entre as trocas de aba (ver mapaFixo em app.js) */
+.mapa-fixo{position:absolute;inset:0;z-index:4;background:#eef1f6}
+.mapa-fixo[hidden]{display:none}
+.mapa-fixo iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
+
+/* ---- Detalhe da atividade: bater o olho (quando, vagas, onde), depois os textos ---- */
+.detalhe-v2{gap:14px}
+.detalhe-v2 .title-lg{margin:-4px 0 0}
+.detalhe-v2 .teacher small{display:block}
+.glance{display:grid;grid-template-columns:1.4fr 1fr;gap:10px}
+.glance>div{background:var(--card);border-radius:calc(16px*var(--rk,1));padding:12px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.glance small{font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.glance b{font:700 28px/1.05 var(--display);letter-spacing:-.02em;color:var(--ink)}
+.glance span{font-size:13px;color:var(--muted)}
+.gl-vagas .seats{margin:6px 0 0}
+.gl-vagas.pouca b{color:#8a5200}
+.gl-vagas.cheio b{font-size:20px;color:var(--muted)}
+.lugar{position:relative;display:block;width:100%;height:150px;padding:0;border-radius:calc(18px*var(--rk,1));overflow:hidden;background:var(--bg);text-align:left}
+.lugar canvas{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
+.lg-tx{position:absolute;left:10px;top:10px;display:flex;flex-direction:column;padding:7px 11px;border-radius:12px;background:color-mix(in srgb,var(--card) 92%,transparent);box-shadow:0 2px 10px rgba(20,35,70,.12)}
+.lg-tx b{font:700 17px/1.1 var(--display);color:var(--ink)}
+.lg-tx small{font-size:12px;color:var(--muted)}
+.lg-ir{position:absolute;right:10px;bottom:10px;display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;background:var(--navy);color:#fff;font-size:13px;font-weight:600}
+.lg-ir .i{width:15px;height:15px}
+.detalhe-v2 .remindrow{padding:11px 14px}
+.sobre .desc{margin:6px 0 0;cursor:pointer}
+.sobre .desc.clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.sobre .desc.clamp::after{content:""}
+.passos-aula{list-style:none;counter-reset:p;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.passos-aula li{counter-increment:p;display:flex;gap:10px;align-items:flex-start;font-size:14.5px;line-height:1.35;color:var(--ink-2)}
+.passos-aula li::before{content:counter(p);flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font:700 12px var(--display);background:color-mix(in srgb,#65b32e 16%,transparent);color:#2f6f12}
+.detalhe-v2 section.levar{display:block;padding:12px 14px}
+.detalhe-v2 .levar h2{display:flex;align-items:center;gap:8px;margin:0 0 8px}
+.detalhe-v2 .levar h2 .i{width:18px;height:18px;margin:0}
+.detalhe-v2 .levar ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.detalhe-v2 .levar li{font-size:13px;font-weight:500;color:var(--ink);background:var(--card);padding:5px 10px;border-radius:999px}
+.detalhe-v2 .locked{margin:0;padding:10px 14px;font-size:13px}
+.detalhe-v2 .locked .i{width:16px;height:16px}
+.detalhe-v2 .roda ul{margin:0}
