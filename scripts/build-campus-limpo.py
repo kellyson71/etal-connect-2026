@@ -2,7 +2,7 @@
 
 As marcações são base, não medida: quadriláteros viram retângulos, lados próximos ficam alinhados
 e o que deveria se encostar passa a se encostar. Os dados originais não mudam
-(app/data/campus-survey.json, prototipo/campus-fundo.js e o KML em referencias/).
+(dados/campus-survey.json, prototipo/campus-fundo.js e o KML em referencias/).
 O relatório no fim mostra quanto cada item se moveu.
 """
 import json
@@ -10,7 +10,7 @@ import math
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sv = json.loads((ROOT / 'app/data/campus-survey.json').read_text())['elementos']
+sv = json.loads((ROOT / 'dados/campus-survey.json').read_text())['elementos']
 raw = (ROOT / 'prototipo/campus-fundo.js').read_text()
 fu = json.loads(raw[raw.index('['):raw.rindex(']') + 1])
 FU = {e['nome']: e['pontos'] for e in fu if e['tipo'] != 'Point'}

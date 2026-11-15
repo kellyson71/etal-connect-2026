@@ -259,8 +259,8 @@ def main():
     args = parser.parse_args()
     for folder in ['imagens/classico', 'imagens/novo', 'pares', 'fontes']:
         (OUT / folder).mkdir(parents=True, exist_ok=True)
-    for name in ['dm-sans.woff2', 'dmsans-OFL.txt']:
-        shutil.copyfile(ROOT/'exportacao/fontes'/name, OUT/'fontes'/name)
+    # a fonte do documento (DM Sans, OFL) fica versionada em docs/comparacao-modelos/fontes/
+    assert (OUT/'fontes'/'dm-sans.woff2').exists(), 'falta docs/comparacao-modelos/fontes/dm-sans.woff2'
     if args.somente_documento:
         evidence=json.loads((OUT/'evidencias.json').read_text())
         assert len(evidence['views'])==20

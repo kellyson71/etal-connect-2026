@@ -391,10 +391,9 @@ for f in floors:
 plan = dict(source='Plantas de 2012 (Souza, UFRN), figuras 9 a 11; traçado em pixels da figura do térreo',
             units='px da figura de 2012', viewBox=VIEWBOX, world=WORLD, entrances=ENTRANCES,
             rampFoot=list(foot), rampLoop=[list(q) for q in loop], floors=out_floors)
-(ROOT / 'app/data/principal-plan.json').write_text(json.dumps(plan, ensure_ascii=False, indent=1) + '\n')
+(ROOT / 'dados/principal-plan.json').write_text(json.dumps(plan, ensure_ascii=False, indent=1) + '\n')
 sys.path.insert(0, str(ROOT / 'scripts'))
 from plan_styles import sheet  # noqa: E402
-svg = sheet(json.loads((ROOT / 'app/data/principal-plan.json').read_text()), 'clara')
-for target in ['public/maps/bloco-principal.svg', 'maps/bloco-principal.svg']:
-    (ROOT / target).write_text(svg)
+svg = sheet(json.loads((ROOT / 'dados/principal-plan.json').read_text()), 'clara')
+(ROOT / 'dados/bloco-principal.svg').write_text(svg)
 print('Planta de 2012: três andares gerados.')

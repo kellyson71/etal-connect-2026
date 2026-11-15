@@ -57,7 +57,7 @@ def transform():
 
 def conferir():
     conv = transform()
-    survey = json.loads((ROOT / 'app/data/campus-survey.json').read_text())['elementos']
+    survey = json.loads((ROOT / 'dados/campus-survey.json').read_text())['elementos']
     worst = 0
     for e, s in zip(marks(REF), survey):
         for p, q in zip(e['geo'], s['pontos']):
