@@ -15,11 +15,15 @@ def app_cliente():
     from fastapi.testclient import TestClient
 
     from app import importar
-    from app.db import Base, engine
+    from sqlalchemy import text
+
+    from app.db import Base, engine, migrar
     from app.main import app
     from app.limite import _hist
     Base.metadata.drop_all(engine)
-    Base.metadata.create_all(engine)
+    with engine.begin() as con:
+        con.execute(text('DROP TABLE IF EXISTS alembic_version'))
+    migrar()
     importar.programacao(str(BASE / 'seed/programacao.json'))
     _hist.clear()
     with TestClient(app) as c:

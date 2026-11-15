@@ -11,7 +11,7 @@ from pathlib import Path
 
 from sqlalchemy import select
 
-from .db import SessionLocal, criar_tabelas
+from .db import SessionLocal, migrar
 from .modelos import Atividade, Pessoa
 
 CAMPOS = {'id', 'type', 'title', 'short', 'description', 'speaker', 'role', 'date', 'day', 'time', 'end', 'floor', 'zone', 'room', 'seats', 'taken'}
@@ -57,7 +57,7 @@ def inscritos(arquivo: str) -> int:
 
 
 if __name__ == '__main__':
-    criar_tabelas()
+    migrar()
     acao, arg = sys.argv[1], sys.argv[2]
     if acao == 'programacao':
         print(f'{programacao(arg)} atividades importadas')
