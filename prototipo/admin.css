@@ -1888,3 +1888,29 @@ dialog .fld textarea {
   background: #1c3316;
   color: #a5e07f;
 }
+
+/* Servidor: números do evento */
+table.sis {
+  width: 100%;
+  border-collapse: collapse;
+}
+table.sis td {
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line, #e6e8ef);
+  vertical-align: top;
+}
+table.sis td:last-child {
+  text-align: right;
+  white-space: nowrap;
+}
+table.sis code {
+  font-size: 0.85em;
+}
+.sis-alerta {
+  color: #c2410c;
+}
+.sis-nota {
+  margin-top: 12px;
+  font-size: 0.85em;
+  opacity: 0.75;
+}
