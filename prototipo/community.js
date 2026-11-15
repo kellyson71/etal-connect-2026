@@ -1,4 +1,5 @@
-/* Comunidade demonstrativa compartilhada pelo app e pelo painel. Sem envio para servidor. */
+/* Publicações compartilhadas pelo app e pelo painel. Sem servidor, ficam neste navegador (demonstração); com servidor
+   (app/05-publicacoes-servidor.js), o estado vem da API neste mesmo formato e os exemplos saem. */
 (() => {
   'use strict';
   const key = 'etal-comunidade-v1';
@@ -130,7 +131,15 @@
       time: 'Há pouco',
     },
   ];
-  const seedComments = window.DATA?.demoComments || {};
+  const seedComments = { ...(window.DATA?.demoComments || {}) };
+  let servidor = false;
+  /* Com servidor: sem publicações de exemplo, e a moderação vale para todo mundo */
+  function usarServidor() {
+    servidor = true;
+    seeds.splice(0);
+    seedMessages.splice(0);
+    for (const k of Object.keys(seedComments)) delete seedComments[k];
+  }
   const allComments = (v, id) => [...(seedComments[id] || []), ...(v.comments[id] || [])];
   const reasons = [
     'Spam ou propaganda',
@@ -223,7 +232,7 @@
           : contents(v)
               .filter((item) => filter !== 'hidden' || hidden(v, item.target))
               .map((item) => item.target);
-    return `<section class="social-moderation"><p class="social-note">Revisão local · as ações valem para este navegador.</p><nav class="social-mod-tabs" aria-label="Filtrar moderação">${[
+    return `<section class="social-moderation"><p class="social-note">${servidor ? 'Revisão da organização · vale para todos no app.' : 'Revisão local · as ações valem para este navegador.'}</p><nav class="social-mod-tabs" aria-label="Filtrar moderação">${[
       ['pending', `Denúncias (${pending.length})`],
       ['hidden', 'Ocultos'],
       ['all', 'Conteúdos'],
@@ -291,6 +300,7 @@
     return agenda.length === 1 ? { activity: agenda[0], reason: 'agenda' } : null;
   }
   window.COMMUNITY = Object.freeze({
+    usarServidor,
     removePost,
     currentActivity,
     key,

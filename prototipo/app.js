@@ -895,11 +895,22 @@ const profileShortcut = () =>
 /* app/05-comunidade.js · publicações, comentários, menções, chat e moderação.
    Parte do app.js: os arquivos de prototipo/app/ rodam juntos, na ordem dos números, no mesmo escopo
    (scripts/app/montar-app.mjs). */
-/* ---------------- comunidade (demonstração local) ---------------- */
+/* ---------------- comunidade (no aparelho, ou no servidor: 05-publicacoes-servidor.js) ---------------- */
 const SOCIAL = window.COMMUNITY;
 const COMMUNITY_KEY = SOCIAL.key;
-const communityRead = SOCIAL.read;
+const communityRead = () => (API ? pubEstado() : SOCIAL.read());
+/* Com servidor, só o que é do aparelho passa por aqui (menções já vistas); o resto vira chamada à API. */
 const communityWrite = (change) => {
+  if (API) {
+    try {
+      change(pubEstado());
+      pubGuardarVistas();
+      return true;
+    } catch (error) {
+      toast(error.message);
+      return false;
+    }
+  }
   try {
     SOCIAL.write(change);
     return true;
@@ -1076,7 +1087,7 @@ function communityReportOpen(target) {
     return;
   }
   openOverlay(
-    `<form class="sheet social-report" data-form="community-report" data-target="${esc(target)}" role="dialog" aria-modal="true" aria-labelledby="social-report-title"><i class="grab"></i><header><h2 id="social-report-title">Denunciar conteúdo</h2><button class="iconbtn" type="button" data-act="closeov" aria-label="Fechar denúncia">${ic('x')}</button></header><label class="field">Motivo<select name="reason" required><option value="">Selecione o motivo</option>${SOCIAL.reasons.map((r) => `<option>${esc(r)}</option>`).join('')}</select></label><label class="field">Detalhes<textarea name="detail" rows="3" maxlength="500" placeholder="Conte o que a equipe precisa saber (opcional)"></textarea></label><p class="community-muted">A denúncia fica neste navegador para revisão da organização.</p><button class="btn primary big" type="submit">Enviar denúncia</button></form>`,
+    `<form class="sheet social-report" data-form="community-report" data-target="${esc(target)}" role="dialog" aria-modal="true" aria-labelledby="social-report-title"><i class="grab"></i><header><h2 id="social-report-title">Denunciar conteúdo</h2><button class="iconbtn" type="button" data-act="closeov" aria-label="Fechar denúncia">${ic('x')}</button></header><label class="field">Motivo<select name="reason" required><option value="">Selecione o motivo</option>${SOCIAL.reasons.map((r) => `<option>${esc(r)}</option>`).join('')}</select></label><label class="field">Detalhes<textarea name="detail" rows="3" maxlength="500" placeholder="Conte o que a equipe precisa saber (opcional)"></textarea></label><p class="community-muted">${API ? 'A denúncia vai para a organização revisar. Quem publicou não fica sabendo quem denunciou.' : 'A denúncia fica neste navegador para revisão da organização.'}</p><button class="btn primary big" type="submit">Enviar denúncia</button></form>`,
     'ask',
   );
 }
@@ -1173,6 +1184,26 @@ Screens.communityPost = ({ id }) => {
     html: `${header('Publicação')}<div class="community-feed">${p ? communityPost(p, v, true) : '<p class="community-muted">Esta publicação foi excluída.</p>'}</div>`,
   };
 };
+/* depois de publicar, comentar ou mandar mensagem: limpa o rascunho e volta */
+function communityLimparRascunho(kind, postId, aviso) {
+  if (kind === 'community-post') {
+    communityDraft.post = '';
+    communityDraft.cursor = 0;
+    communityDraft.images = [];
+    communityDraft.activity = '';
+    communityDraft.day = D.now.day;
+    communityDraft.tag = 'No evento';
+    communityDraft.contextReady = false;
+    communityDraft.activityManual = false;
+    communityMode = 'feed';
+    navBack();
+    toast(aviso);
+  } else {
+    if (kind === 'community-message') communityDraft.message = '';
+    else delete communityDraft.comments[postId];
+    rerender();
+  }
+}
 const communityCheckinKey = () => `etal-atividade-atual:${D.person.id}`;
 function communityCheckin(id) {
   if (byId(id)?.type !== 'Credenciamento') store.set(communityCheckinKey(), { id, at: Date.now() });
@@ -1346,6 +1377,186 @@ document.addEventListener('change', async (e) => {
 window.addEventListener('storage', (e) => {
   if (e.key === COMMUNITY_KEY && S.auth && (S.tab === 'community' || top().s === 'orgCommunity')) rerender();
 });
+
+/* ===== app/05-publicacoes-servidor.js ===== */
+/* app/05-publicacoes-servidor.js · publicações com servidor.
+   Parte do app.js: os arquivos de prototipo/app/ rodam juntos, na ordem dos números, no mesmo escopo
+   (scripts/app/montar-app.mjs). */
+/* Com API, as publicações vêm de /api/publicacoes no mesmo formato do community.js (as telas não mudam) e cada ação
+   vira uma chamada ao servidor. Sem API, nada daqui roda: tudo fica no aparelho, como na demonstração.
+   Ao vivo: o servidor avisa só o número da versão; o app busca de novo apenas se a versão mudou e se a tela de
+   publicações estiver aberta (senão, quando ela abrir), com um atraso aleatório para os celulares não pedirem juntos. */
+const PUB = { v: null, dono: null, buscando: null, deNovo: false, velho: false, timer: 0, em: 0 };
+if (API) SOCIAL.usarServidor();
+const PUB_TELAS = ['communityPost', 'communityPerson', 'orgCommunity', 'communityCompose'];
+const pubNaTela = () => S.auth && (S.tab === 'community' || PUB_TELAS.includes(top().s));
+const pubVistasKey = () => `etal-mencoes-vistas:${D.person.id}`;
+const pubVazio = () => ({
+  versao: 0,
+  posts: [],
+  messages: [],
+  comments: {},
+  likes: {},
+  bookmarks: {},
+  reports: [],
+  moderation: {},
+  audit: [],
+  mentionSeen: {},
+});
+/* o que a tela lê (communityRead): o último estado do servidor, e busca se ainda não tem ou se ficou velho */
+function pubEstado() {
+  if (PUB.dono !== D.person.id) {
+    PUB.v = null;
+    PUB.dono = D.person.id;
+  }
+  /* também confere a cada 20 s com a tela aberta (aviso ao vivo perdido, ou hospedagem sem conexão contínua);
+     com a mesma versão, o servidor responde só "igual" */
+  if (!PUB.v || PUB.velho || Date.now() - PUB.em > 20000) {
+    PUB.velho = false;
+    pubCarregar();
+  }
+  return PUB.v || pubVazio();
+}
+/* menções já vistas ficam no aparelho (não precisam ir ao servidor) */
+function pubGuardarVistas() {
+  try {
+    localStorage.setItem(pubVistasKey(), JSON.stringify(PUB.v?.mentionSeen[String(D.person.id)] || []));
+  } catch (_) {
+    /* opcional */
+  }
+}
+const pubDigitando = () => document.activeElement?.matches?.('textarea, input, select');
+function pubCarregar() {
+  if (!API || !S.auth) return Promise.resolve();
+  if (PUB.buscando) {
+    PUB.deNovo = true;
+    return PUB.buscando;
+  }
+  PUB.em = Date.now();
+  const versao = PUB.v ? `?versao=${PUB.v.versao}` : '';
+  PUB.buscando = API.get('/api/publicacoes' + versao)
+    .then((v) => {
+      if (v.igual) return;
+      for (const p of v.posts) for (const img of p.images || []) img.src = API.url(img.src);
+      let vistas = [];
+      try {
+        vistas = JSON.parse(localStorage.getItem(pubVistasKey())) || [];
+      } catch (_) {
+        /* sem armazenamento */
+      }
+      v.mentionSeen = { [String(D.person.id)]: vistas };
+      PUB.v = v;
+      if (pubNaTela() && !pubDigitando() && !ov.classList.contains('open')) rerender();
+    })
+    .catch((e) => {
+      if (pubNaTela()) toast(e.status ? e.message : 'Sem internet: as publicações aparecem quando a conexão voltar.');
+    })
+    .finally(() => {
+      PUB.buscando = null;
+      if (PUB.deNovo) {
+        PUB.deNovo = false;
+        pubCarregar();
+      }
+    });
+  return PUB.buscando;
+}
+/* aviso ao vivo do servidor: { versao } */
+function pubAviso(d) {
+  if (!PUB.v || d.versao === PUB.v.versao) return;
+  if (!pubNaTela()) {
+    PUB.velho = true;
+    return;
+  }
+  clearTimeout(PUB.timer);
+  PUB.timer = setTimeout(pubCarregar, 500 + Math.random() * 2500);
+}
+/* uma ação no servidor: avisa o erro; depois busca o estado novo (a resposta do servidor é quem manda) */
+async function pubFazer(promessa) {
+  try {
+    const r = await promessa;
+    await pubCarregar();
+    return r || true;
+  } catch (e) {
+    toast(e.message);
+    await pubCarregar();
+    return null;
+  }
+}
+const pubIdDoAlvo = (alvo) => String(alvo).split(':').pop();
+/* curtir e salvar mudam na hora na tela; se o servidor recusar, o estado volta na próxima busca */
+function pubAlternar(lista, id) {
+  return lista.includes(id) ? lista.filter((x) => x !== id) : [...lista, id];
+}
+function pubCurtir(id) {
+  const me = String(D.person.id);
+  if (PUB.v) PUB.v.likes[id] = pubAlternar(PUB.v.likes[id] || [], me);
+  rerender();
+  pubFazer(API.post(`/api/publicacoes/${encodeURIComponent(id)}/curtir`));
+}
+function pubSalvar(id) {
+  const me = String(D.person.id);
+  let salvou = false;
+  if (PUB.v) {
+    const antes = PUB.v.bookmarks[me] || [];
+    salvou = !antes.includes(id);
+    PUB.v.bookmarks[me] = pubAlternar(antes, id);
+  }
+  rerender();
+  toast(salvou ? 'Publicação salva' : 'Removida dos salvos');
+  pubFazer(API.post(`/api/publicacoes/${encodeURIComponent(id)}/salvar`));
+}
+async function pubApagar(id) {
+  const r = await pubFazer(API.del(`/api/publicacoes/${encodeURIComponent(id)}`));
+  if (!r) return;
+  if (top().s === 'communityPost') navBack();
+  else rerender();
+  toast(r.resultado === 'oculta' ? 'Publicação tirada do ar (fica no histórico da moderação)' : 'Publicação excluída');
+}
+async function pubModerar(alvo, acao, nota) {
+  if (await pubFazer(API.post('/api/publicacoes/moderar', { alvo, acao, nota }))) {
+    rerender();
+    toast('Revisão salva');
+  }
+}
+async function pubDenunciar(alvo, motivo, detalhe) {
+  const r = await pubFazer(
+    API.post(`/api/publicacoes/${encodeURIComponent(pubIdDoAlvo(alvo))}/denunciar`, { motivo, detalhe }),
+  );
+  if (r)
+    closeOverlay(() =>
+      toast(
+        r.oculta ? 'Denúncia enviada. O conteúdo saiu do ar até a revisão.' : 'Denúncia enviada para a organização',
+      ),
+    );
+}
+/* publicação, comentário ou mensagem; devolve true se o servidor aceitou */
+let pubEnviando = false;
+async function pubEnviar(kind, text, postId) {
+  if (pubEnviando) return false;
+  pubEnviando = true;
+  const mencoes = communityMentions(text).map((p) => p.id);
+  const botao = $('.page:not(.leaving) .compose-submit');
+  if (botao) botao.disabled = true;
+  try {
+    const pedido =
+      kind === 'community-post'
+        ? API.post('/api/publicacoes', {
+            texto: text,
+            atividade: byId(communityDraft.activity)?.id || null,
+            dia: byId(communityDraft.activity)?.day || +communityDraft.day || D.now.day,
+            assunto: communityDraft.tag,
+            mencoes,
+            fotos: communityDraft.images.map((img) => ({ dados: img.src, alt: img.alt || '' })),
+          })
+        : kind === 'community-message'
+          ? API.post('/api/publicacoes/mensagens', { texto: text, mencoes })
+          : API.post(`/api/publicacoes/${encodeURIComponent(postId)}/comentarios`, { texto: text, mencoes });
+    return !!(await pubFazer(pedido));
+  } finally {
+    pubEnviando = false;
+    if (botao) botao.disabled = false;
+  }
+}
 
 /* ===== app/06-entrada.js ===== */
 /* app/06-entrada.js · entrada pelo crachá: SUAP, visitante e abertura do app.
@@ -5541,6 +5752,10 @@ ACOES['community-mode'] = (el, e, a) => {
 ACOES['community-save'] = (el, e, a) => {
   if (!S.auth) return;
   const id = el.dataset.id;
+  if (API) {
+    pubSalvar(id);
+    return;
+  }
   const me = String(D.person.id);
   let adding = false;
   if (
@@ -5600,6 +5815,10 @@ ACOES['social-mod'] = (el, e, a) => {
     return;
   }
   const note = el.closest('[data-mod-target]')?.querySelector('[data-mod-note]')?.value || '';
+  if (API) {
+    pubModerar(el.dataset.target, el.dataset.action, note);
+    return;
+  }
   if (communityWrite((v) => SOCIAL.moderate(v, el.dataset.target, el.dataset.action, D.person.name, note))) {
     rerender();
     toast('Revisão salva neste navegador');
@@ -5628,6 +5847,10 @@ ACOES['community-like'] = (el, e, a) => {
     return;
   }
   const id = el.dataset.id;
+  if (API) {
+    pubCurtir(id);
+    return;
+  }
   const me = String(D.person.id);
   if (
     communityWrite((v) => {
@@ -5641,6 +5864,10 @@ ACOES['community-like'] = (el, e, a) => {
 
 ACOES['community-delete'] = (el, e, a) => {
   if (!S.auth) return;
+  if (API) {
+    pubApagar(el.dataset.id);
+    return;
+  }
   if (communityWrite((v) => SOCIAL.removePost(v, el.dataset.id, communityAuthor(), canModerateCommunity()))) {
     if (top().s === 'communityPost') navBack();
     else rerender();
@@ -6349,6 +6576,10 @@ document.addEventListener('submit', async (e) => {
     }
     const data = new FormData(e.target);
     const target = e.target.dataset.target;
+    if (API) {
+      pubDenunciar(target, String(data.get('reason') || ''), String(data.get('detail') || ''));
+      return;
+    }
     if (
       communityWrite((v) =>
         SOCIAL.report(v, target, communityAuthor(), String(data.get('reason') || ''), String(data.get('detail') || '')),
@@ -6424,6 +6655,12 @@ document.addEventListener('submit', async (e) => {
       toast('Escreva algo para compartilhar.');
       return;
     }
+    if (API) {
+      pubEnviar(kind, text, f.dataset.id).then((ok) => {
+        if (ok) communityLimparRascunho(kind, f.dataset.id, 'Publicado');
+      });
+      return;
+    }
     const item = {
       ...communityAuthor(),
       handle: communityPeople().find((p) => p.id === String(D.person.id))?.handle,
@@ -6450,24 +6687,7 @@ document.addEventListener('submit', async (e) => {
         (v.comments[f.dataset.id] ||= []).push(item);
       }
     });
-    if (!saved) return;
-    if (kind === 'community-post') {
-      communityDraft.post = '';
-      communityDraft.cursor = 0;
-      communityDraft.images = [];
-      communityDraft.activity = '';
-      communityDraft.day = D.now.day;
-      communityDraft.tag = 'No evento';
-      communityDraft.contextReady = false;
-      communityDraft.activityManual = false;
-      communityMode = 'feed';
-      navBack();
-      toast('Publicação salva neste aparelho');
-    } else {
-      if (kind === 'community-message') communityDraft.message = '';
-      else delete communityDraft.comments[f.dataset.id];
-      rerender();
-    }
+    if (saved) communityLimparRascunho(kind, f.dataset.id, 'Publicação salva neste aparelho');
     return;
   }
   if (e.target.dataset.form === 'tourjoin') {
@@ -7523,6 +7743,7 @@ async function apiStart() {
     /* não entrou */
   }
   API.live({
+    publicacoes: pubAviso,
     aviso: (n) => {
       D.notices.unshift({ time: n.time, title: n.title, text: n.text, fresh: true, org: true });
       notify(n.title, n.text, n.activity);
