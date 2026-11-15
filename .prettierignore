@@ -7,6 +7,8 @@ prototipo/campus-limpo.js
 prototipo/campus-fundo.js
 prototipo/campus-verde.js
 prototipo/sprites.js
+# a versão e a lista de arquivos são regravadas por npm run pwa
+prototipo/sw.js
 dados/
 docs/apresentacao.html
 docs/demos/
