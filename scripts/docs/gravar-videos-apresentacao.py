@@ -1,10 +1,10 @@
 """Grava os vídeos curtos da apresentação com o motor real do mapa e do app (dados de exemplo).
 
-Uso: python3 scripts/gravar-videos-apresentacao.py [nomes]   (precisa de Playwright, Chrome e ffmpeg; serve a pasta do repositório)
+Uso: python3 scripts/docs/gravar-videos-apresentacao.py [nomes]   (precisa de Playwright, Chrome e ffmpeg; serve a pasta do repositório)
 Saída: docs/assets/videos/*.mp4 e um quadro de capa .webp de cada um.
 
 Os vídeos p-* (entrar, agenda, presença, aviso) usam a API de verdade com uma conta do SUAP:
-  ETAL_API=http://127.0.0.1:8011 ETAL_MATRICULA=... ETAL_SENHA=... ETAL_CAMERA=camera.y4m python3 scripts/gravar-videos-apresentacao.py p-entrar p-agenda p-presenca p-aviso
+  ETAL_API=http://127.0.0.1:8011 ETAL_MATRICULA=... ETAL_SENHA=... ETAL_CAMERA=camera.y4m python3 scripts/docs/gravar-videos-apresentacao.py p-entrar p-agenda p-presenca p-aviso
 A API local precisa de ETAL_ORIGENS=http://127.0.0.1:8771, ETAL_JANELA_PRESENCA=0 e da matrícula em ETAL_ORGANIZACAO (para o aviso).
 ETAL_CAMERA é um vídeo .y4m em pé com o QR assinado de uma atividade: vira a câmera do Chrome. A senha não é gravada em lugar nenhum.
 """
@@ -13,7 +13,7 @@ from functools import partial
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'docs/assets/videos'
 OUT.mkdir(parents=True, exist_ok=True)
 CHROME = '/usr/bin/google-chrome-stable'

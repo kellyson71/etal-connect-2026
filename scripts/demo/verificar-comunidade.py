@@ -1,7 +1,7 @@
 """Verifica a comunidade local em um contexto isolado, sem usar o estado do navegador do usuário.
 
     sh prototipo/rodar.sh
-    python3 scripts/verificar-comunidade.py [http://127.0.0.1:8770]
+    python3 scripts/demo/verificar-comunidade.py [http://127.0.0.1:8770]
 """
 import io
 import json
@@ -11,7 +11,7 @@ from PIL import Image
 from playwright.sync_api import sync_playwright, expect
 
 BASE = sys.argv[1] if len(sys.argv) > 1 else 'http://127.0.0.1:8770'
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 
 
 def run():

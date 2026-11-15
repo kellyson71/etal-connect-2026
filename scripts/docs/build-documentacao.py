@@ -9,8 +9,8 @@ from pathlib import Path
 import runpy
 import sys
 
-ROOT = Path(__file__).resolve().parents[1]
-BASE = runpy.run_path(str(ROOT / 'scripts/documentacao_base.py'))
+ROOT = Path(__file__).resolve().parents[2]
+BASE = runpy.run_path(str(ROOT / 'scripts/docs/documentacao_base.py'))
 markdown = BASE['markdown']
 reference = BASE['reference']
 EVIDENCIA = json.loads((ROOT / 'docs/assets/evidencias.json').read_text())
@@ -175,7 +175,7 @@ slide('planta','Da planta de 2012 ao mapa','04 / Próximos passos',f"""
 <div class="pl-andares" data-step="3"><div class="pl-pilha">{''.join(f'<img style="--k:{k}" src="{{assets}}/fontes/planta-atual-{k}.svg" alt="{n}">' for k,n in [(0,'Térreo'),(1,'1º andar'),(2,'2º andar')])}</div></div>
 <div class="pl-mapa" data-step="4"><img src="{{assets}}/cena-andares.webp" alt="Os três andares no mapa 3D do app"></div>
 </div><ol class="passos">{''.join(f'<li data-step="{n}" data-ir="{n}"><span>{icon(ic)}</span><b>{t}</b><small>{d}</small></li>' for n,(ic,t,d) in enumerate(PASSOS_PLANTA))}</ol></div>
-""",'Souza, L. L. · Padronização e flexibilidade · UFRN, 2012 · planta gerada por scripts/build-principal-plan.py','', 'fontes/planta-2012-0.webp', 'Da planta de 2012 ao mapa')
+""",'Souza, L. L. · Padronização e flexibilidade · UFRN, 2012 · planta gerada por scripts/planta/build-principal-plan.py','', 'fontes/planta-2012-0.webp', 'Da planta de 2012 ao mapa')
 
 # Programação do SUAP: atividades do VII ETAL (docs/programacao-referencia.html); pessoas e vagas de exemplo.
 SU_DIAS = [('Qua 26/11', [('14:00','Experiência com IA','mc','ana'),('14:00','React Native com Expo','mc','maria'),('14:00','FastAPI','mc','joao')]),

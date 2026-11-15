@@ -28,7 +28,7 @@ A origem geográfica da base preservada é longitude -38.20467439096546 e latitu
 
 ## O produto atual
 
-O mapa usado pelo app está em prototipo/campus3d.js. A geometria interna vem de scripts/build-principal-plan.py e gera prototipo/plan-data.js, JSON e SVG. O comando npm run planta regenera e confere as regras. Os componentes de mapa em app/ pertencem à versão React legada.
+O mapa usado pelo app está em prototipo/campus3d.js. A geometria interna vem de scripts/planta/build-principal-plan.py e gera prototipo/plan-data.js, JSON e SVG. O comando npm run planta regenera e confere as regras. Os componentes de mapa em app/ pertencem à versão React legada.
 
 A atividade se liga ao ambiente por andar + zona; o número visível não é a chave. A organização pode personalizar a numeração. Usos de 2012 e informações atuais conferidas no local têm procedências diferentes; usos incertos continuam identificados como tais.
 

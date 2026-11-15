@@ -233,7 +233,7 @@ export function maisPerto(prefixo, origem = null) {
   return best;
 }
 
-/* Cada etapa de uma rota, para a animação da apresentação (scripts/gerar-rota-apresentacao.mjs): o Dijkstra nas
+/* Cada etapa de uma rota, para a animação da apresentação (scripts/docs/gerar-rota-apresentacao.mjs): o Dijkstra nas
    calçadas (ordem de visita), o custo de cada entrada, escada contra rampa e o A* de cada andar (células visitadas,
    caminho da grade e caminho alisado). Usa as mesmas funções da rota de verdade. */
 export function explicar(dest) {

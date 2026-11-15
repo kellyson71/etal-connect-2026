@@ -1,5 +1,5 @@
 """Monta os atlas do protótipo a partir dos renders do Blender e gera as texturas de telhado.
-Uso: python3 scripts/assets/build_sprites.py <pasta dos renders>
+Uso: python3 scripts/campus/sprites/build_sprites.py <pasta dos renders>
 Saída: prototipo/assets/sprites/*.webp e prototipo/sprites.js
 """
 import json, sys
@@ -8,7 +8,7 @@ import numpy as np
 from PIL import Image
 
 SRC = Path(sys.argv[1])
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 OUT = ROOT / 'prototipo/assets/sprites'
 OUT.mkdir(parents=True, exist_ok=True)
 meta = json.loads((SRC / 'meta.json').read_text())
@@ -185,6 +185,6 @@ for name, tex in (('roof', roof), ('telha', telha), ('ribs', metal), ('wall', wa
             save(event(tex, True, variant), f'{name}-event{variant}-dark', 88)
 
 data = dict(trees=tree_meta, houses=house_meta, tex=dict(roof=dict(px=128, m=8), telha=dict(px=96, m=3), ribs=dict(px=64, m=4), cobble=dict(px=128, m=8), wall=dict(w=128, h=180)))
-(ROOT / 'prototipo/sprites.js').write_text('/* Gerado por scripts/assets/build_sprites.py. Modelos: Kenney, CC0 (referencias/modelos/CREDITOS.txt). */\nwindow.SPRITES = ' + json.dumps(data) + ';\n')
+(ROOT / 'prototipo/sprites.js').write_text('/* Gerado por scripts/campus/sprites/build_sprites.py. Modelos: Kenney, CC0 (referencias/modelos/CREDITOS.txt). */\nwindow.SPRITES = ' + json.dumps(data) + ';\n')
 total = sum(f.stat().st_size for f in OUT.glob('*.webp'))
 print(len(list(OUT.glob('*.webp'))), 'imagens,', round(total / 1024), 'KB')

@@ -128,7 +128,7 @@ async function carregar(url) { const nome = url.split('/').pop(); const tag = do
 })();
 
 /* "Como a rota é calculada": a rota de exemplo em seis atos, com os dados do próprio código do mapa
-   (scripts/gerar-rota-apresentacao.mjs → rota-completa.json). 1 Dijkstra nas calçadas; 2 custo de cada entrada;
+   (scripts/docs/gerar-rota-apresentacao.mjs → rota-completa.json). 1 Dijkstra nas calçadas; 2 custo de cada entrada;
    3 A* no térreo, com a grade e o caminho alisado; 4 escada × rampa; 5 A* no 2º andar até a porta; 6 a rota inteira
    em 3D, pelos três andares. A câmera vai do campus para dentro do bloco sem corte (planta e campus têm a mesma
    orientação). Recomeça sozinha enquanto o slide estiver aberto. */

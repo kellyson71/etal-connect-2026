@@ -1,6 +1,6 @@
 """Tira as copas das árvores da imagem de satélite e grava prototipo/campus-verde.js.
 
-Uso: python3 scripts/extrair-verde.py [imagem.png]
+Uso: python3 scripts/campus/extrair-verde.py [imagem.png]
 Sem imagem, baixa o mosaico (zoom 20) em volta da origem do levantamento. A imagem é só referência de pesquisa:
 não entra no repositório. O resultado são círculos (x, y, raio, tipo) no sistema de coordenadas do mapa, em metros.
 
@@ -18,7 +18,7 @@ import urllib.request
 import numpy as np
 from PIL import Image, ImageFilter
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 LAT, LON, ZOOM, RAIO = -6.146299103855006, -38.20467439096546, 20, 4  # origem do levantamento; mosaico de 9 × 9
 NORTH, EAST = (-0.9984, 0.0573), (-0.0573, -0.9984)  # os mesmos de campus3d.js
 MPP = 156543.03392 * math.cos(math.radians(LAT)) / 2 ** ZOOM
@@ -128,7 +128,7 @@ def main():
     for t in trees:
         t[4] = int(sum(t[4] > c for c in cortes))
     lado = a.shape[0] * MPP / 2
-    out = {'fonte': 'satélite (Google, zoom 20), copas e chão tirados por scripts/extrair-verde.py', 'meio_lado': round(lado - 6, 1), 'trees': trees, 'chao': chao}
+    out = {'fonte': 'satélite (Google, zoom 20), copas e chão tirados por scripts/campus/extrair-verde.py', 'meio_lado': round(lado - 6, 1), 'trees': trees, 'chao': chao}
     (ROOT / 'prototipo/campus-verde.js').write_text('window.CAMPUS_VERDE=' + json.dumps(out, ensure_ascii=False, separators=(',', ':')) + ';\n')
     print(len(trees), 'copas;', sum(t[3] == 'f' for t in trees), 'em flor; cobre ±', out['meio_lado'], 'm')
 

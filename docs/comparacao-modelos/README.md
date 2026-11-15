@@ -9,7 +9,7 @@ Capturado em 2026-11-11T14:42:05-03:00. Fonte: commit `442215668157f37e6f6c88f23
 - `imagens/classico/` e `imagens/novo/`: os 40 PNGs originais (cenas em 2400 × 1500 px, interfaces em 585 × 1266 px). Ficam só na máquina de quem gerou (fora do Git, 75 MB); os hashes estão em `evidencias.json` e o script os recria.
 - `evidencias.json`: parâmetros das câmeras, arquivos-fonte, hashes e erros de navegador.
 
-Reproduzir a partir da raiz: `python3 scripts/documentar-modelos.py`.
+Reproduzir a partir da raiz: `python3 scripts/docs/documentar-modelos.py`.
 É necessário Playwright, Pillow e Chrome; o script abre e encerra seu próprio servidor local.
 As capturas usam contextos novos, dados demonstrativos e armazenamento isolado; não alteram o aplicativo.
 

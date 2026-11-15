@@ -1,6 +1,6 @@
 """Captura o motor real do mapa, em cenas amplas para a apresentação.
 
-Uso: python3 scripts/capturar-cenas-documentacao.py
+Uso: python3 scripts/docs/capturar-cenas-documentacao.py
 Requer Playwright, Pillow e Chrome. Usa um servidor temporário e não modifica o app.
 """
 from datetime import datetime
@@ -14,8 +14,8 @@ import subprocess
 from PIL import Image
 from playwright.sync_api import sync_playwright
 
-ROOT = Path(__file__).resolve().parents[1]
-HELPERS = runpy.run_path(str(ROOT / 'scripts/capturar-documentacao.py'))
+ROOT = Path(__file__).resolve().parents[2]
+HELPERS = runpy.run_path(str(ROOT / 'scripts/docs/capturar-documentacao.py'))
 SCENES = {
     'cena-campus': 'mode=campus',
     'cena-evento': 'mode=evento',

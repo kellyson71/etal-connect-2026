@@ -9,12 +9,12 @@
   },
   "scripts": {
     "prototipo": "sh prototipo/rodar.sh",
-    "demo": "sh scripts/rodar-demo.sh",
-    "planta": "python3 scripts/build-principal-plan.py && python3 scripts/check-principal-plan.py && python3 scripts/build-prototype-plan.py",
-    "pwa": "python3 scripts/build-pwa.py",
-    "export:html": "python3 scripts/export-prototipo.py",
-    "docs": "python3 scripts/build-documentacao.py",
-    "docs:pdf": "npm run docs && python3 scripts/exportar-docs-pdf.py",
+    "demo": "sh scripts/demo/rodar-demo.sh",
+    "planta": "python3 scripts/planta/build-principal-plan.py && python3 scripts/planta/check-principal-plan.py && python3 scripts/planta/build-prototype-plan.py",
+    "pwa": "python3 scripts/app/build-pwa.py",
+    "export:html": "python3 scripts/app/export-prototipo.py",
+    "docs": "python3 scripts/docs/build-documentacao.py",
+    "docs:pdf": "npm run docs && python3 scripts/docs/exportar-docs-pdf.py",
     "test:comunidade": "node --test prototipo/tests/community.test.mjs"
   }
 }

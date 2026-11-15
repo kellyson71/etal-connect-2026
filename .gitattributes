@@ -1,7 +1,7 @@
 # Arquivos gerados por scripts: o GitHub recolhe os diffs e não conta como código.
 # Para mudar, edite a fonte e rode o comando indicado.
 
-# npm run planta (fonte: scripts/build-principal-plan.py)
+# npm run planta (fonte: scripts/planta/build-principal-plan.py)
 prototipo/plan-data.js linguist-generated
 dados/principal-plan.json linguist-generated
 dados/bloco-principal.svg linguist-generated
@@ -13,7 +13,7 @@ prototipo/campus-fundo.js linguist-generated
 prototipo/campus-verde.js linguist-generated
 prototipo/sprites.js linguist-generated
 
-# npm run docs e scripts/documentar-modelos.py
+# npm run docs e scripts/docs/documentar-modelos.py
 docs/apresentacao.html linguist-generated
 docs/demos/app.html linguist-generated
 docs/assets/fontes/planta-atual-*.svg linguist-generated

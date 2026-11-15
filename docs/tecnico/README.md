@@ -27,7 +27,7 @@ npm run docs
 # Gerar também o PDF, com Chrome e Playwright locais:
 npm run docs:pdf
 # Atualizar também as capturas e os contratos extraídos do código:
-python3 scripts/capturar-documentacao.py
+python3 scripts/docs/capturar-documentacao.py
 npm run docs
 ```
 

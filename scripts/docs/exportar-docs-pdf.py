@@ -4,8 +4,8 @@
 
 - Apresentação (docs/apresentacao.html): com o tamanho de página do CSS dela.
 - Explorações visuais (direções, propostas e telas do crachá): cada página vira uma folha larga, como na tela.
-- A comparação dos mapas sai de scripts/documentar-modelos.py, no mesmo lugar.
-As imagens opacas viram JPEG antes de imprimir (scripts/otimizar_pdf.py), o que deixa os PDFs bem mais leves.
+- A comparação dos mapas sai de scripts/docs/documentar-modelos.py, no mesmo lugar.
+As imagens opacas viram JPEG antes de imprimir (scripts/docs/otimizar_pdf.py), o que deixa os PDFs bem mais leves.
 """
 import functools
 import http.server
@@ -17,8 +17,8 @@ from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / 'scripts'))
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / 'scripts/docs'))
 from otimizar_pdf import imagens_leves  # noqa: E402
 
 OUT = ROOT / 'docs/pdf'

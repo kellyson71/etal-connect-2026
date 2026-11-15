@@ -565,7 +565,7 @@
     }
   });
   ENT.trees.forEach((q, i) => addTree(q[0], q[1], 2.8 + (i % 2) * 0.8, i % 3));
-  /* Copas tiradas da imagem de satélite (scripts/extrair-verde.py): onde a imagem cobre, valem elas e saem as
+  /* Copas tiradas da imagem de satélite (scripts/campus/extrair-verde.py): onde a imagem cobre, valem elas e saem as
      árvores colocadas à mão. Fora do muro ficam só as copas maiores. */
   const VERDE = window.CAMPUS_VERDE || null;
   if (VERDE) {

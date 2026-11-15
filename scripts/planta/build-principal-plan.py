@@ -17,7 +17,7 @@ import math
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 VIEWBOX = '0 0 960 660'
 WORLD = dict(sx=0.068172, sy=0.065299, x0=-42.2988, y0=-52.1472)
 
@@ -392,7 +392,7 @@ plan = dict(source='Plantas de 2012 (Souza, UFRN), figuras 9 a 11; traçado em p
             units='px da figura de 2012', viewBox=VIEWBOX, world=WORLD, entrances=ENTRANCES,
             rampFoot=list(foot), rampLoop=[list(q) for q in loop], floors=out_floors)
 (ROOT / 'dados/principal-plan.json').write_text(json.dumps(plan, ensure_ascii=False, indent=1) + '\n')
-sys.path.insert(0, str(ROOT / 'scripts'))
+sys.path.insert(0, str(ROOT / 'scripts/planta'))
 from plan_styles import sheet  # noqa: E402
 svg = sheet(json.loads((ROOT / 'dados/principal-plan.json').read_text()), 'clara')
 (ROOT / 'dados/bloco-principal.svg').write_text(svg)

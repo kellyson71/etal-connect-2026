@@ -47,4 +47,4 @@ Horários das atividades usam data e HH:MM locais; o fuso de referência é Amer
 
 ## Dicionário completo
 
-Na apresentação, cada tabela pode ser aberta para consultar nomes, tipos, nulabilidade, PK, FK e unicidade. A fonte legível por máquina está em docs/assets/evidencias.json, extraída diretamente do SQLAlchemy. Atualizar com python3 scripts/capturar-documentacao.py depois de mudar o modelo.
+Na apresentação, cada tabela pode ser aberta para consultar nomes, tipos, nulabilidade, PK, FK e unicidade. A fonte legível por máquina está em docs/assets/evidencias.json, extraída diretamente do SQLAlchemy. Atualizar com python3 scripts/docs/capturar-documentacao.py depois de mudar o modelo.

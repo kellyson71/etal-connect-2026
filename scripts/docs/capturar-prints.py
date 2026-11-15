@@ -1,7 +1,7 @@
 """Tira as prints do README (docs/prints/) do protótipo rodando em http://127.0.0.1:8770.
 
     sh prototipo/rodar.sh &   # em outro terminal
-    python3 scripts/capturar-prints.py
+    python3 scripts/docs/capturar-prints.py
 
 Celular de 390 × 844 (2×), movimento reduzido (o mapa pula a abertura), sem service worker e com os dados de exemplo.
 O mapa 3D roda no Chrome sem placa de vídeo (SwiftShader): demora, mas a imagem é a mesma.
@@ -12,7 +12,7 @@ from pathlib import Path
 from PIL import Image
 from playwright.sync_api import sync_playwright
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'docs/prints'
 BASE = sys.argv[1] if len(sys.argv) > 1 else 'http://127.0.0.1:8770'  # com HTTPS=1: https://<ip>:8770
 CEL = dict(ignore_https_errors=True, viewport={'width': 390, 'height': 844}, device_scale_factor=2, is_mobile=True, has_touch=True,

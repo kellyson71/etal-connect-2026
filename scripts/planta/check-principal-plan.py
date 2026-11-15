@@ -2,7 +2,7 @@
 import json
 from pathlib import Path
 
-plan = json.loads((Path(__file__).resolve().parents[1] / 'dados/principal-plan.json').read_text())
+plan = json.loads((Path(__file__).resolve().parents[2] / 'dados/principal-plan.json').read_text())
 VW, VH = map(float, plan['viewBox'].split()[2:])
 NUMBERED = ('classroom', 'laboratory', 'staff', 'office')
 errs = []

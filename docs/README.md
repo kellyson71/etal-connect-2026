@@ -39,7 +39,7 @@ Tudo o que explica o projeto, num lugar só. Os PDFs abrem direto no GitHub; os 
 
 ## Dados do campus (`../dados/`)
 
-O levantamento do campus (`campus-survey.json`), a planta do bloco principal traçada sobre as plantas de 2012 (`principal-plan.json`) e a prancha dos três andares ([`bloco-principal.svg`](../dados/bloco-principal.svg)). A planta é editada em `scripts/build-principal-plan.py` e gerada com `npm run planta`.
+O levantamento do campus (`campus-survey.json`), a planta do bloco principal traçada sobre as plantas de 2012 (`principal-plan.json`) e a prancha dos três andares ([`bloco-principal.svg`](../dados/bloco-principal.svg)). A planta é editada em `scripts/planta/build-principal-plan.py` e gerada com `npm run planta`.
 
 ## Histórico
 
@@ -52,10 +52,10 @@ O levantamento do campus (`campus-survey.json`), a planta do bloco principal tra
 ```sh
 npm run docs        # apresentação (docs/apresentacao.html) e demonstrações isoladas do app
 npm run docs:pdf    # PDFs desta pasta (Playwright, Chrome e pdfunite locais)
-python3 scripts/documentar-modelos.py --somente-documento   # comparação dos mapas (precisa dos PNGs originais)
-python3 scripts/capturar-prints.py                          # prints do README (com o protótipo rodando)
+python3 scripts/docs/documentar-modelos.py --somente-documento   # comparação dos mapas (precisa dos PNGs originais)
+python3 scripts/docs/capturar-prints.py                          # prints do README (com o protótipo rodando)
 ```
 
-Antes de imprimir, as capturas de tela viram JPEG no tamanho em que aparecem (`scripts/otimizar_pdf.py`): os PDFs ficam leves e o texto continua pesquisável. Os PNGs originais da comparação (75 MB) ficam só na máquina de quem gera; os hashes deles estão em `comparacao-modelos/evidencias.json`.
+Antes de imprimir, as capturas de tela viram JPEG no tamanho em que aparecem (`scripts/docs/otimizar_pdf.py`): os PDFs ficam leves e o texto continua pesquisável. Os PNGs originais da comparação (75 MB) ficam só na máquina de quem gera; os hashes deles estão em `comparacao-modelos/evidencias.json`.
 
 A dissertação de 2012 que deu as plantas do bloco (Larissa Leiros de Souza, UFRN) está no [repositório da UFRN](https://repositorio.ufrn.br/server/api/core/bitstreams/2be1d619-02aa-4c23-aa6b-4d65aa238aba/content); os recortes das figuras usados no projeto ficam em `prototipo/assets/ref2012/`.

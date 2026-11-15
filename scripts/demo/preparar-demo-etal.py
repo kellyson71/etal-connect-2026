@@ -5,7 +5,7 @@ import json,re,subprocess,urllib.request
 from pathlib import Path
 from datetime import datetime,timezone
 from bs4 import BeautifulSoup
-ROOT=Path(__file__).resolve().parents[1]
+ROOT=Path(__file__).resolve().parents[2]
 SOURCE='https://suap.ifrn.edu.br/eventos/inscricao/1/8528/'
 OLD=json.loads(subprocess.check_output(['node','--input-type=module','-e',"import fs from 'node:fs';import vm from 'node:vm';let c={window:{}};vm.createContext(c);for(let f of ['plan-data.js','data.js'])vm.runInContext(fs.readFileSync('prototipo/'+f,'utf8'),c);process.stdout.write(JSON.stringify(c.window.DATA));"],cwd=ROOT))
 html=urllib.request.urlopen(SOURCE,timeout=40).read().decode()
@@ -91,5 +91,5 @@ workshop=ROOT/'backend/seed/oficina-kellyson.json'
 if workshop.exists():
  text+='\n/* <oficina-kellyson> */\nwindow.DATA.sessions = window.DATA.sessions.filter((a) => a.id !== "sua-palestra");\nwindow.DATA.sessions.push('+json.dumps(json.loads(workshop.read_text()),ensure_ascii=False)+');\n'
 p.write_text(text)
-subprocess.run(['node','scripts/exportar-programacao.mjs'],cwd=ROOT,check=True)
+subprocess.run(['node','scripts/app/exportar-programacao.mjs'],cwd=ROOT,check=True)
 print(f'{len(source)} atividades oficiais + 4 campeonatos e credenciamento; {len(posts)} publicações demonstrativas.')

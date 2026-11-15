@@ -3,7 +3,7 @@
 A versão embutida é a realista (mapa3d/), com o destaque do evento e o interior em maquete ao abrir o bloco."""
 from pathlib import Path
 import shutil
-root = Path(__file__).resolve().parents[1]
+root = Path(__file__).resolve().parents[2]
 source = root / 'mapa3d'
 target = root / 'prototipo/mapa3d'
 target.mkdir(exist_ok=True)

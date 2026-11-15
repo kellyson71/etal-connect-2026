@@ -3,7 +3,7 @@ from html import escape
 import json
 from pathlib import Path
 import re
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 EVIDENCIA = json.loads((ROOT / 'docs/assets/evidencias.json').read_text())
 
 def screenshot(file, alt, url='', extra=''):

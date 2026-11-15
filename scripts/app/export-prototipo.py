@@ -4,14 +4,14 @@ Embute CSS, scripts, dados do mapa e imagens (sprites, texturas, logos). Não pr
 nem de servidor. Sem o servidor local, o login do SUAP não funciona: a tela oferece a conta de
 visitante e os dados de exemplo. Service worker e instalação também ficam de fora, porque o
 navegador não os permite em arquivos locais.
-Uso: python3 scripts/export-prototipo.py   (ou npm run export:html)
+Uso: python3 scripts/app/export-prototipo.py   (ou npm run export:html)
 """
 import base64
 import json
 import re
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 SRC = ROOT / 'prototipo'
 OUT = ROOT / 'dist' / 'etal-connect.html'  # gerado: fica fora do Git (vai anexado às versões no GitHub)
 MIME = {'.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp'}

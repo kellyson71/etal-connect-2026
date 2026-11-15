@@ -1,6 +1,6 @@
 """Documenta os dois motores existentes, sem modificar o aplicativo.
 
-Uso: python3 scripts/documentar-modelos.py
+Uso: python3 scripts/docs/documentar-modelos.py
 Saída: docs/comparacao-modelos/ (HTML, PDF, PNGs, pares e evidências).
 Requer Playwright, Pillow e Chrome locais. Usa somente dados demonstrativos.
 """
@@ -19,7 +19,7 @@ import urllib.request
 from PIL import Image, ImageDraw, ImageFont
 from playwright.sync_api import sync_playwright
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'docs/comparacao-modelos'
 WIDTH, HEIGHT, SCALE = 1600, 1000, 1.5
 HOUR = 14
@@ -239,7 +239,7 @@ Capturado em {evidence['capturedAt']}. Fonte: commit `{evidence['commit']}`.
 - `imagens/classico/` e `imagens/novo/`: os 40 PNGs originais (cenas em 2400 × 1500 px, interfaces em 585 × 1266 px). Ficam só na máquina de quem gerou (fora do Git, 75 MB); os hashes estão em `evidencias.json` e o script os recria.
 - `evidencias.json`: parâmetros das câmeras, arquivos-fonte, hashes e erros de navegador.
 
-Reproduzir a partir da raiz: `python3 scripts/documentar-modelos.py`.
+Reproduzir a partir da raiz: `python3 scripts/docs/documentar-modelos.py`.
 É necessário Playwright, Pillow e Chrome; o script abre e encerra seu próprio servidor local.
 As capturas usam contextos novos, dados demonstrativos e armazenamento isolado; não alteram o aplicativo.
 

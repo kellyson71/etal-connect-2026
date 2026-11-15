@@ -1,6 +1,6 @@
 """Captura evidências locais com dados de exemplo, sem alterar config.js ou o banco do app.
 
-Uso: python3 scripts/capturar-documentacao.py
+Uso: python3 scripts/docs/capturar-documentacao.py
 Requer Playwright no Python que executa este script e backend/.venv instalado.
 """
 import json
@@ -16,7 +16,7 @@ import urllib.request
 
 from playwright.sync_api import sync_playwright
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'docs/assets'
 PYTHON = ROOT / 'backend/.venv/bin/python'
 

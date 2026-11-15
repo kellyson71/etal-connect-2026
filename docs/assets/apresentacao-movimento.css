@@ -1,4 +1,4 @@
-/* Camada de movimento e acabamento da apresentação (gerada junto com scripts/build-documentacao.py). */
+/* Camada de movimento e acabamento da apresentação (gerada junto com scripts/docs/build-documentacao.py). */
 
 /* Aberturas de capítulo: foto em tela cheia, número gigante e texto que sobe. */
 .slide.divider{padding:0;background:var(--deep)}

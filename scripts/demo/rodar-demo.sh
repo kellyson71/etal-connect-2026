@@ -1,7 +1,7 @@
 #!/bin/sh
 # Banco separado; nenhuma credencial SUAP é armazenada.
 set -eu
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../.."
 DEMO_ROOT=$(pwd)
 export ETAL_BANCO="sqlite:///$DEMO_ROOT/backend/demo-etal.db"
 export ETAL_SUAP_PORTAL=1

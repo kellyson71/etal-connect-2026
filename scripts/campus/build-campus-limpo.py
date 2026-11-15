@@ -9,7 +9,7 @@ import json
 import math
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 sv = json.loads((ROOT / 'dados/campus-survey.json').read_text())['elementos']
 raw = (ROOT / 'prototipo/campus-fundo.js').read_text()
 fu = json.loads(raw[raw.index('['):raw.rindex(']') + 1])

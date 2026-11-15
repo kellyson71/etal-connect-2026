@@ -61,7 +61,7 @@ ETAL_LOGIN_DEV=1 .venv/bin/uvicorn app.main:app --port 8000      # API em http:/
 .venv/bin/python -m pytest -q                                    # testes
 ```
 
-A programação de exemplo sai do protótipo: `node scripts/exportar-programacao.mjs --ano 2025 --mes 11`.
+A programação de exemplo sai do protótipo: `node scripts/app/exportar-programacao.mjs --ano 2025 --mes 11`.
 
 ## Pôr no ar
 

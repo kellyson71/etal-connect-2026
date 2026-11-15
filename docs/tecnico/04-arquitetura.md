@@ -60,7 +60,7 @@ Para conectar o app à API, configurar api com o endereço local em prototipo/co
 ## Gerar e manter
 
 ```sh
-npm run planta       # somente ao alterar a geometria, na fonte scripts/build-principal-plan.py
+npm run planta       # somente ao alterar a geometria, na fonte scripts/planta/build-principal-plan.py
 npm run pwa          # depois de mudar arquivos do protótipo
 npm run export:html  # gera dist/etal-connect.html (arquivo único) a partir de prototipo/
 npm run docs         # gera documentação, sem alterar o app

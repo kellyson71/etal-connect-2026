@@ -1,5 +1,5 @@
 """Blender: renderiza os modelos em imagens (impostores) e modela a fachada do campus.
-Uso: blender -b -noaudio -P scripts/assets/render_sprites.py -- <pasta de saída>
+Uso: blender -b -noaudio -P scripts/campus/sprites/render_sprites.py -- <pasta de saída>
 Saída: <nome>_tilt.png e <nome>_top.png, wall.png e meta.json.
 """
 import json, math, os, sys
@@ -7,7 +7,7 @@ import bpy
 from mathutils import Vector
 
 OUT = sys.argv[sys.argv.index('--') + 1]
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 MODELS = os.path.join(ROOT, 'referencias', 'modelos')
 TREES = ['tree_oak', 'tree_default', 'tree_fat']
 HOUSES = ['building-type-a', 'building-type-c', 'building-type-e', 'building-type-h', 'building-type-k']

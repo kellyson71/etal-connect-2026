@@ -1,8 +1,8 @@
 """Gera prototipo/plan-data.js: SVG dos três andares (estilo 'clara') + zonas clicáveis."""
 import json, sys
 from pathlib import Path
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / 'scripts'))
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / 'scripts/planta'))
 import plan_styles as ps
 plan = json.loads((ROOT / 'dados/principal-plan.json').read_text())
 floors = []

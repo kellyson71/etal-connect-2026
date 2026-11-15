@@ -1,11 +1,11 @@
 /* Dados da animação "Como a rota é calculada" da apresentação (docs/assets/rota-completa.json).
    Roda o mesmo código de rotas do mapa (mapa3d/src/rotas.js, função explicar) para uma rota de exemplo que sai da
    portaria, anda pelas calçadas, entra no bloco e sobe aos três andares:
-     node scripts/gerar-rota-apresentacao.mjs
+     node scripts/docs/gerar-rota-apresentacao.mjs
    Guarda a ordem de visita do Dijkstra (calçadas) e do A* (cada andar), o custo de cada entrada e de escada × rampa. */
 import fs from 'node:fs'; import vm from 'node:vm';
 globalThis.window = globalThis;
-const R = new URL('..', import.meta.url).pathname;
+const R = new URL('../..', import.meta.url).pathname;
 for (const n of ['campus-data', 'campus-limpo', 'campus-fundo', 'campus-entorno', 'campus-verde', 'plan-data']) vm.runInThisContext(fs.readFileSync(`${R}prototipo/${n}.js`, 'utf8'));
 const { explicar } = await import(`${R}mapa3d/src/rotas.js`);
 const D = await import(`${R}mapa3d/src/dados.js`);

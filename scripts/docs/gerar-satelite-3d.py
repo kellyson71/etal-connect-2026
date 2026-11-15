@@ -2,7 +2,7 @@
 
 O chão da vista 3D é uma transformação afim do plano local (campus3d.js, P com h = 0). Para cada pixel da vista,
 volta-se ao plano local, depois à latitude e longitude (inverso de import-fundo-kml.py) e busca-se a cor no mosaico de satélite.
-Uso: python3 scripts/gerar-satelite-3d.py   (precisa de rede, Playwright, Chrome, numpy e Pillow)
+Uso: python3 scripts/docs/gerar-satelite-3d.py   (precisa de rede, Playwright, Chrome, numpy e Pillow)
 Saída: docs/assets/campus-3d.webp, docs/assets/campus-satelite.webp e as fontes no rodapé do slide.
 """
 import importlib.util, io, json, math, urllib.request, http.server, socketserver, threading
@@ -12,11 +12,11 @@ import numpy as np
 from PIL import Image
 from playwright.sync_api import sync_playwright
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'docs/assets'
 W, H, Z = 1440, 810, 19
 
-spec = importlib.util.spec_from_file_location('kml', ROOT / 'scripts/import-fundo-kml.py'); kml = importlib.util.module_from_spec(spec); spec.loader.exec_module(kml)
+spec = importlib.util.spec_from_file_location('kml', ROOT / 'scripts/campus/import-fundo-kml.py'); kml = importlib.util.module_from_spec(spec); spec.loader.exec_module(kml)
 patio = next(e for e in kml.marks(kml.REF) if e['nome'] == 'patio')
 lon0 = sum(p[0] for p in patio['geo']) / 4; lat0 = sum(p[1] for p in patio['geo']) / 4
 rad = math.pi / 180; s = math.sin(lat0 * rad); den = 1 - 0.00669437999014 * s * s

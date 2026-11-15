@@ -3,8 +3,8 @@
 Usa a mesma conversão do levantamento: origem no centro do pátio e eixos alinhados a ele.
 Só entram as marcações novas; as do levantamento original continuam em campus-survey.json.
 Alturas e aparência ficam em prototipo/campus3d.js, que encontra cada item pelo nome.
-Uso: python3 scripts/import-fundo-kml.py arquivo.kml
-     python3 scripts/import-fundo-kml.py --conferir   confere a conversão com o levantamento
+Uso: python3 scripts/campus/import-fundo-kml.py arquivo.kml
+     python3 scripts/campus/import-fundo-kml.py --conferir   confere a conversão com o levantamento
 """
 import json
 import math
@@ -12,7 +12,7 @@ import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 REF = ROOT / 'referencias/referencia_campus.kml'
 NS = {'k': 'http://www.opengis.net/kml/2.2'}
 

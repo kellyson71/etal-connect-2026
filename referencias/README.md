@@ -5,9 +5,9 @@ Material usado para construir o mapa e a planta. Nada daqui é carregado pelo ap
 | Arquivo | O que é |
 |---|---|
 | `referencia_campus.kml` | Levantamento do campus no Google Earth (35 marcações): contornos e posições dos prédios e caminhos. Convertido para `dados/campus-survey.json`. |
-| `referencia_campus_completo.kml` | Levantamento completo (66 marcações), com o fundo do campus. Importado por `scripts/import-fundo-kml.py`. |
+| `referencia_campus_completo.kml` | Levantamento completo (66 marcações), com o fundo do campus. Importado por `scripts/campus/import-fundo-kml.py`. |
 | `imagens/01…08` | Croquis de ajuste da planta do bloco principal (corredores, escada, rampa, banheiros, recepção). |
-| `modelos/` | Modelos 3D da Kenney (CC0) de onde saem as imagens dos prédios e árvores do mapa clássico (`scripts/assets/render_sprites.py`, no Blender). Créditos em `modelos/CREDITOS.txt`. |
+| `modelos/` | Modelos 3D da Kenney (CC0) de onde saem as imagens dos prédios e árvores do mapa clássico (`scripts/campus/sprites/render_sprites.py`, no Blender). Créditos em `modelos/CREDITOS.txt`. |
 | `inspiracoes-dribbble.html` | Referências de apps de evento no Dribbble, separadas por tela. |
 
 ## Fora do repositório (`local/`)
