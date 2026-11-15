@@ -40,7 +40,7 @@ cd backend
 - Apresentação de 22 slides conferida no Chrome: navegação real de agenda e crachá, mapa com troca de andar e rota por rampa, controle de luz e qualidade 2D, planta comparada, seleção das tabelas e abertura do dicionário.
 - Demos verificadas com armazenamento isolado; o estado de teste do documento principal permaneceu intacto. O app embutido também abriu pela versão local em arquivo. Nenhum erro de JavaScript apareceu nessa conferência.
 
-As imagens ficam em docs/assets/. O script scripts/capturar-documentacao.py cria banco temporário, inicia e encerra os servidores da captura e não altera config.js. Os atalhos ?tela= são apenas meios de obter as telas demonstrativas; não provam a jornada autenticada ponta a ponta.
+As imagens ficam em docs/assets/. O script scripts/docs/capturar-documentacao.py cria banco temporário, inicia e encerra os servidores da captura e não altera config.js. Os atalhos ?tela= são apenas meios de obter as telas demonstrativas; não provam a jornada autenticada ponta a ponta.
 
 evidencias.json inclui os hashes das fontes do app; cenas.json registra o hash do motor e os parâmetros das cenas. Eles permitem conferir se as capturas correspondem ao código atual. O PDF foi conferido com 22 páginas e usa imagens estáticas no lugar dos iframes.
 

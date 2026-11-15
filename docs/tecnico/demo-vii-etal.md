@@ -1,6 +1,6 @@
 # Demonstração com a programação do VII ETAL
 
-Execute `sh scripts/rodar-demo.sh` na raiz. App: http://127.0.0.1:8770; API: http://127.0.0.1:8011/api/docs. O login é feito com matrícula e senha do SUAP. Não há botão de entrada alternativa; o runner desabilita `/api/auth/dev`. A matrícula administradora autorizada é reconhecida após a autenticação normal. No leitor, somente administradores veem o menu simples “Debug · QR Codes”, que usa os QRs assinados do banco local. O endpoint de debug exige papel de organização e `ETAL_DEMO=1`.
+Execute `sh scripts/demo/rodar-demo.sh` na raiz. App: http://127.0.0.1:8770; API: http://127.0.0.1:8011/api/docs. O login é feito com matrícula e senha do SUAP. Não há botão de entrada alternativa; o runner desabilita `/api/auth/dev`. A matrícula administradora autorizada é reconhecida após a autenticação normal. No leitor, somente administradores veem o menu simples “Debug · QR Codes”, que usa os QRs assinados do banco local. O endpoint de debug exige papel de organização e `ETAL_DEMO=1`.
 
 O banco SQLite `backend/demo-etal.db` fica separado do banco normal e fora do Git. A preparação é repetível: atualiza 21 atividades, oito participantes de exemplo, uma matrícula administradora autorizada, agenda/presenças simuladas e um cenário com quatro campeonatos e seis publicações. Postagens e campeonatos começam no banco; as interações e a moderação seguem locais no navegador. Não importamos inscrições, documentos, contatos ou presenças oficiais.
 
@@ -16,9 +16,9 @@ As alocações de salas e os conteúdos de apoio foram preparados para explorar 
 
 ## Atualizar e verificar
 
-`python3 scripts/preparar-demo-etal.py` atualiza o snapshot público e os seeds (requer BeautifulSoup). Depois use `npm run pwa` e `npm run export:html`. Reinicie o runner para reaplicar o seed. Testes: `cd backend && .venv/bin/python -m pytest -q`; `npm run test:comunidade`.
+`python3 scripts/demo/preparar-demo-etal.py` atualiza o snapshot público e os seeds (requer BeautifulSoup). Depois use `npm run pwa` e `npm run export:html`. Reinicie o runner para reaplicar o seed. Testes: `cd backend && .venv/bin/python -m pytest -q`; `npm run test:comunidade`.
 
-Para começar a apresentação sem agenda, credenciamento nem presenças prévios da matrícula administradora: `sh scripts/rodar-demo.sh --reiniciar-admin`. Esse parâmetro afeta somente o usuário administrador no SQLite local. As telas de uso omitem rótulos demonstrativos por decisão do projeto; a origem e as adaptações permanecem registradas nesta documentação e nos metadados do seed.
+Para começar a apresentação sem agenda, credenciamento nem presenças prévios da matrícula administradora: `sh scripts/demo/rodar-demo.sh --reiniciar-admin`. Esse parâmetro afeta somente o usuário administrador no SQLite local. As telas de uso omitem rótulos demonstrativos por decisão do projeto; a origem e as adaptações permanecem registradas nesta documentação e nos metadados do seed.
 
 ## Oficina do autor
 

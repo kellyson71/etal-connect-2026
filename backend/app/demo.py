@@ -1,4 +1,4 @@
-"""Popula somente um banco local de demonstração; execução por scripts/rodar-demo.sh."""
+"""Popula somente um banco local de demonstração; execução por scripts/demo/rodar-demo.sh."""
 import json
 from datetime import datetime
 from pathlib import Path
