@@ -86,3 +86,7 @@ prototipo/mapa3d/
 # Material de terceiros usado como referência (fotos do Google, dissertação de 2012):
 # fica só na máquina; as fontes estão citadas em docs/tecnico/campus-referencias.md
 /referencias/local/
+
+# materiais enviados no backend local (em produção ficam num volume)
+backend/arquivos/
+backend/.arquivos-teste/

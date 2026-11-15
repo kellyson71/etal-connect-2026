@@ -98,7 +98,10 @@ function netState() {
     return;
   }
   bar.classList.remove('ok');
-  bar.textContent = PWA.ready ? 'Sem internet · usando a cópia salva no aparelho' : 'Sem internet';
+  const n = S.auth && API ? pendentes().length : 0;
+  bar.textContent =
+    (PWA.ready ? 'Sem internet · usando a cópia salva no aparelho' : 'Sem internet') +
+    (n ? ` · ${n} ${n === 1 ? 'leitura' : 'leituras'} para enviar` : '');
   bar.classList.add('show');
 }
 window.addEventListener('online', netState);

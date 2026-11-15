@@ -132,20 +132,20 @@ def test_login_suap_com_senha(app_cliente, monkeypatch):
         def __init__(self, **_):
             pass
 
-        def __enter__(self):
+        async def __aenter__(self):
             return self
 
-        def __exit__(self, *_):
+        async def __aexit__(self, *_):
             return False
 
-        def post(self, url, json):
+        async def post(self, url, json):
             return Resp(200, {'access': 'a', 'refresh': 'r'}) if json['password'] == 'certa' else Resp(401, {})
 
-        def get(self, url, headers):
+        async def get(self, url, headers):
             assert url.endswith('/api/rh/eu/') and headers['Authorization'] == 'Bearer a'
             return Resp(200, {'identificacao': '20241014', 'nome_usual': 'Ana Souza', 'email': 'ana@escolar.ifrn.edu.br', 'foto': '/media/f.jpg'})
 
-    monkeypatch.setattr(httpx, 'Client', Falso)
+    monkeypatch.setattr(httpx, 'AsyncClient', Falso)
     assert app_cliente.post('/api/auth/suap/senha', json={'matricula': '20241014', 'senha': 'errada'}).status_code == 401
     assert app_cliente.post('/api/auth/suap/senha', json={'matricula': '20241014', 'senha': 'certa'}).status_code == 200
     eu = app_cliente.get('/api/eu').json()['person']

@@ -4,7 +4,7 @@ from datetime import datetime
 from pathlib import Path
 from sqlalchemy import select, delete
 from .config import config
-from .db import criar_tabelas, SessionLocal
+from .db import SessionLocal, migrar
 from .importar import programacao
 from .modelos import Pessoa, Agenda, Presenca, Aviso, CenarioDemo
 BASE=Path(__file__).resolve().parents[1]
@@ -15,7 +15,7 @@ ADMIN_AGENDA=['game-maker','impacto-ia','saude-mental','imagens-ia']
 def popular():
     if not config().banco.startswith('sqlite:') or not config().banco.endswith('/demo-etal.db'):
         raise RuntimeError('A preparação da demo exige um SQLite separado chamado demo-etal.db.')
-    criar_tabelas()
+    migrar()
     n=programacao(str(BASE/'seed/programacao.json'))
     data=json.loads((BASE/'seed/cenario-demo.json').read_text())
     with SessionLocal() as db:

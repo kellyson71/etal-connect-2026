@@ -1,6 +1,7 @@
 fastapi>=0.115,<1
 uvicorn[standard]>=0.34
 sqlalchemy>=2.0.36,<2.1
+alembic>=1.14,<2
 pydantic-settings>=2.7,<3
 httpx>=0.28,<1
 itsdangerous>=2.2,<3

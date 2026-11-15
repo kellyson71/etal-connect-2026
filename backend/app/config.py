@@ -28,6 +28,12 @@ class Config(BaseSettings):
     suap_escopo: str = 'identificacao email'
     # Entrada direta com matrícula e senha (token JWT da API do SUAP).
     suap_api_url: str = 'https://suap.ifrn.edu.br'
+    # Teto de chamadas simultâneas ao SUAP e quanto tempo (s) um login espera a vez antes do 503 (app/suap_fila.py).
+    suap_simultaneos: int = 8
+    suap_espera: float = 12
+
+    # Pasta dos materiais enviados pela organização (app/arquivos.py). Em produção, um volume do Docker.
+    arquivos: str = './arquivos'
 
     # Matrículas ou e-mails com acesso ao painel da organização, separados por vírgula.
     organizacao: str = ''
@@ -41,6 +47,9 @@ class Config(BaseSettings):
     # Presença: aceita a leitura do QR de uma atividade só perto do horário dela.
     janela_presenca: bool = True
     antecedencia_min: int = 20
+    # Leitura guardada sem internet: ela precisa ter sido feita durante a atividade e chegar ao servidor até estes minutos
+    # depois do fim (relógio do servidor). A hora informada pelo aparelho só restringe, nunca amplia a janela.
+    tolerancia_envio_min: int = 60
     fuso: str = 'America/Fortaleza'
 
     @property

@@ -7,14 +7,14 @@ from fastapi.responses import RedirectResponse
 
 from .config import config
 from . import documentacao
-from .db import criar_tabelas
+from .db import migrar
 from .rotas import auth, eu, homologacao, org, publico, suap
 from .seguranca import publica
 
 
 @asynccontextmanager
 async def ciclo(_app: FastAPI):
-    criar_tabelas()
+    migrar()
     yield
 
 

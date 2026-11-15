@@ -19,6 +19,10 @@ Na revisão documental de 09/11/2026, a execução local de .venv/bin/python -m 
 | test_suap_sem_configuracao | Comportamento sem aplicação OAuth2 configurada |
 | test_homologacao | Código de teste e QRs do ambiente de homologação |
 | test_atividade_sem_sala_sem_andar | Atividade sem localização não inventa andar |
+| test_limites (3) | 30 matrículas pelo mesmo endereço entram; a 7ª senha errada da mesma matrícula é barrada; fila do SUAP cheia responde 503 com `Retry-After` |
+| test_migracoes (2) | O modelo bate com as migrações; banco antigo é atualizado sem perder dados |
+| test_presenca_adiada (10) | Leitura guardada sem internet: vale durante a atividade; fora dela, tarde demais ou com hora no futuro não vale; fuso convertido; não duplica; QR falso recusado; recusa não credencia |
+| test_material_antigo_do_banco_passa_para_o_disco | Material guardado no banco antes da mudança vai para o disco ao ser aberto |
 | test_login_suap_com_senha | `POST /api/auth/suap/senha` com cliente HTTP simulado: senha errada responde 401; senha certa responde 200, abre a sessão (`/api/eu` traz o nome) e a foto relativa vira URL completa do SUAP |
 
 Os testes usam SQLite de teste, programação de exemplo e sessões de desenvolvimento. O teste SUAP não faz chamadas a uma conta real.
@@ -31,6 +35,7 @@ No app e no mapa (`npm test` e `npm run test:navegador`, também na CI do front-
 | `prototipo/tests/community.test.mjs` | Publicações: armazenamento, menções, denúncias e moderação |
 | `scripts/planta/check-principal-plan.py` | Regras da planta do bloco (recepção, corredores, escada, rampa, bebedouro) |
 | `prototipo/tests/telas.py` | 19 telas do app no Chromium, tocando nas ações de cada uma, sem erro de JavaScript |
+| `prototipo/tests/presenca_sem_rede.py` | Com a API de verdade: leitura sem rede guardada (mesmo fechando o app) e sem valer; enviada quando a rede volta e marcada como adiada; recusada sai da fila e avisa; servidor fora do ar mantém; QR que não é do ETAL não é guardado |
 | `montar-app.mjs --verificar` | O app.js e o app.css montados estão em dia com as partes |
 
 O teste das telas confere que nada quebra; não compara a aparência das telas.
@@ -75,4 +80,4 @@ evidencias.json inclui os hashes das fontes do app; cenas.json registra o hash d
 
 ## O que continua aberto
 
-Entrega SMTP e retorno OAuth2 reais, carga do evento, acessibilidade, operação sem conexão, participantes reais no painel, migrações e recuperação de backup. O CI em .github/workflows/backend.yml testa a API; a etapa de implantação é condicional.
+Entrega SMTP e retorno OAuth2 reais, carga do evento, acessibilidade, participantes reais no painel e recuperação de backup. O CI em .github/workflows/backend.yml testa a API; a etapa de implantação é condicional.

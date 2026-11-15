@@ -250,6 +250,7 @@ Screens.activity = ({ id }) => {
       <div class="pad stack detail detalhe-v2">
         <span class="kind kind-tp tp-${t.k} st" ${st(0)}>${ic(t.icon)}${s.type}</span>
         <h1 class="title-lg st" ${st(1)}>${s.title}</h1>
+        ${API && pendenteDe(id) ? `<p class="leitura-pendente st" ${st(1)}>${ic('qr')}<span><b>Leitura guardada, ainda sem valer.</b> O app envia a presença quando a internet voltar.</span></p>` : ''}
         ${t.g === 'mesa' ? '' : quem}
         ${blocos}
         ${lugar}

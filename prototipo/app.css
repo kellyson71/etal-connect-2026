@@ -14590,3 +14590,23 @@ html.passeio-cheio .statusbar {
 .sendpc > .i:last-child {
   flex-shrink: 0;
 }
+
+/* Leitura de QR guardada sem internet (enviarPendentes em app/28-servidor.js) */
+.leitura-pendente {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--blue) 10%, transparent);
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.35;
+}
+.leitura-pendente .i {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  margin-top: 1px;
+}

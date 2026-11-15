@@ -7,6 +7,7 @@ from urllib.parse import urlencode
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, Query
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import select
@@ -15,7 +16,8 @@ from sqlalchemy.orm import Session
 from .. import suap_portal
 from ..config import config
 from ..db import sessao
-from ..limite import limitar
+from ..limite import contar, limitar
+from ..suap_fila import vez_no_suap
 from ..modelos import LinkAcesso, Pessoa
 from ..seguranca import abrir_sessao, agora, eh_organizacao, fechar_sessao, hash_token, novo_token, publica
 
@@ -71,26 +73,28 @@ def _pessoa_suap(d: dict, db: Session) -> Pessoa | None:
 
 
 @rota.get('/suap/retorno')
-def suap_retorno(request: Request, code: str = Query('', description='Código fornecido pelo SUAP após autorizar. Não preencher manualmente.'), state: str = Query('', description='Estado fornecido pelo SUAP; precisa coincidir com o cookie temporário do início do fluxo.'), db: Session = Depends(sessao)):
+async def suap_retorno(request: Request, code: str = Query('', description='Código fornecido pelo SUAP após autorizar. Não preencher manualmente.'), state: str = Query('', description='Estado fornecido pelo SUAP; precisa coincidir com o cookie temporário do início do fluxo.'), db: Session = Depends(sessao)):
     c = config()
     if not code or not state or state != request.cookies.get(ESTADO):
         return RedirectResponse(f'{publica(request)}/?login=erro', 302)
     try:
-        with httpx.Client(timeout=15) as h:
-            tok = h.post(c.suap_token_url, data={'grant_type': 'authorization_code', 'code': code,
+        async with vez_no_suap(), httpx.AsyncClient(timeout=15) as h:
+            tok = await h.post(c.suap_token_url, data={'grant_type': 'authorization_code', 'code': code,
                                                  'redirect_uri': f'{publica(request)}/api/auth/suap/retorno',
                                                  'client_id': c.suap_client_id, 'client_secret': c.suap_client_secret})
             tok.raise_for_status()
             cab = {'Authorization': f'Bearer {tok.json()["access_token"]}'}
-            eu = h.get(c.suap_userinfo_url, headers=cab)
+            eu = await h.get(c.suap_userinfo_url, headers=cab)
             if eu.status_code == 404:  # versões novas do SUAP: /api/rh/eu/
-                eu = h.get(f'{c.suap_api_url.rstrip("/")}/api/rh/eu/', headers=cab)
+                eu = await h.get(f'{c.suap_api_url.rstrip("/")}/api/rh/eu/', headers=cab)
             eu.raise_for_status()
             d = eu.json()
+    except HTTPException:  # fila do SUAP cheia
+        return RedirectResponse(f'{publica(request)}/?login=suap-ocupado', 302)
     except (httpx.HTTPError, KeyError, ValueError) as erro:
         print(f'login SUAP falhou: {erro!r}', flush=True)  # aparece nos logs da hospedagem
         return RedirectResponse(f'{publica(request)}/?login=suap-indisponivel', 302)
-    p = _pessoa_suap(d, db)
+    p = await run_in_threadpool(_pessoa_suap, d, db)
     if not p:
         return RedirectResponse(f'{publica(request)}/?login=erro', 302)
     resp = RedirectResponse(f'{publica(request)}/?login=ok', 302)
@@ -104,18 +108,21 @@ class LoginSuap(BaseModel):
     senha: str = Field(min_length=1, max_length=200, description='Senha atual do SUAP. Usada apenas durante a autenticação; não é gravada no banco.', examples=['SUA_SENHA'], json_schema_extra={'format':'password'})
 
 
-@rota.post('/suap/senha', dependencies=[Depends(limitar('suap-senha', 8))])
-def suap_senha(l: LoginSuap, response: Response, db: Session = Depends(sessao)):
+@rota.post('/suap/senha', dependencies=[Depends(limitar('suap-senha-ip', 120))])
+async def suap_senha(l: LoginSuap, response: Response, db: Session = Depends(sessao)):
     """Entrada direta com matrícula e senha: pede o token JWT à API do SUAP e lê o perfil.
-    A senha e os tokens só passam por aqui; nada é guardado."""
+    A senha e os tokens só passam por aqui; nada é guardado. Limite de tentativas por matrícula; as chamadas ao SUAP
+    esperam a vez numa fila curta (app/suap_fila.py)."""
+    matricula = l.matricula.strip()
+    contar('suap-senha', matricula.lower(), 6, msg='Muitas tentativas com esta matrícula. Espere um minuto.')
     base = config().suap_api_url.rstrip('/')
     try:
-        with httpx.Client(timeout=20) as h:
-            tok = h.post(f'{base}/api/token/pair', json={'username': l.matricula.strip(), 'password': l.senha})
+        async with vez_no_suap(), httpx.AsyncClient(timeout=20) as h:
+            tok = await h.post(f'{base}/api/token/pair', json={'username': matricula, 'password': l.senha})
             if tok.status_code in (400, 401, 403):
                 raise HTTPException(401, 'Matrícula ou senha incorreta.')
             tok.raise_for_status()
-            eu = h.get(f'{base}/api/rh/eu/', headers={'Authorization': f'Bearer {tok.json()["access"]}'})
+            eu = await h.get(f'{base}/api/rh/eu/', headers={'Authorization': f'Bearer {tok.json()["access"]}'})
             eu.raise_for_status()
             d = eu.json()
     except HTTPException:
@@ -123,13 +130,18 @@ def suap_senha(l: LoginSuap, response: Response, db: Session = Depends(sessao)):
     except (httpx.HTTPError, KeyError, ValueError) as erro:
         print(f'login SUAP (senha) falhou: {erro!r}', flush=True)
         raise HTTPException(503, 'O SUAP não respondeu. Tente de novo em instantes.') from None
-    p = _pessoa_suap(d, db)
+    p = await run_in_threadpool(_pessoa_suap, d, db)
     if not p:
         raise HTTPException(502, 'O SUAP não informou a matrícula.')
     abrir_sessao(response, p)
     if config().suap_portal:
         portal_token = secrets.token_urlsafe(32)
-        if suap_portal.connect(f'{p.id}:{portal_token}', base, l.matricula.strip(), l.senha):
+        try:
+            async with vez_no_suap():
+                ok = await run_in_threadpool(suap_portal.connect, f'{p.id}:{portal_token}', base, matricula, l.senha)
+        except HTTPException:
+            ok = False  # fila cheia: o login vale; só o portal fica para depois
+        if ok:
             response.set_cookie('etal_suap_portal', portal_token, max_age=1200, httponly=True, secure=config().cookie_seguro, samesite='lax', path='/api')
     return {'ok': True}
 
@@ -158,9 +170,10 @@ def _enviar_link(email: str, nome: str, url: str) -> bool:
     return True
 
 
-@rota.post('/visitante', status_code=202, dependencies=[Depends(limitar('visitante', 5))])
+@rota.post('/visitante', status_code=202, dependencies=[Depends(limitar('visitante-ip', 60))])
 def visitante(v: Visitante, request: Request, db: Session = Depends(sessao)):
     email = v.email.lower()
+    contar('visitante', email, 3, janela=600, msg='Já mandamos o link para este e-mail. Confira a caixa de entrada e o spam.')
     p = db.scalar(select(Pessoa).where(Pessoa.email == email))
     if not p:
         p = Pessoa(tipo='visitante', email=email, nome=v.nome.strip(), instituicao=v.instituicao, cidade=v.cidade, papel=_papel(None, email))

@@ -68,3 +68,21 @@ def test_material_em_arquivo_abre_so_com_presenca(app_cliente):
     app_cliente.post('/api/presenca', json={'qr': token_qr('react-native')})
     r = app_cliente.get(m['url'])
     assert r.status_code == 200 and r.headers['content-type'] == 'application/pdf'
+
+
+def test_material_antigo_do_banco_passa_para_o_disco(app_cliente):
+    """Materiais enviados antes (conteúdo dentro do banco) continuam abrindo e vão para o disco na primeira leitura."""
+    from app import arquivos
+    from app.db import SessionLocal
+    from app.modelos import Arquivo, Atividade
+    entrar(app_cliente, 'Org', org=True)
+    with SessionLocal() as db:
+        a = db.query(Atividade).first()
+        db.add(Arquivo(id='a' * 32, atividade_id=a.id, nome='antigo.pdf', tipo='application/pdf', tamanho=9, dados=b'%PDF-1.4\n'))
+        db.commit()
+    r = app_cliente.get('/api/arquivos/' + 'a' * 32)
+    assert r.status_code == 200 and r.content == b'%PDF-1.4\n' and 'inline' in r.headers['content-disposition']
+    assert arquivos.caminho('a' * 32).read_bytes() == b'%PDF-1.4\n'
+    with SessionLocal() as db:
+        assert db.get(Arquivo, 'a' * 32).dados is None
+    assert 'attachment' in app_cliente.get('/api/arquivos/' + 'a' * 32 + '?baixar=true').headers['content-disposition']
