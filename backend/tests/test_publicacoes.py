@@ -208,3 +208,12 @@ def test_manutencao_apaga_publicacoes_antigas(tres):
     assert manutencao.publicacoes_antigas(90) == 1
     ids = [p['id'] for p in ana.get('/api/publicacoes').json()['posts']]
     assert ids == [nova] and ana.get(src).status_code == 404
+
+
+def test_versao_evita_baixar_de_novo(tres):
+    ana, bia, _ = tres
+    v = bia.get('/api/publicacoes').json()['versao']
+    assert bia.get(f'/api/publicacoes?versao={v}').json() == {'versao': v, 'igual': True}
+    ana.post('/api/publicacoes', json={'texto': 'novidade'})
+    r = bia.get(f'/api/publicacoes?versao={v}').json()
+    assert r['versao'] > v and r['posts'][0]['text'] == 'novidade'

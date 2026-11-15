@@ -14,6 +14,7 @@ import base64
 import binascii
 import io
 import secrets
+import time
 from datetime import datetime
 from typing import Literal
 
@@ -38,6 +39,10 @@ MOTIVOS = ['Spam ou propaganda', 'Ofensa ou assédio', 'Conteúdo inadequado', '
 ASSUNTOS = ['No evento', 'Conexões', 'Projetos', 'Dicas']
 FOTO_MAX = 4 * 1024 * 1024  # já chega reduzida pelo app (1200 px); o teto é contra envio direto pela API
 FOTO_LADO = 1600
+MAX_POSTS, MAX_MENSAGENS = 300, 200  # o que o app recebe: as mais recentes
+# Versão das publicações: muda a cada alteração. O aviso ao vivo leva só o número, e o app que já tem essa versão não
+# busca de novo (com centenas de celulares abertos, cada mudança não vira centenas de downloads repetidos).
+_versao = {'n': int(time.time() * 1000)}
 
 
 def _credenciada(p: Pessoa = Depends(pessoa_atual)) -> Pessoa:
@@ -82,15 +87,18 @@ def _ms(d: datetime) -> int:
 def estado(db: Session, eu: Pessoa) -> dict:
     """Tudo o que a tela de publicações mostra, no formato de prototipo/community.js."""
     org = eu.papel == 'organizacao'
-    q = select(Publicacao).order_by(Publicacao.criada_em, Publicacao.id)
-    if not org:
-        q = q.where(Publicacao.oculta.is_(False))
-    itens = db.scalars(q).all()
+    def recentes(tipo, n):
+        q = select(Publicacao).where(Publicacao.tipo == tipo).order_by(Publicacao.criada_em.desc(), Publicacao.id.desc()).limit(n)
+        return db.scalars(q if org else q.where(Publicacao.oculta.is_(False))).all()
+    posts, mensagens = recentes('post', MAX_POSTS), recentes('mensagem', MAX_MENSAGENS)
+    q = select(Publicacao).where(Publicacao.tipo == 'comentario', Publicacao.pai_id.in_([p.id for p in posts]))
+    comentarios = db.scalars(q if org else q.where(Publicacao.oculta.is_(False))).all()
+    itens = sorted([*posts, *mensagens, *comentarios], key=lambda x: (x.criada_em, x.id))
     if not org:  # comentário de publicação oculta também some
         vivos = {x.id for x in itens if x.tipo == 'post'}
         itens = [x for x in itens if x.tipo != 'comentario' or x.pai_id in vivos]
     pessoas = {p.id: p for p in db.scalars(select(Pessoa).where(Pessoa.id.in_({x.pessoa_id for x in itens})))} if itens else {}
-    v = {'posts': [], 'messages': [], 'comments': {}, 'likes': {}, 'bookmarks': {}, 'reports': [], 'moderation': {},
+    v = {'versao': _versao['n'], 'posts': [], 'messages': [], 'comments': {}, 'likes': {}, 'bookmarks': {}, 'reports': [], 'moderation': {},
          'audit': [], 'mentionSeen': {}}
     ids = {x.id for x in itens}
     for x in itens:
@@ -125,14 +133,18 @@ def estado(db: Session, eu: Pessoa) -> dict:
 
 def _avisar(tipo: str = 'mudou') -> None:
     """Os celulares abertos buscam o estado de novo (o aviso não leva conteúdo)."""
-    canal.publicar('publicacoes', {'tipo': tipo})
+    _versao['n'] += 1
+    canal.publicar('publicacoes', {'tipo': tipo, 'versao': _versao['n']})
 
 
 @rota.get('', dependencies=[Depends(limitar('publicacoes', 1200))])
-def ver(eu: Pessoa = Depends(pessoa_atual), db: Session = Depends(sessao)):
-    """Feed, comentários, chat, curtidas e os salvos da pessoa. Para a organização, também o que está oculto, as
-    denúncias e o histórico da moderação."""
+def ver(versao: int | None = None, eu: Pessoa = Depends(pessoa_atual), db: Session = Depends(sessao)):
+    """Feed (as 300 publicações mais recentes, com os comentários), chat (as 200 últimas mensagens), curtidas e os
+    salvos da pessoa. Para a organização, também o que está oculto, as denúncias e o histórico da moderação. Com
+    `versao` igual à atual, responde só `{versao, igual: true}`."""
     contar('publicacoes-ver', str(eu.id), 60, msg='Muitas atualizações seguidas. Espere um pouco.')
+    if versao == _versao['n']:
+        return {'versao': versao, 'igual': True}
     return estado(db, eu)
 
 
