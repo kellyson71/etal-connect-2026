@@ -13,6 +13,14 @@ Preparo para o evento
 - Teste de ponta a ponta da presença sem rede, com a API de verdade, na CI.
 - `docs/regras-de-negocio.md`: as regras do app em anotações.
 
+Publicações no servidor
+- Feed com fotos, comentários, chat geral, curtidas, salvos, denúncias e moderação passam a ficar no servidor (antes, só no aparelho), com as mesmas telas.
+- Chegam ao vivo para quem está com a tela aberta; o aviso leva só a versão, e o app só busca de novo se algo mudou.
+- Fotos regravadas no servidor, sem a localização; matrícula e e-mail de quem publica não vão para os outros.
+- Três denúncias de pessoas diferentes tiram o conteúdo do ar até a organização revisar; toda moderação fica no histórico.
+- Limites por pessoa e limpeza depois de 90 dias (`python -m app.manutencao publicacoes`).
+- Moderação também no painel do computador, pela API.
+
 ## 0.11.0 (2026-11-15)
 
 - Código do app dividido por assunto: 30 partes em `prototipo/app/` (entrada, início, agenda, atividade, publicações, mapa, campeonatos, organização, leitor de QR, navegação, servidor…), montadas no `app.js` por `npm run app`, sem mudar o comportamento.

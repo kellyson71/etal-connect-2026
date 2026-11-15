@@ -41,6 +41,10 @@ Os dados de alunos (inclusive menores de idade) ficam dentro do IFRN.
 | `GET /api/org/presencas.csv`, `/credenciados.csv` | organização | exportação para o SUAP (certificados) |
 | `GET /api/org/qrs` | organização | página para imprimir os QRs (evento e um por atividade) |
 | `GET /q/{token}` | todos | QR lido pela câmera do celular, fora do app: abre o app |
+| `GET /api/publicacoes` | logado | feed, comentários, chat, curtidas e salvos; para a organização, também ocultos, denúncias e histórico |
+| `POST /api/publicacoes`, `/{id}/comentarios`, `/mensagens` | credenciado | publicar (até 6 fotos), comentar, mandar mensagem |
+| `POST /api/publicacoes/{id}/curtir`, `/salvar`, `/denunciar`; `DELETE /api/publicacoes/{id}` | credenciado (salvar e apagar: logado) | curtir, salvar, denunciar, apagar o que é seu |
+| `POST /api/publicacoes/moderar` | organização | ocultar, restaurar ou arquivar denúncia, com nota e histórico |
 
 Documentação interativa: `/api/docs`.
 
@@ -67,6 +71,16 @@ Risco conhecido: foto do QR mandada para quem não está na sala. Mitigações p
 
 O limite é por pessoa porque no Wi-Fi do campus todos saem pelo mesmo endereço. Os contadores ficam na memória do
 processo (um processo só da API).
+
+### Publicações
+
+Ficam nas tabelas `publicacoes` (publicação, comentário ou mensagem), `curtidas`, `salvos`, `denuncias` e `moderacao`;
+as fotos, em disco como os materiais, regravadas em JPEG (sai o EXIF, com a localização). O app recebe o estado no
+mesmo formato que usava no aparelho (`prototipo/community.js`), e as telas não mudaram. Quem publicou aparece por um
+código (`p<id>`), nunca pela matrícula ou e-mail. Ao vivo: cada mudança sobe a versão e o SSE avisa só o número; o app
+busca de novo se a versão mudou e a tela de publicações está aberta, com atraso aleatório de até 3 s. Três denúncias de
+pessoas diferentes (`ETAL_DENUNCIAS_PARA_OCULTAR`) tiram o conteúdo do ar até a revisão. Limpeza depois do evento:
+`python -m app.manutencao publicacoes` (apaga as com mais de `ETAL_PUBLICACOES_DIAS`, 90).
 
 ### Banco e arquivos
 
