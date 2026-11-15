@@ -2280,6 +2280,7 @@ Screens.activity = ({ id }) => {
       <div class="pad stack detail detalhe-v2">
         <span class="kind kind-tp tp-${t.k} st" ${st(0)}>${ic(t.icon)}${s.type}</span>
         <h1 class="title-lg st" ${st(1)}>${s.title}</h1>
+        ${API && pendenteDe(id) ? `<p class="leitura-pendente st" ${st(1)}>${ic('qr')}<span><b>Leitura guardada, ainda sem valer.</b> O app envia a presença quando a internet voltar.</span></p>` : ''}
         ${t.g === 'mesa' ? '' : quem}
         ${blocos}
         ${lugar}
@@ -4696,7 +4697,10 @@ function netState() {
     return;
   }
   bar.classList.remove('ok');
-  bar.textContent = PWA.ready ? 'Sem internet · usando a cópia salva no aparelho' : 'Sem internet';
+  const n = S.auth && API ? pendentes().length : 0;
+  bar.textContent =
+    (PWA.ready ? 'Sem internet · usando a cópia salva no aparelho' : 'Sem internet') +
+    (n ? ` · ${n} ${n === 1 ? 'leitura' : 'leituras'} para enviar` : '');
   bar.classList.add('show');
 }
 window.addEventListener('online', netState);
@@ -6926,6 +6930,98 @@ function apiState(me) {
   S.present = { ...me.present };
   S.credAt = isoHM(me.person.credentialedAt);
 }
+/* ---- presença lida sem internet ----
+   Sem conexão na hora da leitura, o app guarda o QR (só se for um QR assinado do ETAL, de uma atividade da agenda ou do
+   credenciamento) e mostra "Leitura guardada": a presença ainda NÃO está registrada. Quando a internet volta, o app
+   envia sozinho com a hora da leitura, e o servidor decide com as regras de sempre (QR assinado, leitura durante a
+   atividade, envio até pouco depois do fim). O resultado aparece numa notificação; o que for recusado não volta. */
+const PEND_PREFIXO = 'etal-presencas-pendentes:';
+const pendKey = () => PEND_PREFIXO + (D.person.id || 'anon');
+/* localStorage, e não o store da sessão: a leitura guardada tem que sobreviver a fechar o app e abrir depois */
+function pendentes() {
+  try {
+    return JSON.parse(localStorage.getItem(pendKey())) || [];
+  } catch (_) {
+    return [];
+  }
+}
+function gravarPendentes(lista) {
+  try {
+    if (lista.length) localStorage.setItem(pendKey(), JSON.stringify(lista));
+    else localStorage.removeItem(pendKey());
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+function pendenteDe(id) {
+  return pendentes().find((p) => p.q === id);
+}
+/* QR assinado do ETAL (link /q/<token> ou o token): a atividade vai dentro, sem precisar do servidor para ler */
+function qrAssinado(texto) {
+  const t = (/\/q\/([\w.-]+)/.exec(texto) || [])[1] || (/^[\w-]+\.[\w-]+$/.test(texto) ? texto : null);
+  if (!t) return undefined;
+  const q = qrActivity(t);
+  if (q === undefined) return undefined;
+  return q === 'recepcao' || byId(q) ? q : undefined;
+}
+const falhaDeRede = (x) => !x.status;
+function guardarPendente(qr, q) {
+  const lista = pendentes().filter((p) => p.q !== q);
+  lista.push({ qr, q, lidoEm: new Date().toISOString() });
+  const ok = gravarPendentes(lista);
+  netState();
+  return ok;
+}
+function tirarPendente(q) {
+  gravarPendentes(pendentes().filter((p) => p.q !== q));
+  netState();
+}
+function pendenteResult(q) {
+  const x = byId(q);
+  const onde = x ? `a presença em <b>${esc(x.short)}</b>` : 'o credenciamento';
+  return `<div class="sr-hero">${hxBadge('muted')}<div><small class="sr-kick">Sem internet</small><h2>Leitura guardada</h2><p>Ainda não vale: ${onde} só fica registrada quando o app conseguir enviar. Ele envia sozinho quando a conexão voltar e avisa aqui.</p></div></div>
+      <div class="sr-actions"><button class="btn primary big" data-act="closeov">Entendi</button></div>`;
+}
+let enviandoPendentes = false;
+async function enviarPendentes() {
+  if (!API || !S.auth || enviandoPendentes || !navigator.onLine) return;
+  const lista = pendentes();
+  if (!lista.length) return;
+  enviandoPendentes = true;
+  try {
+    for (const p of lista) {
+      const x = byId(p.q);
+      const nome = x ? x.short : 'credenciamento';
+      try {
+        const r = await API.post('/api/presenca', { qr: p.qr, lidoEm: p.lidoEm });
+        tirarPendente(p.q);
+        if (r.activity) {
+          S.present[r.activity] = S.present[r.activity] || r.time;
+          communityCheckin(r.activity);
+        }
+        if (!S.credAt) S.credAt = r.time;
+        notify(
+          x ? 'Presença registrada' : 'Credenciamento confirmado',
+          x ? `${nome}: a leitura guardada foi enviada.` : 'A leitura guardada foi enviada.',
+          x ? p.q : undefined,
+        );
+      } catch (e) {
+        /* sem rede, sessão expirada, servidor ocupado ou fora do ar: tenta de novo depois */
+        if (falhaDeRede(e) || e.status === 401 || e.status === 429 || e.status >= 500) break;
+        tirarPendente(p.q); // recusada pelas regras (QR inválido, leitura fora da atividade, envio tarde): não volta
+        notify('Leitura não valeu', `${nome}: ${e.message}`);
+      }
+    }
+  } finally {
+    enviandoPendentes = false;
+    if (S.auth && vp.querySelector('.page')) rerender();
+  }
+}
+window.addEventListener('online', () => setTimeout(enviarPendentes, 1500));
+document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && enviarPendentes());
+setInterval(() => pendentes().length && enviarPendentes(), 30000);
+
 async function apiQr(token) {
   try {
     const r = await API.post('/api/presenca', { qr: token });
@@ -6944,6 +7040,11 @@ async function apiQr(token) {
     );
     rerender();
   } catch (x) {
+    const q = falhaDeRede(x) && qrAssinado(token);
+    if (q && guardarPendente(token, q)) {
+      toast('Sem internet: leitura guardada. A presença vale quando o app enviar.');
+      return;
+    }
     toast(x.message);
   }
 }
@@ -6979,7 +7080,12 @@ async function apiScan(hit) {
     r = await API.post('/api/presenca', { qr: hit });
   } catch (x) {
     camStop();
-    closeOverlay(() => toast(x.message));
+    const q = falhaDeRede(x) && qrAssinado(hit);
+    if (q && guardarPendente(hit, q)) {
+      scanSheet(pendenteResult(q));
+      return;
+    }
+    closeOverlay(() => toast(falhaDeRede(x) ? 'Sem internet, e esse QR não é do ETAL.' : x.message));
     return;
   }
   const first = !S.credAt;
@@ -7461,6 +7567,7 @@ async function apiStart() {
   apiState(me);
   S.auth = true;
   show(build(top()), 'fade');
+  setTimeout(enviarPendentes, 2500);
   const pend = sessionStorage.getItem('etal-qr');
   if (pend) {
     sessionStorage.removeItem('etal-qr');
