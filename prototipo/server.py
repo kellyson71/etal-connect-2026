@@ -9,6 +9,7 @@ Com ETAL_API=http://127.0.0.1:8011 o app usa a API de verdade (backend/) em vez 
 import base64
 import json
 import os
+import subprocess
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -33,6 +34,18 @@ TYPES = {'.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=u
 PUBLIC = {'index.html', 'homologacao.html', 'homologacao.js', 'qrs.html', 'vendor/qrcode.js', 'vendor/jsQR.js', 'vendor/zxing-reader.js', 'vendor/zxing_reader.wasm', 'config.js', 'api.js', 'admin.html', 'admin.js', 'admin.css', 'app.js', 'app.css', 'community.js', 'community.css', 'data.js', 'plan-data.js', 'campus-data.js', 'campus-fundo.js', 'campus-limpo.js', 'campus-entorno.js', 'campus-verde.js', 'sprites.js', 'campus3d.js', 'sw.js', 'manifest.webmanifest', 'admin.html', 'admin.js', 'admin.css'}
 PREFIXES = ('Tecnologia em ', 'Técnico Integrado em ', 'Técnico Subsequente em ', 'Técnico em ', 'Bacharelado em ', 'Licenciatura em ')
 CAMPUS = {'PF': 'Campus Pau dos Ferros'}
+
+
+def montar_se_preciso():
+    """O app.js é montado a partir das partes em prototipo/app/: se alguma parte mudou depois da última montagem,
+    monta de novo antes de entregar."""
+    partes = list((ROOT / 'app').glob('*.js'))
+    alvos = [ROOT / 'app.js']
+    if not partes:
+        return
+    if all(a.exists() for a in alvos) and max(q.stat().st_mtime for q in partes) <= min(a.stat().st_mtime for a in alvos):
+        return
+    subprocess.run(['node', str(ROOT.parent / 'scripts/app/montar-app.mjs')], check=False)
 
 
 def photo_data_uri(url):
@@ -119,6 +132,8 @@ class Handler(BaseHTTPRequestHandler):
         file = ROOT / rel
         if rel == 'config.js' and API:
             return self._send(200, f"window.ETAL_CONFIG = {{ api: {json.dumps(API)}, demo: {str(os.environ.get('ETAL_DEMO') == '1').lower()} }};".encode(), TYPES['.js'])
+        if rel == 'app.js':
+            montar_se_preciso()
         if (rel in PUBLIC or is_asset or is_map) and file.is_file():
             return self._send(200, file.read_bytes(), TYPES[file.suffix])
         self._json(404, {'erro': 'Não encontrado.'})
