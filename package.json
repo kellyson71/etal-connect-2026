@@ -12,6 +12,7 @@
     "demo": "sh scripts/demo/rodar-demo.sh",
     "app": "node scripts/app/montar-app.mjs",
     "test": "node scripts/app/montar-app.mjs --verificar && node --test mapa3d/tests/ prototipo/tests/ && python3 scripts/planta/check-principal-plan.py",
+    "test:navegador": "node scripts/app/montar-app.mjs && python3 prototipo/tests/telas.py",
     "lint": "eslint .",
     "format": "prettier --write \"prototipo/**/*.{js,mjs,css}\" \"mapa3d/**/*.{js,mjs,css}\" \"scripts/**/*.mjs\" \"docs/assets/*.{js,css}\" eslint.config.js",
     "format:check": "prettier --check \"prototipo/**/*.{js,mjs,css}\" \"mapa3d/**/*.{js,mjs,css}\" \"scripts/**/*.mjs\" \"docs/assets/*.{js,css}\" eslint.config.js",

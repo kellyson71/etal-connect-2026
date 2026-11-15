@@ -19,3 +19,16 @@ jobs:
         run: npm run format:check
       - name: Testes (rotas, comunidade e planta)
         run: npm test
+
+  navegador:
+    # abre as telas do app num Chromium e toca nas ações de cada uma, sem erro de JavaScript
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install playwright && python -m playwright install --with-deps chromium
+      - name: Telas e ações
+        run: npm run test:navegador
