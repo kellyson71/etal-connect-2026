@@ -2,6 +2,17 @@
 
 O projeto segue o git flow: `main` tem só versões publicadas, `develop` junta as funcionalidades e cada uma nasce num ramo `feature/*`.
 
+## Em desenvolvimento
+
+Preparo para o evento
+- Banco com migrações (Alembic): a API aplica as que faltam ao iniciar, e um banco antigo é atualizado sem perder dados.
+- Limites por pessoa e não por rede (o Wi-Fi do campus sai por um endereço só): 6 tentativas de senha por matrícula por minuto, com um teto alto por rede; links de visitante e leituras de QR também limitados.
+- Fila curta para o SUAP: até 8 entradas conversam com ele ao mesmo tempo; quem passa de 12 s de espera vê a contagem e o app tenta de novo sozinho.
+- Materiais das atividades em disco, abertos no app ou baixados.
+- Presença lida sem internet: o app guarda só QR do ETAL, avisa que ainda não vale e envia quando a rede volta; o servidor confere a hora da leitura com as regras de sempre.
+- Teste de ponta a ponta da presença sem rede, com a API de verdade, na CI.
+- `docs/regras-de-negocio.md`: as regras do app em anotações.
+
 ## 0.11.0 (2026-11-15)
 
 - Código do app dividido por assunto: 30 partes em `prototipo/app/` (entrada, início, agenda, atividade, publicações, mapa, campeonatos, organização, leitor de QR, navegação, servidor…), montadas no `app.js` por `npm run app`, sem mudar o comportamento.

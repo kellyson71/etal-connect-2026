@@ -49,7 +49,31 @@ Documentação interativa: `/api/docs`.
 O QR leva um token assinado com o segredo do servidor (não dá para inventar um válido) e a URL `https://DOMINIO/q/<token>`.
 O de uma atividade só é aceito de 20 minutos antes até o fim dela (`ETAL_JANELA_PRESENCA`, `ETAL_ANTECEDENCIA_MIN`).
 Limite: uma presença por pessoa e atividade; leitura repetida não duplica.
+Sem internet na hora da leitura, o app guarda só QR assinado do ETAL de uma atividade da programação (ou do
+credenciamento) e envia depois com a hora da leitura (`lidoEm`). O servidor aceita se a leitura caiu dentro da janela da
+atividade e se o envio chegou até `ETAL_TOLERANCIA_ENVIO_MIN` (60) minutos depois do fim; hora no futuro é recusada. A
+hora do aparelho só restringe: o que não valeria com internet também não vale sem. Essas presenças ficam com
+`via = 'qr-adiado'`.
 Risco conhecido: foto do QR mandada para quem não está na sala. Mitigações possíveis, da mais simples à mais forte: janela de horário (já feita); QR projetado no telão que muda a cada minuto; conferência da lotação pela organização.
+
+### Limites e fila do SUAP
+
+| Onde | Limite |
+|---|---|
+| Senha do SUAP (`/api/auth/suap/senha`) | 6 tentativas por matrícula por minuto; teto de 120 por endereço de rede |
+| Link de visitante | 3 por e-mail a cada 10 minutos; teto de 60 por endereço de rede |
+| Presença | 30 leituras por pessoa por minuto; teto de 600 por endereço de rede |
+| Conversa com o SUAP | até `ETAL_SUAP_SIMULTANEOS` (8) ao mesmo tempo; quem espera mais de `ETAL_SUAP_ESPERA` (12 s) recebe 503 com `Retry-After`, e o app tenta de novo sozinho |
+
+O limite é por pessoa porque no Wi-Fi do campus todos saem pelo mesmo endereço. Os contadores ficam na memória do
+processo (um processo só da API).
+
+### Banco e arquivos
+
+O banco muda por migrações (Alembic, em `backend/migracoes/`): a API aplica as que faltam ao iniciar; um banco antigo,
+criado antes das migrações, é marcado na primeira e atualizado. Nova mudança no modelo:
+`cd backend && .venv/bin/alembic revision --autogenerate -m "o que mudou"`. Os materiais das atividades ficam em disco
+(`ETAL_ARQUIVOS`, volume `arquivos_dados` no Docker), não no banco; o app abre dentro dele ou baixa (`?baixar=true`).
 
 ## Rodar localmente
 
