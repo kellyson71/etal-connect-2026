@@ -1,0 +1,67 @@
+/* estilos/00-base.css · variáveis, fontes e base.
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
+/* ETAL Connect · protótipo (proposta Crachá)
+   Tipos: Geologica (títulos) + Onest (texto) + Anton (só campeonatos).
+   Cores: azul NADIC, verde ETAL, âmbar para pendências. */
+:root {
+  --stage-bg: #e7ebf2;
+  --stage-glow-top: #f7f9fc;
+  --stage-glow-bottom: #d6dfec;
+  --bg: #f4f6fa;
+  --card: #ffffff;
+  --ink: #1f2f57;
+  --ink-2: #3d4b6b;
+  --muted: #6a7896;
+  --line: #e3e8f1;
+  --navy: #22386f;
+  --navy-2: #2c4785;
+  --blue: #3a5a9b;
+  --blue-50: #e8eef9;
+  --green: #4f9e22;
+  --green-50: #e6f3dc;
+  --green-ink: #2f6f12;
+  --accent-ink: #22386f;
+  --tab: rgba(255, 255, 255, 0.96);
+  --seg: rgba(230, 235, 243, 0.92);
+  --line-2: #c8d2e4;
+  --brand: #22386f;
+  --amber-50: #fff1d6;
+  --amber-ink: #8a5200;
+  --red: #e0312b;
+  --display: 'Geologica', 'Onest', system-ui, sans-serif;
+  --ui: 'Onest', system-ui, sans-serif;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+body {
+  font: 15px/1.4 var(--ui);
+  color: var(--ink);
+  background: var(--stage-bg);
+}
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+input {
+  font: inherit;
+  color: inherit;
+}
+:focus-visible {
+  outline: 3px solid #7cc94a;
+  outline-offset: 2px;
+  border-radius: calc(10px * var(--rk, 1));
+}

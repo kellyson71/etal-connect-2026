@@ -20,6 +20,8 @@ export default [
       'prototipo/campus-fundo.js',
       'prototipo/campus-verde.js',
       'prototipo/sprites.js',
+      // as partes do app rodam no mesmo escopo: o ESLint olha o app.js montado
+      'prototipo/app/**',
     ],
   },
   js.configs.recommended,

@@ -21,13 +21,28 @@ Na revisão documental de 09/11/2026, a execução local de .venv/bin/python -m 
 | test_atividade_sem_sala_sem_andar | Atividade sem localização não inventa andar |
 | test_login_suap_com_senha | `POST /api/auth/suap/senha` com cliente HTTP simulado: senha errada responde 401; senha certa responde 200, abre a sessão (`/api/eu` traz o nome) e a foto relativa vira URL completa do SUAP |
 
-Os testes usam SQLite de teste, programação de exemplo e sessões de desenvolvimento. O teste SUAP não faz chamadas a uma conta real. Não há cobertura automatizada completa das telas do app.
+Os testes usam SQLite de teste, programação de exemplo e sessões de desenvolvimento. O teste SUAP não faz chamadas a uma conta real.
+
+No app e no mapa (`npm test` e `npm run test:navegador`, também na CI do front-end):
+
+| Teste | Confere |
+|---|---|
+| `mapa3d/tests/rotas.test.mjs` | Rotas do mapa 3D: origem, portas, alturas, rampa e escada, destinos inválidos |
+| `prototipo/tests/community.test.mjs` | Publicações: armazenamento, menções, denúncias e moderação |
+| `scripts/planta/check-principal-plan.py` | Regras da planta do bloco (recepção, corredores, escada, rampa, bebedouro) |
+| `prototipo/tests/telas.py` | 19 telas do app no Chromium, tocando nas ações de cada uma, sem erro de JavaScript |
+| `montar-app.mjs --verificar` | O app.js e o app.css montados estão em dia com as partes |
+
+O teste das telas confere que nada quebra; não compara a aparência das telas.
 
 ## Reproduzir os testes
 
 ```sh
 cd backend
 .venv/bin/python -m pytest -q
+cd ..
+npm test
+npm run test:navegador
 ```
 
 ## Evidências visuais

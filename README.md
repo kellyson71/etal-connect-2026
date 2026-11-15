@@ -67,7 +67,7 @@ npm run prototipo        # ou: sh prototipo/rodar.sh
 
 | Pasta | O que tem |
 |---|---|
-| `prototipo/` | O app: telas (`app.js`, `app.css`), painel da organização (`admin.*`), publicações (`community.*`), mapa clássico em Canvas (`campus3d.js`), dados de exemplo (`data.js`), servidor local com login do SUAP (`server.py`) e PWA (`sw.js`) |
+| `prototipo/` | O app: telas e estilos em partes por assunto (`app/`, `estilos/`, montados no `app.js` e no `app.css` por `npm run app`; ver [`prototipo/LEIAME.md`](prototipo/LEIAME.md)), painel da organização (`admin.*`), publicações (`community.*`), mapa clássico em Canvas (`campus3d.js`), dados de exemplo (`data.js`), servidor local com login do SUAP (`server.py`) e PWA (`sw.js`) |
 | `mapa3d/` | O mapa 3D (three.js): modo Evento ilustrado, modo Campus, andares e rota. Empacotado no app por `npm run pwa` |
 | `backend/`, `deploy/` | API FastAPI (SUAP, presença por QR assinado, avisos, painel) e implantação com Caddy e PostgreSQL |
 | `api/` | Entrada da API na Vercel |
@@ -78,6 +78,7 @@ npm run prototipo        # ou: sh prototipo/rodar.sh
 
 ```sh
 npm test           # rotas do mapa, publicações e conferência da planta
+npm run test:navegador  # abre as telas no Chromium e toca nas ações
 npm run lint       # ESLint
 npm run format     # Prettier
 npm run planta     # regenera a planta do bloco e confere as regras

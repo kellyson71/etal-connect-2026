@@ -6,6 +6,10 @@ prototipo/plan-data.js linguist-generated
 dados/principal-plan.json linguist-generated
 dados/bloco-principal.svg linguist-generated
 
+# montados a partir das partes (npm run app)
+prototipo/app.js linguist-generated
+prototipo/app.css linguist-generated
+
 # dados do campus (levantamento, KML, satélite, sprites)
 prototipo/campus-data.js linguist-generated
 prototipo/campus-limpo.js linguist-generated
