@@ -32,3 +32,16 @@ export function enquadrar(camera, pontos, { e = 52, a = AZ0, min = 24, folga = 1
   const alvo = centro.clone().addScaledVector(up, -((baixo - topo) / H) * d * tan).addScaledVector(dir, -((esq - dirP) / W) * d * tan * camera.aspect);
   return { t: alvo, d, e: el, a };
 }
+
+/* Desloca o alvo de uma pose para o centro da área livre da tela (fora do cartão e da busca), sem mudar a distância:
+   usado pela câmera que segue a pessoa na rota. */
+export function centrarLivre(camera, p) {
+  const D = new THREE.Vector3(Math.sin(p.a) * Math.cos(p.e), Math.sin(p.e), Math.cos(p.a) * Math.cos(p.e));
+  const dir = new THREE.Vector3(D.z, 0, -D.x).normalize(), up = new THREE.Vector3().crossVectors(D, dir).normalize();
+  const W = innerWidth, H = innerHeight, cartao = document.querySelector('#cartao')?.getBoundingClientRect();
+  const estreita = W < 700; const topo = estreita ? 150 : 96, baixo = cartao && cartao.height > 0 && estreita ? Math.max(40, H - cartao.top + 14) : 40;
+  const esq = !estreita && cartao && cartao.width > 0 ? Math.min(W * 0.45, cartao.right + 24) : 16, dirP = 72;
+  const tan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+  const t = p.t.clone().addScaledVector(up, -((baixo - topo) / H) * p.d * tan).addScaledVector(dir, -((esq - dirP) / W) * p.d * tan * camera.aspect);
+  return { ...p, t };
+}
