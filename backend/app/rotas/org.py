@@ -314,3 +314,35 @@ def debug_qrs(request: Request, db: Session = Depends(sessao)):
         if activity.id != 'credenciamento':
             rows.append({'id': activity.id, 'title': activity.titulo, 'url': f'{base}/q/{token_qr(activity.id)}'})
     return rows
+
+
+@rota.get('/sistema')
+def sistema(db: Session = Depends(sessao)):
+    """Números do servidor nos últimos 10 minutos, para acompanhar o evento: requisições, tempos, erros, limites,
+    fila do SUAP, conexões ao vivo e do banco, e o movimento (entradas, presenças, publicações)."""
+    import time as _t
+    from datetime import timedelta
+    from .. import suap_fila
+    from ..db import engine
+    from ..modelos import Publicacao
+    from ..monitor import numeros
+    t0 = _t.perf_counter()
+    db.execute(select(1))
+    banco_ms = round((_t.perf_counter() - t0) * 1000, 1)
+    desde = agora() - timedelta(minutes=10)
+    c = config()
+    pool = engine.pool
+    return {
+        **numeros(),
+        'suap': {'simultaneos': c.suap_simultaneos, 'em_uso': suap_fila.em_uso(), 'esperando': suap_fila.esperando},
+        'ao_vivo': {'conectados': len(canal.ouvintes)},
+        'banco': {'ms': banco_ms, 'conexoes_em_uso': pool.checkedout() if hasattr(pool, 'checkedout') else None,
+                  'conexoes_max': c.banco_conexoes + c.banco_extras if not c.banco.startswith('sqlite') else None},
+        'movimento': {
+            'pessoas': db.scalar(select(func.count()).select_from(Pessoa)),
+            'credenciadas': db.scalar(select(func.count()).select_from(Pessoa).where(Pessoa.credenciado_em.isnot(None))),
+            'presencas_10_min': db.scalar(select(func.count()).select_from(Presenca).where(Presenca.em >= desde)),
+            'publicacoes_10_min': db.scalar(select(func.count()).select_from(Publicacao).where(Publicacao.criada_em >= desde)),
+        },
+    }
+

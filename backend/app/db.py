@@ -17,7 +17,8 @@ def _engine(url: str):
         eng = create_engine(url, connect_args={'check_same_thread': False})
         event.listen(eng, 'connect', lambda c, _: c.execute('PRAGMA foreign_keys=ON'))
         return eng
-    return create_engine(url, pool_pre_ping=True, pool_size=5, max_overflow=10)
+    c = config()
+    return create_engine(url, pool_pre_ping=True, pool_size=c.banco_conexoes, max_overflow=c.banco_extras, pool_timeout=15)
 
 
 engine = _engine(config().banco)

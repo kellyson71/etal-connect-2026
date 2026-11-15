@@ -1,5 +1,11 @@
 # Produção: Caddy (HTTPS automático) serve o app e encaminha /api e /q para a API; PostgreSQL guarda os dados.
 # Uso, na pasta deploy/:  cp .env.example .env  (editar)  &&  docker compose up -d --build
+# Logs: docker compose logs -f api  (uma linha JSON por requisição; ver backend/app/monitor.py). Cada serviço guarda
+# até 5 arquivos de 20 MB e descarta os mais velhos, para o disco não encher durante o evento.
+x-logs: &logs
+  driver: json-file
+  options: { max-size: 20m, max-file: '5' }
+
 services:
   caddy:
     image: caddy:2-alpine
@@ -12,7 +18,9 @@ services:
       - ../prototipo:/srv/app:ro
       - caddy_dados:/data
       - caddy_config:/config
-    depends_on: [api]
+    depends_on:
+      api: { condition: service_healthy }
+    logging: *logs
 
   api:
     build: ../backend
@@ -24,9 +32,10 @@ services:
       ETAL_ORIGENS: https://${DOMINIO}
       ETAL_COOKIE_SEGURO: "true"
     volumes:
-      - arquivos_dados:/srv/arquivos  # materiais das atividades
+      - arquivos_dados:/srv/arquivos  # materiais das atividades e fotos das publicações
     depends_on:
       db: { condition: service_healthy }
+    logging: *logs
 
   db:
     image: postgres:16-alpine
@@ -40,6 +49,7 @@ services:
       test: ["CMD-SHELL", "pg_isready -U etal -d etal"]
       interval: 5s
       retries: 10
+    logging: *logs
 
 volumes:
   arquivos_dados:
