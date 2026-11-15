@@ -227,7 +227,7 @@ svg.swap{animation:fadeIn .3s ease both}
 .sendpc{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 14px;border-radius:calc(18px*var(--rk,1));background:var(--navy);color:#fff;transition:transform .2s var(--ease)}
 .sendpc:active{transform:scale(.985)}
 .sp-ic{width:38px;height:38px;border-radius:calc(12px*var(--rk,1));background:rgba(255,255,255,.12);display:grid;place-items:center}
-.sendpc>span:nth-child(2){flex:1;display:flex;flex-direction:column}
+.sendpc>span:nth-child(2){flex:1;min-width:0;display:flex;flex-direction:column}
 .sendpc b{font-size:15px;font-weight:600}.sendpc small{font:500 12.5px ui-monospace,SFMono-Regular,monospace;color:rgba(255,255,255,.76)}
 .sendpc>.i:last-child{color:rgba(255,255,255,.76);width:18px}
 .mats{list-style:none;margin:0;padding:4px 6px 4px 14px;background:var(--card);border-radius:calc(20px*var(--rk,1))}
@@ -1840,6 +1840,12 @@ html.passeio-cheio .statusbar{height:0!important;padding:0}
 .ag-resumo{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:2px 2px -2px;font-size:13px;color:var(--muted)}
 .ag-resumo b{font:600 17px var(--display);color:var(--ink);text-transform:capitalize}
 .ag-resumo em{font-style:normal;font-weight:600;color:var(--green-ink)}
+/* Agenda aberta pelo mapa ("Ver na programação"): só um lugar */
+.ag-lugar{display:flex;align-items:center;gap:8px;margin:0;padding:6px 6px 6px 12px;border-radius:12px;background:color-mix(in srgb,var(--blue) 12%,transparent);color:var(--ink);font-size:13px}
+.ag-lugar svg{width:16px;height:16px;flex:none}
+.ag-lugar span{flex:1}
+.ag-lugar button{display:grid;place-items:center;width:32px;height:32px;border:0;border-radius:50%;background:transparent;color:inherit;cursor:pointer}
+.ag-lugar button svg{width:16px;height:16px}
 .ag-chips button{display:inline-flex;align-items:center;gap:6px}
 .ag-chips button i{width:8px;height:8px;border-radius:50%;background:var(--tp)}
 .ag-chips .i{width:14px;height:14px}
@@ -2454,3 +2460,5 @@ html.passeio-cheio .statusbar{height:0!important;padding:0}
 .gh-card li{display:flex;align-items:center;gap:6px;padding:7px 11px;border-radius:12px;background:#161b22;border:1px solid #30363d;font-size:13px}
 .gh-card li .i{width:15px;height:15px;color:#e3b341}.gh-card li b{font-weight:700}.gh-card li small{font-size:12px}
 .gh-at{font-size:12px}
+
+.sendpc{min-width:0}.sendpc small{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sendpc>.sp-ic,.sendpc>.i:last-child{flex-shrink:0}
