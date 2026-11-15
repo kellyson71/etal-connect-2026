@@ -137,7 +137,7 @@ def _avisar(tipo: str = 'mudou') -> None:
     canal.publicar('publicacoes', {'tipo': tipo, 'versao': _versao['n']})
 
 
-@rota.get('', dependencies=[Depends(limitar('publicacoes', 1200))])
+@rota.get('', dependencies=[Depends(limitar('publicacoes'))])
 def ver(versao: int | None = None, eu: Pessoa = Depends(pessoa_atual), db: Session = Depends(sessao)):
     """Feed (as 300 publicações mais recentes, com os comentários), chat (as 200 últimas mensagens), curtidas e os
     salvos da pessoa. Para a organização, também o que está oculto, as denúncias e o histórico da moderação. Com
@@ -207,7 +207,7 @@ def _agora_exato() -> datetime:
     return datetime.now(ZoneInfo(config().fuso)).replace(tzinfo=None)
 
 
-@rota.post('', dependencies=[Depends(limitar('publicar', 300))])
+@rota.post('', dependencies=[Depends(limitar('publicar'))])
 async def publicar(n: NovaPublicacao, eu: Pessoa = Depends(_credenciada), db: Session = Depends(sessao)):
     """Nova publicação (texto e/ou até 6 fotos)."""
     contar('publicar', str(eu.id), 10, janela=600, msg='Você publicou bastante agora. Espere uns minutos.')
@@ -242,7 +242,7 @@ def _post_visivel(db: Session, pid: str) -> Publicacao:
     return x
 
 
-@rota.post('/{pid}/comentarios', dependencies=[Depends(limitar('comentar', 600))])
+@rota.post('/{pid}/comentarios', dependencies=[Depends(limitar('comentar'))])
 def comentar(pid: str, n: NovoTexto, eu: Pessoa = Depends(_credenciada), db: Session = Depends(sessao)):
     """Comentário numa publicação visível (só para quem está credenciado)."""
     contar('comentar', str(eu.id), 30, janela=300, msg='Muitos comentários seguidos. Espere um pouco.')
@@ -255,7 +255,7 @@ def comentar(pid: str, n: NovoTexto, eu: Pessoa = Depends(_credenciada), db: Ses
     return {'id': x.id}
 
 
-@rota.post('/mensagens', dependencies=[Depends(limitar('comentar', 600))])
+@rota.post('/mensagens', dependencies=[Depends(limitar('comentar'))])
 def mensagem(n: NovoTexto, eu: Pessoa = Depends(_credenciada), db: Session = Depends(sessao)):
     """Mensagem no chat geral."""
     contar('comentar', str(eu.id), 30, janela=300, msg='Muitas mensagens seguidas. Espere um pouco.')

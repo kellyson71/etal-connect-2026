@@ -364,13 +364,15 @@ document.addEventListener('submit', async (e) => {
     if (API) {
       /* Servidor do ETAL: pede o token JWT ao SUAP, lê o perfil e abre a sessão. A senha não fica guardada. */
       /* Na abertura do evento muita gente entra junto: se a fila do SUAP estiver cheia, o servidor responde 503 com
-         Retry-After e o app espera esses segundos (contando na tela) e tenta de novo, sem a pessoa fazer nada. */
-      for (let tentativa = 0; ; tentativa++) {
+         Retry-After e o app espera esses segundos (contando na tela) e tenta de novo, sem a pessoa fazer nada, por até
+         4 minutos (no teste de carga com 700 pessoas e o SUAP lento, a última entrou em pouco mais de 2). */
+      const desde = Date.now();
+      for (;;) {
         try {
           await API.post('/api/auth/suap/senha', { matricula: mat, senha: pwd });
           break;
         } catch (x) {
-          if (x.status === 503 && x.retryAfter && tentativa < 8) {
+          if (x.status === 503 && x.retryAfter && Date.now() - desde < 240000) {
             for (let s = x.retryAfter; s > 0; s--) {
               if (state) state.textContent = `Muita gente entrando agora. Tentando de novo em ${s} s…`;
               await new Promise((ok) => setTimeout(ok, 1000));

@@ -40,3 +40,9 @@ async def vez_no_suap():
         yield
     finally:
         sem.release()
+
+
+def em_uso() -> int:
+    """Quantas conversas com o SUAP estão acontecendo agora."""
+    return 0 if _sem is None else max(0, config().suap_simultaneos - _sem._value)
+

@@ -35,6 +35,7 @@
     download: '<path d="M12 4v12M7 11l5 5 5-5M5 20h14"/>',
     trophy:
       '<path d="M8 4h8v5a4 4 0 0 1-8 0Z"/><path d="M8 6H4v1a3 3 0 0 0 4 3M16 6h4v1a3 3 0 0 1-4 3M12 13v4M8 20h8M9 17h6"/>',
+    pulse: '<path d="M3 12h4l3-8 4 16 3-8h4"/>',
     grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
   };
   const ic = (n) =>
@@ -276,6 +277,7 @@
     ['campeonatos', 'Campeonatos', 'trophy'],
     ['avisos', 'Avisos', 'bell'],
     ['comunidade', 'Moderação', 'alert'],
+    ['sistema', 'Servidor', 'pulse'],
   ];
   const state = { day: D.now.day, ptype: 'todos', pstat: 'todos', q: '', limit: 40, floor: 2, room: null };
   const current = () => (SECTIONS.find(([k]) => `#${k}` === location.hash) || SECTIONS[0])[0];
@@ -473,7 +475,76 @@
       socialBuscando = false;
     }
   }
+  /* Servidor: números dos últimos 10 minutos (GET /api/org/sistema), atualizados a cada 10 s com a seção aberta. */
+  let sis = null;
+  let sisErro = '';
+  async function sisCarregar() {
+    try {
+      sis = await window.ETAL_API.get('/api/org/sistema');
+      sisErro = '';
+    } catch (x) {
+      sisErro = x.message;
+    }
+    if (current() === 'sistema') render();
+  }
+  const ms = (v) => (v == null ? '—' : v < 1000 ? `${Math.round(v)} ms` : `${(v / 1000).toFixed(1)} s`);
+  const linhaSis = (rotulo, valor, alerta = false) =>
+    `<tr><td>${rotulo}</td><td class="${alerta ? 'sis-alerta' : ''}"><b>${valor}</b></td></tr>`;
   const Views = {
+    sistema() {
+      if (!window.ETAL_API)
+        return '<section class="card"><h2>Servidor</h2><p>Este painel está sem servidor (demonstração). Os números aparecem quando o app roda com a API.</p></section>';
+      if (!sis) {
+        sisCarregar();
+        return `<section class="card"><p>${sisErro ? esc(sisErro) : 'Carregando os números do servidor…'}</p></section>`;
+      }
+      const r = sis.requisicoes;
+      const lento = (r.p95_ms || 0) > 1500;
+      return `${sisErro ? `<p class="sis-alerta">Sem resposta agora: ${esc(sisErro)} (mostrando a última leitura)</p>` : ''}
+        <div class="grid g-kpi">
+          <section class="card kpi"><b>${r.ultimo_minuto}</b><span>requisições no último minuto</span></section>
+          <section class="card kpi"><b class="${lento ? 'sis-alerta' : ''}">${ms(r.p95_ms)}</b><span>95% respondem em até (10 min)</span></section>
+          <section class="card kpi"><b class="${r.erros_5xx ? 'sis-alerta' : ''}">${r.erros_5xx}</b><span>erros do servidor (10 min)</span></section>
+          <section class="card kpi"><b>${sis.ao_vivo.conectados}</b><span>celulares recebendo ao vivo</span></section>
+        </div>
+        <div class="grid g-2 mt">
+          <section class="card"><h2>Entrada</h2><table class="sis">${[
+            linhaSis('Entradas (10 min, aproximado)', r.entradas),
+            linhaSis(
+              'Conversando com o SUAP agora',
+              `${sis.suap.em_uso} de ${sis.suap.simultaneos}`,
+              sis.suap.em_uso >= sis.suap.simultaneos,
+            ),
+            linhaSis('Esperando a vez no SUAP', sis.suap.esperando, sis.suap.esperando > 20),
+            linhaSis('Fila cheia, app tentou de novo (10 min)', r.fila_cheia_503, r.fila_cheia_503 > 0),
+            linhaSis('Barrados por limite (10 min)', r.limites_429, r.limites_429 > 20),
+          ].join('')}</table></section>
+          <section class="card"><h2>Movimento</h2><table class="sis">${[
+            linhaSis('Pessoas cadastradas', sis.movimento.pessoas),
+            linhaSis('Credenciadas', sis.movimento.credenciadas),
+            linhaSis('Presenças nos últimos 10 min', sis.movimento.presencas_10_min),
+            linhaSis('Publicações nos últimos 10 min', sis.movimento.publicacoes_10_min),
+          ].join('')}</table></section>
+        </div>
+        <div class="grid g-2 mt">
+          <section class="card"><h2>Tempo de resposta (10 min)</h2><table class="sis">${[
+            linhaSis('Metade responde em até', ms(r.mediana_ms)),
+            linhaSis('95% em até', ms(r.p95_ms), lento),
+            linhaSis('99% em até', ms(r.p99_ms)),
+            linhaSis('Atendendo agora', r.em_andamento),
+            linhaSis(
+              'Banco',
+              `${ms(sis.banco.ms)}${sis.banco.conexoes_max ? ` · ${sis.banco.conexoes_em_uso} de ${sis.banco.conexoes_max} conexões` : ''}`,
+            ),
+            linhaSis('Por minuto (do mais recente)', r.por_minuto.join(' · ')),
+          ].join('')}</table></section>
+          <section class="card"><h2>Rotas mais lentas</h2>${
+            r.mais_lentas.length
+              ? `<table class="sis">${r.mais_lentas.map((x) => linhaSis(`<code>${esc(x.rota)}</code> <small>${x.n}×</small>`, ms(x.p95_ms), x.p95_ms > 1500)).join('')}</table>`
+              : '<p>Pouco movimento para medir.</p>'
+          }<p class="sis-nota">Processo no ar há ${sis.processo.no_ar_min} min · memória (pico) ${sis.processo.memoria_pico_mb} MB. Detalhes de cada requisição: <code>docker compose logs -f api</code>.</p></section>
+        </div>`;
+    },
     comunidade() {
       if (!window.ETAL_API) return window.COMMUNITY.moderationHTML(window.COMMUNITY.read(), socialModFilter);
       if (!socialV) {
@@ -1346,6 +1417,9 @@
       console.error(x);
       toast('Sem conexão com o servidor.');
     });
+    setInterval(() => {
+      if (current() === 'sistema' && !document.hidden) sisCarregar();
+    }, 10000);
     API.live({
       publicacoes: (d) => {
         if (socialV && d.versao !== socialV.versao) socialCarregar();

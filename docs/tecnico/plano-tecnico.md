@@ -64,13 +64,27 @@ Risco conhecido: foto do QR mandada para quem não está na sala. Mitigações p
 
 | Onde | Limite |
 |---|---|
-| Senha do SUAP (`/api/auth/suap/senha`) | 6 tentativas por matrícula por minuto; teto de 120 por endereço de rede |
-| Link de visitante | 3 por e-mail a cada 10 minutos; teto de 60 por endereço de rede |
-| Presença | 30 leituras por pessoa por minuto; teto de 600 por endereço de rede |
-| Conversa com o SUAP | até `ETAL_SUAP_SIMULTANEOS` (8) ao mesmo tempo; quem espera mais de `ETAL_SUAP_ESPERA` (12 s) recebe 503 com `Retry-After`, e o app tenta de novo sozinho |
+| Senha do SUAP (`/api/auth/suap/senha`) | 6 senhas erradas por matrícula por minuto; 60 senhas erradas por endereço de rede (`ETAL_TETO_REDE_SENHA_ERRADA`); quem acerta só tem o teto geral |
+| Link de visitante | 3 por e-mail a cada 10 minutos; teto de 300 por endereço de rede |
+| Presença | 30 leituras por pessoa por minuto |
+| Publicações | 10 posts a cada 10 min, 30 comentários ou mensagens a cada 5 min, 10 denúncias a cada 10 min, por pessoa |
+| Rotas com teto geral | `ETAL_TETO_REDE` (3.000) por endereço de rede por minuto |
+| Conversa com o SUAP | até `ETAL_SUAP_SIMULTANEOS` (16) ao mesmo tempo; quem espera mais de `ETAL_SUAP_ESPERA` (12 s) recebe 503 com `Retry-After`, e o app tenta de novo sozinho |
 
-O limite é por pessoa porque no Wi-Fi do campus todos saem pelo mesmo endereço. Os contadores ficam na memória do
-processo (um processo só da API).
+O limite é por pessoa porque no Wi-Fi do campus todos saem pelo mesmo endereço; os números saíram do teste de carga
+([09-teste-de-carga.md](09-teste-de-carga.md)). Os contadores ficam na memória do processo (um processo só da API).
+
+### Monitoramento e logs
+
+- Uma linha JSON por requisição na saída da API (`docker compose logs -f api`): hora, método, rota como modelo
+  (`/q/{token}`, sem o token), situação e tempo. Sem IP, sem query, sem dado da pessoa; o log de acesso do uvicorn fica
+  desligado (gravava o endereço inteiro). Erro 5xx vai com o rastro. O Docker guarda 5 arquivos de 20 MB por serviço.
+- Painel da organização → Servidor (`GET /api/org/sistema`, a cada 10 s): requisições por minuto, tempos (mediana,
+  95%, 99%), erros, limites batendo, fila do SUAP, celulares no ao vivo, banco, entradas, presenças e publicações dos
+  últimos 10 minutos, e as rotas mais lentas.
+- `GET /api/saude` consulta o banco; o Docker usa para saber se a API está de pé (`HEALTHCHECK`).
+- Capacidade de um processo: `ETAL_THREADS` (60) para as rotas comuns e `ETAL_BANCO_CONEXOES` + `ETAL_BANCO_EXTRAS`
+  (30 + 20) conexões com o PostgreSQL.
 
 ### Publicações
 

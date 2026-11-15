@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 from .. import suap_portal
 from ..config import config
 from ..db import sessao
-from ..limite import contar, limitar
+from ..limite import anotar, barrar_se_passou, contar, ip_de, limitar
 from ..suap_fila import vez_no_suap
 from ..modelos import LinkAcesso, Pessoa
 from ..seguranca import abrir_sessao, agora, eh_organizacao, fechar_sessao, hash_token, novo_token, publica
@@ -108,18 +108,24 @@ class LoginSuap(BaseModel):
     senha: str = Field(min_length=1, max_length=200, description='Senha atual do SUAP. Usada apenas durante a autenticação; não é gravada no banco.', examples=['SUA_SENHA'], json_schema_extra={'format':'password'})
 
 
-@rota.post('/suap/senha', dependencies=[Depends(limitar('suap-senha-ip', 120))])
-async def suap_senha(l: LoginSuap, response: Response, db: Session = Depends(sessao)):
+@rota.post('/suap/senha', dependencies=[Depends(limitar('suap-senha-ip'))])
+async def suap_senha(l: LoginSuap, request: Request, response: Response, db: Session = Depends(sessao)):
     """Entrada direta com matrícula e senha: pede o token JWT à API do SUAP e lê o perfil.
     A senha e os tokens só passam por aqui; nada é guardado. Limite de tentativas por matrícula; as chamadas ao SUAP
-    esperam a vez numa fila curta (app/suap_fila.py)."""
+    esperam a vez numa fila curta (app/suap_fila.py). Os limites contam as senhas erradas: 6 por matrícula e
+    ETAL_TETO_REDE_SENHA_ERRADA por rede, por minuto; quem esperou na fila e tenta de novo não gasta tentativa."""
     matricula = l.matricula.strip()
-    contar('suap-senha', matricula.lower(), 6, msg='Muitas tentativas com esta matrícula. Espere um minuto.')
+    ip = ip_de(request)
+    barrar_se_passou('suap-senha', matricula.lower(), 6, msg='Muitas tentativas com esta matrícula. Espere um minuto.')
+    barrar_se_passou('suap-senha-errada-ip', ip, config().teto_rede_senha_errada,
+                     msg='Muitas senhas erradas a partir desta rede. Espere um minuto.')
     base = config().suap_api_url.rstrip('/')
     try:
         async with vez_no_suap(), httpx.AsyncClient(timeout=20) as h:
             tok = await h.post(f'{base}/api/token/pair', json={'username': matricula, 'password': l.senha})
             if tok.status_code in (400, 401, 403):
+                anotar('suap-senha', matricula.lower())
+                anotar('suap-senha-errada-ip', ip)
                 raise HTTPException(401, 'Matrícula ou senha incorreta.')
             tok.raise_for_status()
             eu = await h.get(f'{base}/api/rh/eu/', headers={'Authorization': f'Bearer {tok.json()["access"]}'})
@@ -170,7 +176,7 @@ def _enviar_link(email: str, nome: str, url: str) -> bool:
     return True
 
 
-@rota.post('/visitante', status_code=202, dependencies=[Depends(limitar('visitante-ip', 60))])
+@rota.post('/visitante', status_code=202, dependencies=[Depends(limitar('visitante-ip', 300))])
 def visitante(v: Visitante, request: Request, db: Session = Depends(sessao)):
     email = v.email.lower()
     contar('visitante', email, 3, janela=600, msg='Já mandamos o link para este e-mail. Confira a caixa de entrada e o spam.')

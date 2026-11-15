@@ -6,8 +6,8 @@ O projeto segue o git flow: `main` tem só versões publicadas, `develop` junta 
 
 Preparo para o evento
 - Banco com migrações (Alembic): a API aplica as que faltam ao iniciar, e um banco antigo é atualizado sem perder dados.
-- Limites por pessoa e não por rede (o Wi-Fi do campus sai por um endereço só): 6 tentativas de senha por matrícula por minuto, com um teto alto por rede; links de visitante e leituras de QR também limitados.
-- Fila curta para o SUAP: até 8 entradas conversam com ele ao mesmo tempo; quem passa de 12 s de espera vê a contagem e o app tenta de novo sozinho.
+- Limites por pessoa e não por rede (o Wi-Fi do campus sai por um endereço só): 6 senhas erradas por matrícula por minuto, com um teto por rede; links de visitante e leituras de QR também limitados.
+- Fila curta para o SUAP: um número fixo de entradas conversa com ele ao mesmo tempo; quem passa de 12 s de espera vê a contagem e o app tenta de novo sozinho.
 - Materiais das atividades em disco, abertos no app ou baixados.
 - Presença lida sem internet: o app guarda só QR do ETAL, avisa que ainda não vale e envia quando a rede volta; o servidor confere a hora da leitura com as regras de sempre.
 - Teste de ponta a ponta da presença sem rede, com a API de verdade, na CI.
@@ -20,6 +20,13 @@ Publicações no servidor
 - Três denúncias de pessoas diferentes tiram o conteúdo do ar até a organização revisar; toda moderação fica no histórico.
 - Limites por pessoa e limpeza depois de 90 dias (`python -m app.manutencao publicacoes`).
 - Moderação também no painel do computador, pela API.
+
+Monitoramento e teste de carga
+- Uma linha JSON por requisição (rota sem tokens, sem IP nem dado da pessoa) e rodízio dos logs no Docker.
+- Painel da organização → Servidor: requisições, tempos, erros, fila do SUAP, celulares ao vivo e movimento dos últimos 10 minutos.
+- Verificação de saúde com o banco, usada pelo Docker.
+- Teste de carga (`scripts/carga/rodar-local.sh`): 700 pessoas na abertura, com PostgreSQL e um SUAP de mentira. Resultados em `docs/tecnico/09-teste-de-carga.md`.
+- Por causa do teste: o teto da rede no login conta só senha errada (antes barrava 498 de 700 pessoas atrás do mesmo Wi-Fi); fila do SUAP de 8 para 16; o app insiste por até 4 minutos com a fila cheia.
 
 ## 0.11.0 (2026-11-15)
 

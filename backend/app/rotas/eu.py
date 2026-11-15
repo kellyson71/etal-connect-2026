@@ -62,7 +62,7 @@ def _404():
     raise HTTPException(404, 'Atividade não encontrada.')
 
 
-@rota.post('/presenca', dependencies=[Depends(limitar('presenca-ip', 600))])
+@rota.post('/presenca', dependencies=[Depends(limitar('presenca-ip'))])
 def presenca(l: Leitura, p: Pessoa = Depends(pessoa_atual), db: Session = Depends(sessao)):
     """QR do evento: credencia. QR de uma atividade: credencia (se preciso) e registra a presença nela.
     Ler de novo não duplica."""
