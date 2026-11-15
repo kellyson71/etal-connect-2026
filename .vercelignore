@@ -12,4 +12,3 @@ node_modules/
 backend/*.db
 backend/tests/
 /index.html
-/DOCUMENTACAO.html

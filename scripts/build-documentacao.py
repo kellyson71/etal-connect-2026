@@ -358,7 +358,7 @@ def source_gallery():
     out = '<h2>As imagens que contam esta história</h2><p class="micro">Imagens selecionadas do histórico do próprio projeto e dos prints do autor. Conversas completas e capturas sem relação com o campus ficaram fora da apresentação.</p><div class="source-gallery">'
     for file,title,credit in entries:
         out += '<figure>' + image(file,title,credit=credit) + f'<figcaption><strong>{title}</strong>{credit}</figcaption></figure>'
-    out += '</div><div class="doc-links"><a href="{assets}/fontes/souza-2012.pdf">Dissertação completa / PDF</a><a href="{assets}/fontes/creditos.json">Procedência das imagens</a><a href="https://repositorio.ufrn.br/server/api/core/bitstreams/2be1d619-02aa-4c23-aa6b-4d65aa238aba/content" target="_blank" rel="noopener">Fonte no repositório UFRN ↗</a></div>'
+    out += '</div><div class="doc-links"><a href="https://repositorio.ufrn.br/server/api/core/bitstreams/2be1d619-02aa-4c23-aa6b-4d65aa238aba/content">Dissertação completa (repositório da UFRN)</a><a href="{assets}/fontes/creditos.json">Procedência das imagens</a><a href="https://repositorio.ufrn.br/server/api/core/bitstreams/2be1d619-02aa-4c23-aa6b-4d65aa238aba/content" target="_blank" rel="noopener">Fonte no repositório UFRN ↗</a></div>'
     out += '<h2>Fontes técnicas consultadas</h2><div class="doc-links"><a href="https://web.dev/learn/pwa/service-workers" target="_blank" rel="noopener">PWA / service workers</a><a href="https://reactnative.dev/docs/set-up-your-environment" target="_blank" rel="noopener">React Native / ambiente</a><a href="https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API" target="_blank" rel="noopener">Geolocation API / permissão</a></div>'
     return out
 
@@ -431,8 +431,7 @@ def gerar(saida=None):
         path=Path(saida).resolve();root=os.path.relpath(ROOT,path.parent).replace(os.sep,'/')+'/'
         path.write_text(render(root));print(path)
     else:
-        (ROOT/'DOCUMENTACAO.html').write_text(render(''))
-        (ROOT/'docs/tecnico/documentacao-tecnica.html').write_text(render('../../'))
+        (ROOT/'docs/apresentacao.html').write_text(render('../'))
         print(f'Apresentação: {len(SLIDES)} slides + fontes + demonstrações isoladas do app e do mapa.')
 
 

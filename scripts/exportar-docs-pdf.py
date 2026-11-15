@@ -2,7 +2,7 @@
 
     npm run docs:pdf
 
-- Apresentação (DOCUMENTACAO.html, igual a docs/tecnico/documentacao-tecnica.html): com o tamanho de página do CSS dela.
+- Apresentação (docs/apresentacao.html): com o tamanho de página do CSS dela.
 - Explorações visuais (direções, propostas e telas do crachá): cada página vira uma folha larga, como na tela.
 - A comparação dos mapas sai de scripts/documentar-modelos.py, no mesmo lugar.
 As imagens opacas viram JPEG antes de imprimir (scripts/otimizar_pdf.py), o que deixa os PDFs bem mais leves.
@@ -82,11 +82,11 @@ def main():
         browser = p.chromium.launch(executable_path='/opt/google/chrome/chrome', headless=True)
         page = browser.new_page(viewport={'width': 1440, 'height': 1000}, reduced_motion='reduce')
         feitos = []
-        for rel, nome in [('DOCUMENTACAO.html', 'ETAL-Connect-apresentacao.pdf')]:  # docs/tecnico/documentacao-tecnica.html é a mesma apresentação
+        for rel, nome in [('docs/apresentacao.html', 'ETAL-Connect-apresentacao.pdf')]:
             impresso(page, rel, OUT / nome); feitos.append(nome)
         partes = []
         for slug in EXPLORACOES:
-            partes.append(tmp / f'{slug}.pdf'); como_na_tela(page, f'docs/{slug}.html', partes[-1])
+            partes.append(tmp / f'{slug}.pdf'); como_na_tela(page, f'docs/historico/{slug}.html', partes[-1])
         juntar(partes, OUT / 'ETAL-Connect-exploracoes-visuais.pdf'); feitos.append('ETAL-Connect-exploracoes-visuais.pdf')
         browser.close()
     srv.shutdown()

@@ -1,12 +1,12 @@
 # Referências do campus e procedência do mapa
 
-A [apresentação visual](../DOCUMENTACAO.html#referencias-campus) conta o caminho das referências até o modelo. A galeria em Fontes e detalhes reúne as imagens selecionadas, seus créditos e o documento encontrado.
+A [apresentação visual](../apresentacao.html#referencias-campus) conta o caminho das referências até o modelo. A galeria em Fontes e detalhes reúne as imagens selecionadas, seus créditos e o documento encontrado.
 
 ## O que encontramos
 
 | Material | Uso no projeto | Onde está |
 |---|---|---|
-| Dissertação de Larissa Leiros de Souza, UFRN, 2012 | Plantas do térreo, 1º e 2º pavimentos; informações arquitetônicas e cartas solares | [PDF original](assets/fontes/souza-2012.pdf), recortes em prototipo/assets/ref2012/ |
+| Dissertação de Larissa Leiros de Souza, UFRN, 2012 | Plantas do térreo, 1º e 2º pavimentos; informações arquitetônicas e cartas solares | [PDF no repositório da UFRN](https://repositorio.ufrn.br/server/api/core/bitstreams/2be1d619-02aa-4c23-aa6b-4d65aa238aba/content), recortes em prototipo/assets/ref2012/ |
 | Levantamento Google Earth, 35 marcações | Contornos e posições iniciais dos prédios e caminhos | referencias/referencia_campus.kml e implantacao_kml.json |
 | Levantamento completo, 66 marcações | Fundo do campus e referências adicionais | referencias/referencia_campus_completo.kml |
 | Satélite e Street View do histórico do projeto | Jardim, calçada, rodovia e entorno | docs/assets/fontes/, com procedência em creditos.json |

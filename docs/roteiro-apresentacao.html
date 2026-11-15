@@ -119,7 +119,7 @@ code{font:500 .9em ui-monospace,monospace;background:var(--blue-50);padding:1px 
       <button id="tStart" class="go" type="button">Iniciar</button>
       <button id="tReset" type="button">Zerar</button>
     </div>
-    <a class="go-slides" href="DOCUMENTACAO.html" target="_blank" rel="noopener">Abrir slides ↗</a>
+    <a class="go-slides" href="apresentacao.html" target="_blank" rel="noopener">Abrir slides ↗</a>
     <button class="theme" id="theme" type="button" aria-label="Alternar tema claro e escuro">◐</button>
   </div>
   <div class="bar"><i id="bar"></i></div>
@@ -138,14 +138,14 @@ code{font:500 .9em ui-monospace,monospace;background:var(--blue-50);padding:1px 
         <li>Nos slides com etapas, cada <kbd>→</kbd> mostra o próximo passo no mesmo slide.</li>
       </ul>
       <div class="links">
-        <a href="DOCUMENTACAO.html" target="_blank" rel="noopener">Slides</a>
-        <a href="docs/pdf/ETAL-Connect-apresentacao.pdf" target="_blank" rel="noopener">Slides em PDF</a>
+        <a href="apresentacao.html" target="_blank" rel="noopener">Slides</a>
+        <a href="pdf/ETAL-Connect-apresentacao.pdf" target="_blank" rel="noopener">Slides em PDF</a>
         <a href="http://127.0.0.1:8770/demo" target="_blank" rel="noopener">App (demo)</a>
         <a href="http://127.0.0.1:8770/admin.html" target="_blank" rel="noopener">Painel da organização</a>
         <a href="http://127.0.0.1:8011/api/docs" target="_blank" rel="noopener">Swagger</a>
-        <a href="prototipo/qrs.html" target="_blank" rel="noopener">QRs de teste</a>
-        <a href="mapa3d/index.html" target="_blank" rel="noopener">Mapa 3D</a>
-        <a href="docs/comparacao-modelos/index.html" target="_blank" rel="noopener">Comparação dos mapas</a>
+        <a href="../prototipo/qrs.html" target="_blank" rel="noopener">QRs de teste</a>
+        <a href="../mapa3d/index.html" target="_blank" rel="noopener">Mapa 3D</a>
+        <a href="comparacao-modelos/index.html" target="_blank" rel="noopener">Comparação dos mapas</a>
         <a href="https://github.com/kellyson71/etal-connect-2026" target="_blank" rel="noopener">GitHub</a>
         <a href="https://github.com/kellyson71/suapy" target="_blank" rel="noopener">suapy</a>
       </div>
@@ -162,7 +162,7 @@ code{font:500 .9em ui-monospace,monospace;background:var(--blue-50);padding:1px 
 
 <script>
 /* Cada slide: o que está na tela, a ideia em uma frase, o que falar em tópicos e, quando fizer sentido, perguntas
-   prováveis. Ordem e âncoras iguais às de DOCUMENTACAO.html. "prop" marca o que ainda é proposta. */
+   prováveis. Ordem e âncoras iguais às de apresentacao.html. "prop" marca o que ainda é proposta. */
 const CAPS = [
   ['01', 'Abertura', [
     { id: 'visao', t: 'ETAL Connect', s: 45,
@@ -348,7 +348,7 @@ for (const [num, nome, slides] of CAPS) {
     html += `<article class="sl" id="s-${x.id}" data-id="${x.id}">
       <div class="sl-h"><span class="sl-n">${nn}</span><h3>${esc(x.t)}${x.prop ? '<span class="tag">proposta</span>' : ''}</h3>
         <span class="sl-t">${mmss(x.s)}${x.etapas ? ` · ${x.etapas} etapas` : ''}</span>
-        <a class="sl-open" href="DOCUMENTACAO.html#${x.id}" target="_blank" rel="noopener">Abrir ↗</a>
+        <a class="sl-open" href="apresentacao.html#${x.id}" target="_blank" rel="noopener">Abrir ↗</a>
         <label class="sl-ok"><input type="checkbox" data-id="${x.id}">Falado</label></div>
       <p class="ideia">${esc(x.ideia)}</p>
       <ul class="fale">${x.fale.map((f) => `<li>${esc(f)}</li>`).join('')}</ul>
