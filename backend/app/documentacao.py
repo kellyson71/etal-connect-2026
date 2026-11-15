@@ -7,6 +7,7 @@ TAGS = [
     {'name': 'participante', 'description': 'Perfil, agenda e presença do usuário autenticado.'},
     {'name': 'SUAP do participante', 'description': 'Consulta de eventos e certificados do SUAP.'},
     {'name': 'público', 'description': 'Programação e avisos do evento.'},
+    {'name': 'publicações', 'description': 'Feed, comentários, chat geral, denúncias e moderação.'},
     {'name': 'organização', 'description': 'Gestão do evento, salas, participantes e relatórios.'},
     {'name': 'homologação', 'description': 'Rotas auxiliares de desenvolvimento e homologação.'},
 ]

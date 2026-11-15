@@ -22,6 +22,7 @@ Na revisão documental de 09/11/2026, a execução local de .venv/bin/python -m 
 | test_limites (3) | 30 matrículas pelo mesmo endereço entram; a 7ª senha errada da mesma matrícula é barrada; fila do SUAP cheia responde 503 com `Retry-After` |
 | test_migracoes (2) | O modelo bate com as migrações; banco antigo é atualizado sem perder dados |
 | test_presenca_adiada (10) | Leitura guardada sem internet: vale durante a atividade; fora dela, tarde demais ou com hora no futuro não vale; fuso convertido; não duplica; QR falso recusado; recusa não credencia |
+| test_publicacoes (16) | Ver exige entrar; sem credenciamento não publica; publicar, comentar, curtir, salvar; matrícula e e-mail não vazam; menções; fotos regravadas sem localização; foto falsa recusada; só o autor apaga, e apaga tudo; organização oculta, restaura e guarda histórico; participante não modera; denúncia e ocultação automática; arquivar denúncia de conteúdo apagado; limite por pessoa; limpeza das antigas; versão evita baixar de novo |
 | test_material_antigo_do_banco_passa_para_o_disco | Material guardado no banco antes da mudança vai para o disco ao ser aberto |
 | test_login_suap_com_senha | `POST /api/auth/suap/senha` com cliente HTTP simulado: senha errada responde 401; senha certa responde 200, abre a sessão (`/api/eu` traz o nome) e a foto relativa vira URL completa do SUAP |
 
@@ -36,6 +37,7 @@ No app e no mapa (`npm test` e `npm run test:navegador`, também na CI do front-
 | `scripts/planta/check-principal-plan.py` | Regras da planta do bloco (recepção, corredores, escada, rampa, bebedouro) |
 | `prototipo/tests/telas.py` | 19 telas do app no Chromium, tocando nas ações de cada uma, sem erro de JavaScript |
 | `prototipo/tests/presenca_sem_rede.py` | Com a API de verdade: leitura sem rede guardada (mesmo fechando o app) e sem valer; enviada quando a rede volta e marcada como adiada; recusada sai da fila e avisa; servidor fora do ar mantém; QR que não é do ETAL não é guardado |
+| `prototipo/tests/publicacoes_servidor.py` | Com a API de verdade e três navegadores: sem exemplos; publicar com foto; a outra pessoa vê ao vivo; curtida e comentário; denúncia, organização tira do ar e some da tela; chat |
 | `montar-app.mjs --verificar` | O app.js e o app.css montados estão em dia com as partes |
 
 O teste das telas confere que nada quebra; não compara a aparência das telas.

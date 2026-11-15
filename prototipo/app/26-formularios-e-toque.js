@@ -11,6 +11,10 @@ document.addEventListener('submit', async (e) => {
     }
     const data = new FormData(e.target);
     const target = e.target.dataset.target;
+    if (API) {
+      pubDenunciar(target, String(data.get('reason') || ''), String(data.get('detail') || ''));
+      return;
+    }
     if (
       communityWrite((v) =>
         SOCIAL.report(v, target, communityAuthor(), String(data.get('reason') || ''), String(data.get('detail') || '')),
@@ -86,6 +90,12 @@ document.addEventListener('submit', async (e) => {
       toast('Escreva algo para compartilhar.');
       return;
     }
+    if (API) {
+      pubEnviar(kind, text, f.dataset.id).then((ok) => {
+        if (ok) communityLimparRascunho(kind, f.dataset.id, 'Publicado');
+      });
+      return;
+    }
     const item = {
       ...communityAuthor(),
       handle: communityPeople().find((p) => p.id === String(D.person.id))?.handle,
@@ -112,24 +122,7 @@ document.addEventListener('submit', async (e) => {
         (v.comments[f.dataset.id] ||= []).push(item);
       }
     });
-    if (!saved) return;
-    if (kind === 'community-post') {
-      communityDraft.post = '';
-      communityDraft.cursor = 0;
-      communityDraft.images = [];
-      communityDraft.activity = '';
-      communityDraft.day = D.now.day;
-      communityDraft.tag = 'No evento';
-      communityDraft.contextReady = false;
-      communityDraft.activityManual = false;
-      communityMode = 'feed';
-      navBack();
-      toast('Publicação salva neste aparelho');
-    } else {
-      if (kind === 'community-message') communityDraft.message = '';
-      else delete communityDraft.comments[f.dataset.id];
-      rerender();
-    }
+    if (saved) communityLimparRascunho(kind, f.dataset.id, 'Publicação salva neste aparelho');
     return;
   }
   if (e.target.dataset.form === 'tourjoin') {

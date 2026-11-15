@@ -456,9 +456,31 @@
 
   /* ---------- seções ---------- */
   let socialModFilter = 'pending';
+  /* Com servidor, a moderação lê e grava em /api/publicacoes (vale para todos); sem, fica neste navegador. */
+  let socialV = null;
+  let socialBuscando = false;
+  async function socialCarregar() {
+    if (socialBuscando) return;
+    socialBuscando = true;
+    try {
+      const v = await window.ETAL_API.get('/api/publicacoes');
+      for (const p of v.posts) for (const img of p.images || []) img.src = window.ETAL_API.url(img.src);
+      socialV = v;
+      if (current() === 'comunidade') render();
+    } catch (x) {
+      toast(x.message);
+    } finally {
+      socialBuscando = false;
+    }
+  }
   const Views = {
     comunidade() {
-      return window.COMMUNITY.moderationHTML(window.COMMUNITY.read(), socialModFilter);
+      if (!window.ETAL_API) return window.COMMUNITY.moderationHTML(window.COMMUNITY.read(), socialModFilter);
+      if (!socialV) {
+        socialCarregar();
+        return '<p class="social-empty">Carregando as publicações…</p>';
+      }
+      return window.COMMUNITY.moderationHTML(socialV, socialModFilter);
     },
     visao() {
       const now = D.sessions.filter((x) => isNow(x) && x.seats);
@@ -960,6 +982,15 @@
     }
     if (a === 'social-mod') {
       const note = el.closest('[data-mod-target]')?.querySelector('[data-mod-note]')?.value || '';
+      if (API) {
+        API.post('/api/publicacoes/moderar', { alvo: el.dataset.target, acao: el.dataset.action, nota: note })
+          .then(() => {
+            toast('Revisão salva');
+            return socialCarregar();
+          })
+          .catch((x) => toast(x.message));
+        return;
+      }
       try {
         window.COMMUNITY.write((v) =>
           window.COMMUNITY.moderate(v, el.dataset.target, el.dataset.action, 'Organização · painel local', note),
@@ -1316,6 +1347,9 @@
       toast('Sem conexão com o servidor.');
     });
     API.live({
+      publicacoes: (d) => {
+        if (socialV && d.versao !== socialV.versao) socialCarregar();
+      },
       aviso: () => sync(),
       sala: () => sync(),
       numeros: () => sync(),
@@ -1336,6 +1370,8 @@
       },
     });
   }
-  if (API) apiStart();
-  else render();
+  if (API) {
+    window.COMMUNITY.usarServidor();
+    apiStart();
+  } else render();
 })();

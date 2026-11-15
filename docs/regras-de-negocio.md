@@ -76,11 +76,20 @@ Isso eu fiquei com receio, então ficou assim:
 
 ## Publicações
 
-- Ver as publicações é pra quem entrou. Postar, curtir, comentar e denunciar é só pra quem já tá credenciado.
-- Até 6 fotos por post, com descrição em cada uma. As fotos são reduzidas no próprio celular antes de ir.
-- Cada um pode apagar a própria publicação.
-- Denúncia vai pra organização, que pode ocultar, restaurar ou arquivar, sempre com anotação e histórico. Post de outra pessoa a organização não apaga de vez: tira do ar pela moderação.
-- IMPORTANTE: hoje as publicações ficam só no celular de cada um, não vão pra ninguém. A gente ainda vai fazer o servidor disso e planejar direito antes do evento.
+- Ver as publicações é pra quem entrou. Postar, curtir, comentar, mandar mensagem no chat e denunciar é só pra quem já tá credenciado.
+- Ficam no servidor: todo mundo vê as mesmas, e quem tá com a tela aberta vê chegar na hora, sem recarregar.
+- O que fica guardado: o texto, as fotos (até 6 por post, cada uma com descrição), a atividade e o dia, quem curtiu, os comentários, o chat geral, as denúncias e o histórico da moderação.
+- As fotos são reduzidas no celular, e o servidor ainda grava cada uma de novo, tirando o que vem escondido na foto (tipo a localização do GPS).
+- Os outros veem nome, foto e curso de quem publicou. Matrícula e e-mail não vão pra ninguém.
+- Nas publicações aparece o nome e a foto do SUAP (ou do cadastro de convidado). O que a pessoa muda só no app não aparece pros outros.
+- O app mostra as 300 publicações mais recentes e as 200 últimas mensagens do chat.
+- Pra ninguém encher o feed: no máximo 10 posts a cada 10 minutos, 30 comentários ou mensagens a cada 5 minutos e 10 denúncias a cada 10 minutos, por pessoa.
+- Cada um pode apagar o que é seu, e aí apaga de vez: junto vão os comentários, as curtidas e as fotos.
+- Quem modera é só a organização, pelo app ou pelo painel do computador. Pode tirar do ar, colocar de volta ou arquivar a denúncia, sempre com uma anotação, e fica no histórico quem fez e quando. Post de outra pessoa a organização não apaga de vez: tira do ar.
+- Se 3 pessoas diferentes denunciarem a mesma coisa, ela sai do ar sozinha até a organização olhar.
+- Quem publicou não fica sabendo quem denunciou.
+- Por quanto tempo: 90 dias. Depois disso a gente roda a limpeza (`python -m app.manutencao publicacoes`) e apaga tudo, com as fotos. As denúncias ficam só com a cópia do texto, pro histórico da moderação.
+- Sem servidor (a demonstração), as publicações continuam ficando só no celular, com os exemplos.
 
 ## Perfil e crachá
 
@@ -96,6 +105,5 @@ Isso eu fiquei com receio, então ficou assim:
 
 ## O que ainda falta decidir
 
-- Publicações com servidor (o que guarda, por quanto tempo, quem modera).
-- LGPD: termo, política de privacidade e por quanto tempo os dados ficam.
+- LGPD: termo, política de privacidade e por quanto tempo os dados ficam (inclusive as cópias nas denúncias).
 - Se o limite de 6 tentativas por matrícula e a fila de 8 no SUAP tão bons, a gente vê no teste de carga.

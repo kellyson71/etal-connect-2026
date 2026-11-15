@@ -1,11 +1,22 @@
 /* app/05-comunidade.js · publicações, comentários, menções, chat e moderação.
    Parte do app.js: os arquivos de prototipo/app/ rodam juntos, na ordem dos números, no mesmo escopo
    (scripts/app/montar-app.mjs). */
-/* ---------------- comunidade (demonstração local) ---------------- */
+/* ---------------- comunidade (no aparelho, ou no servidor: 05-publicacoes-servidor.js) ---------------- */
 const SOCIAL = window.COMMUNITY;
 const COMMUNITY_KEY = SOCIAL.key;
-const communityRead = SOCIAL.read;
+const communityRead = () => (API ? pubEstado() : SOCIAL.read());
+/* Com servidor, só o que é do aparelho passa por aqui (menções já vistas); o resto vira chamada à API. */
 const communityWrite = (change) => {
+  if (API) {
+    try {
+      change(pubEstado());
+      pubGuardarVistas();
+      return true;
+    } catch (error) {
+      toast(error.message);
+      return false;
+    }
+  }
   try {
     SOCIAL.write(change);
     return true;
@@ -182,7 +193,7 @@ function communityReportOpen(target) {
     return;
   }
   openOverlay(
-    `<form class="sheet social-report" data-form="community-report" data-target="${esc(target)}" role="dialog" aria-modal="true" aria-labelledby="social-report-title"><i class="grab"></i><header><h2 id="social-report-title">Denunciar conteúdo</h2><button class="iconbtn" type="button" data-act="closeov" aria-label="Fechar denúncia">${ic('x')}</button></header><label class="field">Motivo<select name="reason" required><option value="">Selecione o motivo</option>${SOCIAL.reasons.map((r) => `<option>${esc(r)}</option>`).join('')}</select></label><label class="field">Detalhes<textarea name="detail" rows="3" maxlength="500" placeholder="Conte o que a equipe precisa saber (opcional)"></textarea></label><p class="community-muted">A denúncia fica neste navegador para revisão da organização.</p><button class="btn primary big" type="submit">Enviar denúncia</button></form>`,
+    `<form class="sheet social-report" data-form="community-report" data-target="${esc(target)}" role="dialog" aria-modal="true" aria-labelledby="social-report-title"><i class="grab"></i><header><h2 id="social-report-title">Denunciar conteúdo</h2><button class="iconbtn" type="button" data-act="closeov" aria-label="Fechar denúncia">${ic('x')}</button></header><label class="field">Motivo<select name="reason" required><option value="">Selecione o motivo</option>${SOCIAL.reasons.map((r) => `<option>${esc(r)}</option>`).join('')}</select></label><label class="field">Detalhes<textarea name="detail" rows="3" maxlength="500" placeholder="Conte o que a equipe precisa saber (opcional)"></textarea></label><p class="community-muted">${API ? 'A denúncia vai para a organização revisar. Quem publicou não fica sabendo quem denunciou.' : 'A denúncia fica neste navegador para revisão da organização.'}</p><button class="btn primary big" type="submit">Enviar denúncia</button></form>`,
     'ask',
   );
 }
@@ -279,6 +290,26 @@ Screens.communityPost = ({ id }) => {
     html: `${header('Publicação')}<div class="community-feed">${p ? communityPost(p, v, true) : '<p class="community-muted">Esta publicação foi excluída.</p>'}</div>`,
   };
 };
+/* depois de publicar, comentar ou mandar mensagem: limpa o rascunho e volta */
+function communityLimparRascunho(kind, postId, aviso) {
+  if (kind === 'community-post') {
+    communityDraft.post = '';
+    communityDraft.cursor = 0;
+    communityDraft.images = [];
+    communityDraft.activity = '';
+    communityDraft.day = D.now.day;
+    communityDraft.tag = 'No evento';
+    communityDraft.contextReady = false;
+    communityDraft.activityManual = false;
+    communityMode = 'feed';
+    navBack();
+    toast(aviso);
+  } else {
+    if (kind === 'community-message') communityDraft.message = '';
+    else delete communityDraft.comments[postId];
+    rerender();
+  }
+}
 const communityCheckinKey = () => `etal-atividade-atual:${D.person.id}`;
 function communityCheckin(id) {
   if (byId(id)?.type !== 'Credenciamento') store.set(communityCheckinKey(), { id, at: Date.now() });

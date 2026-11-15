@@ -27,6 +27,10 @@ ACOES['community-mode'] = (el, e, a) => {
 ACOES['community-save'] = (el, e, a) => {
   if (!S.auth) return;
   const id = el.dataset.id;
+  if (API) {
+    pubSalvar(id);
+    return;
+  }
   const me = String(D.person.id);
   let adding = false;
   if (
@@ -86,6 +90,10 @@ ACOES['social-mod'] = (el, e, a) => {
     return;
   }
   const note = el.closest('[data-mod-target]')?.querySelector('[data-mod-note]')?.value || '';
+  if (API) {
+    pubModerar(el.dataset.target, el.dataset.action, note);
+    return;
+  }
   if (communityWrite((v) => SOCIAL.moderate(v, el.dataset.target, el.dataset.action, D.person.name, note))) {
     rerender();
     toast('Revisão salva neste navegador');
@@ -114,6 +122,10 @@ ACOES['community-like'] = (el, e, a) => {
     return;
   }
   const id = el.dataset.id;
+  if (API) {
+    pubCurtir(id);
+    return;
+  }
   const me = String(D.person.id);
   if (
     communityWrite((v) => {
@@ -127,6 +139,10 @@ ACOES['community-like'] = (el, e, a) => {
 
 ACOES['community-delete'] = (el, e, a) => {
   if (!S.auth) return;
+  if (API) {
+    pubApagar(el.dataset.id);
+    return;
+  }
   if (communityWrite((v) => SOCIAL.removePost(v, el.dataset.id, communityAuthor(), canModerateCommunity()))) {
     if (top().s === 'communityPost') navBack();
     else rerender();

@@ -623,6 +623,7 @@ async function apiStart() {
     /* não entrou */
   }
   API.live({
+    publicacoes: pubAviso,
     aviso: (n) => {
       D.notices.unshift({ time: n.time, title: n.title, text: n.text, fresh: true, org: true });
       notify(n.title, n.text, n.activity);

@@ -21,8 +21,8 @@ jobs:
         run: npm test
 
   navegador:
-    # abre as telas do app num Chromium e toca nas ações de cada uma, sem erro de JavaScript; e a presença sem
-    # rede de ponta a ponta, com a API de verdade (SQLite temporário)
+    # abre as telas do app num Chromium e toca nas ações de cada uma, sem erro de JavaScript; e, de ponta a ponta com
+    # a API de verdade (SQLite temporário), a presença sem rede e as publicações
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,5 +31,5 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
       - run: pip install playwright -r backend/requirements.txt && python -m playwright install --with-deps chromium
-      - name: Telas, ações e presença sem rede
+      - name: Telas, ações, presença sem rede e publicações
         run: npm run test:navegador

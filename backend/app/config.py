@@ -52,6 +52,11 @@ class Config(BaseSettings):
     tolerancia_envio_min: int = 60
     fuso: str = 'America/Fortaleza'
 
+    # Publicações (app/rotas/publicacoes.py). Denúncias de pessoas diferentes que tiram um conteúdo do ar até a
+    # organização revisar, e por quantos dias as publicações ficam guardadas (python -m app.manutencao publicacoes).
+    denuncias_para_ocultar: int = 3
+    publicacoes_dias: int = 90
+
     @property
     def org(self) -> set[str]:
         return {x.strip().lower() for x in self.organizacao.split(',') if x.strip()}

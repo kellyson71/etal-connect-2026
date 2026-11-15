@@ -108,3 +108,62 @@ class Arquivo(Base):
     tamanho: Mapped[int] = mapped_column(Integer)
     dados: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
     em: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+
+class Publicacao(Base):
+    """Publicação, comentário (pai_id = a publicação) ou mensagem do chat geral. Fotos ficam em disco
+    (app/arquivos.py), com o id e a descrição guardados aqui."""
+    __tablename__ = 'publicacoes'
+    id: Mapped[str] = mapped_column(String(32), primary_key=True)
+    tipo: Mapped[str] = mapped_column(String(12))  # post | comentario | mensagem
+    pessoa_id: Mapped[int] = mapped_column(ForeignKey('pessoas.id'), index=True)
+    pai_id: Mapped[str | None] = mapped_column(ForeignKey('publicacoes.id', ondelete='CASCADE'), index=True)
+    texto: Mapped[str] = mapped_column(Text, default='')
+    atividade_id: Mapped[str | None] = mapped_column(String(64))
+    dia: Mapped[int | None] = mapped_column(Integer)
+    assunto: Mapped[str | None] = mapped_column(String(40))
+    mencoes: Mapped[list] = mapped_column(JSON, default=list)  # ids de pessoas
+    fotos: Mapped[list] = mapped_column(JSON, default=list)  # [{id, alt}]
+    oculta: Mapped[bool] = mapped_column(default=False)  # tirada do ar pela moderação (ou por denúncias)
+    criada_em: Mapped[datetime] = mapped_column(DateTime, index=True)
+
+
+class Curtida(Base):
+    __tablename__ = 'curtidas'
+    pessoa_id: Mapped[int] = mapped_column(ForeignKey('pessoas.id'), primary_key=True)
+    publicacao_id: Mapped[str] = mapped_column(ForeignKey('publicacoes.id', ondelete='CASCADE'), primary_key=True)
+
+
+class Salvo(Base):
+    __tablename__ = 'salvos'
+    pessoa_id: Mapped[int] = mapped_column(ForeignKey('pessoas.id'), primary_key=True)
+    publicacao_id: Mapped[str] = mapped_column(ForeignKey('publicacoes.id', ondelete='CASCADE'), primary_key=True)
+
+
+class Denuncia(Base):
+    """Denúncia de um conteúdo. Guarda uma cópia do texto, para a revisão continuar possível se o autor apagar."""
+    __tablename__ = 'denuncias'
+    id: Mapped[int] = mapped_column(primary_key=True)
+    publicacao_id: Mapped[str | None] = mapped_column(ForeignKey('publicacoes.id', ondelete='SET NULL'), index=True)
+    alvo: Mapped[str] = mapped_column(String(80))  # post:<id> | comment:<pai>:<id> | message:<id>
+    pessoa_id: Mapped[int] = mapped_column(ForeignKey('pessoas.id'))
+    motivo: Mapped[str] = mapped_column(String(60))
+    detalhe: Mapped[str] = mapped_column(String(500), default='')
+    copia: Mapped[dict] = mapped_column(JSON, default=dict)  # {name, text, type}
+    situacao: Mapped[str] = mapped_column(String(12), default='pendente')  # pendente | ocultada | arquivada
+    revisada_por: Mapped[str | None] = mapped_column(String(200))
+    revisada_em: Mapped[datetime | None] = mapped_column(DateTime)
+    nota: Mapped[str | None] = mapped_column(String(240))
+    criada_em: Mapped[datetime] = mapped_column(DateTime)
+
+
+class Moderacao(Base):
+    """Histórico da moderação: quem ocultou, restaurou ou arquivou o quê, quando e por quê."""
+    __tablename__ = 'moderacao'
+    id: Mapped[int] = mapped_column(primary_key=True)
+    alvo: Mapped[str] = mapped_column(String(80))
+    acao: Mapped[str] = mapped_column(String(12))  # hide | restore | dismiss | auto
+    por: Mapped[str] = mapped_column(String(200))
+    nota: Mapped[str] = mapped_column(String(240), default='')
+    texto: Mapped[str] = mapped_column(String(300), default='')
+    em: Mapped[datetime] = mapped_column(DateTime)
