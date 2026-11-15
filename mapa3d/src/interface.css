@@ -5,9 +5,15 @@
 
 /* identidade do app: azul NADIC na interface; verde só na rota e no destino */
 button:hover{background:#eef1f8}#passos span{background:#eef1f8;color:#66728e}#passos span.agora{background:#22386f;color:#fff}#passos span.feito{color:#22386f}#etapa-atual{color:#22386f}#ficha{border-bottom-color:#4d971f}
-#rotulos .pilula{border:0;border-radius:999px;color:#fff;font-weight:700;font-size:13px;padding:6px 12px;min-height:30px;transform:translate(-50%,-120%);box-shadow:0 4px 14px rgba(31,47,87,.22)}
+#rotulos .pilula{display:flex;align-items:center;gap:6px;border:0;border-radius:999px;color:#fff;font-weight:700;font-size:13px;padding:5px 12px 5px 6px;min-height:32px;transform:translate(-50%,-120%);box-shadow:0 4px 14px rgba(31,47,87,.22)}
+#rotulos svg{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#rotulos .pilula svg{width:22px;height:22px;padding:3px;border-radius:50%;background:rgba(255,255,255,.22)}
+/* marcadores do resto do campus (modo Evento): brancos e menores, para não disputar com o evento */
+#rotulos .marco{position:absolute;display:flex;align-items:center;gap:5px;border:1px solid #dfe4ee;border-radius:999px;background:#fff;color:#33415f;font-weight:600;font-size:12px;padding:3px 9px 3px 5px;min-height:26px;transform:translate(-50%,-120%);box-shadow:0 3px 10px rgba(31,47,87,.14)}
+#rotulos .marco::after{content:'';position:absolute;left:50%;bottom:-4px;width:7px;height:7px;transform:translateX(-50%) rotate(45deg);background:#fff;border-right:1px solid #dfe4ee;border-bottom:1px solid #dfe4ee}
+#rotulos .marco svg{color:#22386f}
 #rotulos .pilula::after{content:'';position:absolute;left:50%;bottom:-5px;width:10px;height:10px;transform:translateX(-50%) rotate(45deg);background:inherit;border-radius:2px}
-#rotulos .verde{background:#4a9a1e}#rotulos .azul{background:#2c4aa8}#rotulos .laranja{background:#d9730f}#rotulos .patio{background:#5fa93a}#rotulos .vermelho{background:#c0392b}
+#rotulos .verde{background:#4a9a1e}#rotulos .azul{background:#2c4aa8}#rotulos .laranja{background:#d9730f}#rotulos .patio{background:#2e9a78}#rotulos .vermelho{background:#c0392b}
 #rotulos .pilula:hover{filter:brightness(1.08)}
 body.em-viagem #rotulos{display:none}
 @media(min-width:601px){#cartao{width:340px}#passos{flex-wrap:wrap;overflow:visible}}
@@ -16,7 +22,7 @@ body.em-viagem #rotulos{display:none}
 #legenda{position:fixed;left:16px;top:136px;display:flex;flex-direction:column;gap:6px;z-index:1}
 #legenda .leg{display:flex;align-items:center;gap:9px;min-height:40px;padding:6px 12px 6px 9px;border-radius:12px;text-align:left;box-shadow:0 3px 14px rgba(31,47,87,.12);background:#fff;border:1px solid #e6eaf2}
 #legenda .leg i{width:14px;height:14px;border-radius:4px;flex:none}#legenda .leg b{display:block;font-size:13px}#legenda .leg small{display:block;font-size:11px;color:#66728e;line-height:1.1}
-#legenda .verde i{background:#4fa627}#legenda .azul i{background:#2f55c8}#legenda .laranja i{background:#f08a1c}#legenda .patio i{background:#8fd060}
+#legenda .verde i{background:#4fa627}#legenda .azul i{background:#2f55c8}#legenda .laranja i{background:#f08a1c}#legenda .patio i{background:#56c29b}
 .saida{display:flex;align-items:center;gap:8px;flex-wrap:wrap}#trocar-origem{min-height:26px;padding:2px 9px;border-radius:999px;font-size:11px;color:#22386f;background:#eef1f8;border:0}
 #andares{top:136px}
 @media(max-width:600px){#legenda{flex-direction:row;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;right:0;left:0;padding:0 12px;top:128px;gap:4px}#legenda .leg{flex:none}#legenda .leg{min-height:30px;padding:3px 8px}#legenda .leg small{display:none}#andares{top:180px}}
@@ -244,3 +250,22 @@ body.em-viagem #proxima,body.abertura #proxima{display:none}
 #sala-atividades button{display:grid;text-align:left;gap:4px;padding:10px 12px;border-radius:12px;background:var(--fundo,#edf1f7);color:inherit;border:1px solid #8883;white-space:normal}
 #sala-atividades b{font-size:14px;line-height:1.3}#sala-atividades small{opacity:.7;font-size:12px}
 :root[data-tema=escuro] #sala-atividades button{background:#ffffff0a}
+
+/* selo do céu no mapa ilustrado escuro: diz se é dia ou noite */
+#ceu-selo{position:fixed;right:16px;top:calc(max(14px,env(safe-area-inset-top)) + 54px);z-index:1;display:flex;align-items:center;gap:6px;padding:4px 10px 4px 7px;border-radius:999px;font-size:12px;font-weight:600;background:var(--paper);color:var(--ink);border:1px solid var(--line);box-shadow:0 3px 12px rgba(0,0,0,.25);pointer-events:none}
+#ceu-selo svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+#ceu-selo.dia svg{color:#f2b230}#ceu-selo.dia svg circle{fill:#f2b230}#ceu-selo.noite svg{color:#b9c7ea}#ceu-selo.noite svg path{fill:#b9c7ea;stroke:none}
+body.em-viagem #ceu-selo,body.passeando #ceu-selo,body.abertura #ceu-selo{display:none}
+:root[data-tema=escuro] #rotulos .marco{background:var(--paper);color:var(--ink);border-color:var(--line)}:root[data-tema=escuro] #rotulos .marco::after{background:var(--paper);border-color:var(--line)}:root[data-tema=escuro] #rotulos .marco svg{color:#9fb6ec}
+
+/* programação de um lugar (tocar ou tocar duas vezes num prédio) */
+#sala-atividades{max-height:min(300px,42vh)}
+#sala-atividades .sa-resumo{margin:0 0 2px;font-size:12px;color:var(--muted);font-weight:600}
+#sala-atividades .sa-dia{margin:8px 2px 2px;font-size:12px;text-transform:capitalize;color:var(--muted);font-weight:700;letter-spacing:.02em}
+#sala-atividades .sa-item{grid-template-columns:44px 1fr auto;align-items:center;gap:8px;min-height:48px}
+#sala-atividades .sa-item time{font-weight:700;font-size:13px;font-variant-numeric:tabular-nums}
+#sala-atividades .sa-item span{display:grid;gap:1px;min-width:0}
+#sala-atividades .sa-item em{font-style:normal;font-size:11px;font-weight:700;padding:3px 7px;border-radius:999px;background:#22386f;color:#fff}
+#sala-atividades .sa-item.agora{border-color:#4fa627;background:#4fa6271a}#sala-atividades .sa-item.agora em{background:#3f8f1a}
+#sala-atividades .sa-item.passou{opacity:.55}
+#sala-atividades .sa-agenda{display:block;position:sticky;bottom:0;width:100%;margin-top:6px;box-shadow:0 -8px 12px var(--paper);background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
