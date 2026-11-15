@@ -47,6 +47,9 @@ class Config(BaseSettings):
     # Presença: aceita a leitura do QR de uma atividade só perto do horário dela.
     janela_presenca: bool = True
     antecedencia_min: int = 20
+    # Leitura guardada sem internet: ela precisa ter sido feita durante a atividade e chegar ao servidor até estes minutos
+    # depois do fim (relógio do servidor). A hora informada pelo aparelho só restringe, nunca amplia a janela.
+    tolerancia_envio_min: int = 60
     fuso: str = 'America/Fortaleza'
 
     @property

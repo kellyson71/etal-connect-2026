@@ -60,7 +60,7 @@ class Presenca(Base):
     pessoa_id: Mapped[int] = mapped_column(ForeignKey('pessoas.id', ondelete='CASCADE'))
     atividade_id: Mapped[str] = mapped_column(ForeignKey('atividades.id', ondelete='CASCADE'))
     em: Mapped[datetime] = mapped_column(DateTime)
-    via: Mapped[str] = mapped_column(String(16), default='qr')  # qr | manual
+    via: Mapped[str] = mapped_column(String(16), default='qr')  # qr | qr-adiado (lida sem internet) | manual
 
 
 class Aviso(Base):
