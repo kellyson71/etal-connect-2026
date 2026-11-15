@@ -3,6 +3,7 @@
    Cada textura sabe quantos metros cobre, e as malhas usam UV em metros. */
 import * as THREE from 'three';
 import { rng } from './dados.js';
+import { planoDe, CART_DECL, CART_COR } from './cartum.js';
 
 let ANISO = 4;
 export const setAniso = (n) => { ANISO = n; };
@@ -45,19 +46,23 @@ export const VEUS = { verde: { value: 1 }, azul: { value: 1 }, laranja: { value:
 export const FUNDO = { value: new THREE.Color(0xeef2f7) };
 const FIM = `
  float cz = dot(gl_FragColor.rgb, vec3(0.3, 0.59, 0.11));
- gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(cz * 0.82 + 0.16), max(uDesat, uIso));
+ gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(cz * 0.82 + 0.16), max(uDesat * (1.0 - uCart), uIso));
  gl_FragColor.rgb = mix(gl_FragColor.rgb, uFundo, uIso * 0.72);`;
 /* Um shader só para o campus inteiro: desbotar (modo Evento), esmaecer para o fundo e o véu de cor das partes do evento.
    O código é o mesmo em todos os materiais; o que muda são os valores (uniforms) de cada um. Com uma chave de programa
    única, a placa compila um programa por tipo de material, e não um por cor de véu (era o que mais pesava no primeiro
    quadro do mapa, principalmente no celular). */
 const SEM_VEU = { value: 0 };
+/* Os materiais guardam os uniforms (PLANOS) para o modo ilustrado poder trocar a cor deles depois. */
+export const PLANOS = new WeakMap();
 function injetar(m, u) {
+  const ev = u.uVeu === SEM_VEU ? null : u.uCor.value.getHex();
+  Object.assign(u, planoDe(m, ev)); PLANOS.set(m, u);
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, u);
-    sh.fragmentShader = 'uniform float uDesat; uniform float uIso; uniform vec3 uFundo; uniform float uVeu; uniform float uParte; uniform vec3 uCor;\n' + sh.fragmentShader.replace('#include <dithering_fragment>', `#include <dithering_fragment>
+    sh.fragmentShader = 'uniform float uDesat; uniform float uIso; uniform vec3 uFundo; uniform float uVeu; uniform float uParte; uniform vec3 uCor;\n' + CART_DECL + sh.fragmentShader.replace('#include <color_fragment>', CART_COR).replace('#include <dithering_fragment>', `#include <dithering_fragment>
  float lz = dot(gl_FragColor.rgb, vec3(0.3, 0.59, 0.11));
- gl_FragColor.rgb = mix(gl_FragColor.rgb, uCor * (0.5 + 0.75 * lz), uVeu * uParte);` + FIM);
+ gl_FragColor.rgb = mix(gl_FragColor.rgb, uCor * (0.5 + 0.75 * lz), uVeu * uParte * (1.0 - uCart));` + FIM);
   };
   m.customProgramCacheKey = () => 'etal'; m.needsUpdate = true; return m;
 }
