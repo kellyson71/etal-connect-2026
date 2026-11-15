@@ -291,3 +291,6 @@ const remSaved = () => {
     return [];
   }
 };
+
+/* Ações dos elementos com data-act: cada assunto registra as suas aqui (arquivos 25-acoes-*.js). */
+const ACOES = Object.create(null);
