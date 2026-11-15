@@ -2,6 +2,15 @@
 
 O projeto segue o git flow: `main` tem só versões publicadas, `develop` junta as funcionalidades e cada uma nasce num ramo `feature/*`.
 
+## 0.11.0 (2026-11-15)
+
+- Código do app dividido por assunto: 30 partes em `prototipo/app/` (entrada, início, agenda, atividade, publicações, mapa, campeonatos, organização, leitor de QR, navegação, servidor…), montadas no `app.js` por `npm run app`, sem mudar o comportamento.
+- As 115 ações dos botões saem de um `switch` de quase 1.000 linhas e viram um registro por assunto (`ACOES`, arquivos `25-acoes-*.js`).
+- Estilos em 27 partes em `prototipo/estilos/`, montadas no `app.css` na mesma ordem.
+- Código que ninguém usava sai do app e do mapa clássico.
+- Teste no navegador (`npm run test:navegador`, também na CI): 19 telas e as ações de cada uma, sem erro de JavaScript.
+- `prototipo/LEIAME.md` explica a organização do protótipo.
+
 ## 0.10.0 (2026-11-15)
 
 Mapa
