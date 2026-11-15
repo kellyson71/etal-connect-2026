@@ -4,10 +4,8 @@
 Screens.home = () => {
   const s = byId('react-native');
   const here = S.present[s.id];
-  const today = D.sessions.filter((x) => x.day === D.now.day);
   const next = D.enrolled.map(byId).filter((x) => x.id !== s.id);
   const speakers = speakersList();
-  const pres = D.enrolled.filter((id) => S.present[id]).length;
   /* atalhos numa fileira só; Mapa e Avisos já estão na barra de baixo e no sino */
   const actions = [
     ['cal', 'Programação', 'data-act="tab" data-tab="agenda"'],
@@ -118,12 +116,6 @@ Screens.agenda = () => {
   ].filter(([k]) => !TIPOS_G.has(k) || D.sessions.some((x) => tipoDe(x).g === k));
   /* Cada tipo tem a sua cor (a mesma do filtro) e a fileira é curta: tipo e até que horas, título, quem e onde, vagas. */
   const tp = (k) => (TIPOS_G.has(k) ? k : 'out');
-  const vagas = (s) =>
-    !s.seats
-      ? ''
-      : s.taken >= s.seats
-        ? '<span class="ag-vagas full">Lotado</span>'
-        : `<span class="ag-vagas ${s.seats - s.taken <= 5 ? 'low' : ''}">${s.seats - s.taken} ${s.seats - s.taken === 1 ? 'vaga' : 'vagas'}</span>`;
   /* Card no padrão dos apps de evento (Whova, Sched, Google I/O): título forte, uma linha só com quem e onde, o
        marcador à direita. O tipo aparece no hexágono colorido (as cores são as dos hexágonos do logo do ETAL), não em
        texto; a legenda das cores são os filtros logo acima. Vagas só aparecem quando acabando ou esgotadas. */

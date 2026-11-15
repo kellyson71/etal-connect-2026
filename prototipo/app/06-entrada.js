@@ -79,7 +79,6 @@ function badgeFace(p) {
 const yardText = 'ETAL · CONNECT · '.repeat(16);
 
 Screens.login = () => {
-  splashDone = true;
   const guest = S.lgMode === 'guest';
   return {
     chrome: false,

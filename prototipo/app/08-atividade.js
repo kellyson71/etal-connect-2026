@@ -282,4 +282,3 @@ const dimToggle = () => {
   return `<div class="dim" role="group" aria-label="Tipo de vista" style="--k:${f ? 1 : 0}"><i></i><button class="${f ? '' : 'on'}" data-act="dim" data-v="3d" aria-pressed="${!f}">3D</button><button class="${f ? 'on' : ''}" data-act="dim" data-v="2d" aria-pressed="${f}">2D</button></div>`;
 };
 const EVENT_PLACES = ['principal', 'auditorio', 'cantina', 'patio'];
-const EVENT_DOT = { principal: '#62b22f', auditorio: '#3a62b8', cantina: '#e8a825', patio: '#8fce63' };

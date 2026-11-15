@@ -161,7 +161,6 @@ const duracao = (x) => {
 };
 const pessoasDe = (x) =>
   [{ name: x.speakerShort, initials: x.initials, role: x.role }, ...(x.guests || [])].filter((p) => p.name);
-const leva = (x) => /notebook|computador/i.test(x.requirements || '');
 const whereOf = (x) => (x.floor === undefined ? x.room : `${x.room} · ${floorOf(x.floor).label}`);
 const isNow = (x) => x.day === D.now.day && x.time <= D.now.time && D.now.time < x.end;
 /* Mapa novo: a rota sai da sala da atividade em que a pessoa está inscrita acontecendo agora; sem ela, da portaria. */
@@ -204,12 +203,6 @@ const hoursOf = (s) => {
   });
   return b - a;
 };
-const seatLine = (s) =>
-  !s.seats
-    ? ''
-    : s.taken >= s.seats
-      ? 'Vagas esgotadas'
-      : `${s.seats - s.taken} ${s.seats - s.taken === 1 ? 'vaga' : 'vagas'} de ${s.seats}`;
 const seatBar = (s) =>
   !s.seats
     ? ''
@@ -287,7 +280,6 @@ const prefs = {
     }
   },
 };
-let splashDone = false;
 const REM_KEY = 'etal-lembretes';
 const LEAD = 10;
 const remSaved = () => {
@@ -620,49 +612,6 @@ function qr(seed = 11, n = 25) {
 const isDark = () => document.documentElement.dataset.theme === 'dark';
 const floorOf = (lvl) => P.floors.find((f) => f.level === lvl);
 const zoneOf = (lvl, id) => floorOf(lvl).zones.find((z) => z.id === id);
-function bbox(z) {
-  if (z.points) {
-    const p = z.points.split(' ').map((q) => q.split(',').map(Number));
-    const xs = p.map((q) => q[0]),
-      ys = p.map((q) => q[1]);
-    return {
-      x: Math.min(...xs),
-      y: Math.min(...ys),
-      w: Math.max(...xs) - Math.min(...xs),
-      h: Math.max(...ys) - Math.min(...ys),
-    };
-  }
-  return { x: z.x, y: z.y, w: z.w, h: z.h };
-}
-function hitLayer(f, sel) {
-  return (
-    '<g class="hits">' +
-    f.zones
-      .map((z) => {
-        const c = `class="hit${z.id === sel ? ' sel' : ''}" data-zone="${z.id}"`;
-        return z.points
-          ? `<polygon ${c} points="${z.points}"/>`
-          : `<rect ${c} x="${z.x + 2}" y="${z.y + 2}" width="${z.w - 4}" height="${z.h - 4}" rx="8"/>`;
-      })
-      .join('') +
-    '</g>'
-  );
-}
-function planSvg(lvl, vb, sel, cls = 'plan') {
-  const f = floorOf(lvl);
-  return `<svg class="${cls}" viewBox="${vb}" preserveAspectRatio="xMidYMid ${cls === 'thumb' ? 'slice' : 'meet'}" role="img" aria-label="Planta do ${f.label}">${P.defs}<rect x="-400" y="-400" width="1700" height="1300" fill="${isDark() ? '#0e1932' : '#f4f6fa'}"/>${isDark() ? f.svgDark : f.svg}${hitLayer(f, sel)}</svg>`;
-}
-function focusBox(lvl, id, width = 420, ratio = 0.78) {
-  const z = zoneOf(lvl, id);
-  if (!z) {
-    const [, , w, h] = (P.viewBox || '0 0 900 430').split(' ').map(Number);
-    return { x: 0, y: 0, w, h };
-  }
-  const b = bbox(z);
-  const w = Math.max(width, b.w + 80),
-    h = w * ratio;
-  return { x: b.x + b.w / 2 - w / 2, y: b.y + b.h / 2 - h / 2, w, h };
-}
 const zoneName = (z) =>
   z.name
     ? z.name
@@ -1480,7 +1429,6 @@ function badgeFace(p) {
 const yardText = 'ETAL · CONNECT · '.repeat(16);
 
 Screens.login = () => {
-  splashDone = true;
   const guest = S.lgMode === 'guest';
   return {
     chrome: false,
@@ -1882,10 +1830,8 @@ function badge() {
 Screens.home = () => {
   const s = byId('react-native');
   const here = S.present[s.id];
-  const today = D.sessions.filter((x) => x.day === D.now.day);
   const next = D.enrolled.map(byId).filter((x) => x.id !== s.id);
   const speakers = speakersList();
-  const pres = D.enrolled.filter((id) => S.present[id]).length;
   /* atalhos numa fileira só; Mapa e Avisos já estão na barra de baixo e no sino */
   const actions = [
     ['cal', 'Programação', 'data-act="tab" data-tab="agenda"'],
@@ -1996,12 +1942,6 @@ Screens.agenda = () => {
   ].filter(([k]) => !TIPOS_G.has(k) || D.sessions.some((x) => tipoDe(x).g === k));
   /* Cada tipo tem a sua cor (a mesma do filtro) e a fileira é curta: tipo e até que horas, título, quem e onde, vagas. */
   const tp = (k) => (TIPOS_G.has(k) ? k : 'out');
-  const vagas = (s) =>
-    !s.seats
-      ? ''
-      : s.taken >= s.seats
-        ? '<span class="ag-vagas full">Lotado</span>'
-        : `<span class="ag-vagas ${s.seats - s.taken <= 5 ? 'low' : ''}">${s.seats - s.taken} ${s.seats - s.taken === 1 ? 'vaga' : 'vagas'}</span>`;
   /* Card no padrão dos apps de evento (Whova, Sched, Google I/O): título forte, uma linha só com quem e onde, o
        marcador à direita. O tipo aparece no hexágono colorido (as cores são as dos hexágonos do logo do ETAL), não em
        texto; a legenda das cores são os filtros logo acima. Vagas só aparecem quando acabando ou esgotadas. */
@@ -2372,7 +2312,6 @@ const dimToggle = () => {
   return `<div class="dim" role="group" aria-label="Tipo de vista" style="--k:${f ? 1 : 0}"><i></i><button class="${f ? '' : 'on'}" data-act="dim" data-v="3d" aria-pressed="${!f}">3D</button><button class="${f ? 'on' : ''}" data-act="dim" data-v="2d" aria-pressed="${f}">2D</button></div>`;
 };
 const EVENT_PLACES = ['principal', 'auditorio', 'cantina', 'patio'];
-const EVENT_DOT = { principal: '#62b22f', auditorio: '#3a62b8', cantina: '#e8a825', patio: '#8fce63' };
 
 /* ===== app/09-campus-e-mapa.js ===== */
 /* app/09-campus-e-mapa.js · ficha do campus, tela grande do computador e mapa embutido.
@@ -3474,25 +3413,6 @@ const roomsAll = () =>
         name: z.kind === 'laboratory' ? `Lab ${z.roomNumber}` : `Sala ${z.roomNumber}`,
       })),
   );
-function hourBars(rows) {
-  const W = 320,
-    H = 132,
-    top = 18,
-    base = 104,
-    max = Math.max(...rows.map((r) => r[1]));
-  const bw = (W - 20) / rows.length;
-  const peak = rows.find((r) => r[1] === max);
-  const bars = rows
-    .map(([h, v], i) => {
-      const x = 10 + i * bw + 3,
-        w = bw - 6,
-        y = base - ((base - top) * v) / max;
-      return `<g class="ob-bar" tabindex="0" aria-label="${h} h: ${v} credenciamentos"><title>${h} h · ${v} credenciamentos</title><rect class="hit" x="${x - 3}" y="${top}" width="${bw}" height="${base - top + 22}"/>
-        <path d="M${x} ${base}V${y + 4}a4 4 0 0 1 4-4h${w - 8}a4 4 0 0 1 4 4V${base}Z"/>${peak && h === peak[0] ? `<text class="ob-val" x="${x + w / 2}" y="${y - 6}">${v}</text>` : ''}<text class="ob-x" x="${x + w / 2}" y="${base + 16}">${h}h</text></g>`;
-    })
-    .join('');
-  return `<svg class="ob-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Credenciamentos por hora hoje: ${rows.map(([h, v]) => `${h} h, ${v}`).join('; ')}"><path class="ob-base" d="M8 ${base + 0.5}H${W - 8}"/>${bars}</svg>`;
-}
 /* ---- Organização: por matrícula (D.organizadores + os acrescentados no painel, em etal-org.organizadores) ---- */
 const organizadores = () => {
   const extra = orgRead().organizadores || [];
@@ -3653,7 +3573,7 @@ Screens.orgJogos = () =>
         html: `${header('Campeonatos')}<div class="pad stack org">${D.tournaments
           .map((t, i) => {
             const stt = tourSt(t);
-            const [k, l] = window.TOUR.status(stt);
+            const [, l] = window.TOUR.status(stt);
             return `<button class="org-jogo st" ${st(i)} data-go="orgJogo" data-id="${t.id}"><span class="org-jogo-arte ${t.theme}">${gameArt(t)}</span><span><b>${esc(t.name)}</b><small>${l} · ${8 - stt.free}/8 na chave</small></span>${ic('chev')}</button>`;
           })
           .join('')}</div>`,
@@ -4782,10 +4702,6 @@ function netState() {
 window.addEventListener('online', netState);
 window.addEventListener('offline', netState);
 
-function setTheme(v) {
-  UI.mode = v === 'dark' ? 'escuro' : 'claro';
-  applyUI();
-}
 function applyProfile(p) {
   Object.assign(D.person, p, { officialName: p.officialName || p.name }, profileLocal(p.id));
 }
@@ -4815,12 +4731,6 @@ function navReset() {
     navSkip += 1;
     history.go(-n);
   }
-}
-function enterApp() {
-  S.auth = true;
-  S.tab = 'home';
-  show(build(top()), 'fade');
-  qrPendente();
 }
 
 /* ===== app/22-campus.js ===== */
@@ -7535,7 +7445,6 @@ async function apiStart() {
     return;
   }
   apiState(me);
-  splashDone = true;
   S.auth = true;
   show(build(top()), 'fade');
   const pend = sessionStorage.getItem('etal-qr');
@@ -7580,7 +7489,6 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => {
   }
 });
 if (mapSaved && mapSaved.seen ? mapSaved.flat : UI.view === '2d') window.Campus3D.setFlat(true);
-if (q === 'login') splashDone = true;
 if (!q && API) {
   apiStart();
   return;
@@ -7598,7 +7506,6 @@ if (!q) {
   const saved = store.get(SAVE_KEY);
   if (saved) {
     applyProfile(saved);
-    splashDone = true;
     S.auth = true;
     telaGrande();
     show(build(top()), 'fade');
@@ -7614,7 +7521,6 @@ if (q === 'login') {
   return;
 }
 if (q === 'visitante') {
-  splashDone = true;
   S.lgMode = 'guest';
   show(build({ s: 'login' }), 'fade');
   return;

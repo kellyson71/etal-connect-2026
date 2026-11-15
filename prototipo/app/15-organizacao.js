@@ -12,25 +12,6 @@ const roomsAll = () =>
         name: z.kind === 'laboratory' ? `Lab ${z.roomNumber}` : `Sala ${z.roomNumber}`,
       })),
   );
-function hourBars(rows) {
-  const W = 320,
-    H = 132,
-    top = 18,
-    base = 104,
-    max = Math.max(...rows.map((r) => r[1]));
-  const bw = (W - 20) / rows.length;
-  const peak = rows.find((r) => r[1] === max);
-  const bars = rows
-    .map(([h, v], i) => {
-      const x = 10 + i * bw + 3,
-        w = bw - 6,
-        y = base - ((base - top) * v) / max;
-      return `<g class="ob-bar" tabindex="0" aria-label="${h} h: ${v} credenciamentos"><title>${h} h · ${v} credenciamentos</title><rect class="hit" x="${x - 3}" y="${top}" width="${bw}" height="${base - top + 22}"/>
-        <path d="M${x} ${base}V${y + 4}a4 4 0 0 1 4-4h${w - 8}a4 4 0 0 1 4 4V${base}Z"/>${peak && h === peak[0] ? `<text class="ob-val" x="${x + w / 2}" y="${y - 6}">${v}</text>` : ''}<text class="ob-x" x="${x + w / 2}" y="${base + 16}">${h}h</text></g>`;
-    })
-    .join('');
-  return `<svg class="ob-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Credenciamentos por hora hoje: ${rows.map(([h, v]) => `${h} h, ${v}`).join('; ')}"><path class="ob-base" d="M8 ${base + 0.5}H${W - 8}"/>${bars}</svg>`;
-}
 /* ---- Organização: por matrícula (D.organizadores + os acrescentados no painel, em etal-org.organizadores) ---- */
 const organizadores = () => {
   const extra = orgRead().organizadores || [];
@@ -191,7 +172,7 @@ Screens.orgJogos = () =>
         html: `${header('Campeonatos')}<div class="pad stack org">${D.tournaments
           .map((t, i) => {
             const stt = tourSt(t);
-            const [k, l] = window.TOUR.status(stt);
+            const [, l] = window.TOUR.status(stt);
             return `<button class="org-jogo st" ${st(i)} data-go="orgJogo" data-id="${t.id}"><span class="org-jogo-arte ${t.theme}">${gameArt(t)}</span><span><b>${esc(t.name)}</b><small>${l} · ${8 - stt.free}/8 na chave</small></span>${ic('chev')}</button>`;
           })
           .join('')}</div>`,

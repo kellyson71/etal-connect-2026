@@ -104,10 +104,6 @@ function netState() {
 window.addEventListener('online', netState);
 window.addEventListener('offline', netState);
 
-function setTheme(v) {
-  UI.mode = v === 'dark' ? 'escuro' : 'claro';
-  applyUI();
-}
 function applyProfile(p) {
   Object.assign(D.person, p, { officialName: p.officialName || p.name }, profileLocal(p.id));
 }
@@ -137,10 +133,4 @@ function navReset() {
     navSkip += 1;
     history.go(-n);
   }
-}
-function enterApp() {
-  S.auth = true;
-  S.tab = 'home';
-  show(build(top()), 'fade');
-  qrPendente();
 }

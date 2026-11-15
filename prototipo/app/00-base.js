@@ -155,7 +155,6 @@ const duracao = (x) => {
 };
 const pessoasDe = (x) =>
   [{ name: x.speakerShort, initials: x.initials, role: x.role }, ...(x.guests || [])].filter((p) => p.name);
-const leva = (x) => /notebook|computador/i.test(x.requirements || '');
 const whereOf = (x) => (x.floor === undefined ? x.room : `${x.room} · ${floorOf(x.floor).label}`);
 const isNow = (x) => x.day === D.now.day && x.time <= D.now.time && D.now.time < x.end;
 /* Mapa novo: a rota sai da sala da atividade em que a pessoa está inscrita acontecendo agora; sem ela, da portaria. */
@@ -198,12 +197,6 @@ const hoursOf = (s) => {
   });
   return b - a;
 };
-const seatLine = (s) =>
-  !s.seats
-    ? ''
-    : s.taken >= s.seats
-      ? 'Vagas esgotadas'
-      : `${s.seats - s.taken} ${s.seats - s.taken === 1 ? 'vaga' : 'vagas'} de ${s.seats}`;
 const seatBar = (s) =>
   !s.seats
     ? ''
@@ -281,7 +274,6 @@ const prefs = {
     }
   },
 };
-let splashDone = false;
 const REM_KEY = 'etal-lembretes';
 const LEAD = 10;
 const remSaved = () => {

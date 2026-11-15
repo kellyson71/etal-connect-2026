@@ -32,7 +32,6 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => {
   }
 });
 if (mapSaved && mapSaved.seen ? mapSaved.flat : UI.view === '2d') window.Campus3D.setFlat(true);
-if (q === 'login') splashDone = true;
 if (!q && API) {
   apiStart();
   return;
@@ -50,7 +49,6 @@ if (!q) {
   const saved = store.get(SAVE_KEY);
   if (saved) {
     applyProfile(saved);
-    splashDone = true;
     S.auth = true;
     telaGrande();
     show(build(top()), 'fade');
@@ -66,7 +64,6 @@ if (q === 'login') {
   return;
 }
 if (q === 'visitante') {
-  splashDone = true;
   S.lgMode = 'guest';
   show(build({ s: 'login' }), 'fade');
   return;

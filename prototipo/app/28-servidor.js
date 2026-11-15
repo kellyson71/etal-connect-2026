@@ -562,7 +562,6 @@ async function apiStart() {
     return;
   }
   apiState(me);
-  splashDone = true;
   S.auth = true;
   show(build(top()), 'fade');
   const pend = sessionStorage.getItem('etal-qr');
