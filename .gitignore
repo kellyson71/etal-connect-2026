@@ -79,3 +79,6 @@ prototipo/mapa3d/
 
 # certificados locais do modo HTTPS do protótipo
 /prototipo/.certs/
+
+# Anotações locais de trabalho: ficam só na máquina, fora do repositório
+/.contexto/

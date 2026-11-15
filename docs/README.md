@@ -17,7 +17,6 @@ Os PDFs abrem direto no GitHub. As versões em HTML são as originais, interativ
 |---|---|---|---|
 | **[Apresentação](pdf/ETAL-Connect-apresentacao.pdf)** | O projeto em slides: o encontro, o participante, a organização, o mapa do campus real ao 3D, a presença por QR e o apêndice técnico (arquitetura, banco, API, PWA, rotas). | 25 | 4,9 MB |
 | **[Comparação dos mapas](pdf/ETAL-Connect-comparacao-dos-mapas.pdf)** | 20 pares de capturas: o mapa clássico (Canvas) e o mapa 3D atual (WebGL) vistos dos mesmos lugares, por fora, por dentro e no app. | 21 | 3,5 MB |
-| **[Notas de continuidade](pdf/ETAL-Connect-notas-de-continuidade.pdf)** | Contexto e decisões, telas e fluxos, regras do mapa e da planta, estrutura técnica, próximos passos, verificação e a programação de referência do VII ETAL. | 16 | 0,6 MB |
 | **[Explorações visuais](pdf/ETAL-Connect-exploracoes-visuais.pdf)** | As propostas de design que vieram antes do app atual: direções visuais, home e mapa, e as três entradas testadas (cartaz, crachá e explorar). | 3 | 6,5 MB |
 
 ## Originais em HTML (para abrir no computador)
@@ -26,7 +25,6 @@ Os PDFs abrem direto no GitHub. As versões em HTML são as originais, interativ
 |---|---|
 | Apresentação interativa (slides, demonstrações do app e do mapa, tela cheia) | [`DOCUMENTACAO.html`](../DOCUMENTACAO.html) |
 | Comparação dos mapas, com os pares em JPG para slides | [`comparacao-modelos/index.html`](comparacao-modelos/index.html) · [`pares/`](comparacao-modelos/pares/) |
-| Notas | [`contexto`](contexto.html) · [`fluxos`](fluxos.html) · [`mapas`](mapas.html) · [`tecnico`](tecnico.html) · [`proximos-passos`](proximos-passos.html) · [`validacao`](validacao.html) · [`programacao-referencia`](programacao-referencia.html) |
 | Explorações | [`direcoes-visuais`](direcoes-visuais.html) · [`propostas-home-mapa`](propostas-home-mapa.html) · [`telas-cracha`](telas-cracha.html) |
 
 Para apresentar, abra `DOCUMENTACAO.html` no navegador (duplo clique) e use as setas ou o botão de tela cheia. Funciona sem servidor.

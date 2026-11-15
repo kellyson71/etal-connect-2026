@@ -3,7 +3,6 @@
     npm run docs:pdf
 
 - Apresentação (DOCUMENTACAO.html, igual a docs/tecnico/documentacao-tecnica.html): com o tamanho de página do CSS dela.
-- Notas de continuidade: as páginas curtas de docs/ juntas num PDF só.
 - Explorações visuais (direções, propostas e telas do crachá): cada página vira uma folha larga, como na tela.
 - A comparação dos mapas sai de scripts/documentar-modelos.py, no mesmo lugar.
 As imagens opacas viram JPEG antes de imprimir (scripts/otimizar_pdf.py), o que deixa os PDFs bem mais leves.
@@ -23,7 +22,6 @@ sys.path.insert(0, str(ROOT / 'scripts'))
 from otimizar_pdf import imagens_leves  # noqa: E402
 
 OUT = ROOT / 'docs/pdf'
-NOTAS = ['contexto', 'fluxos', 'mapas', 'tecnico', 'proximos-passos', 'validacao', 'programacao-referencia']
 EXPLORACOES = ['direcoes-visuais', 'propostas-home-mapa', 'telas-cracha']
 
 
@@ -86,10 +84,6 @@ def main():
         feitos = []
         for rel, nome in [('DOCUMENTACAO.html', 'ETAL-Connect-apresentacao.pdf')]:  # docs/tecnico/documentacao-tecnica.html é a mesma apresentação
             impresso(page, rel, OUT / nome); feitos.append(nome)
-        partes = []
-        for slug in NOTAS:
-            partes.append(tmp / f'{slug}.pdf'); impresso(page, f'docs/{slug}.html', partes[-1])
-        juntar(partes, OUT / 'ETAL-Connect-notas-de-continuidade.pdf'); feitos.append('ETAL-Connect-notas-de-continuidade.pdf')
         partes = []
         for slug in EXPLORACOES:
             partes.append(tmp / f'{slug}.pdf'); como_na_tela(page, f'docs/{slug}.html', partes[-1])
