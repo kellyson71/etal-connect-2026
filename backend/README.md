@@ -1,7 +1,7 @@
 # Backend do ETAL Connect
 
 API em FastAPI: entrada pelo SUAP e de visitantes, programação, agenda, presença por QR assinado, avisos ao vivo (SSE) e painel da organização.
-Plano completo, rotas e implantação: [`docs/PLANO_TECNICO.md`](../docs/PLANO_TECNICO.md).
+Plano completo, rotas e implantação: [`docs/tecnico/plano-tecnico.md`](../docs/tecnico/plano-tecnico.md).
 
 ```sh
 python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt

@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inspirações de apps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geologica:wght@500;700&family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f5f1; --card:#ffffff; --ink:#17181c; --mut:#6b6d75; --line:#e4e2db;
+  --azul:#2f5fd0; --chip:#eef1fb; --amar:#f2b230;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121317; --card:#1b1d22; --ink:#eceae4; --mut:#9a9ca4; --line:#2b2d34;
+    --azul:#8aa8f0; --chip:#222838;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121317; --card:#1b1d22; --ink:#eceae4; --mut:#9a9ca4; --line:#2b2d34;
+  --azul:#8aa8f0; --chip:#222838;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Onest,system-ui,sans-serif}
+main{max-width:1060px;margin:0 auto;padding:40px 16px 80px}
+h1,h2{font-family:Geologica,system-ui,sans-serif;letter-spacing:-.01em;margin:0}
+h1{font-size:30px}
+h2{font-size:20px}
+.intro{color:var(--mut);max-width:680px;margin:8px 0 28px}
+nav{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:36px}
+nav a{font-size:13px;padding:5px 10px;border-radius:99px;background:var(--chip);color:var(--ink);text-decoration:none}
+section{padding:26px 0;border-top:1px solid var(--line)}
+.head{display:flex;justify-content:space-between;gap:16px;align-items:baseline;flex-wrap:wrap}
+.olhar{color:var(--mut);margin:6px 0 14px;max-width:760px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;text-decoration:none;color:var(--ink)}
+.card:hover{border-color:var(--azul)}
+.card b{display:block;font-weight:600;font-size:14px}
+.card span{color:var(--mut);font-size:13px}
+.buscas{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.buscas a{font-size:13px;color:var(--azul);text-decoration:none;border:1px solid var(--line);border-radius:6px;padding:3px 8px}
+.buscas a:hover{border-color:var(--azul)}
+.titulos{margin-top:14px;display:flex;flex-wrap:wrap;gap:6px}
+.titulos em{font-style:normal;font-size:13px;background:var(--card);border:1px dashed var(--line);border-radius:6px;padding:3px 8px}
+.lab{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin-top:16px;display:block}
+.nota{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--amar);border-radius:8px;padding:14px 16px;margin:0 0 28px}
+.nota ul{margin:6px 0 0;padding-left:18px}
+.tema{background:none;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:4px 10px;font:inherit;font-size:13px;cursor:pointer}
+</style>
+</head>
+<body>
+<main>
+<div class="head">
+  <h1>Inspirações para o ETAL Connect</h1>
+  <button class="tema" id="tema">Tema</button>
+</div>
+<p class="intro">Links do Dribbble separados pelas telas que o app já tem. Os cartões são shots específicos; os links azuis abrem a busca do Dribbble já filtrada, onde aparece muito mais coisa. Embaixo de cada grupo, títulos curtos para testar nas telas.</p>
+
+<div class="nota">
+  <b>Para fugir da cara de IA, olhe nas referências:</b>
+  <ul>
+    <li>Quanto texto cada tela tem (os bons têm pouco) e quantos níveis de título existem (quase sempre dois).</li>
+    <li>Foto real e conteúdo real no lugar de ícone, degradê e brilho.</li>
+    <li>Uma cor forte só, usada com intenção; o resto é neutro.</li>
+    <li>Grade e espaçamento repetidos: os cards têm o mesmo esqueleto em todo o app.</li>
+    <li>Prefira shots de produto real (marcados como "produto") aos conceitos: muito conceito do Dribbble também é genérico.</li>
+  </ul>
+</div>
+
+<nav>
+  <a href="#home">Home</a><a href="#agenda">Programação</a><a href="#detalhe">Atividade</a><a href="#qr">QR e crachá</a><a href="#mapa">Mapa</a><a href="#comunidade">Publicações</a><a href="#jogos">Campeonato</a><a href="#conquistas">Conquistas</a><a href="#org">Organização</a><a href="#campus">App universitário</a><a href="#reais">Apps reais</a>
+</nav>
+
+<section id="home">
+  <h2>Home do evento</h2>
+  <p class="olhar">Repare em como resolvem "o que está rolando agora" e "a próxima coisa que é minha" sem encher a tela.</p>
+  <div class="grid">
+    <a class="card" href="https://dribbble.com/shots/16933031-Event-App"><b>Event App</b><span>Purrweb · home, destaques e perfil</span></a>
+    <a class="card" href="https://dribbble.com/shots/8293006-Event-App-Design"><b>Event App Design</b><span>Kateryna · home com categorias e ficha</span></a>
+    <a class="card" href="https://dribbble.com/shots/8956474-Event-Mobile-App-Interactions"><b>Event Mobile App Interactions</b><span>tubik · movimento e transições</span></a>
+    <a class="card" href="https://dribbble.com/shots/24847844-Event-App"><b>Event App</b><span>Ronas IT · tema escuro com um acento</span></a>
+  </div>
+  <div class="buscas">
+    <a href="https://dribbble.com/search/event-app">event app</a>
+    <a href="https://dribbble.com/tags/event-app-ui">tag event app ui</a>
+    <a href="https://dribbble.com/search/conference-app">conference app</a>
+    <a href="https://dribbble.com/tags/tech_event_app">tag tech event app</a>
+  </div>
+  <span class="lab">Títulos</span>
+  <div class="titulos"><em>Agora</em><em>A seguir</em><em>Daqui a pouco</em><em>Sua próxima atividade</em><em>Hoje no ETAL</em><em>Você está credenciado</em><em>Falta fazer o credenciamento</em><em>Pra não perder</em><em>Avisos</em></div>
+</section>
+
+<section id="agenda">
+  <h2>Programação e agenda</h2>
+  <p class="olhar">Linha do tempo por dia, filtro por tipo, marcar como "vou". Veja como mostram horário, sala e lotação na mesma linha.</p>
+  <div class="grid">
+    <a class="card" href="https://dribbble.com/shots/293218-Mobile-event-schedule-layout"><b>Mobile event schedule layout</b><span>Fredrik Søgaard · grade de horários</span></a>
+    <a class="card" href="https://dribbble.com/shots/5574454-Conferences-program"><b>Conferences program</b><span>Aurore Souchet · programa de palestras</span></a>
+    <a class="card" href="https://dribbble.com/shots/2238972-Events-App"><b>Events App</b><span>Agilie Team · lista e status</span></a>
+    <a class="card" href="https://dribbble.com/shots/1181433-Event-calendar-for-mobile-site"><b>Event calendar for mobile</b><span>Matt Gillespie · calendário compacto</span></a>
+  </div>
+  <div class="buscas">
+    <a href="https://dribbble.com/search/event-schedule">event schedule</a>
+    <a href="https://dribbble.com/search/conference-schedule">conference schedule</a>
+    <a href="https://dribbble.com/search/conference-agenda">conference agenda</a>
+    <a href="https://dribbble.com/search/agenda-mobile">agenda mobile</a>
+    <a href="https://dribbble.com/search/timeline-app">timeline app</a>
+  </div>
+  <span class="lab">Títulos</span>
+  <div class="titulos"><em>Programação</em><em>Minha agenda</em><em>Qui, 26</em><em>Tudo</em><em>Palestras</em><em>Oficinas</em><em>Vou</em><em>Tirar da agenda</em><em>Últimas vagas</em><em>Esgotado</em><em>Você não marcou nada hoje</em></div>
+</section>
+
+<section id="detalhe">
+  <h2>Detalhe da atividade e palestrante</h2>
+  <p class="olhar">Hierarquia: quem, quando, onde. Veja onde fica o botão principal e como o perfil do palestrante cabe sem virar currículo.</p>
+  <div class="grid">
+    <a class="card" href="https://dribbble.com/shots/1943214-Events-App-Event-Details-Screen"><b>Event Details Screen</b><span>Ty Registe · ficha do evento</span></a>
+    <a class="card" href="https://dribbble.com/shots/1778105-Speakers-Dribbble"><b>Speakers</b><span>Igor Bogdanovski · lista de palestrantes</span></a>
+    <a class="card" href="https://dribbble.com/shots/21810829-Event-booking-app-UI-screens"><b>Event booking app</b><span>Pritesh Kumar · descoberta, ficha e ingresso</span></a>
+    <a class="card" href="https://dribbble.com/shots/3005081-Speakers-Schedule-Addon-for-EventON"><b>Speakers &amp; Schedule</b><span>Ashan Jay · palestrante dentro da agenda</span></a>
+  </div>
+  <div class="buscas">
+    <a href="https://dribbble.com/tags/event-details">tag event details</a>
+    <a href="https://dribbble.com/search/speaker-profile">speaker profile</a>
+    <a href="https://dribbble.com/search/workshop-app">workshop app</a>
+    <a href="https://dribbble.com/search/course-detail-app">course detail</a>
+  </div>
+  <span class="lab">Títulos</span>
+  <div class="titulos"><em>Sobre</em><em>Quem conduz</em><em>Na mesa</em><em>Como vai ser</em><em>Leve para a sala</em><em>Materiais</em><em>Como chegar</em><em>Mandar pergunta</em><em>Me lembra 10 min antes</em></div>
+</section>
+
+<section id="qr">
+  <h2>QR, ingresso e crachá</h2>
+  <p class="olhar">Leitor com feedback claro de sucesso e erro, e o crachá como "ingresso" na carteira. Veja como o QR ganha espaço sem moldura decorativa.</p>
+  <div class="grid">
+    <a class="card" href="https://dribbble.com/shots/22423785-UX-Design-Event-App-Registration-via-QR-Code"><b>Registration via QR Code</b><span>Lisa Heiss · fluxo de check-in</span></a>
+    <a class="card" href="https://dribbble.com/universe/projects/207472-Ticket-Manager-for-iOS"><b>Ticket Manager for iOS</b><span>Universe · produto, leitura na porta</span></a>
+    <a class="card" href="https://dribbble.com/shots/20228276-Events-Ticket-App"><b>Events Ticket App</b><span>Exadot · ingresso com QR</span></a>
+    <a class="card" href="https://dribbble.com/shots/4530637-Generative-student-ID-card"><b>Generative student ID card</b><span>Mihael Miklošić · padrão gerado pela matrícula</span></a>
+    <a class="card" href="https://dribbble.com/shots/1113398-Conference-Expo-Corporate-Pass-ID-Badge"><b>Conference Pass ID Badge</b><span>premadepixels · crachá físico</span></a>
+  </div>
+  <div class="buscas">
+    <a href="https://dribbble.com/search/qr-ticket">qr ticket</a>
+    <a href="https://dribbble.com/search/ticket-with-qr-code">ticket with qr code</a>
+    <a href="https://dribbble.com/search/qr-scanner">qr scanner</a>
+    <a href="https://dribbble.com/tags/event_pass">tag event pass</a>
+    <a href="https://dribbble.com/tags/attendee%20badge">tag attendee badge</a>
+    <a href="https://dribbble.com/tags/student-id">tag student id</a>
+    <a href="https://dribbble.com/tags/digital-id-card">tag digital id card</a>
+  </div>
+  <span class="lab">Títulos</span>
+  <div class="titulos"><em>Aponte para o QR da sala</em><em>Presença registrada</em><em>Você já estava aqui</em><em>Esse QR não é do ETAL</em><em>Seu crachá</em><em>Mostre na recepção</em><em>Credenciamento feito</em></div>
+</section>
+
+<section id="mapa">
+  <h2>Mapa e como chegar</h2>
+  <p class="olhar">Andar selecionado, rota até a porta e ficha do lugar. Veja como deixam o mapa limpo e põem a informação numa folha embaixo.</p>
+  <div class="grid">
+    <a class="card" href="https://dribbble.com/shots/20664778-Naviguide-Stadium-Navigation-App"><b>Naviguide</b><span>Aram Harutyunyan · estádio, dentro e fora</span></a>
+    <a class="card" href="https://dribbble.com/shots/3954902-AR-Indoor-Navigation"><b>AR Indoor Navigation</b><span>Sam Atmore · rota interna</span></a>
+    <a class="card" href="https://dribbble.com/shots/24028690-CAMPUS-NAVIGATION-SYSTEM"><b>Campus Navigation System</b><span>Taofeek Iyiola · prédios e salas</span></a>
+    <a class="card" href="https://dribbble.com/mappedin"><b>Mappedin</b><span>produto · mapas internos de shopping e campus</span></a>
+    <a class="card" href="https://dribbble.com/Navigine"><b>Navigine</b><span>produto · navegação indoor</span></a>
+  </div>
+  <div class="buscas">
+    <a href="https://dribbble.com/tags/indoor%20maps">tag indoor maps</a>
+    <a href="https://dribbble.com/tags/indoor_mapping">tag indoor mapping</a>
+    <a href="https://dribbble.com/search/indoor-wayfinding-solution">indoor wayfinding</a>
+    <a href="https://dribbble.com/search/campus-map">campus map</a>
+    <a href="https://dribbble.com/search/floor-plan-app">floor plan app</a>
+    <a href="https://dribbble.com/search/isometric-map">isometric map</a>
+  </div>
+  <span class="lab">Títulos</span>
+  <div class="titulos"><em>Como chegar</em><em>Você está aqui</em><em>Térreo</em><em>1º andar</em><em>Pela rampa</em><em>Pela escada</em><em>2 min a pé</em><em>Nessa sala hoje</em><em>Banheiros</em><em>Bebedouro</em></div>
+</section>
+
+<section id="comunidade">
+  <h2>Publicações e networking</h2>
+  <p class="olhar">Feed de evento, fotos do dia e conversa. Veja como diferenciam post de foto de aviso oficial.</p>
+  <div class="grid">
+    <a class="card" href="https://dribbble.com/shots/4136094-Gather-Online-Community-Feed-App"><b>Gather Online</b><span>Root Info · feed de comunidade</span></a>
+    <a class="card" href="https://dribbble.com/shots/6866032-Eventlift-Networking-App"><b>Eventlift</b><span>networking em evento</span></a>
+    <a class="card" href="https://dribbble.com/shots/7478663-Open-Banking-Excellence-Event-app"><b>Open Banking Excellence</b><span>Sarah Preston · app de conferência real</span></a>
+    <a class="card" href="https://dribbble.com/shots/25564858-Student-Connect-University-Messaging-Portal-iOS-App"><b>Student Connect</b><span>Nikita Petrov · mensagens entre estudantes</span></a>
+  </div>
+  <div class="buscas">
+    <a href="https://dribbble.com/tags/attendee">tag attendee</a>
+    <a href="https://dribbble.com/search/community-feed">community feed</a>
+    <a href="https://dribbble.com/search/photo-feed-app">photo feed</a>
+    <a href="https://dribbble.com/search/group-chat-app">group chat</a>
+    <a href="https://dribbble.com/search/event-networking">event networking</a>
+  </div>
+  <span class="lab">Títulos</span>
+  <div class="titulos"><em>Publicações</em><em>Fotos do dia</em><em>Postar foto</em><em>Marcar a atividade</em><em>Comentários</em><em>Salvos</em><em>Te marcaram</em><em>Conversa geral</em></div>
+</section>
+
+<section id="jogos">
+  <h2>Campeonato</h2>
+  <p class="olhar">Chave do torneio, partida da pessoa e inscrição. Aqui cabe mais personalidade, mas veja como a chave continua legível.</p>
+  <div class="grid">
+    <a class="card" href="https://dribbble.com/shots/20325896-Strive-Tournament-Game-Mobile-Apps"><b>Strive</b><span>Odama · torneios, vagas e chave</span></a>
+    <a class="card" href="https://dribbble.com/shots/14965189-Tournament-Bracket-Web-App"><b>Tournament Bracket</b><span>Sara Gonzalez · chave escura</span></a>
+    <a class="card" href="https://dribbble.com/shots/24608707-Wardraft-eSports-Fantasy-App"><b>Wardraft</b><span>Fabulo · times e ligas</span></a>
+  </div>
+  <div class="buscas">
+    <a href="https://dribbble.com/search/tournament-brackets">tournament brackets</a>
+    <a href="https://dribbble.com/tags/esports-tournament">tag esports tournament</a>
+    <a href="https://dribbble.com/search/game-live-tournament-app">game live tournament</a>
+    <a href="https://dribbble.com/search/match-score-app">match score</a>
+  </div>
+  <span class="lab">Títulos</span>
+  <div class="titulos"><em>Chave</em><em>Sua partida</em><em>Quartas</em><em>Semifinal</em><em>Final</em><em>Inscrições abertas</em><em>Você passou</em><em>Regras</em><em>Torcer</em></div>
+</section>
+
+<section id="conquistas">
+  <h2>Conquistas</h2>
+  <p class="olhar">A colmeia de conquistas. Veja como os bons usam ilustração própria por conquista e mostram progresso sem pontuação demais.</p>
+  <div class="grid">
+    <a class="card" href="https://dribbble.com/shots/5658814-Achievement-Badges"><b>Achievement Badges</b><span>Olena Golubiatnikova · Minitheory</span></a>
+    <a class="card" href="https://dribbble.com/maisacarvalho/collections/5526844-Gamification"><b>Coleção Gamification</b><span>Maísa Carvalho · perfil e recompensas</span></a>
+    <a class="card" href="https://dribbble.com/emmanueltorresph/collections/757999-Achievements-Rewards"><b>Coleção Achievements/Rewards</b><span>Emmanuel Torres</span></a>
+  </div>
+  <div class="buscas">
+    <a href="https://dribbble.com/tags/achievements">tag achievements</a>
+    <a href="https://dribbble.com/tags/app-gamification">tag app gamification</a>
+    <a href="https://dribbble.com/tags/badges%20app">tag badges app</a>
+    <a href="https://dribbble.com/search/duolingo-achievements">duolingo achievements</a>
+  </div>
+  <span class="lab">Títulos</span>
+  <div class="titulos"><em>Suas conquistas</em><em>3 de 12</em><em>Primeira presença</em><em>Foi aos três dias</em><em>Falta uma</em><em>Desbloqueada agora</em></div>
+</section>
+
+<section id="org">
+  <h2>Painel da organização</h2>
+  <p class="olhar">Credenciamento, lotação ao vivo e avisos. Veja como mostram números grandes e listas de gente chegando.</p>
+  <div class="grid">
+    <a class="card" href="https://dribbble.com/shots/2437606-Invitation-Dashboard"><b>Invitation Dashboard</b><span>Dann Petty · lista de quem chega</span></a>
+    <a class="card" href="https://dribbble.com/shots/7217821-Event-Organizer-Dashboard"><b>Event Organizer Dashboard</b><span>Den Klenkov · eventos de jogos</span></a>
+    <a class="card" href="https://dribbble.com/shots/20685666-Event-Dashboard"><b>Event Dashboard</b><span>Sergushkin Dmitry</span></a>
+    <a class="card" href="https://dribbble.com/shots/6756879-Attendance-Dashboard"><b>Attendance Dashboard</b><span>Riju Rajan · presença</span></a>
+  </div>
+  <div class="buscas">
+    <a href="https://dribbble.com/search/event-organizer-dashboard">event organizer dashboard</a>
+    <a href="https://dribbble.com/tags/event-dashboard">tag event dashboard</a>
+    <a href="https://dribbble.com/search/event-check-in">event check-in</a>
+  </div>
+  <span class="lab">Títulos</span>
+  <div class="titulos"><em>Credenciados</em><em>Chegando agora</em><em>Lotação</em><em>Trocar sala</em><em>Mandar aviso</em><em>Sala cheia</em><em>Equipe</em></div>
+</section>
+
+<section id="campus">
+  <h2>App universitário</h2>
+  <p class="olhar">Contexto parecido com SUAP e IFRN: login institucional, perfil com curso e matrícula, carteirinha.</p>
+  <div class="grid">
+    <a class="card" href="https://dribbble.com/shots/6925426-Mobile-University-app-Grades"><b>Mobile University app</b><span>Roger Oliveira · redesenho de app real</span></a>
+    <a class="card" href="https://dribbble.com/shots/17059675-Student-Academic-Mobile-App"><b>Student Academic App</b><span>Ibnu Humajah</span></a>
+    <a class="card" href="https://dribbble.com/danielcurran/collections/4641638-University-App"><b>Coleção University App</b><span>Daniel Curran</span></a>
+    <a class="card" href="https://dribbble.com/shots/6261631-Login-Screen-for-Event-App"><b>Login Screen for Event App</b><span>Bala Murugan</span></a>
+  </div>
+  <div class="buscas">
+    <a href="https://dribbble.com/tags/student-app">tag student app</a>
+    <a href="https://dribbble.com/tags/university-app">tag university app</a>
+    <a href="https://dribbble.com/tags/college-app">tag college app</a>
+    <a href="https://dribbble.com/tags/student-card">tag student card</a>
+  </div>
+  <span class="lab">Títulos</span>
+  <div class="titulos"><em>Entrar com o SUAP</em><em>Sou visitante</em><em>Matrícula</em><em>Seu curso</em><em>Meus eventos</em><em>Certificados</em></div>
+</section>
+
+<section id="reais">
+  <h2>Apps reais (o melhor antídoto)</h2>
+  <p class="olhar">Telas publicadas de apps que estão no ar. Algumas bibliotecas pedem cadastro grátis para ver tudo. Vale também abrir no celular os apps de eventos que você já usa (Sympla, Even3, o do GO!RN pela Doity) e tirar print das telas.</p>
+  <div class="grid">
+    <a class="card" href="https://nicelydone.club/apps/luma/components"><b>Luma</b><span>Nicely Done · 151 telas</span></a>
+    <a class="card" href="https://app.lazyweb.com/company/luma"><b>Luma</b><span>Lazyweb · fluxos</span></a>
+    <a class="card" href="https://www.lazyweb.com/flow/partiful/event-creation"><b>Partiful · criar evento</b><span>Lazyweb · fluxo</span></a>
+    <a class="card" href="https://experiments.lazyweb.com/flow/partiful/rsvp-to-public-event"><b>Partiful · confirmar presença</b><span>Lazyweb · fluxo</span></a>
+    <a class="card" href="https://screensdesign.com/showcase/luma-delightful-events"><b>Como o Luma funciona</b><span>Screens Design · análise</span></a>
+  </div>
+  <div class="buscas">
+    <a href="https://mobbin.com/">Mobbin (buscar: Luma, Eventbrite, Meetup, Web Summit)</a>
+  </div>
+</section>
+</main>
+<script>
+(function(){
+  var r=document.documentElement,b=document.getElementById('tema');
+  try{var t=localStorage.getItem('insp-tema');if(t)r.dataset.theme=t}catch(e){}
+  b.onclick=function(){
+    var escuro=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;
+    r.dataset.theme=escuro?'light':'dark';
+    try{localStorage.setItem('insp-tema',r.dataset.theme)}catch(e){}
+  };
+  document.querySelectorAll('a[href^="http"]').forEach(function(a){a.target='_blank';a.rel='noopener'});
+})();
+</script>
+</body>
+</html>

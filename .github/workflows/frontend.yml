@@ -1,0 +1,21 @@
+name: frontend
+on:
+  push:
+    paths: ['prototipo/**', 'mapa3d/**', 'scripts/**', 'dados/**', 'package.json', 'eslint.config.js', '.github/workflows/frontend.yml']
+  pull_request:
+    paths: ['prototipo/**', 'mapa3d/**', 'scripts/**', 'dados/**']
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Formatação
+        run: npm run format:check
+      - name: Testes (rotas, comunidade e planta)
+        run: npm test

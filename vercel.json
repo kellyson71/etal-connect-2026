@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "installCommand": "echo 'sem dependências de Node'",
-  "buildCommand": "sh scripts/vercel-build.sh",
+  "buildCommand": "sh scripts/app/vercel-build.sh",
   "outputDirectory": "publico",
   "functions": {
     "api/index.py": { "includeFiles": "backend/{app,seed}/**", "maxDuration": 30 }

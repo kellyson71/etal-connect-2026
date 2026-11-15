@@ -1,7 +1,7 @@
 """Tabelas. Atividade guarda data e horário locais (fuso do campus)."""
 from datetime import date, datetime
 
-from sqlalchemy import JSON, Date, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint, func
+from sqlalchemy import JSON, Date, DateTime, ForeignKey, Integer, LargeBinary, String, Text, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .db import Base
@@ -88,3 +88,22 @@ class LinkAcesso(Base):
     token_hash: Mapped[str] = mapped_column(String(64), unique=True)
     expira_em: Mapped[datetime] = mapped_column(DateTime)
     usado_em: Mapped[datetime | None] = mapped_column(DateTime)
+
+
+class CenarioDemo(Base):
+    """Complementos da apresentação: campeonato e publicações simulados, sem dados de acesso."""
+    __tablename__ = 'cenarios_demo'
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    dados: Mapped[dict] = mapped_column(JSON, default=dict)
+
+
+class Arquivo(Base):
+    """Material enviado pela organização (PDF, imagem, ZIP...). Fica no banco para funcionar igual em SQLite e PostgreSQL."""
+    __tablename__ = 'arquivos'
+    id: Mapped[str] = mapped_column(String(32), primary_key=True)
+    atividade_id: Mapped[str] = mapped_column(ForeignKey('atividades.id'))
+    nome: Mapped[str] = mapped_column(String(200))
+    tipo: Mapped[str] = mapped_column(String(100))
+    tamanho: Mapped[int] = mapped_column(Integer)
+    dados: Mapped[bytes] = mapped_column(LargeBinary)
+    em: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())

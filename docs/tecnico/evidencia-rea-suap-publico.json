@@ -1,0 +1,43 @@
+{
+  "evidence_id": "ev_e3487541b79673de10aad318294f460d898693667902bdcd7050e92bde0caa25",
+  "operation": "capture_browser_scenario",
+  "provider": {
+    "id": "rea-playwright-browser-scenario",
+    "name": "REA Playwright browser scenario capture provider",
+    "version": "1"
+  },
+  "browser": {
+    "mode": "launch",
+    "process_ownership": "provider-owned",
+    "cleanup": "terminated-owned-process",
+    "product": "Chromium",
+    "version": "156.0.8078.47"
+  },
+  "actions": [
+    {
+      "step_id": "scenario_start",
+      "action": "goto_start",
+      "status": "completed",
+      "url": "https://suap.ifrn.edu.br/eventos/area_do_participante/8528/"
+    },
+    {
+      "step_id": "pagina-publica",
+      "action": "wait_for",
+      "status": "completed",
+      "url": "https://suap.ifrn.edu.br/eventos/area_do_participante/8528/"
+    }
+  ],
+  "network": {
+    "retained": 100,
+    "dropped": 12,
+    "request_bodies_requested": false,
+    "response_bodies_requested": false,
+    "header_values_requested": false,
+    "coverage": "partial: budget omitted 12 events"
+  },
+  "limitations": [
+    "Sessão temporária vazia; nenhuma conta autenticada e nenhum formulário enviado.",
+    "Observação sem corpos de requisição/resposta nem valores de cabeçalhos.",
+    "Rede parcial: 12 eventos omitidos pelo limite; não prova ausência de APIs internas."
+  ]
+}

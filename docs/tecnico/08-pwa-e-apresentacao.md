@@ -31,11 +31,11 @@ As demos carregam ao entrar no slide e são descarregadas ao sair. Isso evita ma
 
 ## Manutenção
 
-- Conteúdo e demos geradas: scripts/build-documentacao.py.
+- Conteúdo e demos geradas: scripts/docs/build-documentacao.py.
 - Aparência e movimento: docs/assets/apresentacao.css e apresentacao.js.
-- Referências e contratos: scripts/documentacao_base.py e docs/tecnico/*.md.
-- Capturas do app e Swagger: scripts/capturar-documentacao.py.
-- Cenas amplas do motor: scripts/capturar-cenas-documentacao.py.
+- Referências e contratos: scripts/docs/documentacao_base.py e docs/tecnico/*.md.
+- Capturas do app e Swagger: scripts/docs/capturar-documentacao.py.
+- Cenas amplas do motor: scripts/docs/capturar-cenas-documentacao.py.
 - Geração final: npm run docs; PDF: npm run docs:pdf.
 
 As fontes das imagens ficam em docs/assets/fontes/, com crédito e procedência em creditos.json. Não adicionar a dissertação e as referências ao cache do aplicativo.

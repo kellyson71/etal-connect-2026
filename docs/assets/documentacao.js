@@ -7,9 +7,20 @@
   const toggle = document.querySelector('[data-present]');
   let current = 0;
   let presenting = false;
-  const aliases = {'README':'visao','01-requisitos':'estado','02-casos-de-uso':'casos','03-banco-de-dados':'banco','04-arquitetura':'arquitetura','05-api':'api','06-testes':'verificacao'};
+  const aliases = {
+    README: 'visao',
+    '01-requisitos': 'estado',
+    '02-casos-de-uso': 'casos',
+    '03-banco-de-dados': 'banco',
+    '04-arquitetura': 'arquitetura',
+    '05-api': 'api',
+    '06-testes': 'verificacao',
+  };
   function fitPresentation() {
-    slides.forEach(slide => {slide.style.zoom = ''; slide.style.minHeight = '';});
+    slides.forEach((slide) => {
+      slide.style.zoom = '';
+      slide.style.minHeight = '';
+    });
     if (!presenting || innerWidth <= 850) return;
     const active = slides[current];
     const available = Math.max(300, innerHeight - 143);
@@ -20,7 +31,9 @@
   function activate(index, navigate = false) {
     current = Math.max(0, Math.min(index, slides.length - 1));
     slides.forEach((slide, i) => slide.classList.toggle('active', i === current));
-    links.forEach((link, i) => i === current ? link.setAttribute('aria-current', 'step') : link.removeAttribute('aria-current'));
+    links.forEach((link, i) =>
+      i === current ? link.setAttribute('aria-current', 'step') : link.removeAttribute('aria-current'),
+    );
     output.value = `${String(current + 1).padStart(2, '0')} / ${slides.length}`;
     previous.disabled = current === 0;
     next.disabled = current === slides.length - 1;
@@ -28,7 +41,7 @@
     fitPresentation();
     if (navigate) {
       history.replaceState(null, '', `#${slides[current].id}`);
-      if (!presenting) slides[current].scrollIntoView({block:'start'});
+      if (!presenting) slides[current].scrollIntoView({ block: 'start' });
       else window.scrollTo(0, 0);
     }
   }
@@ -43,54 +56,92 @@
   });
   function fromHash() {
     const id = decodeURIComponent(location.hash.slice(1));
-    const index = slides.findIndex(slide => slide.id === (aliases[id] || id));
+    const index = slides.findIndex((slide) => slide.id === (aliases[id] || id));
     if (index >= 0) activate(index, true);
     else {
       const target = document.getElementById(id);
       if (target && target.closest('.reference')) {
-        if (presenting) {toggle.click(); history.replaceState(null, '', `#${id}`);}
+        if (presenting) {
+          toggle.click();
+          history.replaceState(null, '', `#${id}`);
+        }
         if (target.tagName === 'DETAILS') target.open = true;
-        requestAnimationFrame(() => target.scrollIntoView({block:'start'}));
+        requestAnimationFrame(() => target.scrollIntoView({ block: 'start' }));
       }
     }
   }
-  links.forEach((link, index) => link.addEventListener('click', event => {
-    event.preventDefault(); activate(index, true);
-  }));
-  document.querySelectorAll('a[href^="#schema-"]').forEach(link => link.addEventListener('click', event => {
-    event.preventDefault();
-    if (presenting) toggle.click();
-    history.replaceState(null, '', link.getAttribute('href'));
-    fromHash();
-  }));
-  const observer = new IntersectionObserver(entries => {
-    if (presenting) return;
-    const visible = entries.filter(entry => entry.isIntersecting && entry.intersectionRatio > .45);
-    if (visible.length) activate(slides.indexOf(visible.sort((a,b) => b.intersectionRatio - a.intersectionRatio)[0].target));
-  }, {threshold:[.45,.6,.8]});
-  slides.forEach(slide => observer.observe(slide));
+  links.forEach((link, index) =>
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+      activate(index, true);
+    }),
+  );
+  document.querySelectorAll('a[href^="#schema-"]').forEach((link) =>
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+      if (presenting) toggle.click();
+      history.replaceState(null, '', link.getAttribute('href'));
+      fromHash();
+    }),
+  );
+  const observer = new IntersectionObserver(
+    (entries) => {
+      if (presenting) return;
+      const visible = entries.filter((entry) => entry.isIntersecting && entry.intersectionRatio > 0.45);
+      if (visible.length)
+        activate(slides.indexOf(visible.sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0].target));
+    },
+    { threshold: [0.45, 0.6, 0.8] },
+  );
+  slides.forEach((slide) => observer.observe(slide));
   const dialog = document.querySelector('#ampliar');
-  document.querySelectorAll('[data-zoom]').forEach(button => button.addEventListener('click', () => {
-    const image = button.querySelector('img');
-    const large = dialog.querySelector('img');
-    large.src = image.src; large.alt = image.alt;
-    dialog.querySelector('[data-caption]').textContent = image.alt;
-    dialog.showModal();
-  }));
+  document.querySelectorAll('[data-zoom]').forEach((button) =>
+    button.addEventListener('click', () => {
+      const image = button.querySelector('img');
+      const large = dialog.querySelector('img');
+      large.src = image.src;
+      large.alt = image.alt;
+      dialog.querySelector('[data-caption]').textContent = image.alt;
+      dialog.showModal();
+    }),
+  );
   dialog.querySelector('button').addEventListener('click', () => dialog.close());
-  dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+  dialog.addEventListener('click', (event) => {
+    if (event.target === dialog) dialog.close();
+  });
   document.querySelector('[data-print]').addEventListener('click', () => window.print());
-  document.addEventListener('keydown', event => {
-    if (dialog.open || !presenting || event.altKey || event.ctrlKey || event.metaKey || /^(INPUT|TEXTAREA|SELECT|SUMMARY|A)$/.test(event.target.tagName)) return;
+  document.addEventListener('keydown', (event) => {
+    if (
+      dialog.open ||
+      !presenting ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      /^(INPUT|TEXTAREA|SELECT|SUMMARY|A)$/.test(event.target.tagName)
+    )
+      return;
     if (event.target.tagName === 'BUTTON' && event.key === ' ') return;
-    if (['ArrowRight','PageDown',' '].includes(event.key)) {event.preventDefault(); activate(current + 1, true);}
-    if (['ArrowLeft','PageUp'].includes(event.key)) {event.preventDefault(); activate(current - 1, true);}
-    if (event.key === 'Home') {event.preventDefault(); activate(0, true);}
-    if (event.key === 'End') {event.preventDefault(); activate(slides.length - 1, true);}
+    if (['ArrowRight', 'PageDown', ' '].includes(event.key)) {
+      event.preventDefault();
+      activate(current + 1, true);
+    }
+    if (['ArrowLeft', 'PageUp'].includes(event.key)) {
+      event.preventDefault();
+      activate(current - 1, true);
+    }
+    if (event.key === 'Home') {
+      event.preventDefault();
+      activate(0, true);
+    }
+    if (event.key === 'End') {
+      event.preventDefault();
+      activate(slides.length - 1, true);
+    }
     if (event.key === 'Escape') toggle.click();
   });
   window.addEventListener('hashchange', fromHash);
   window.addEventListener('resize', fitPresentation);
   document.fonts.ready.then(fitPresentation);
-  activate(0); fromHash();
+  activate(0);
+  fromHash();
 })();

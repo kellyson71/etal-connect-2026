@@ -28,11 +28,18 @@ A apresentação seleciona apenas imagens relacionadas ao projeto. As capturas d
 4. A planta interna usa os pixels das figuras de 2012; WORLD a relaciona aos metros do modelo.
 5. O Canvas desenha volumes, piso, rótulos e a rota. O app não carrega o Google Maps para renderizar o campus.
 
-Fontes do código: scripts/import-fundo-kml.py, scripts/build-campus-limpo.py, scripts/build-principal-plan.py e prototipo/campus3d.js. As regras de geometria são conferidas por `npm run planta`.
+Fontes do código: scripts/campus/import-fundo-kml.py, scripts/campus/build-campus-limpo.py, scripts/planta/build-principal-plan.py e prototipo/campus3d.js. As regras de geometria são conferidas por `npm run planta`.
 
 ## Rota implementada e localização futura
 
-Hoje a rota parte da portaria. O percurso interno usa Dijkstra numa grade dos corredores, com custo maior perto das bordas e penalidade de curva. planFor compara os acessos e os meios de subida. A opção de rampa pode ser forçada na demonstração.
+Hoje a rota parte da portaria (`mapa3d/src/rotas.js`):
+
+- **Calçadas: Dijkstra** num grafo dos caminhos a pé do campus (pontos a menos de 1,5 m são o mesmo nó), da portaria até a porta de cada entrada do bloco.
+- **Dentro do bloco: A\*** numa grade de 5 unidades da planta (cerca de 33 cm), só nos corredores, com a distância em linha reta como estimativa. Andar rente à parede custa 1,8 × e cada curva soma 3. Depois a "escadinha" da grade é alisada: o caminho pula direto entre pontos que se enxergam sem sair do corredor.
+- **Escolhas:** cada entrada (principal, auditório, Anexo) é testada com o custo total (calçada + dentro); entre andares, escada e rampa são comparadas, com a escada pesando 1,6 × por andar. A opção pode ser forçada pelo usuário.
+- **Salas que abrem para outra sala** seguem as portas em cadeia até um corredor. Minutos = metros ÷ 75.
+
+A animação do slide "Como a rota é calculada" usa o mesmo código (`explicar` em `rotas.js`, dados gerados por `node scripts/docs/gerar-rota-apresentacao.mjs`).
 
 O app não usa navigator.geolocation para acompanhar a posição real. O ponto azul não deve ser apresentado como GPS ativo.
 

@@ -1,0 +1,127 @@
+{
+  "source": "https://suap.ifrn.edu.br/eventos/inscricao/1/8528/",
+  "fetchedAt": "2026-11-12T16:50:56.942626+00:00",
+  "eventId": 8528,
+  "programacao": [
+    {
+      "id": 6840,
+      "type": "Minicurso",
+      "title": "O Futuro da Experiência com IA: Uso, Como a Tecnologia Está Redefinindo Nossas Interações - Pablo Rodrigo Bernardino de Lira",
+      "day": 26,
+      "time": "14:00",
+      "end": "18:00"
+    },
+    {
+      "id": 6841,
+      "type": "Minicurso",
+      "title": "Introdução ao React Native com Expo - Jonhy Everton Silva Gomes de Santana",
+      "day": 26,
+      "time": "14:00",
+      "end": "18:00"
+    },
+    {
+      "id": 6892,
+      "type": "Minicurso",
+      "title": "FastAPI: Construindo APIs Modernas e Performática - Marcos Queiroz",
+      "day": 26,
+      "time": "14:00",
+      "end": "18:00"
+    },
+    {
+      "id": 6838,
+      "type": "Minicurso",
+      "title": "Desenvolvimento de aplicações web com React e Nextjs - Caio Rafael da Rocha Gomes",
+      "day": 27,
+      "time": "08:00",
+      "end": "12:00"
+    },
+    {
+      "id": 6842,
+      "type": "Minicurso",
+      "title": "Processamento de imagens com React Native e OpenCV -  Adryan Eryk de Oliveira Leite",
+      "day": 27,
+      "time": "08:00",
+      "end": "12:00"
+    },
+    {
+      "id": 6837,
+      "type": "Minicurso",
+      "title": "Desenvolvendo jogos com Game Maker - Caio Enzo Bessa de Oliveira",
+      "day": 27,
+      "time": "08:00",
+      "end": "12:00"
+    },
+    {
+      "id": 6847,
+      "type": "Abertura Oficial",
+      "title": "Da transparência à IA generativa: o papel fundamental da governança de dados nessa jornada - Rodolfo Carneiro Cavalcante",
+      "day": 27,
+      "time": "13:00",
+      "end": "14:30"
+    },
+    {
+      "id": 6843,
+      "type": "Apresentação Cultural",
+      "title": "Coral",
+      "day": 27,
+      "time": "14:50",
+      "end": "16:20"
+    },
+    {
+      "id": 6850,
+      "type": "Mesa Redonda",
+      "title": "Impacto da IA na área de Computador e Sociedade - Thiago Henrique Freire de Oliveira, Eliaquim Timóteo da Cunha e  Atson Paulo Barreto Santos.",
+      "day": 27,
+      "time": "16:30",
+      "end": "18:00"
+    },
+    {
+      "id": 6849,
+      "type": "Palestra",
+      "title": "Saúde Mental na Era da IA: da Atenção Fragmentada ao Foco com Significado - Francisco Rômulo Raulino Santos",
+      "day": 28,
+      "time": "07:30",
+      "end": "08:30"
+    },
+    {
+      "id": 6845,
+      "type": "Apresentação Cultural",
+      "title": "Banda Inteira",
+      "day": 28,
+      "time": "08:50",
+      "end": "09:20"
+    },
+    {
+      "id": 6844,
+      "type": "Palestra",
+      "title": "Como a IA Está Transformando o Mundo das Imagens - Keylly Eyglys Araújo dos Santos",
+      "day": 28,
+      "time": "09:20",
+      "end": "10:20"
+    },
+    {
+      "id": 6852,
+      "type": "Mesa Redonda",
+      "title": "Mercado de Trabalho com Alunos Egressos",
+      "day": 28,
+      "time": "10:30",
+      "end": "12:00"
+    },
+    {
+      "id": 6851,
+      "type": "Palestra",
+      "title": "Transformação Digital Segura: O Papel da Inteligência artificial no mundo DevSecOps em Instituições Públicas - Walter Lopes",
+      "day": 28,
+      "time": "13:00",
+      "end": "14:30"
+    },
+    {
+      "id": 6846,
+      "type": "Vivência",
+      "title": "Banda Inteira, Cerimônia de Encerramento e Entrega de Premiações",
+      "day": 28,
+      "time": "14:50",
+      "end": "16:20"
+    }
+  ]
+}

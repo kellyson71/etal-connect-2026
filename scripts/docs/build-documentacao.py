@@ -1,0 +1,439 @@
+"""Apresentação do ETAL Connect: slides, fontes reais e demonstrações do código atual.
+
+Geração: npm run docs. Não modifica prototipo/ nem publica o projeto.
+"""
+from html import escape
+import json
+import os
+from pathlib import Path
+import runpy
+import sys
+
+ROOT = Path(__file__).resolve().parents[2]
+BASE = runpy.run_path(str(ROOT / 'scripts/docs/documentacao_base.py'))
+markdown = BASE['markdown']
+reference = BASE['reference']
+EVIDENCIA = json.loads((ROOT / 'docs/assets/evidencias.json').read_text())
+SLIDES = []
+
+ICONS = {
+ 'arrow-right':'M4 12h16m-6-6 6 6-6 6', 'arrow-left':'M20 12H4m6-6-6 6 6 6',
+ 'arrow-down':'M12 4v16m-6-6 6 6 6-6', 'close':'m6 6 12 12M6 18 18 6',
+ 'map':'m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3Zm6-3v15m6-12v15',
+ 'pin':'M20 10c0 6-8 11-8 11S4 16 4 10a8 8 0 1 1 16 0Zm-5 0a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z',
+ 'calendar':'M5 4h14a2 2 0 0 1 2 2v14H3V6a2 2 0 0 1 2-2Zm2-2v5M17 2v5M3 10h18M7 14h3m4 0h3m-10 3h3',
+ 'qr':'M3 3h6v6H3Zm12 0h6v6h-6ZM3 15h6v6H3Zm12 0h2v2h4v4h-6v-2m6-6v2M12 3v3m0 6h3M3 12h3m6 5v4',
+ 'user':'M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM4 21v-2a8 8 0 0 1 16 0v2',
+ 'users':'M16 21v-2a7 7 0 0 0-14 0v2M13 6a4 4 0 1 1-8 0 4 4 0 0 1 8 0Zm4-3a4 4 0 0 1 0 8m5 10v-2a7 7 0 0 0-5-6',
+ 'bell':'M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4',
+ 'phone':'M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm3 3h4m-3 14h2',
+ 'layers':'m12 3 10 5-10 5L2 8Zm-10 9 10 5 10-5M2 16l10 5 10-5',
+ 'route':'M4 5h12a4 4 0 0 1 0 8H8a4 4 0 0 0 0 8h12M7 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm13 13v6m-3-3h6',
+ 'compass':'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-6-3-2 4-4 2 2-4Z',
+ 'book':'M3 3h7a3 3 0 0 1 3 3v15a4 4 0 0 0-4-2H3Zm10 3a3 3 0 0 1 3-3h5v16h-5a4 4 0 0 0-3 2',
+ 'file':'M6 2h8l5 5v15H5V2Zm8 0v6h5M8 12h8m-8 4h8',
+ 'globe':'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM3 12h18M12 3c5 5 5 13 0 18-5-5-5-13 0-18Z',
+ 'grid':'M3 3h7v7H3Zm11 0h7v7h-7ZM3 14h7v7H3Zm11 0h7v7h-7Z',
+ 'expand':'M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5',
+ 'download':'M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5',
+ 'play':'m8 4 12 8-12 8Z', 'mouse':'M12 2a7 7 0 0 1 7 7v6a7 7 0 0 1-14 0V9a7 7 0 0 1 7-7Zm0 0v8',
+ 'zoom-in':'M16 10a6 6 0 1 1-12 0 6 6 0 0 1 12 0Zm-1 5 6 6M7 10h6m-3-3v6',
+ 'zoom-out':'M16 10a6 6 0 1 1-12 0 6 6 0 0 1 12 0Zm-1 5 6 6M7 10h6',
+ 'rotate':'M3 10a9 9 0 1 1 2 9M3 3v7h7',
+ 'sun':'M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM12 1v2m0 18v2M1 12h2m18 0h2M4 4l2 2m12 12 2 2M4 20l2-2M18 6l2-2',
+ 'moon':'M21 13a9 9 0 1 1-10-10 7 7 0 0 0 10 10Z',
+ 'check':'m5 12 5 5L20 7', 'shield':'m12 2 9 4v6c0 6-9 10-9 10S3 18 3 12V6Zm-5 10 3 3 7-7',
+ 'wifi':'M2 8a15 15 0 0 1 20 0M5 12a10 10 0 0 1 14 0m-10 4a5 5 0 0 1 6 0m-3 4h.01',
+ 'wifi-off':'m2 2 20 20M2 8a15 15 0 0 1 5-3m5-1a15 15 0 0 1 10 4M5 12a10 10 0 0 1 6-3m5 1 3 2m-10 4a5 5 0 0 1 6 0m-3 4h.01',
+ 'cloud':'M6 19a5 5 0 0 1-1-10 7 7 0 0 1 13-2 6 6 0 0 1 0 12Z',
+ 'database':'M21 5c0 2-4 3-9 3S3 7 3 5s4-3 9-3 9 1 9 3Zm0 0v14c0 2-4 3-9 3s-9-1-9-3V5m0 7c0 2 4 3 9 3s9-1 9-3',
+ 'server':'M3 3h18v7H3Zm0 11h18v7H3Zm4-8h.01M7 17h.01m5-11h5m-5 11h5',
+ 'code':'m8 5-6 7 6 7M16 5l6 7-6 7m-3-17-2 20',
+ 'browser':'M3 3h18v18H3Zm0 5h18M6 5.5h.01M9 5.5h.01',
+ 'camera':'M4 6h4l2-3h4l2 3h4v15H4Zm12 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z',
+ 'flash':'M13 2 4 14h7l-1 8 9-12h-7Z',
+ 'clock':'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-5v6l4 2',
+ 'walk':'M15 3a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM8 9l4-3 3 5 4 1m-7-6-2 8-5 6m5-6 4 2 2 6',
+ 'mail':'M3 4h18v16H3Zm0 0 9 9 9-9',
+ 'terminal':'m4 7 5 5-5 5m9 0h7',
+ 'flask':'M9 2h6m-5 0v6L3 20h18L14 8V2M7 14h10',
+ 'spark':'m12 2 2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5Z',
+ 'link':'m9 15 6-6M8 17l-2 2a4 4 0 0 1-6-6l5-5a4 4 0 0 1 6 0m2-1 2-2a4 4 0 0 1 6 6l-5 5a4 4 0 0 1-6 0',
+ 'react':'M14 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM22 12c0 3-5 5-10 5S2 15 2 12s5-5 10-5 10 2 10 5ZM7 3c3-1 7 2 10 7s3 9 0 11-7-2-10-7S4 5 7 3Zm10 0c-3-1-7 2-10 7s-3 9 0 11 7-2 10-7 3-9 0-11Z',
+}
+
+
+def icon(name):
+    return f'<svg class="icon" aria-hidden="true"><use href="#i-{name}"/></svg>'
+
+
+def badge(text, name=None, tone=''):
+    return f'<span class="pill {tone}">{icon(name) if name else ""}{text}</span>'
+
+
+def button(text, name='arrow-right', attrs='', tone=''):
+    return f'<button class="button {tone}" {attrs}>{text}{icon(name)}</button>'
+
+
+def image(file, alt, cls='', credit=''):
+    return f'<button class="zoom-image {cls}" data-zoom data-credit="{escape(credit)}" aria-label="Ampliar: {escape(alt)}"><img src="{{assets}}/{file}" alt="{escape(alt)}"></button>'
+
+
+def demo(kind='map', params='', poster='cena-campus.webp', phone=False, auto=True):
+    return f'''<div class="{'phone-shell' if phone else 'demo-surface'}" data-demo="{kind}" data-params="{params}" data-auto="{str(auto).lower()}">
++<img class="demo-poster" src="{{assets}}/{poster}" alt="Prévia atual do {'aplicativo' if kind=='app' else 'mapa do campus'}; a demonstração interativa carrega neste espaço">
++{'<span class="demo-label">Motor real do aplicativo</span>' if not phone else ''}
++<iframe title="{'Aplicativo' if kind=='app' else 'Mapa do campus'} interativo em modo demonstração" sandbox="allow-scripts" data-src="{{demos}}/{'app.html' if kind=='app' else 'campus.html'}?demo=1&qualidade=media&{params}" loading="lazy"></iframe>
++<button class="demo-launch" data-launch><span>{icon('play')}Explorar ao vivo</span></button></div>'''.replace('\n+', '\n')
+
+
+def slide(id, title, chapter, body, source='', tone='', cover='cena-campus.webp', heading=None, lede=None):
+    head = f'<h2 class="reveal" style="--i:0">{heading}</h2>' if heading else ''
+    head += f'<p class="lede reveal" style="--i:1">{lede}</p>' if lede else ''
+    SLIDES.append(dict(id=id,title=title,chapter=chapter,body=head+body,source=source,tone=tone,cover=cover))
+
+
+def vid(name, cls='', loop=True):
+    return f'<video class="auto-video {cls}" src="{{assets}}/videos/{name}.mp4" poster="{{assets}}/videos/{name}.webp" muted {"loop " if loop else ""}playsinline preload="metadata"></video>'
+
+
+def full(name, title, extra=''):
+    """Slide de vídeo em tela cheia: o vídeo toca sozinho e o título fica por cima."""
+    return f'<div class="full-video">{vid(name)}</div><div class="full-shade"></div><h2 class="full-title reveal">{title}</h2>{extra}'
+
+
+# ---------------- 01 · Abertura ----------------
+slide('visao','ETAL Connect','01 / Abertura',f"""
+<div class="cover-video">{vid('capa')}</div><div class="cover-shade"></div>
+<div class="cover"><h1 class="cover-title reveal" style="--i:1">ETAL Connect</h1>
+<p class="cover-line reveal" style="--i:2">Proposta de aplicativo para o ETAL · IFRN Pau dos Ferros</p></div>
+<img class="cover-nadic reveal" style="--i:3" src="{{root}}prototipo/assets/nadic-logo.svg" alt="NADIC">
+""",'','dark cover-slide','videos/capa.webp')
+
+slide('chegada','Chegar ao evento','01 / Abertura',f"""
+<img class="full-photo" src="{{assets}}/fontes/campus-fachada.webp" alt="Fachada do campus"><div class="photo-shade"></div>
+<div class="question-tags big"><span class="reveal" style="--i:1">{icon('clock')}Já começou?</span><span class="reveal" style="--i:2">{icon('pin')}Onde é a sala?</span><span class="reveal" style="--i:3">{icon('qr')}Como confirmo a presença?</span></div>
+""",'','dark','fontes/campus-fachada.webp')
+
+# ---------------- 02 · Para o participante ----------------
+def tela(nome, legenda, n):
+    return f'<figure class="tela reveal" style="--i:{n}"><div class="phone-frame sm">{vid(nome)}</div><figcaption><span>{n}</span>{legenda}</figcaption></figure>'
+
+PASSOS = [('p-entrar', 'Entra com o SUAP e recebe o crachá', 'id'), ('p-agenda', 'Monta a agenda', 'calendar'),
+          ('p-presenca', 'Lê o QR da sala e confirma a presença', 'qr'), ('p-aviso', 'Recebe a troca de sala na hora', 'bell')]
+for n, (nome, legenda, ic) in enumerate(PASSOS):
+    trilha = ''.join(f'<li class="{"on" if k == n else "done" if k < n else ""}"><span>{k + 1}</span>{t}</li>' for k, (_, t, _) in enumerate(PASSOS))
+    slide(f'participante-{n + 1}', legenda, '02 / Para o participante', f"""
+<div class="destaque"><div class="d-txt"><b class="d-num reveal" style="--i:1">{n + 1}</b><h3 class="reveal" style="--i:2">{legenda}</h3><ol class="d-trilha reveal" style="--i:3">{trilha}</ol></div>
+<div class="d-phone reveal" style="--i:1"><div class="phone-frame lg">{vid(nome, loop=False)}</div></div></div>
+""", 'Gravado no app com uma conta real do SUAP' if n == 0 else '', '', f'videos/{nome}.webp', 'Para o participante' if n == 0 else None)
+
+slide('materiais','Materiais depois da presença','02 / Para o participante',f"""
+<div class="app-show"><div class="phone-frame reveal">{vid('t-materiais')}</div>
+<ol class="app-points num">{''.join(f'<li class="reveal" style="--i:{n+2}"><span>{icon(ic)}</span>{t}</li>' for n,(ic,t) in enumerate([('qr','Lê o QR da sala'),('check','A presença é confirmada'),('file','Slides e arquivos liberados'),('star' if False else 'spark','Avalia a atividade')]))}</ol></div>
+<p class="tag-proposta reveal" style="--i:7">{icon('clock')}Proposta · hoje com materiais de exemplo</p>
+""",'','', 'videos/t-materiais.webp', 'Materiais depois da presença')
+
+slide('conquistas','Conquistas e contatos','02 / Para o participante',f"""
+<div class="telas duo">{tela('t-conquista','Cada presença vira um favo da colmeia',1)}{tela('t-contato','Troca de contato pelo QR do crachá',2)}</div>
+""",'Telas de exemplo do protótipo','', 'videos/t-conquista.webp', 'Conquistas e contatos')
+
+slide('sala','Achar a sala','02 / Para o participante',f"""
+<div class="app-show"><div class="phone-frame reveal">{vid('t-sala')}</div>
+<ul class="app-points">{''.join(f'<li class="reveal" style="--i:{n+2}"><span>{icon(ic)}</span>{t}</li>' for n,(ic,t) in enumerate([('pin','Busca a sala, o banheiro ou o bebedouro'),('route','Rota a pé desde a portaria'),('layers','Escada ou rampa, andar por andar')]))}</ul></div>
+""",'Gravação do app atual','', 'videos/t-sala.webp', 'Achar a sala')
+
+# ---------------- 03 · Organização e presença ----------------
+slide('painel','Painel da organização','03 / Organização e presença',f"""
+<div class="pnl" data-steps="6" data-interval="1700">
+<div class="pnl-board"><div class="pnl-kpis">{''.join(f'<div class="pnl-kpi"><b data-count="{v}">{v}</b><small>{t}</small></div>' for v,t in [(312,'credenciados'),(82,'na sala agora'),(96,'visitantes')])}</div>
+<div class="pnl-chart">{''.join(f'<i style="--h:{h}%;--d:{n*90}ms"></i>' for n,h in enumerate([18,35,62,88,70,46,30,22]))}</div>
+<div class="pnl-send" data-step="1"><span>{icon('bell')}</span><div><b>Mudança de sala</b><small>React Native agora no Lab 210</small></div><em data-step="2">Enviar a todos</em></div>
+<div class="pnl-csv" data-step="5">{icon('download')}Presenças em CSV → certificados no SUAP</div></div>
+<div class="pnl-phones">{''.join(f'<div class="pnl-phone" style="--o:{n}"><img src="{{assets}}/app-home.png" alt=""><div class="pnl-notif" data-step="3">{icon("bell")}<div><b>Mudança de sala</b><small>React Native agora no Lab 210</small></div></div></div>' for n in range(3))}</div>
+</div>
+""",'Painel do protótipo · avisos e troca de sala já passam pela API; gráficos ainda são de exemplo','', 'painel.png', 'Painel da organização')
+
+def presenca(sid, titulo, cena, pros, contra, status):
+    st = 'ok' if status.startswith('Já') else 'todo'
+    return slide(sid, titulo, '03 / Organização e presença', f"""
+<div class="pres"><div class="pres-scene" data-steps="5" data-interval="1700">{cena}</div>
+<div class="pres-side"><span class="pres-status {st}">{icon('check' if st=='ok' else 'clock')}{status}</span>
+<div class="pres-pc"><b>{icon('check')}{pros}</b><b class="con">{icon('close')}{contra}</b></div></div></div>
+""", '', '', 'qr-exemplo.svg', titulo)
+
+# ---------------- 04 · Próximos passos ----------------
+def wipe(base, top, l, r):
+    return f'<div class="wipe reveal"><img src="{{assets}}/{base}" alt="{l}"><div class="wipe-top"><img src="{{assets}}/{top}" alt="{r}"></div><i class="wipe-line"></i><span class="wipe-tag l">{l}</span><span class="wipe-tag r">{r}</span></div>'
+
+PASSOS_PLANTA = [('book','A planta de 2012','dissertação da UFRN'),('route','Traçada por cima','paredes, portas e corredores'),('grid','Salas com uso e número','cada ambiente vira dado'),('layers','Três andares','o prédio sobe em 3D'),('map','O mapa do app','rotas, andares e busca')]
+slide('planta','Da planta de 2012 ao mapa','04 / Próximos passos',f"""
+<div class="etp pl" data-steps="5"><div class="palco pl-palco">
+<div class="pl-scan" data-step="0"><img src="{{assets}}/fontes/planta-2012-0.webp" alt="Planta do térreo em 2012"><small>Souza, 2012 · figura 9</small></div>
+<div class="pl-traco" data-step="1"><img class="fundo" src="{{assets}}/fontes/planta-2012-0.webp" alt=""><img class="traco" src="{{assets}}/fontes/planta-atual-0.svg" alt="Planta traçada"></div>
+<div class="pl-salas" data-step="2"><img src="{{assets}}/fontes/planta-atual-0.svg" alt="Planta atual do térreo"></div>
+<div class="pl-andares" data-step="3"><div class="pl-pilha">{''.join(f'<img style="--k:{k}" src="{{assets}}/fontes/planta-atual-{k}.svg" alt="{n}">' for k,n in [(0,'Térreo'),(1,'1º andar'),(2,'2º andar')])}</div></div>
+<div class="pl-mapa" data-step="4"><img src="{{assets}}/cena-andares.webp" alt="Os três andares no mapa 3D do app"></div>
+</div><ol class="passos">{''.join(f'<li data-step="{n}" data-ir="{n}"><span>{icon(ic)}</span><b>{t}</b><small>{d}</small></li>' for n,(ic,t,d) in enumerate(PASSOS_PLANTA))}</ol></div>
+""",'Souza, L. L. · Padronização e flexibilidade · UFRN, 2012 · planta gerada por scripts/planta/build-principal-plan.py','', 'fontes/planta-2012-0.webp', 'Da planta de 2012 ao mapa')
+
+# Programação do SUAP: atividades do VII ETAL (docs/programacao-referencia.html); pessoas e vagas de exemplo.
+SU_DIAS = [('Qua 26/11', [('14:00','Experiência com IA','mc','ana'),('14:00','React Native com Expo','mc','maria'),('14:00','FastAPI','mc','joao')]),
+           ('Qui 27/11', [('08:00','React e Next.js','mc','maria'),('08:00','React Native e OpenCV','mc','ana'),('08:00','Jogos com Game Maker','mc','joao'),('13:00','Governança de dados','pl',''),('14:50','Coral','cu',''),('16:30','IA e sociedade','pl','')]),
+           ('Sex 28/11', [('07:30','Saúde mental e IA','pl',''),('08:50','Banda Inteira','cu',''),('09:20','IA e imagens','pl',''),('10:30','Mercado de trabalho','pl',''),('13:00','DevSecOps e IA','pl',''),('14:50','Encerramento','cu','')])]
+SU_GENTE = [('maria','MC','Maria Clara'),('joao','JP','João Pedro'),('ana','AP','Ana Paula')]
+PASSOS_SU = [('globe','Busca no SUAP','uma chamada traz o evento inteiro'),('calendar','Separa por dia','minicursos, palestras e atrações'),('grid','Preenche a programação','a aba geral do app'),('users','De quem é cada minicurso','as inscrições de cada um'),('check','Preenche cada agenda','ninguém precisa salvar nada'),('rotate','Sincroniza sozinho','vagas e horários em dia')]
+def su_cartoes():
+    import random
+    sorte, out = random.Random(8528), ''
+    for c, (_, itens) in enumerate(SU_DIAS):
+        for r, (h, t, tipo, quem) in enumerate(itens):
+            dono = next(((s, n) for k, s, n in SU_GENTE if k == quem), None)
+            selo = f'<i class="su-dono {quem}" title="{dono[1]}">{dono[0]}</i>' if dono else ''
+            vagas = '<em class="su-vagas">3 vagas</em>' if t == 'FastAPI' else ''
+            out += (f'<div class="su-card {tipo}{" " + quem if quem else ""}{" alerta" if vagas else ""}" style="--sx:{c*170}px;--sy:{36+r*50}px;--hx:{sorte.randint(30,340)}px;--hy:{sorte.randint(30,300)}px;'
+                    f'--hr:{sorte.randint(-24,24)}deg;--d:{(c*6+r)*0.045:.3f}s"><b>{h}</b><span>{t}</span>{selo}{vagas}</div>')
+    return out
+def su_agenda(quem, nome, sigla):
+    itens = [(d.split()[0], h, t) for d, lista in SU_DIAS for h, t, tipo, q in lista if q == quem]
+    return (f'<div class="su-ag {quem}"><header><i class="su-dono {quem}">{sigla}</i><b>{nome}</b></header>'
+            + ''.join(f'<p><small>{d} {h}</small>{t}</p>' for d, h, t in itens) + '<p class="mais">+ 9 palestras e atrações</p></div>')
+SU_TELA_GERAL = ''.join(f'<li class="{tipo}" style="--d:{n*0.07:.2f}s"><small>{h}</small>{t}</li>' if h else f'<li class="dia" style="--d:{n*0.07:.2f}s">{t}</li>' for n, (h, t, tipo) in enumerate([('', 'Quarta, 26/11', '')] + [x[:3] for x in SU_DIAS[0][1]] + [('', 'Quinta, 27/11', '')] + [x[:3] for x in SU_DIAS[1][1][:3]]))
+SU_TELA_MINHA = ''.join(f'<li class="mc" style="--d:{n*0.12:.2f}s"><small>{d} {h}</small>{t}</li>' for n, (d, h, t) in enumerate([('Qua','14:00','React Native com Expo'),('Qui','08:00','React e Next.js'),('Qui','13:00','Governança de dados'),('Sex','07:30','Saúde mental e IA')]))
+slide('suap-programacao','Programação direto do SUAP','04 / Próximos passos',f"""
+<div class="etp su" data-steps="6"><div class="palco su-palco">
+<div class="su-fonte"><div class="su-suap">{icon('server')}<b>SUAP</b><small>API do IFRN</small></div>
+<div class="su-ok">{icon('check')}<span><b>Testado com o último ETAL</b><small>deu tudo certo</small></span></div></div>
+<div class="su-fio"><i></i><i></i><i></i></div>
+<div class="su-meio"><div class="su-dias">{''.join(f'<span style="--sx:{c*170}px">{d}</span>' for c, (d, _) in enumerate(SU_DIAS))}</div>{su_cartoes()}
+<div class="su-leg"><span class="mc">Minicurso</span><span class="pl">Palestra e mesa</span><span class="cu">Atração</span></div>
+<div class="su-gente">{''.join(f'<div class="su-pessoa {k}"><i class="su-dono {k}">{s}</i><b>{n}</b><small>inscrições no SUAP</small></div>' for k, s, n in SU_GENTE)}</div>
+<div class="su-agendas">{''.join(su_agenda(k, n, s) for k, s, n in SU_GENTE)}</div></div>
+<div class="su-cel"><div class="su-tela geral"><header>Programação</header><nav><b>Todas</b><span>Minicursos</span></nav><ul>{SU_TELA_GERAL}</ul></div>
+<div class="su-tela minha"><header>Minha agenda</header><nav><b>Maria Clara</b></nav><ul>{SU_TELA_MINHA}</ul><div class="su-toast">{icon('rotate')}<span><b>Atualizado do SUAP</b><small>FastAPI: restam 3 vagas</small></span></div></div></div>
+</div><ol class="passos">{''.join(f'<li data-step="{n}" data-ir="{n}"><span>{icon(ic)}</span><b>{t}</b><small>{d}</small></li>' for n,(ic,t,d) in enumerate(PASSOS_SU))}</ol></div>
+""",'Testado com o último ETAL: deu tudo certo','', 'cena-evento.webp', 'Programação direto do SUAP')
+
+# ---------------- 05 · Apêndice técnico ----------------
+PASSOS_ARQ = [('layers','As peças','celular, API, banco e SUAP'),('user','Login','o SUAP confirma quem é'),('qr','Presença','do QR ao banco e ao painel'),('bell','Aviso','do painel para todos os celulares')]
+def no_arq(x, y, ic, t, sub, cls=''):
+    return f'<g class="ar-no {cls}" transform="translate({x} {y})"><rect x="-82" y="-50" width="164" height="100" rx="20"/><use href="#i-{ic}" x="-16" y="-38" width="32" height="32"/><text y="14" class="t">{t}</text><text y="34" class="s">{sub}</text></g>'
+def fio_arq(d, cls, rot='', rx=0, ry=0, delay=0):
+    return f'<path class="ar-fio {cls}" d="{d}" pathLength="1" style="--d:{delay}s"/>' + (f'<text class="ar-rot {cls}" x="{rx}" y="{ry}" style="--d:{delay+0.5}s">{rot}</text>' if rot else '')
+ARQ_SVG = ('<svg class="ar-svg" viewBox="0 0 1000 600" role="img" aria-label="Arquitetura: celular, API, banco, SUAP e painel">'
+  + fio_arq('M150 300 C150 150 300 90 418 90', 'h1', '1 · entra com o SUAP', 200, 140, 0)
+  + fio_arq('M582 90 C700 90 720 200 520 250', 'h1', '2 · nome, foto e matrícula', 720, 170, 0.8)
+  + fio_arq('M418 320 L232 320', 'h1', '3 · sessão (cookie)', 325, 350, 1.6)
+  + fio_arq('M232 280 L418 280', 'h2', '1 · QR lido', 325, 268, 0)
+  + fio_arq('M582 300 L768 300', 'h2', '2 · grava a presença', 675, 288, 0.8)
+  + fio_arq('M500 350 L500 448', 'h2', '3 · lotação ao vivo', 590, 405, 1.6)
+  + fio_arq('M500 448 L500 350', 'h3', '1 · aviso enviado', 590, 405, 0)
+  + ''.join(fio_arq(f'M418 300 C330 300 300 {y} 232 {y}', 'h3', '' , 0, 0, 0.8 + n*0.15) for n,y in enumerate([300]))
+  + no_arq(150, 300, 'phone', 'Celular', 'o app (PWA)', 'cel')
+  + no_arq(500, 300, 'server', 'API', 'FastAPI')
+  + no_arq(850, 300, 'database', 'Banco', 'PostgreSQL')
+  + no_arq(500, 90, 'user', 'SUAP', 'login do IFRN')
+  + no_arq(500, 500, 'browser', 'Painel', 'da organização')
+  + ''.join(f'<g class="ar-ping h3" transform="translate({x} {y})" style="--d:{1.2+n*0.2}s"><circle r="18"/><use href="#i-bell" x="-10" y="-10" width="20" height="20"/></g>' for n,(x,y) in enumerate([(70,215),(150,215),(230,215)]))
+  + '</svg>')
+slide('arquitetura','Como as peças se ligam','05 / Apêndice técnico',f"""
+<div class="etp ar" data-steps="4"><div class="palco ar-palco">{ARQ_SVG}</div>
+<ol class="passos">{''.join(f'<li data-step="{n}" data-ir="{n}"><span>{icon(ic)}</span><b>{t}</b><small>{d}</small></li>' for n,(ic,t,d) in enumerate(PASSOS_ARQ))}</ol></div>
+""",'FastAPI · Vercel (teste) · IFRN (produção) · avisos chegam por SSE','', 'cena-campus.webp', 'Como as peças se ligam')
+
+PASSOS_DB = [('database','As tabelas','sete, no PostgreSQL'),('calendar','Salva a atividade','Pessoa → Agenda → Atividade'),('qr','Lê o QR','Pessoa → Presença → Atividade'),('bell','A organização','avisos, salas e acessos')]
+def er_db(cls, ic, t, sub, ex=''):
+    return f'<div class="db-card {cls}"><span>{icon(ic)}</span><b>{t}</b><small>{sub}</small>{f"<em>{ex}</em>" if ex else ""}</div>'
+slide('banco','O banco de dados','05 / Apêndice técnico',f"""
+<div class="etp db" data-steps="4"><div class="palco db-palco"><div class="db-cena">
+<div class="db-linha">{er_db('pessoa','user','Pessoa','participante, visitante ou organização','Maria Clara · 2023109401…')}
+<div class="db-meio">{er_db('agenda','check','Agenda','salvou a atividade','Maria → React Native')}{er_db('presenca','qr','Presença','leu o QR na sala','14:22 · via QR')}</div>
+{er_db('atividade','calendar','Atividade','horário, sala e vagas','React Native · Lab 210')}</div>
+<div class="db-org">{er_db('aviso','bell','Aviso','da organização','“Minicursos às 14:00”')}{er_db('sala','pin','Número de sala','nome de cada sala','002 → Lab 210')}{er_db('link','mail','Link de acesso','entrada do visitante','válido por 7 dias')}</div>
+</div></div><ol class="passos">{''.join(f'<li data-step="{n}" data-ir="{n}"><span>{icon(ic)}</span><b>{t}</b><small>{d}</small></li>' for n,(ic,t,d) in enumerate(PASSOS_DB))}</ol></div>
+""",'backend/app/modelos.py · SQLite para desenvolver, PostgreSQL em produção','', 'cena-campus.webp', 'O banco de dados')
+
+PASSOS_QR = [('qr','O QR na porta','papel impresso, um por sala'),('code','Como é assinado','conteúdo + chave secreta → HMAC'),('user','Quem leu','a conta do SUAP no celular'),('shield','A assinatura confere','o servidor refaz e compara'),('clock','Dentro do horário','só vale durante a atividade'),('wifi','Mais verificações','rede, lugar e aparelho'),('check','Sem duplicar','uma presença por pessoa'),('database','Direto para a planilha','pronta para o Excel'),('layers','Camadas a mais','quando o evento pedir')]
+QV_EXTRA = [('wifi','Rede do IFRN','conectado ao Wi-Fi do campus (eduroam)'),('pin','Perto da sala','localização do celular junto do bloco'),('phone','Aparelho único','o mesmo celular não registra duas pessoas'),('clock','Ficou na atividade','leitura na entrada e na saída'),('users','Cabe na sala','presenças acima da lotação acendem alerta')]
+QV_LINHAS = [('Maria Clara F.','2023109401…','14:22'),('Ana Paula R.','2022109404…','14:23'),('João F. Morais','2023109000…','14:23'),('Rodrigo F.','2021109402…','14:25'),('Luana Freitas','2024109401…','14:26')]
+slide('qr','Como a presença é validada','05 / Apêndice técnico',f"""
+<div class="qv" data-steps="9">
+<div class="qv-palco">
+<div class="qv-porta" data-step="0"><div class="qv-papel"><header>{icon('qr')}<b>Lab 210</b></header><img src="{{assets}}/qr-exemplo.svg" alt="QR impresso da sala"><footer>React Native com Expo</footer></div><small>colado na porta</small></div>
+<div class="qv-token qm" data-step="1"><code><span class="url">etal.app/q/</span><span class="dado">eyJhIjoicmVhY3QtbmF0aXZlIn0</span><span class="ponto">.</span><span class="sig">-b8EvbTck83SAwZpP5nawF81ZL8</span></code>
+<div class="qm-maq"><div class="qm-in"><small>conteúdo</small><b>{{"a":"react-native"}}</b><em>base64: qualquer um lê</em></div><span class="qm-op">+</span>
+<div class="qm-key">{icon('shield')}<small>chave secreta</small><b>só o servidor tem</b></div><span class="qm-op">→</span>
+<div class="qm-hmac"><b>HMAC-SHA1</b><span class="qm-bits"><i style="--k:0"></i><i style="--k:1"></i><i style="--k:2"></i><i style="--k:3"></i><i style="--k:4"></i><i style="--k:5"></i><i style="--k:6"></i><i style="--k:7"></i><i style="--k:8"></i><i style="--k:9"></i><i style="--k:10"></i><i style="--k:11"></i></span></div><span class="qm-op">→</span>
+<div class="qm-out"><small>assinatura</small><b>-b8EvbTck83S…</b><em>27 caracteres</em></div></div>
+<p class="qm-nota">Não é segredo o que tem dentro: o segredo é a <b>chave</b>. Sem ela, ninguém produz a assinatura certa.</p></div>
+<div class="qv-quem" data-step="2"><div class="qv-cel">{icon('phone')}<b>Maria Clara</b><small>matrícula 2023109401…<br>sessão do SUAP</small></div><i class="qv-seta"></i><div class="qv-api">{icon('server')}<b>API</b></div></div>
+<div class="qc-cena" data-step="3"><div class="qc-cab"><span>conteúdo do QR</span><span></span><span>o servidor calcula</span><span></span><span>assinatura do QR</span></div><div class="qc ok"><small class="qc-l">QR verdadeiro</small><div class="qc-r"><span class="qc-d">eyJhIjoicmVhY3…</span><span class="qc-op">+ {icon("shield")}</span><span class="qc-c">-b8EvbTck8…</span><span class="qc-eq">=</span><span class="qc-q">-b8EvbTck8…</span><span class="qc-fim">{icon("check")}vale</span></div></div><div class="qc nao"><small class="qc-l">Alguém trocou a atividade para "git"</small><div class="qc-r"><span class="qc-d">eyJhIjoiZ2l0In0…</span><span class="qc-op">+ {icon("shield")}</span><span class="qc-c">y4zsZNfxPO…</span><span class="qc-eq">≠</span><span class="qc-q">-b8EvbTck8…</span><span class="qc-fim">{icon("close")}recusado</span></div></div></div>
+<div class="qv-hora" data-step="4"><div class="qv-faixa"><i></i><em class="ok">14:22 ✓</em><em class="nao">19:10 ✗</em><span class="ini">13:45</span><span class="fim">18:00</span></div><p>Vale 15 min antes do início até o fim. A foto do QR mandada depois não vale.</p></div>
+<ul class="qv-extra" data-step="5">{''.join(f'<li style="--d:{n*0.18}s"><span>{icon(ic)}</span><b>{t}</b><small>{d}</small><em>proposta</em></li>' for n,(ic,t,d) in enumerate(QV_EXTRA))}</ul>
+<div class="qv-dup" data-step="6"><div class="ok">{icon('check')}<b>14:22 · presença registrada</b></div><div class="de-novo">{icon('qr')}<b>14:31 · leu de novo</b><small>já registrada, nada muda</small></div></div>
+<div class="qv-planilha" data-step="7"><table><thead><tr><th>Nome</th><th>Matrícula</th><th>Atividade</th><th>Hora</th><th>Rede</th></tr></thead><tbody>{''.join(f'<tr style="--d:{n*0.22}s"><td>{a}</td><td>{b}</td><td>React Native</td><td>{c}</td><td>IFRN</td></tr>' for n,(a,b,c) in enumerate(QV_LINHAS))}</tbody></table>
+<div class="qv-vs"><span class="papel">{icon('file')}<b>Lista de assinatura</b><small>passa de mão em mão e é digitada depois</small></span><span class="qr">{icon('download')}<b>QR → planilha</b><small>2 s por pessoa, pronta para o Excel</small></span></div></div>
+<div class="qv-camadas" data-step="8"><div><span>{icon('qr')}</span><b>QR na tela, mudando</b><small>a cada 30 s: a foto chega vencida</small></div><div><span>{icon('users')}</span><b>A equipe lê o QR do crachá</b><small>alguém vê quem está na sala</small></div><p>O QR de papel é o principal. Estas duas ficam como camada a mais, para atividades que pedirem.</p></div>
+</div>
+<ol class="qv-passos">{''.join(f'<li data-step="{n}" data-ir="{n}"><span>{icon(ic)}</span><b>{t}</b><small>{d}</small></li>' for n,(ic,t,d) in enumerate(PASSOS_QR))}</ol>
+</div>
+""",'Assinatura com a chave do servidor (itsdangerous) · horário, sessão e presença única já funcionam; rede, lugar e aparelho são propostas','', 'qr-exemplo.svg', 'Como a presença é validada')
+
+PASSOS_LR = [('camera','A câmera','30 quadros por segundo'),('grid','Recorta o centro','só a moldura, em resolução cheia'),('flash','ZXing em WebAssembly','12 ms por quadro'),('qr','Acha os três olhos','e os quatro cantos'),('check','Duas leituras iguais','em meio segundo: trava'),('server','Manda só o token','o servidor confere e registra')]
+slide('leitor','Como o leitor é tão rápido','05 / Apêndice técnico',f"""
+<div class="etp lr" data-steps="6"><div class="palco lr-palco"><div class="lr-cena">
+<div class="lr-cam"><div class="lr-img"><img src="{{assets}}/qr-exemplo.svg" alt="QR visto pela webcam"></div><i class="lr-ruido"></i>
+<div class="lr-crop"><span>recorte do centro</span></div>
+{''.join(f'<i class="lr-olho" style="--x:{x};--y:{y}"></i>' for x,y in [(0,0),(1,0),(0,1)])}
+<svg class="lr-trk" viewBox="0 0 100 100" preserveAspectRatio="none"><polygon points="3,3 97,3 97,97 3,97"/></svg><span class="lr-ok">{icon('check')}</span>
+<div class="lr-tira">{''.join(f'<i style="--k:{k}"></i>' for k in range(8))}</div><small class="lr-fps">webcam · 30 quadros/s · imagem borrada</small></div>
+<div class="lr-info">
+<div class="lr-p" data-step="0"><b>Cada quadro da webcam é uma chance</b><p>O leitor olha um quadro a cada 60 ms. A imagem da webcam do notebook é pequena e borrada.</p></div>
+<div class="lr-p" data-step="1"><b>Não lê a tela inteira</b><p>Alterna entre o quadrado da moldura, em resolução cheia, e o quadro todo. Menos pixels para olhar, QR maior na imagem.</p></div>
+<div class="lr-p" data-step="2"><b>Trocamos o decodificador</b><div class="lr-bars"><div class="b velho"><span>jsQR</span><i style="--w:100%"></i><em>919 ms · 0 de 40</em></div><div class="b novo"><span>ZXing</span><i style="--w:1.4%"></i><em>12 ms · 40 de 40</em></div></div><p class="lr-fonte">por quadro, em vídeo de teste borrado</p></div>
+<div class="lr-p" data-step="3"><b>Os três quadrados dos cantos</b><p>São os "olhos" do QR. Com eles o leitor acha os quatro cantos, e o contorno segue o QR na tela.</p></div>
+<div class="lr-p" data-step="4"><b>Duas leituras iguais</b><div class="lr-leit"><span>{icon('check')}1ª leitura</span><span>{icon('check')}2ª leitura · +60 ms</span></div><p>Só trava quando o mesmo QR aparece duas vezes em meio segundo: sem falso positivo.</p></div>
+<div class="lr-p" data-step="5"><b>Do QR à presença</b><div class="lr-fluxo"><span>{icon('qr')}token</span><i></i><span>{icon('server')}confere a assinatura</span><i></i><span>{icon('check')}presença</span></div><p class="lr-total">≈ 0,6 s do QR na frente da câmera até o ✓</p></div>
+</div></div></div>
+<ol class="passos">{''.join(f'<li data-step="{n}" data-ir="{n}"><span>{icon(ic)}</span><b>{t}</b><small>{d}</small></li>' for n,(ic,t,d) in enumerate(PASSOS_LR))}</ol></div>
+""",'zxing-wasm (MIT) no próprio app, sem CDN · BarcodeDetector nativo quando o navegador tem · tempos medidos com câmera simulada','', 'qr-exemplo.svg', 'Como o leitor é tão rápido')
+
+PWA_ROWS = [('Abre por um link', True, False), ('Instala sem loja de apps', True, False), ('Usa o mesmo mapa web', True, False), ('Funciona sem internet', True, True), ('Câmera para o QR', True, True)]
+slide('pwa','Por que PWA','05 / Apêndice técnico',f"""
+<div class="pwa-cmp reveal"><div class="pwa-head"><span></span><b class="pwa-us">{icon('browser')}PWA</b><b>{icon('react')}React Native</b></div>
+{''.join(f'<div class="pwa-row reveal" style="--i:{n+2}"><span>{t}</span><i class="{"yes" if a else "no"}">{icon("check" if a else "close")}</i><i class="{"yes" if b else "no"}">{icon("check" if b else "close")}</i></div>' for n,(t,a,b) in enumerate(PWA_ROWS))}</div>
+""",'React Native exige publicar nas lojas e reescrever o mapa em componentes nativos','', 'app-home.png', 'Por que PWA')
+
+PASSOS_OFF = [('wifi','Com internet','tudo vem do servidor'),('database','Guarda uma cópia','app, mapa, planta e programação'),('wifi-off','A rede cai','o Wi-Fi do evento lota'),('phone','Abre do aparelho','pelo que ficou guardado'),('wifi','A rede volta','avisos e programação atualizam')]
+slide('offline','Sem internet','05 / Apêndice técnico',f"""
+<div class="etp of" data-steps="5"><div class="palco of-palco">
+<div class="of-cena">
+<div class="of-nuvem">{icon('cloud')}<b>Servidor</b></div>
+<div class="of-fio"><i></i><i></i><i></i><em>{icon('wifi-off')}</em></div>
+<div class="of-cel"><img src="{{assets}}/app-home.png" alt="App aberto"></div>
+<div class="of-cofre">{icon('database')}<b>Guardado no aparelho</b><div class="of-itens">{''.join(f'<span style="--d:{n*0.2}s">{t}</span>' for n,t in enumerate(['app','mapa 3D','planta','programação']))}</div></div>
+<p class="of-nota"><span data-step="0">Com internet, tudo vem do servidor.</span><span data-step="1">O service worker guarda os arquivos no aparelho.</span><span data-step="2">O Wi-Fi do evento cai, como sempre acontece cheio.</span><span data-step="3">O app abre do que ficou guardado. A presença espera a rede.</span><span data-step="4">A rede volta: avisos e programação se atualizam.</span></p>
+</div></div><ol class="passos">{''.join(f'<li data-step="{n}" data-ir="{n}"><span>{icon(ic)}</span><b>{t}</b><small>{d}</small></li>' for n,(ic,t,d) in enumerate(PASSOS_OFF))}</ol></div>
+""",'Service worker (sw.js) guarda os arquivos do app e do mapa no aparelho','', 'app-home.png', 'Sem internet')
+
+slide('rotas','Como a rota é calculada','05 / Apêndice técnico',f"""
+<div class="rc"><div class="rc-stage reveal"><canvas class="rc-canvas" width="1600" height="1100" data-rota="{{assets}}/rota-completa.json"></canvas>
+<div class="rc-leg"><b data-rc-titulo>Calçadas: Dijkstra</b><small data-rc-sub></small></div></div>
+<ol class="rc-steps">{''.join(f'<li class="reveal" style="--i:{n+2}" data-rc-ato="{n}"><span>{icon(ic)}</span><b>{t}</b><small>{sub}</small></li>' for n,(ic,t,sub) in enumerate([('route','Calçadas','Dijkstra a partir da portaria'),('compass','Qual entrada','calçada + caminho dentro'),('grid','Térreo','A* na grade dos corredores'),('layers','Escada ou rampa','subir escada pesa 1,6 ×'),('grid','2º andar','A* até a porta'),('walk','Rota inteira','metros ÷ 75 = minutos')]))}</ol></div>
+""",'Mesmo código do mapa (mapa3d/src/rotas.js, explicar) · portaria → Lab 210, 2º andar','', 'fontes/planta-atual-0.svg', 'Como a rota é calculada')
+
+slide('escada-rampa','Escada ou rampa?','05 / Apêndice técnico',f"""
+<div class="race"><canvas class="race-canvas" width="1500" height="1150" data-race="{{assets}}/rota-escada-rampa.json"></canvas>
+<div class="race-board"><div class="race-row escada"><i></i><b>Escada</b><small>entrada do auditório</small><em data-race-cost="escada">0</em></div>
+<div class="race-row rampa"><i></i><b>Rampa</b><small>entrada principal</small><em data-race-cost="rampa">0</em></div>
+<p class="race-note">{icon('walk')}Subir escada pesa 1,6 × · rampa 1 ×</p><div class="race-win">{icon('check')}<span>Escada, por pouco</span></div></div></div>
+""",'Destino: Lab 210, 2º andar · custos calculados pelo app (campus3d.js, planFor)','', 'videos/rota.webp', 'Escada ou rampa?')
+
+slide('api','API documentada','05 / Apêndice técnico',f"""
+<div class="shot-big reveal">{image('swagger-visao-geral.png','Documentação interativa da API (Swagger)')}</div>
+""",'FastAPI gera o Swagger automaticamente em /api/docs','', 'swagger-visao-geral.png', 'API documentada')
+
+CHECK = [(True,'App publicado em teste'),(True,'Login pelo SUAP'),(True,'Presença por QR e avisos'),(False,'Servidor do IFRN (NADIC)'),(False,'Programação real do ETAL 2026'),(False,'Teste com pessoas no campus')]
+
+
+def build_app_demo():
+    source = (ROOT / 'prototipo/index.html').read_text()
+    source = source.replace('<head>', '<head>\n<script src="isolar.js"></script><base href="../../prototipo/">', 1)
+    bootstrap = '''<script>window.ETAL_CONFIG={api:null};try{Object.defineProperty(navigator,'serviceWorker',{value:{register:()=>Promise.reject(new Error('Demonstração isolada')),getRegistration:async()=>null,addEventListener(){},controller:null}});}catch(_){}\nwindow.addEventListener('load',()=>parent.postMessage({type:'etal-demo',ready:true},'*'));</script>'''
+    source = source.replace('<script src="config.js"></script>', bootstrap)
+    source = source.replace('<title>ETAL Connect</title>', '<title>App real · demonstração isolada</title>')
+    (ROOT / 'docs/demos/app.html').write_text('<!-- Gerado a partir de prototipo/index.html; não editar. API desabilitada; usar em iframe isolado. -->\n' + source)
+
+
+def build_plan_sources():
+    source = (ROOT / 'prototipo/plan-data.js').read_text()
+    plan = json.loads(source.removeprefix('window.PLAN = ').strip().removesuffix(';'))
+    for floor in plan['floors']:
+        svg = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{plan["viewBox"]}">{plan["defs"]}{floor["svg"]}</svg>'
+        (ROOT / f'docs/assets/fontes/planta-atual-{floor["level"]}.svg').write_text(svg)
+
+
+def source_gallery():
+    entries = [('fontes/souza-capa.webp','A dissertação','Souza, Larissa Leiros de. UFRN, 2012. Figuras 9–11: plantas dos três pavimentos.'),('fontes/planta-2012-0.webp','Planta original','Figura 9, página impressa 132; página 134 do PDF.'),('fontes/satelite-campus.webp','Levantamento no satélite','Imagem do autor. Marcações sobre Google Maps / Earth.'),('fontes/satelite-jardim.webp','O jardim da entrada','Recorte do histórico de prints de 09/11/2026; usado para alinhar caminhos e árvores.'),('fontes/satelite-caminhos.webp','Caminhos e canteiros','Outro recorte do mesmo levantamento, com os caminhos marcados.'),('fontes/street-apartamentos.webp','Street View do entorno','Google Maps. Imagem de out/2024; captura do autor em 09/11/2026.'),('fontes/street-br405.webp','Rodovia e entrada','Google Street View: contexto do acesso e das árvores.'),('fontes/campus-auditorio.webp','O auditório real','Fotografia do autor para orientar volume, fachada e faixa azul.'),('fontes/campus-patio.webp','Pátio e corredores','Fotografia usada para compreender o interior do bloco.')]
+    out = '<h2>As imagens que contam esta história</h2><p class="micro">Imagens selecionadas do histórico do próprio projeto e dos prints do autor. Conversas completas e capturas sem relação com o campus ficaram fora da apresentação.</p><div class="source-gallery">'
+    for file,title,credit in entries:
+        out += '<figure>' + image(file,title,credit=credit) + f'<figcaption><strong>{title}</strong>{credit}</figcaption></figure>'
+    out += '</div><div class="doc-links"><a href="https://repositorio.ufrn.br/server/api/core/bitstreams/2be1d619-02aa-4c23-aa6b-4d65aa238aba/content">Dissertação completa (repositório da UFRN)</a><a href="{assets}/fontes/creditos.json">Procedência das imagens</a><a href="https://repositorio.ufrn.br/server/api/core/bitstreams/2be1d619-02aa-4c23-aa6b-4d65aa238aba/content" target="_blank" rel="noopener">Fonte no repositório UFRN ↗</a></div>'
+    out += '<h2>Fontes técnicas consultadas</h2><div class="doc-links"><a href="https://web.dev/learn/pwa/service-workers" target="_blank" rel="noopener">PWA / service workers</a><a href="https://reactnative.dev/docs/set-up-your-environment" target="_blank" rel="noopener">React Native / ambiente</a><a href="https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API" target="_blank" rel="noopener">Geolocation API / permissão</a></div>'
+    return out
+
+
+CHAPTER_ART = {
+    '02': ('fontes/campus-patio.webp', ''),
+    '03': ('cena-evento.webp', ''),
+    '05': ('cena-jardim.webp', ''),
+}
+_OLD_ART = {
+    '02': ('fontes/campus-auditorio.webp', 'Antes de desenhar, a gente olhou o lugar: fotos, satélite e a planta encontrada numa dissertação de 2012.'),
+    '03': ('cena-campus.webp', 'O campus inteiro em 3D, desenhado no navegador: dá para girar, entrar nos andares e seguir uma rota.'),
+    '04': ('cena-noite.webp', 'Por que um link em vez de uma loja de apps, e o que continua funcionando quando a rede cai.'),
+    '05': ('cena-evento.webp', 'Cada toque vira um pedido para a API, e cada pedido deixa um registro no banco.'),
+    '06': ('cena-jardim.webp', 'O Swagger, o painel da organização, a luz do horário e os testes: o que já está comprovado.'),
+}
+
+
+def add_dividers():
+    if any(x['id'].startswith('cap-') for x in SLIDES):
+        return
+    out, seen = [], set()
+    for item in SLIDES:
+        num, _, name = item['chapter'].partition(' / ')
+        if num in CHAPTER_ART and num not in seen:
+            seen.add(num); img, kicker = CHAPTER_ART[num]
+            inside = [x['title'] for x in SLIDES if x['chapter'].startswith(num + ' ')]
+            body = f'''<img class="cap-photo" src="{{assets}}/{img}" alt="" data-depth="0.6"><div class="cap-shade"></div>
+<div class="cap-content"><span class="cap-num reveal" data-depth="1.6">{num}</span><div class="cap-text"><p class="eyebrow reveal" style="--i:1">Capítulo {num}</p><h2 class="cap-title reveal" style="--i:2">{name}</h2><div class="cap-chips">{''.join(f'<span class="reveal" style="--i:{k+4}">{t}</span>' for k,t in enumerate(inside))}</div></div></div>'''
+            out.append(dict(id=f'cap-{num}', title=name, chapter=item['chapter'], body=body, source='', tone='dark divider', cover=img))
+        out.append(item)
+    SLIDES[:] = out
+
+
+def dados_embutidos():
+    """Os dados das animações vão dentro do HTML: aberto com duplo clique (file://), o navegador não deixa buscar JSON."""
+    out = ''
+    for nome in ['rota-completa.json', 'rota-escada-rampa.json']:
+        arq = ROOT / 'docs/assets' / nome
+        if arq.exists():
+            out += f'<script type="application/json" data-dados="{nome}">' + arq.read_text().replace('</', '<\\/') + '</script>'
+    return out
+
+
+def render(root):
+    add_dividers()
+    assets, demos = root+'docs/assets', root+'docs/demos'
+    symbols = '<svg class="icons" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' + ''.join(f'<symbol id="i-{name}" viewBox="0 0 24 24"><path d="{path}"/></symbol>' for name,path in ICONS.items()) + '</svg>'
+    sections, outline, dots = [], [], []
+    for index,item in enumerate(SLIDES,1):
+        sections.append(f'''<section class="slide {item['tone']} {'active' if index==1 else ''}" id="{item['id']}" data-title="{escape(item['title'])}" data-chapter="{escape(item['chapter'])}" aria-label="{index}. {escape(item['title'])}" aria-hidden="{'false' if index==1 else 'true'}" {'' if index==1 else 'inert'}><div class="slide-top"><b>{item['chapter']}</b><span>ETAL / Connect</span></div>{item['body']}<footer class="slide-footer"><span>{item['source']}</span><span class="page">{index:02d} / {len(SLIDES):02d}</span></footer></section>''')
+        outline.append(f'<button class="outline-card" data-go="{index-1}"><img src="{assets}/{item["cover"]}" alt=""><span class="outline-label"><i>{index:02d}</i>{item["title"]}</span></button>')
+        dots.append(f'<button data-go="{index-1}" aria-label="Slide {index}: {escape(item["title"])}" title="{escape(item["title"])}" {"aria-current=step" if index==1 else ""}></button>')
+    refs = source_gallery() + reference(root)
+    html = f'''<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="ETAL Connect: apresentação dinâmica do app, do campus real ao mapa, com fontes originais, plantas, demonstrações, arquitetura, banco e FastAPI."><title>ETAL Connect · O campus vira caminho</title><link rel="stylesheet" href="{assets}/apresentacao.css"><link rel="stylesheet" href="{assets}/apresentacao-movimento.css"></head><body>
++{symbols}<header class="topbar"><a class="brand" href="#visao"><img src="{root}prototipo/assets/icon.svg" alt=""><span>ETAL CONNECT<small>O CAMPUS VIRA CAMINHO</small></span></a><span class="breadcrumb" data-breadcrumb>01 / O encontro</span><div class="top-actions"><button class="ui-button" data-references>{icon('book')}<span>Fontes e detalhes</span></button><button class="ui-button" data-outline>{icon('grid')}<span>Slides</span></button><a class="ui-button" href="{root}docs/pdf/ETAL-Connect-apresentacao.pdf" target="_blank" rel="noopener">{icon('download')}<span>PDF</span></a><button class="ui-button highlight" data-fullscreen>{icon('expand')}<span>Tela cheia</span></button></div></header>
++<main class="deck-shell" aria-label="Apresentação de slides"><div class="stage">{''.join(sections)}</div></main>
++<footer class="bottom-bar"><span class="bottom-note">{icon('compass')}Setas para navegar · imagens para ampliar</span><div class="nav-control"><button data-prev aria-label="Slide anterior" disabled>{icon('arrow-left')}</button><output aria-live="polite">01 / {len(SLIDES):02d}</output><button data-next aria-label="Próximo slide">{icon('arrow-right')}</button></div><nav class="slide-dots" aria-label="Slides">{''.join(dots)}</nav></footer><div class="progress" aria-hidden="true"></div><div class="toast" role="status"></div>
++<dialog class="outline-dialog" id="outline"><header class="modal-head"><h2>Uma visita por dentro do projeto.</h2><button data-close aria-label="Fechar índice">{icon('close')}</button></header><div class="modal-body outline-grid">{''.join(outline)}</div></dialog>
++<dialog class="reference-dialog" id="references"><header class="modal-head"><h2>Fontes, documentos e detalhes.</h2><button data-close aria-label="Fechar referências">{icon('close')}</button></header><div class="modal-body">{refs}</div></dialog>
++<dialog class="lightbox" id="lightbox"><header class="modal-head"><span data-image-title></span><button data-close aria-label="Fechar imagem">{icon('close')}</button></header><img alt=""><p class="image-credit" data-image-credit></p></dialog>
++{dados_embutidos()}<script src="{assets}/apresentacao.js"></script><script src="{assets}/apresentacao-movimento.js"></script></body></html>'''.replace('\n+', '\n')
+    return html.replace('{assets}',assets).replace('{demos}',demos).replace('{root}',root)
+
+
+def gerar(saida=None):
+    build_app_demo()
+    build_plan_sources()
+    if saida:
+        path=Path(saida).resolve();root=os.path.relpath(ROOT,path.parent).replace(os.sep,'/')+'/'
+        path.write_text(render(root));print(path)
+    else:
+        (ROOT/'docs/apresentacao.html').write_text(render('../'))
+        print(f'Apresentação: {len(SLIDES)} slides + fontes + demonstrações isoladas do app e do mapa.')
+
+
+if __name__=='__main__':
+    gerar(sys.argv[1] if len(sys.argv)>1 else None)

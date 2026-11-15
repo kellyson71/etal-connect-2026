@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parents[1]
-VIGIAR = [RAIZ / d / n for d in ('mapa3d', 'mapa3d-cartoon') for n in ('src', 'index.html', 'assets')]
+VIGIAR = [RAIZ / 'mapa3d' / n for n in ('src', 'index.html', 'assets')]
 
 
 def versao():

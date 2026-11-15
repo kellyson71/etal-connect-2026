@@ -1,0 +1,30 @@
+# Arquivos gerados por scripts: o GitHub recolhe os diffs e não conta como código.
+# Para mudar, edite a fonte e rode o comando indicado.
+
+# npm run planta (fonte: scripts/planta/build-principal-plan.py)
+prototipo/plan-data.js linguist-generated
+dados/principal-plan.json linguist-generated
+dados/bloco-principal.svg linguist-generated
+
+# dados do campus (levantamento, KML, satélite, sprites)
+prototipo/campus-data.js linguist-generated
+prototipo/campus-limpo.js linguist-generated
+prototipo/campus-fundo.js linguist-generated
+prototipo/campus-verde.js linguist-generated
+prototipo/sprites.js linguist-generated
+
+# npm run docs e scripts/docs/documentar-modelos.py
+docs/apresentacao.html linguist-generated
+docs/demos/app.html linguist-generated
+docs/assets/fontes/planta-atual-*.svg linguist-generated
+docs/comparacao-modelos/index.html linguist-generated
+
+# bibliotecas de terceiros, copiadas sem alteração
+prototipo/vendor/** linguist-vendored
+mapa3d/vendor/** linguist-vendored
+
+# binários
+*.pdf binary
+*.woff2 binary
+*.glb binary
+*.wasm binary

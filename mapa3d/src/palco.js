@@ -12,32 +12,72 @@ export function criarPalco({ principal, interior, estilo, camera, controls, pedi
   function aplicarEstado(s = st) {
     /* 0 a 0,4: o telhado sai e o prédio é cortado de cima até o teto das salas do último andar;
        0,4 a 1: cada andar fica cortado logo acima das salas e eles se afastam em escada. */
-    const fc = suave(clamp(s.abre / 0.4)), escada = suave(clamp((s.abre - 0.4) / 0.6)) * s.esc, aberto = s.abre > 0.001 || s.corte < 50;
+    const fc = suave(clamp(s.abre / 0.4)),
+      escada = suave(clamp((s.abre - 0.4) / 0.6)) * s.esc,
+      aberto = s.abre > 0.001 || s.corte < 50;
     /* s.corte: corte pedido de fora (o passeio corta o bloco acima do andar em que a pessoa está) */
-    const topo = 3 * 3.45 - 0.22, corte = Math.min(s.abre < 0.4 ? principal.ALTO - (principal.ALTO - topo) * fc : 99, s.corte);
+    const topo = 3 * 3.45 - 0.22,
+      corte = Math.min(s.abre < 0.4 ? principal.ALTO - (principal.ALTO - topo) * fc : 99, s.corte);
     estilo.isolate(Math.max(s.iso, suave(clamp(s.abre / 0.5))) * s.isoMax);
     estilo.veuDentro(1 - 0.8 * suave(clamp(s.abre / 0.6)));
     principal.escalonar({ corte, aberto, t: escada, ops: s.ops, elos: s.elos, plano2d: s.plano });
     /* da maquete fica só a sala escolhida (sobe e fica verde na chegada) */
-    interior.view({ ops: s.ops.map((o) => (aberto ? o : 0)), elos: [0, 0], chegada: s.chegada, abre: escada, plano: s.plano, soSala: true });
+    interior.view({
+      ops: s.ops.map((o) => (aberto ? o : 0)),
+      elos: [0, 0],
+      chegada: s.chegada,
+      abre: escada,
+      plano: s.plano,
+      soSala: true,
+    });
   }
   /* vai até um estado (e uma pose de câmera) em ms; devolve uma promessa */
   function ir(alvo, poseAlvo = null, ms = 900) {
-    tw?.fim?.(); const de = JSON.parse(JSON.stringify(st)); const p0 = poseAlvo ? daCamera(camera, controls) : null;
-    return new Promise((fim) => { tw = { t0: performance.now(), ms, de, alvo, p0, p1: poseAlvo, fim }; controls.enabled = false; pedir(); });
+    tw?.fim?.();
+    const de = JSON.parse(JSON.stringify(st));
+    const p0 = poseAlvo ? daCamera(camera, controls) : null;
+    return new Promise((fim) => {
+      tw = { t0: performance.now(), ms, de, alvo, p0, p1: poseAlvo, fim };
+      controls.enabled = false;
+      pedir();
+    });
   }
   function tick(now) {
     if (!tw) return false;
-    const k = tw.ms ? clamp((now - tw.t0) / tw.ms) : 1, e = suave(k);
+    const k = tw.ms ? clamp((now - tw.t0) / tw.ms) : 1,
+      e = suave(k);
     for (const [key, v] of Object.entries(tw.alvo)) {
-      if (Array.isArray(v)) st[key] = v.map((x, i) => tw.de[key][i] + (x - tw.de[key][i]) * e); else st[key] = tw.de[key] + (v - tw.de[key]) * e;
+      if (Array.isArray(v)) st[key] = v.map((x, i) => tw.de[key][i] + (x - tw.de[key][i]) * e);
+      else st[key] = tw.de[key] + (v - tw.de[key]) * e;
     }
     if (tw.p1) aplicar(camera, controls, mistura(tw.p0, tw.p1, e));
     aplicarEstado();
-    if (k >= 1) { const f = tw.fim; tw = null; controls.enabled = true; controls.update(); f(); return false; }
+    if (k >= 1) {
+      const f = tw.fim;
+      tw = null;
+      controls.enabled = true;
+      controls.update();
+      f();
+      return false;
+    }
     return true;
   }
-  function set(parcial) { Object.assign(st, parcial); aplicarEstado(); }
-  function parar() { if (tw) { tw = null; controls.enabled = true; } }
-  return { ir, tick, set, parar, estado: () => st, ativo: () => !!tw };
+  function set(parcial) {
+    Object.assign(st, parcial);
+    aplicarEstado();
+  }
+  function parar() {
+    if (tw) {
+      tw = null;
+      controls.enabled = true;
+    }
+  }
+  /* o dedo no mapa solta a câmera da animação na hora; o resto do estado (bloco abrindo, andares) termina sozinho */
+  function soltarCamera() {
+    if (tw?.p1) {
+      tw.p1 = null;
+      controls.enabled = true;
+    }
+  }
+  return { ir, tick, set, parar, soltarCamera, estado: () => st, ativo: () => !!tw };
 }

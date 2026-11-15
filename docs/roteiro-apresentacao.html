@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Roteiro · ETAL Connect</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geologica:wght@500;600;700&family=Onest:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#f4f6fa; --card:#fff; --ink:#1f2f57; --ink-2:#3d4b6b; --muted:#6a7896; --line:#e3e8f1;
+  --navy:#22386f; --blue:#3a5a9b; --blue-50:#e8eef9; --green:#4f9e22; --green-50:#e6f3dc; --green-ink:#2f6f12;
+  --amber-50:#fff1d6; --amber-ink:#8a5200;
+  --display:'Geologica',system-ui,sans-serif; --ui:'Onest',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e1932; --card:#16244a; --ink:#e8eefb; --ink-2:#c3cee6; --muted:#94a4c6; --line:#27365e;
+  --navy:#8fb0ee; --blue:#8fb0ee; --blue-50:#22355f; --green-50:#21401a; --green-ink:#a5e07f; --amber-50:#46361a; --amber-ink:#ffd27a;
+}}
+:root[data-theme="dark"]{
+  --bg:#0e1932; --card:#16244a; --ink:#e8eefb; --ink-2:#c3cee6; --muted:#94a4c6; --line:#27365e;
+  --navy:#8fb0ee; --blue:#8fb0ee; --blue-50:#22355f; --green-50:#21401a; --green-ink:#a5e07f; --amber-50:#46361a; --amber-ink:#ffd27a;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 var(--ui);-webkit-font-smoothing:antialiased}
+a{color:inherit}
+button{font:inherit;color:inherit;cursor:pointer}
+
+/* Topo */
+.top{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1180px;margin:auto;padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.top h1{margin:0;font:700 18px var(--display);letter-spacing:-.01em;flex:1;min-width:180px}
+.top h1 small{display:block;font:500 12.5px var(--ui);color:var(--muted)}
+.timer{display:flex;align-items:center;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:4px 4px 4px 14px}
+.timer output{font:700 18px ui-monospace,monospace;min-width:58px;font-variant-numeric:tabular-nums}
+.timer output.over{color:#d6332c}
+.timer button{border:0;background:var(--blue-50);border-radius:99px;padding:6px 12px;font-size:13px;font-weight:600}
+.timer button.go{background:var(--green);color:#fff}
+.go-slides{display:inline-flex;align-items:center;gap:6px;text-decoration:none;background:var(--navy);color:var(--bg);font-weight:600;font-size:14px;padding:9px 16px;border-radius:99px}
+.theme{border:1px solid var(--line);background:var(--card);border-radius:99px;width:38px;height:38px}
+.bar{height:3px;background:var(--line)}
+.bar i{display:block;height:100%;width:0;background:var(--green);transition:width .3s}
+
+/* Corpo */
+.wrap{max-width:1180px;margin:auto;padding:28px 20px 80px;display:grid;grid-template-columns:260px minmax(0,1fr);gap:40px}
+@media (max-width:900px){.wrap{grid-template-columns:1fr;gap:20px}.idx{position:static!important;max-height:none!important}}
+
+/* Índice */
+.idx{position:sticky;top:84px;align-self:start;max-height:calc(100vh - 100px);overflow:auto;padding-right:6px}
+.idx h2{font:600 12px var(--ui);text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:18px 0 6px}
+.idx h2:first-child{margin-top:0}
+.idx ol{list-style:none;margin:0;padding:0}
+.idx a{display:flex;align-items:center;gap:9px;padding:5px 8px;border-radius:9px;text-decoration:none;font-size:14px;color:var(--ink-2)}
+.idx a:hover{background:var(--card)}
+.idx a b{font:600 11.5px ui-monospace,monospace;color:var(--muted);min-width:20px}
+.idx a.done{color:var(--muted);text-decoration:line-through}
+.idx a.here{background:var(--card);color:var(--ink);box-shadow:inset 3px 0 0 var(--green)}
+
+/* Antes de começar */
+.prep{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 22px;margin-bottom:34px}
+.prep h2{margin:0 0 10px;font:600 18px var(--display)}
+.prep ul{margin:0;padding-left:20px}
+.prep li{margin:3px 0;color:var(--ink-2)}
+.links{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.links a{text-decoration:none;font-size:13.5px;font-weight:600;padding:7px 12px;border-radius:99px;background:var(--blue-50);color:var(--navy)}
+.links a:hover{outline:2px solid var(--blue)}
+
+/* Capítulo */
+.cap{display:flex;align-items:baseline;gap:12px;margin:46px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--line)}
+.cap:first-of-type{margin-top:0}
+.cap span{font:700 13px ui-monospace,monospace;color:var(--green-ink);background:var(--green-50);padding:3px 9px;border-radius:7px}
+.cap h2{margin:0;font:700 24px var(--display);letter-spacing:-.02em;flex:1}
+.cap small{color:var(--muted);font-size:13.5px;white-space:nowrap}
+
+/* Slide */
+.sl{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px 24px 18px;margin-bottom:14px;transition:opacity .2s,border-color .2s}
+.sl.done{opacity:.55}
+.sl.here{border-color:var(--green);box-shadow:0 0 0 3px var(--green-50)}
+.sl-h{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.sl-n{font:700 15px ui-monospace,monospace;color:var(--bg);background:var(--navy);min-width:34px;height:30px;display:grid;place-items:center;border-radius:9px}
+.sl-h h3{margin:0;font:600 20px/1.25 var(--display);letter-spacing:-.015em;flex:1;min-width:200px}
+.sl-t{font-size:13px;color:var(--muted);white-space:nowrap}
+.sl-open{font-size:13px;font-weight:600;text-decoration:none;color:var(--navy);padding:5px 10px;border-radius:99px;border:1px solid var(--line)}
+.sl-open:hover{background:var(--blue-50)}
+.sl-ok{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);user-select:none}
+.sl-ok input{width:17px;height:17px;accent-color:var(--green)}
+.ideia{margin:14px 0 4px;font:600 18.5px/1.4 var(--display);color:var(--ink)}
+.fale{margin:8px 0 0;padding-left:22px}
+.fale li{margin:6px 0;color:var(--ink-2);padding-left:2px}
+.fale li::marker{color:var(--green)}
+.tela{display:flex;gap:8px;margin:14px 0 0;font-size:14.5px;color:var(--muted)}
+.tela b{color:var(--ink-2);font-weight:600;white-space:nowrap}
+.tag{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--amber-ink);background:var(--amber-50);padding:2px 8px;border-radius:99px;vertical-align:2px;margin-left:8px}
+details.ask{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}
+details.ask summary{font-size:14px;font-weight:600;color:var(--navy);cursor:pointer;list-style:none}
+details.ask summary::-webkit-details-marker{display:none}
+details.ask summary::before{content:"+ "}
+details.ask[open] summary::before{content:"− "}
+details.ask dl{margin:8px 0 0}
+details.ask dt{font-weight:600;font-size:15px;margin-top:8px}
+details.ask dd{margin:2px 0 0;color:var(--ink-2);font-size:15px}
+
+.fim{margin-top:40px;color:var(--muted);font-size:14px;display:flex;flex-wrap:wrap;gap:6px 18px}
+kbd{font:600 12px ui-monospace,monospace;background:var(--card);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;color:var(--ink)}
+code{font:500 .9em ui-monospace,monospace;background:var(--blue-50);padding:1px 5px;border-radius:5px}
+@media (max-width:600px){body{font-size:16px}.wrap{padding:20px 16px 60px}.sl{padding:16px}.sl-h h3{font-size:18px}.ideia{font-size:17px}.top h1 small{display:none}}
+@media print{.top,.idx,.sl-ok,.sl-open,.links{display:none}.wrap{display:block}.sl{break-inside:avoid;opacity:1!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <h1>Roteiro da apresentação<small>ETAL Connect · <span id="total"></span></small></h1>
+    <div class="timer" aria-label="Cronômetro">
+      <output id="clock">00:00</output>
+      <button id="tStart" class="go" type="button">Iniciar</button>
+      <button id="tReset" type="button">Zerar</button>
+    </div>
+    <a class="go-slides" href="apresentacao.html" target="_blank" rel="noopener">Abrir slides ↗</a>
+    <button class="theme" id="theme" type="button" aria-label="Alternar tema claro e escuro">◐</button>
+  </div>
+  <div class="bar"><i id="bar"></i></div>
+</header>
+
+<div class="wrap">
+  <nav class="idx" id="idx" aria-label="Slides"></nav>
+
+  <main>
+    <section class="prep">
+      <h2>Antes de começar</h2>
+      <ul>
+        <li>Suba a demo: <code>sh scripts/demo/rodar-demo.sh</code> (app em 8770, API em 8011).</li>
+        <li>Entre no app com a sua matrícula e deixe o Swagger aberto numa aba.</li>
+        <li>Abra os slides em tela cheia (<kbd>F</kbd>) e inicie o cronômetro aqui.</li>
+        <li>Nos slides com etapas, cada <kbd>→</kbd> mostra o próximo passo no mesmo slide.</li>
+      </ul>
+      <div class="links">
+        <a href="apresentacao.html" target="_blank" rel="noopener">Slides</a>
+        <a href="pdf/ETAL-Connect-apresentacao.pdf" target="_blank" rel="noopener">Slides em PDF</a>
+        <a href="http://127.0.0.1:8770/demo" target="_blank" rel="noopener">App (demo)</a>
+        <a href="http://127.0.0.1:8770/admin.html" target="_blank" rel="noopener">Painel da organização</a>
+        <a href="http://127.0.0.1:8011/api/docs" target="_blank" rel="noopener">Swagger</a>
+        <a href="../prototipo/qrs.html" target="_blank" rel="noopener">QRs de teste</a>
+        <a href="../mapa3d/index.html" target="_blank" rel="noopener">Mapa 3D</a>
+        <a href="comparacao-modelos/index.html" target="_blank" rel="noopener">Comparação dos mapas</a>
+        <a href="https://github.com/kellyson71/etal-connect-2026" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://github.com/kellyson71/suapy" target="_blank" rel="noopener">suapy</a>
+      </div>
+    </section>
+
+    <div id="roteiro"></div>
+
+    <p class="fim">
+      <span>Nos slides: <kbd>→</kbd> ou <kbd>Espaço</kbd> avança, <kbd>←</kbd> volta, <kbd>F</kbd> tela cheia, <kbd>Esc</kbd> fecha.</span>
+      <span>Aqui: <kbd>J</kbd> / <kbd>K</kbd> próximo e anterior, <kbd>X</kbd> marca como falado.</span>
+    </p>
+  </main>
+</div>
+
+<script>
+/* Cada slide: o que está na tela, a ideia em uma frase, o que falar em tópicos e, quando fizer sentido, perguntas
+   prováveis. Ordem e âncoras iguais às de apresentacao.html. "prop" marca o que ainda é proposta. */
+const CAPS = [
+  ['01', 'Abertura', [
+    { id: 'visao', t: 'ETAL Connect', s: 45,
+      tela: 'a capa com o vídeo do campus.',
+      ideia: 'Um app que leva o participante do portão até a sala certa.',
+      fale: ['Eu sou o Kellyson, do NADIC, e vou mostrar o ETAL Connect.',
+             'É um app para o ETAL, aqui do IFRN Pau dos Ferros.',
+             'Junta num lugar só o crachá, a programação, a presença por QR e o mapa do campus.',
+             'Abre pelo navegador: não precisa baixar nada.'] },
+    { id: 'chegada', t: 'Chegar ao evento', s: 45,
+      tela: 'a fachada do campus e as três perguntas.',
+      ideia: 'Quem chega faz sempre as mesmas três perguntas.',
+      fale: ['Já começou? Onde é a sala? Como eu confirmo a presença?',
+             'O bloco principal tem três andares, rampa e escada. Quem é de fora se perde.',
+             'E a resposta hoje está espalhada: grupo de WhatsApp, cartaz, recepção lotada.',
+             'O app responde as três no celular.'] },
+  ]],
+  ['02', 'Para o participante', [
+    { id: 'participante-1', t: 'Entra com o SUAP e recebe o crachá', s: 45,
+      tela: 'o vídeo do login e do crachá virando.',
+      ideia: 'Entra com a conta que já tem, e o crachá sai pronto.',
+      fale: ['Aluno e servidor entram com a matrícula e a senha do SUAP.',
+             'O app pega nome, foto e curso, e monta o crachá com um QR pessoal.',
+             'A senha não fica guardada em lugar nenhum.',
+             'Quem é de fora cria uma conta de visitante com o e-mail.'],
+      ask: [['A senha passa pelo servidor de vocês?', 'Passa só para pedir o acesso ao SUAP e é descartada. O navegador recebe só nome, foto, curso e matrícula.']] },
+    { id: 'participante-2', t: 'Monta a agenda', s: 40,
+      tela: 'a agenda com os dias e os filtros.',
+      ideia: 'A agenda já vem com o que a pessoa se inscreveu.',
+      fale: ['Três dias de palestras, minicursos, mesas e campeonatos.',
+             'Em "Minhas" ficam as atividades em que ela está inscrita, com destaque.',
+             'Dá para salvar outras, e o app avisa 10 minutos antes.',
+             'Quando as vagas estão acabando, aparece no card.'] },
+    { id: 'participante-3', t: 'Lê o QR da sala e confirma a presença', s: 45,
+      tela: 'a leitura do QR e a presença confirmada.',
+      ideia: 'Chegou na sala, lê o QR, pronto: sem lista de papel.',
+      fale: ['Cada sala tem um QR na porta.',
+             'A pessoa lê com o próprio app e a presença fica registrada na hora.',
+             'Isso substitui a lista que passa de mão em mão e é digitada depois.'],
+      ask: [['E se alguém mandar a foto do QR para um amigo?', 'Tem resposta mais à frente: o QR só vale no horário da atividade, e há camadas extras para quando precisar.']] },
+    { id: 'participante-4', t: 'Recebe a troca de sala na hora', s: 40,
+      tela: 'o aviso de mudança de sala chegando.',
+      ideia: 'Mudou a sala? Todo mundo fica sabendo na mesma hora.',
+      fale: ['Imprevisto acontece: o ar quebra, a sala enche.',
+             'A organização troca a sala no painel e o aviso chega no celular de todo mundo.',
+             'E o "Como chegar" já aponta para a sala nova.'],
+      ask: [['Como o aviso chega?', 'Por SSE (Server-Sent Events): o app fica com uma conexão aberta e o servidor empurra o aviso.']] },
+    { id: 'materiais', t: 'Materiais depois da presença', s: 30,
+      tela: 'a tela de materiais liberados.',
+      ideia: 'Quem foi à atividade leva o material para casa.', prop: true,
+      fale: ['Depois da presença, os slides e arquivos do palestrante ficam liberados.',
+             'Aí a pessoa pode avaliar a atividade.',
+             'Os materiais que aparecem hoje são de exemplo.'] },
+    { id: 'conquistas', t: 'Conquistas e contatos', s: 40,
+      tela: 'a colmeia e a troca de contato pelo crachá.',
+      ideia: 'Cada presença vira um favo, e o crachá serve para conhecer gente.',
+      fale: ['Cada coisa que a pessoa faz no evento acende um favo da colmeia.',
+             'Para trocar contato, um lê o QR do crachá do outro.',
+             'Cada um pode personalizar o perfil: interesses, linguagens, se é do NADIC, como falar com ele.',
+             'Tudo opcional, e o nome e a matrícula reais continuam ligados à conta.'] },
+    { id: 'sala', t: 'Achar a sala', s: 60,
+      tela: 'o mapa 3D com a rota até a sala.',
+      ideia: 'O "Como chegar" leva da portaria até a porta da sala.',
+      fale: ['O campus está em 3D, com os três andares do bloco principal.',
+             'A rota sai da portaria, entra no prédio e sobe até a sala.',
+             'Mostra se é melhor ir de escada ou de rampa.',
+             'Dá para buscar banheiro, bebedouro ou qualquer sala.'] },
+  ]],
+  ['03', 'Organização e presença', [
+    { id: 'painel', t: 'Painel da organização', s: 50,
+      tela: 'o painel com os números e o aviso indo para os celulares.',
+      ideia: 'A comissão acompanha o evento e fala com todo mundo de um lugar só.',
+      fale: ['Quantos credenciados, quantos na sala agora, quantos visitantes.',
+             'Publica aviso e troca sala, e isso chega nos celulares na hora.',
+             'No fim, as presenças saem numa planilha pronta para os certificados.',
+             'Os gráficos dessa tela ainda são de exemplo; avisos e troca de sala já funcionam.'] },
+  ]],
+  ['04', 'Próximos passos', [
+    { id: 'planta', t: 'Da planta de 2012 ao mapa', s: 60, etapas: 5,
+      tela: 'a planta antiga sendo traçada até virar o mapa 3D.',
+      ideia: 'O mapa foi traçado em cima da planta real do prédio.',
+      fale: ['Achamos as plantas do bloco numa dissertação da UFRN, de 2012.',
+             'Traçamos paredes, portas e corredores por cima delas.',
+             'Cada sala virou dado: uso, número e andar.',
+             'Daí saem os três andares em 3D e o mapa do app.'],
+      ask: [['A planta de 2012 ainda vale?', 'O esqueleto do prédio é o mesmo; o que mudou de uso a gente corrigiu andando pelo campus.']] },
+    { id: 'suap-programacao', t: 'Programação direto do SUAP', s: 50, etapas: 6,
+      tela: 'as atividades chegando do SUAP e preenchendo as agendas.',
+      ideia: 'O app pega a programação e as inscrições do SUAP sozinho.',
+      fale: ['A organização já cadastra o evento no SUAP.',
+             'O app busca de lá, separa por dia e preenche a programação.',
+             'Também vê em que minicurso cada pessoa se inscreveu e preenche a agenda dela.',
+             'Testamos com o último ETAL e deu tudo certo. Ainda não está ligado no app.'] },
+  ]],
+  ['05', 'Apêndice técnico', [
+    { id: 'arquitetura', t: 'Como as peças se ligam', s: 60, etapas: 4,
+      tela: 'o diagrama: celular, API, banco, SUAP e painel.',
+      ideia: 'Um app web, uma API e um banco. Simples de manter.',
+      fale: ['O app é HTML, CSS e JavaScript, sem framework.',
+             'A API é em FastAPI, em Python. O banco é PostgreSQL (SQLite para desenvolver).',
+             'O login passa pelo SUAP; os avisos descem por SSE.',
+             'Nas etapas: login, presença e aviso, cada um seguindo o seu caminho.'],
+      ask: [['Por que FastAPI e não Django?', 'A API é pequena, e o FastAPI é mais enxuto e gera a documentação (Swagger) sozinho.']] },
+    { id: 'banco', t: 'O banco de dados', s: 45, etapas: 4,
+      tela: 'as tabelas, seguindo a Maria pela agenda e pela presença.',
+      ideia: 'Poucas tabelas, e nenhuma guarda senha.',
+      fale: ['Pessoa, Atividade, Agenda e Presença são o coração.',
+             'Salvar uma atividade liga Pessoa → Agenda → Atividade.',
+             'Ler o QR liga Pessoa → Presença → Atividade.',
+             'A organização usa Aviso, Número de sala e Link de acesso.'] },
+    { id: 'qr', t: 'Como a presença é validada', s: 75, etapas: 9,
+      tela: 'a máquina da assinatura, a comparação verdadeiro × adulterado, horário e planilha.',
+      ideia: 'Dá para ler o QR, mas não dá para falsificar.',
+      fale: ['Dentro do QR vai só o id da atividade, em base64: qualquer um lê.',
+             'O servidor junta esse conteúdo com uma chave secreta e calcula a assinatura (HMAC).',
+             'Ao ler, ele refaz a conta: se alguém trocou a atividade, a assinatura não bate e é recusado.',
+             'Só vale de 15 minutos antes do início até o fim, e é uma presença por pessoa.',
+             'Rede do IFRN, localização e aparelho único são propostas, ainda não estão no app.'],
+      ask: [['Isso é criptografia?', 'É assinatura: o conteúdo é público, o que garante é a chave. HMAC-SHA1 pela biblioteca itsdangerous.'],
+            ['E se descobrirem a chave?', 'Ela fica só no servidor, em variável de ambiente. Se vazar, troca-se a chave e todos os QRs antigos param de valer.']] },
+    { id: 'leitor', t: 'Como o leitor é tão rápido', s: 60, etapas: 6,
+      tela: 'a webcam, o recorte do centro, o gráfico jsQR × ZXing e a trava.',
+      ideia: 'Trocamos o decodificador e lemos só o que importa.',
+      fale: ['A webcam manda uns 30 quadros por segundo, pequenos e borrados.',
+             'O leitor olha o quadrado da moldura em resolução cheia, alternando com o quadro todo.',
+             'Trocamos o jsQR pelo ZXing em WebAssembly: de 900 ms para 12 ms por quadro, e passou a ler a imagem borrada.',
+             'Acha os três quadrados dos cantos, confirma com duas leituras iguais e trava: uns 0,6 s até o ✓.'],
+      ask: [['Precisa de internet para ler?', 'Não: o decodificador fica no próprio app. Só a presença espera a rede para ir ao servidor.'],
+            ['De onde saem esses números?', 'Medidos num vídeo de teste borrado, 40 quadros: jsQR acertou 0, ZXing acertou 40.']] },
+    { id: 'pwa', t: 'Por que PWA', s: 45,
+      tela: 'a tabela PWA × React Native.',
+      ideia: 'Para um evento de três dias, um link vence uma loja de apps.',
+      fale: ['Abre por um link ou QR, sem loja.',
+             'Instala na tela inicial se a pessoa quiser.',
+             'Usa o mesmo mapa da web e a câmera para ler QR.',
+             'React Native ia exigir publicar nas lojas e refazer o mapa.'],
+      ask: [['Funciona no iPhone?', 'Sim. No Safari, em "Adicionar à Tela de Início".']] },
+    { id: 'offline', t: 'Sem internet', s: 45, etapas: 5,
+      tela: 'a rede caindo e o app abrindo do que ficou guardado.',
+      ideia: 'O Wi-Fi do evento cai, e o app continua abrindo.',
+      fale: ['Com internet, tudo vem do servidor.',
+             'Na primeira visita, o app guarda uma cópia: telas, mapa, planta e programação.',
+             'Se a rede cair, abre do aparelho. A presença espera a rede voltar.'],
+      ask: [['Onde está isso?', 'No service worker, prototipo/sw.js.']] },
+    { id: 'rotas', t: 'Como a rota é calculada', s: 60, etapas: 6,
+      tela: 'a rota sendo montada em seis atos, com o código do mapa.',
+      ideia: 'Dois algoritmos clássicos: um fora do prédio, outro dentro.',
+      fale: ['Nas calçadas, Dijkstra a partir da portaria.',
+             'Escolhe a melhor entrada do bloco.',
+             'Dentro, A* na grade dos corredores, andar por andar.',
+             'No fim, metros divididos por 75 viram minutos de caminhada.'],
+      ask: [['Roda no servidor?', 'Não, roda no próprio celular, em mapa3d/src/rotas.js.']] },
+    { id: 'escada-rampa', t: 'Escada ou rampa?', s: 45,
+      tela: 'a corrida entre escada e rampa até o Lab 210.',
+      ideia: 'O app compara as duas e mostra o custo de cada uma.',
+      fale: ['Subir escada pesa 1,6 vez; rampa pesa 1.',
+             'A rampa é mais longa, a escada é mais curta e cansa mais.',
+             'Para o Lab 210, a escada ganha por pouco.'] },
+    { id: 'api', t: 'API documentada', s: 60,
+      tela: 'o Swagger da API.',
+      ideia: 'Tudo documentado, para quem vier depois continuar.',
+      fale: ['O FastAPI gera essa documentação sozinho, em /api/docs.',
+             'Cada rota tem descrição, exemplo e dá para testar dali mesmo.',
+             'A ideia é que o próximo bolsista do NADIC consiga continuar o projeto.',
+             'É isso. Obrigado! Fico aberto a perguntas.'] },
+  ]],
+];
+
+/* ---------- Montagem ---------- */
+const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const mmss = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+const store = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (_) { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) { /* sem armazenamento */ } } };
+const KEY = 'etal-roteiro-feitos';
+const feitos = new Set(store.get(KEY) || []);
+let n = 0, total = 0, html = '', idx = '';
+for (const [num, nome, slides] of CAPS) {
+  const soma = slides.reduce((t, x) => t + x.s, 0); total += soma;
+  html += `<div class="cap"><span>${num}</span><h2>${nome}</h2><small>${slides.length} ${slides.length === 1 ? 'slide' : 'slides'} · ${mmss(soma)}</small></div>`;
+  idx += `<h2>${num} · ${nome}</h2><ol>`;
+  for (const x of slides) {
+    n++; const nn = String(n).padStart(2, '0');
+    idx += `<li><a href="#s-${x.id}" data-id="${x.id}"><b>${nn}</b>${esc(x.t)}</a></li>`;
+    html += `<article class="sl" id="s-${x.id}" data-id="${x.id}">
+      <div class="sl-h"><span class="sl-n">${nn}</span><h3>${esc(x.t)}${x.prop ? '<span class="tag">proposta</span>' : ''}</h3>
+        <span class="sl-t">${mmss(x.s)}${x.etapas ? ` · ${x.etapas} etapas` : ''}</span>
+        <a class="sl-open" href="apresentacao.html#${x.id}" target="_blank" rel="noopener">Abrir ↗</a>
+        <label class="sl-ok"><input type="checkbox" data-id="${x.id}">Falado</label></div>
+      <p class="ideia">${esc(x.ideia)}</p>
+      <ul class="fale">${x.fale.map((f) => `<li>${esc(f)}</li>`).join('')}</ul>
+      <p class="tela"><b>Na tela:</b><span>${esc(x.tela)}</span></p>
+      ${x.ask ? `<details class="ask"><summary>Se perguntarem</summary><dl>${x.ask.map(([q, a]) => `<dt>${esc(q)}</dt><dd>${esc(a)}</dd>`).join('')}</dl></details>` : ''}
+    </article>`;
+  }
+  idx += '</ol>';
+}
+document.getElementById('roteiro').innerHTML = html;
+document.getElementById('idx').innerHTML = idx;
+document.getElementById('total').textContent = `${n} slides · cerca de ${Math.round(total / 60)} min`;
+
+const cards = [...document.querySelectorAll('.sl')];
+const linkDe = (c) => document.querySelector(`.idx a[data-id="${c.dataset.id}"]`);
+function pintar() {
+  for (const c of cards) {
+    const on = feitos.has(c.dataset.id);
+    c.classList.toggle('done', on); c.querySelector('input').checked = on; linkDe(c).classList.toggle('done', on);
+  }
+  document.getElementById('bar').style.width = `${Math.round(feitos.size / cards.length * 100)}%`;
+}
+document.addEventListener('change', (e) => {
+  const id = e.target.dataset?.id; if (!id) return;
+  if (e.target.checked) feitos.add(id); else feitos.delete(id);
+  store.set(KEY, [...feitos]); pintar();
+});
+pintar();
+
+/* Slide atual: o mais perto do topo da tela; J/K andam, X marca. */
+let atual = 0;
+function marcar(i) {
+  atual = Math.max(0, Math.min(cards.length - 1, i));
+  cards.forEach((c, k) => { c.classList.toggle('here', k === atual); linkDe(c).classList.toggle('here', k === atual); });
+}
+const obs = new IntersectionObserver((es) => {
+  const v = es.filter((x) => x.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+  if (v) marcar(cards.indexOf(v.target));
+}, { rootMargin: '-90px 0px -60% 0px' });
+cards.forEach((c) => obs.observe(c));
+document.addEventListener('keydown', (e) => {
+  if (e.target.closest('input,textarea') || e.metaKey || e.ctrlKey || e.altKey) return;
+  const k = e.key.toLowerCase();
+  if (k === 'j' || k === 'k') { marcar(atual + (k === 'j' ? 1 : -1)); cards[atual].scrollIntoView({ block: 'start' }); }
+  if (k === 'x') { const id = cards[atual].dataset.id; if (feitos.has(id)) feitos.delete(id); else feitos.add(id); store.set(KEY, [...feitos]); pintar(); }
+});
+
+/* Cronômetro: fica vermelho quando passa do tempo total previsto. */
+let seg = 0, tick = null;
+const clock = document.getElementById('clock'), bStart = document.getElementById('tStart');
+const mostrar = () => { clock.textContent = `${String(Math.floor(seg / 60)).padStart(2, '0')}:${String(seg % 60).padStart(2, '0')}`; clock.classList.toggle('over', seg > total); };
+bStart.addEventListener('click', () => {
+  if (tick) { clearInterval(tick); tick = null; bStart.textContent = 'Continuar'; bStart.classList.add('go'); }
+  else { tick = setInterval(() => { seg++; mostrar(); }, 1000); bStart.textContent = 'Pausar'; bStart.classList.remove('go'); }
+});
+document.getElementById('tReset').addEventListener('click', () => { clearInterval(tick); tick = null; seg = 0; mostrar(); bStart.textContent = 'Iniciar'; bStart.classList.add('go'); });
+
+/* Tema: segue o sistema; o botão alterna e lembra a escolha. */
+const root = document.documentElement; const tema = store.get('etal-roteiro-tema'); if (tema) root.dataset.theme = tema;
+document.getElementById('theme').addEventListener('click', () => {
+  const escuro = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  root.dataset.theme = escuro ? 'light' : 'dark'; store.set('etal-roteiro-tema', root.dataset.theme);
+});
+</script>
+</body>
+</html>

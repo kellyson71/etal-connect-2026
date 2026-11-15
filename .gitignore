@@ -79,3 +79,10 @@ prototipo/mapa3d/
 
 # certificados locais do modo HTTPS do protótipo
 /prototipo/.certs/
+
+# Anotações locais de trabalho: ficam só na máquina, fora do repositório
+/.contexto/
+
+# Material de terceiros usado como referência (fotos do Google, dissertação de 2012):
+# fica só na máquina; as fontes estão citadas em docs/tecnico/campus-referencias.md
+/referencias/local/

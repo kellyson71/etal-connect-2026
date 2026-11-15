@@ -29,8 +29,8 @@ ESQUEMA = 'https' if HTTPS else 'http'
 API = os.environ.get('ETAL_API', '').strip().rstrip('/')
 TYPES = {'.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
          '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp',
-         '.glb': 'model/gltf-binary', '.webmanifest': 'application/manifest+json'}
-PUBLIC = {'index.html', 'homologacao.html', 'homologacao.js', 'qrs.html', 'vendor/qrcode.js', 'vendor/jsQR.js', 'config.js', 'api.js', 'admin.html', 'admin.js', 'admin.css', 'app.js', 'app.css', 'data.js', 'plan-data.js', 'campus-data.js', 'campus-fundo.js', 'campus-limpo.js', 'campus-entorno.js', 'campus-verde.js', 'sprites.js', 'campus3d.js', 'sw.js', 'manifest.webmanifest', 'admin.html', 'admin.js', 'admin.css'}
+         '.glb': 'model/gltf-binary', '.wasm': 'application/wasm', '.pdf': 'application/pdf', '.webmanifest': 'application/manifest+json'}
+PUBLIC = {'index.html', 'homologacao.html', 'homologacao.js', 'qrs.html', 'vendor/qrcode.js', 'vendor/jsQR.js', 'vendor/zxing-reader.js', 'vendor/zxing_reader.wasm', 'config.js', 'api.js', 'admin.html', 'admin.js', 'admin.css', 'app.js', 'app.css', 'community.js', 'community.css', 'data.js', 'plan-data.js', 'campus-data.js', 'campus-fundo.js', 'campus-limpo.js', 'campus-entorno.js', 'campus-verde.js', 'sprites.js', 'campus3d.js', 'sw.js', 'manifest.webmanifest', 'admin.html', 'admin.js', 'admin.css'}
 PREFIXES = ('Tecnologia em ', 'Técnico Integrado em ', 'Técnico Subsequente em ', 'Técnico em ', 'Bacharelado em ', 'Licenciatura em ')
 CAMPUS = {'PF': 'Campus Pau dos Ferros'}
 
@@ -113,12 +113,12 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(403, {'erro': 'Host não permitido.'})
         rel = self.path.split('?')[0].lstrip('/') or 'index.html'
         rel = {'demo': 'index.html', 'homologacao': 'homologacao.html'}.get(rel.rstrip('/'), rel)
-        is_asset = rel.startswith('assets/') and '..' not in rel and Path(rel).suffix in ('.svg', '.png', '.jpg', '.webp')
+        is_asset = rel.startswith('assets/') and '..' not in rel and Path(rel).suffix in ('.svg', '.png', '.jpg', '.webp', '.pdf')
         if rel == 'mapa3d/': rel = 'mapa3d/index.html'
         is_map = rel.startswith('mapa3d/') and '..' not in rel and Path(rel).suffix in ('.html', '.js', '.css', '.glb')
         file = ROOT / rel
         if rel == 'config.js' and API:
-            return self._send(200, f"window.ETAL_CONFIG = {{ api: {json.dumps(API)} }};".encode(), TYPES['.js'])
+            return self._send(200, f"window.ETAL_CONFIG = {{ api: {json.dumps(API)}, demo: {str(os.environ.get('ETAL_DEMO') == '1').lower()} }};".encode(), TYPES['.js'])
         if (rel in PUBLIC or is_asset or is_map) and file.is_file():
             return self._send(200, file.read_bytes(), TYPES[file.suffix])
         self._json(404, {'erro': 'Não encontrado.'})

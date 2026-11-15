@@ -19,8 +19,6 @@
 | backend/tests/ | Testes de API com pytest |
 | deploy/ | Caddy + API + PostgreSQL em Docker Compose |
 | api/index.py e vercel.json | Configuração alternativa de função Python e arquivos estáticos |
-| app/ | Primeira versão React / Vinext; legado |
-| modelo-3d/ | Cópia congelada do mapa; não editar |
 
 ## Caminho de uma chamada
 
@@ -62,9 +60,9 @@ Para conectar o app à API, configurar api com o endereço local em prototipo/co
 ## Gerar e manter
 
 ```sh
-npm run planta       # somente ao alterar a geometria, na fonte scripts/build-principal-plan.py
+npm run planta       # somente ao alterar a geometria, na fonte scripts/planta/build-principal-plan.py
 npm run pwa          # depois de mudar arquivos do protótipo
-npm run export:html  # gera index.html da raiz a partir de prototipo/
+npm run export:html  # gera dist/etal-connect.html (arquivo único) a partir de prototipo/
 npm run docs         # gera documentação, sem alterar o app
 ```
 

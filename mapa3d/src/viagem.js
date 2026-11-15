@@ -1,207 +1,560 @@
-/* A viagem até o destino, no espírito do mapa original do app.
-   Da portaria até uma sala:
-     1. a câmera vai para o campus e a linha sai da portaria até a entrada do bloco;
-     2. o campus desbota, o prédio real é fatiado e o interior em maquete se abre em escada (só até o andar de destino);
-     3. a linha anda pelo térreo e sobe pela escada ou rampa, com a câmera parada mostrando a subida inteira;
-     4. a câmera se aproxima do andar de destino; se a porta estiver virada para longe, ela gira devagar até ficar de
-        frente para a porta; a sala sobe e fica verde.
-   Saindo de uma sala (a da atividade atual), o bloco já começa aberto. Para um lugar de fora (bebedouro do Anexo ou da
-   Cantina) a linha fica no campus, com a parte de dentro do prédio vista em transparência.
+/* A viagem até o destino, como um GPS e como no mapa antigo do app (15/11/2026):
+   - o bloco continua inteiro, na altura real (sem abrir os andares em escadinha);
+   - a pessoa (o marcador azul) anda em ritmo constante e só desacelera e para um instante nos pontos-chave: a entrada,
+     o começo e o fim da escada ou da rampa, e a chegada;
+   - dentro do bloco só o andar em que ela está fica em destaque: os de cima somem e os de baixo ficam bem fracos.
+     Na escada ou na rampa ela sobe na vertical e o andar de cima aparece quando ela chega nele;
+   - a câmera acompanha a pessoa de perto e, no fim, enquadra a sala (girando até a porta, se ela estiver de costas).
+   Para um lugar de fora (bebedouro do Anexo ou da Cantina) a linha fica no campus.
    A câmera é sempre interpolada por pose (alvo, distância, elevação, azimute): ela gira em arco, sem tranco. */
 import * as THREE from 'three';
 import { rota } from './rotas.js';
-import { PLAN, wp } from './dados.js';
+import { FH } from './dados.js';
 import { mapear, ROOM_H } from './interior.js';
-import { AZ0, pose, aplicar, daCamera, mistura, suave, enquadrar } from './camera.js';
+import { AZ0, aplicar, daCamera, mistura, suave, enquadrar, centrarLivre } from './camera.js';
 
 const COR = 0x3f8f1a;
 const clamp = (t) => Math.min(1, Math.max(0, t));
 const V3 = (p) => new THREE.Vector3(...p);
+/* ritmo (m/s) de cada trecho e pausas (ms) nos pontos-chave */
+const VEL = { fora: 30, dentro: 16, rampa: 10, escada: 5.5 };
+const PAUSA = { entrada: 420, sobe: 220, chega: 160 };
+const LENTO = 5; // metros antes e depois de um ponto-chave em que a pessoa desacelera
 
-function amostrar(pts) {
-  const out = [V3(pts[0])];
-  for (let i = 1; i < pts.length; i++) { const a = V3(pts[i - 1]), b = V3(pts[i]); const n = Math.max(1, Math.ceil(a.distanceTo(b) / 0.3)); for (let j = 1; j <= n; j++) out.push(a.clone().lerp(b, j / n)); }
-  return out;
-}
 function posFita(P, larg, sobe, pos) {
-  P.forEach((p, i) => { const a = P[Math.max(0, i - 1)], b = P[Math.min(P.length - 1, i + 1)]; const dx = b.x - a.x, dz = b.z - a.z, L = Math.hypot(dx, dz) || 1; pos.set([p.x - (dz / L) * larg / 2, p.y + sobe, p.z + (dx / L) * larg / 2, p.x + (dz / L) * larg / 2, p.y + sobe, p.z - (dx / L) * larg / 2], i * 6); });
+  P.forEach((p, i) => {
+    const a = P[Math.max(0, i - 1)],
+      b = P[Math.min(P.length - 1, i + 1)];
+    const dx = b.x - a.x,
+      dz = b.z - a.z,
+      L = Math.hypot(dx, dz) || 1;
+    pos.set(
+      [
+        p.x - ((dz / L) * larg) / 2,
+        p.y + sobe,
+        p.z + ((dx / L) * larg) / 2,
+        p.x + ((dz / L) * larg) / 2,
+        p.y + sobe,
+        p.z - ((dx / L) * larg) / 2,
+      ],
+      i * 6,
+    );
+  });
 }
 function fita(P, larg, sobe, mat) {
-  const pos = new Float32Array(P.length * 6), idx = []; posFita(P, larg, sobe, pos);
-  for (let i = 1; i < P.length; i++) { const k = (i - 1) * 2; idx.push(k, k + 1, k + 2, k + 1, k + 3, k + 2); }
-  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setIndex(idx);
-  const m = new THREE.Mesh(g, mat); m.frustumCulled = false;
-  m.refazer = (Q) => { posFita(Q, larg, sobe, g.attributes.position.array); g.attributes.position.needsUpdate = true; };
+  const pos = new Float32Array(P.length * 6),
+    idx = [];
+  posFita(P, larg, sobe, pos);
+  for (let i = 1; i < P.length; i++) {
+    const k = (i - 1) * 2;
+    idx.push(k, k + 1, k + 2, k + 1, k + 3, k + 2);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  g.setIndex(idx);
+  const m = new THREE.Mesh(g, mat);
+  m.frustumCulled = false;
   return m;
 }
 
+/* marcador de GPS: aro branco, miolo azul, seta de direção e um halo claro em volta */
+function marcadorGPS() {
+  const g = new THREE.Group();
+  const sem = { depthTest: false, depthWrite: false, fog: false, transparent: true };
+  const halo = new THREE.Mesh(
+    new THREE.RingGeometry(1.05, 1.5, 40),
+    new THREE.MeshBasicMaterial({ color: 0x2f6fe4, opacity: 0.35, ...sem }),
+  );
+  const aro = new THREE.Mesh(
+    new THREE.CircleGeometry(1.15, 40),
+    new THREE.MeshBasicMaterial({ color: 0xffffff, ...sem }),
+  );
+  const miolo = new THREE.Mesh(
+    new THREE.CircleGeometry(0.78, 40),
+    new THREE.MeshBasicMaterial({ color: 0x2f6fe4, ...sem }),
+  );
+  const s = new THREE.Shape();
+  s.moveTo(0, 2.25);
+  s.lineTo(0.85, 1.25);
+  s.lineTo(-0.85, 1.25);
+  s.closePath();
+  const seta = new THREE.Mesh(new THREE.ShapeGeometry(s), new THREE.MeshBasicMaterial({ color: 0x2f6fe4, ...sem }));
+  [halo, aro, miolo, seta].forEach((m, i) => {
+    m.rotation.x = -Math.PI / 2;
+    m.position.y = i * 0.01;
+    m.renderOrder = 40 + i;
+  });
+  const gira = new THREE.Group();
+  gira.add(seta);
+  g.add(halo, aro, miolo, gira);
+  g.userData = { halo, gira };
+  return g;
+}
+/* pino do destino: gota vermelha com miolo branco, sempre visível */
+function pinoDestino() {
+  const g = new THREE.Group();
+  const sem = { depthTest: false, depthWrite: false, fog: false };
+  const cabeca = new THREE.Mesh(
+    new THREE.SphereGeometry(1.15, 24, 16),
+    new THREE.MeshBasicMaterial({ color: 0xd6332c, transparent: true, ...sem }),
+  );
+  const ponta = new THREE.Mesh(
+    new THREE.ConeGeometry(0.72, 1.9, 24),
+    new THREE.MeshBasicMaterial({ color: 0xd6332c, transparent: true, ...sem }),
+  );
+  const miolo = new THREE.Mesh(
+    new THREE.SphereGeometry(0.46, 16, 12),
+    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, ...sem }),
+  );
+  cabeca.position.y = 2.6;
+  ponta.position.y = 1.35;
+  ponta.rotation.x = Math.PI;
+  miolo.position.set(0, 2.62, 0);
+  [ponta, cabeca, miolo].forEach((m, i) => {
+    m.renderOrder = 45 + i;
+  });
+  g.add(ponta, cabeca, miolo);
+  g.scale.setScalar(0.58);
+  g.userData.alfa = (a) =>
+    [ponta, cabeca, miolo].forEach((m) => {
+      m.material.opacity = a;
+    });
+  return g;
+}
+
 export function criarViagem({ scene, camera, controls, interior, palco, pedir, ficha, passos }) {
-  const grupo = new THREE.Group(); grupo.name = 'viagem'; scene.add(grupo);
-  const mLinha = new THREE.MeshBasicMaterial({ color: COR, side: THREE.DoubleSide, fog: false });
-  const mBorda = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, fog: false });
-  const mRaioX = new THREE.MeshBasicMaterial({ color: COR, side: THREE.DoubleSide, transparent: true, opacity: 0.32, depthWrite: false, depthFunc: THREE.GreaterDepth, fog: false });
-  let st = null, ultimo = null;
-  /* na subida os andares não voltam para dentro do prédio: fica um pouco da escadinha, para se ver em que andar a linha está */
-  const ES = 0.42;
+  const grupo = new THREE.Group();
+  grupo.name = 'viagem';
+  scene.add(grupo);
+  const mLinha = new THREE.MeshBasicMaterial({ color: COR, side: THREE.DoubleSide, fog: false, transparent: true });
+  const mBorda = new THREE.MeshBasicMaterial({
+    color: 0xffffff,
+    side: THREE.DoubleSide,
+    fog: false,
+    transparent: true,
+  });
+  const mRaioX = new THREE.MeshBasicMaterial({
+    color: COR,
+    side: THREE.DoubleSide,
+    transparent: true,
+    opacity: 0.32,
+    depthWrite: false,
+    depthFunc: THREE.GreaterDepth,
+    fog: false,
+  });
+  const mPrevia = new THREE.MeshBasicMaterial({
+    color: COR,
+    side: THREE.DoubleSide,
+    transparent: true,
+    opacity: 0.28,
+    depthWrite: false,
+    fog: false,
+  });
+  let st = null,
+    ultimo = null;
   const reduzir = () => document.querySelector('#reduzir')?.checked;
 
-  /* Com dentro = true os pontos são os reais (altura de verdade) e a linha acompanha a maquete: a cada quadro eles são
-     levados para a abertura atual (t), então a linha sobe pela rampa desenhada e não corta caminho pelo ar. */
-  function linha(pts, larg = 1, dentro = false) {
-    const R = amostrar(pts), acc = [0]; for (let i = 1; i < R.length; i++) acc.push(acc.at(-1) + R[i].distanceTo(R[i - 1]));
-    const P = R.map((p) => p.clone()); let tAtual = null;
-    const mats = [mBorda.clone(), mLinha.clone(), mRaioX.clone()]; mats[0].transparent = mats[1].transparent = true;
-    const ms = [fita(P, 1.3 * larg, 0.18, mats[0]), fita(P, 0.76 * larg, 0.21, mats[1]), fita(P, 0.76 * larg, 0.21, mats[2])];
-    ms.forEach((m, i) => { m.renderOrder = 30 + i; m.geometry.setDrawRange(0, 0); grupo.add(m); });
+  /* um trecho da linha: aparece aos poucos atrás da pessoa (show) e pode esmaecer (alfa) */
+  function linha(R, previa = false) {
+    const acc = [0];
+    for (let i = 1; i < R.length; i++) acc.push(acc.at(-1) + R[i].distanceTo(R[i - 1]));
+    const mats = [mBorda.clone(), mLinha.clone(), mRaioX.clone()];
+    const ms = [fita(R, 1.3, 0.18, mats[0]), fita(R, 0.76, 0.21, mats[1]), fita(R, 0.76, 0.21, mats[2])];
+    ms.forEach((m, i) => {
+      m.renderOrder = 30 + i;
+      m.geometry.setDrawRange(0, 0);
+      grupo.add(m);
+    });
+    /* prévia do caminho inteiro, clarinha, por baixo: dá para ver por onde a pessoa vai */
+    const pv = previa ? fita(R, 0.76, 0.16, mPrevia.clone()) : null;
+    if (pv) {
+      pv.renderOrder = 29;
+      grupo.add(pv);
+    }
     const total = acc.at(-1) || 1;
-    const at = (f) => { const d = clamp(f) * total; let i = 1; while (i < acc.length - 1 && acc[i] < d) i++; return P[i - 1].clone().lerp(P[i], clamp((d - acc[i - 1]) / Math.max(0.001, acc[i] - acc[i - 1]))); };
-    const fr = (p) => { const v = V3(p); let k = 0, dd = Infinity; R.forEach((q, i) => { const e = q.distanceToSquared(v); if (e < dd) { dd = e; k = i; } }); return acc[k] / total; };
-    const real = (f) => { const d = clamp(f) * total; let i = 1; while (i < acc.length - 1 && acc[i] < d) i++; return R[i - 1].clone().lerp(R[i], clamp((d - acc[i - 1]) / Math.max(0.001, acc[i] - acc[i - 1]))); };
-    const ajustar = (t) => { if (!dentro || t === tAtual) return; tAtual = t; R.forEach((q, i) => P[i].set(...mapear([q.x, q.y, q.z], t))); ms.forEach((m) => m.refazer(P)); };
-    if (dentro) ajustar(1);
-    const alfa = (a) => { mats[0].opacity = a; mats[1].opacity = a; mats[2].opacity = 0.32 * a; };
-    return { P, R, total, at, fr, real, ajustar, alfa, show(f, vis = true) { const d = clamp(f) * total; let i = 0; while (i < acc.length - 1 && acc[i] < d) i++; ms.forEach((m) => { m.visible = vis; m.geometry.setDrawRange(0, i * 6); }); } };
+    return {
+      total,
+      alfa(a) {
+        mats[0].opacity = a;
+        mats[1].opacity = a;
+        mats[2].opacity = 0.32 * a;
+        if (pv) pv.material.opacity = 0.28 * a;
+      },
+      show(f, vis = true) {
+        const d = clamp(f) * total;
+        let i = 0;
+        while (i < acc.length - 1 && acc[i] < d) i++;
+        ms.forEach((m) => {
+          m.visible = vis;
+          m.geometry.setDrawRange(0, i * 6);
+        });
+        if (pv) pv.visible = vis;
+      },
+    };
   }
   function limpar() {
-    for (const c of [...grupo.children]) { grupo.remove(c); c.geometry?.dispose(); }
-    const havia = !!st; st = null; ficha.hidden = true; passos.hidden = true; document.body.classList.remove('em-viagem');
-    if (havia) palco.set({ abre: 0, ops: [1, 1, 1], elos: [1, 1], chegada: 0, plano: 0, iso: 0, esc: 1 }); interior.select(-1, null); controls.enabled = true; pedir();
-  }
-  /* poses de câmera para cada ato */
-  function poses(s) {
-    const q = s.plano, L = q.level;
-    const pe0 = PLAN.floors[0].outlinePts.map((p) => { const w = wp(p); return new THREE.Vector3(w[0], 0, w[1]); });
-    if (q.externo) { s.A = enquadrar(camera, [...s.fora.P, ...pe0], { e: 55, min: 40 }); s.R = s.A; return; }
-    const andares = []; for (let l = Math.min(s.lOrig, L); l <= Math.max(s.lOrig, L); l++) andares.push(...interior.contorno(l, 1));
-    s.A = enquadrar(camera, [...(s.fora ? s.fora.P : []), ...pe0], { e: 50, min: 40 });
-    s.S = enquadrar(camera, andares, { e: 42, min: 36, folga: 1.06 });
-    /* com subida, a partir dela os andares ficam na altura real (t = 0), "rentes ao prédio" */
-    const tF = q.via ? ES : 1; s.tF = tF;
-    if (q.via) {
-      /* subida: a câmera chega perto da escada ou da rampa, com um pedaço dos dois andares em volta */
-      const sub = s.dentro.R.filter((p, i) => { const f = s.dentro.fr(p); return f >= s.fS - 0.04 && f <= s.fC + 0.04; }).map((p) => V3(mapear([p.x, p.y, p.z], ES)));
-      s.C = enquadrar(camera, sub, { e: 40, min: 24, folga: 1.35 });
+    for (const c of [...grupo.children]) {
+      grupo.remove(c);
+      c.traverse((o) => o.geometry?.dispose());
     }
-    s.F = enquadrar(camera, interior.contorno(L, tF), { e: 55, min: 32, folga: 1.04 });
-    /* chegada: perto da sala; se a porta olha para longe da câmera padrão, a câmera gira até o lado do corredor */
-    const sala = (q.poly || [[q.centro[0], q.centro[1]]]).map((p) => V3(mapear([p[0], L * 3.45 + 0.03, p[1]], tF)).add(new THREE.Vector3(0, ROOM_H, 0)));
-    const fim = s.dentro.R.slice(Math.max(0, s.dentro.R.length - 60)).map((p) => V3(mapear([p.x, p.y, p.z], tF)));
-    let a = AZ0; const v = q.portaVista; if (v) { const az = Math.atan2(v[0], v[1]); if (Math.cos(az - AZ0) < 0.55) a = az + 0.3 * Math.sign(Math.sin(AZ0 - az) || 1); }
-    s.az = a;
-    /* meio-termo entre o andar inteiro e a sala: dá para ver onde a sala fica no andar */
-    s.R = mistura(enquadrar(camera, interior.contorno(L, tF), { e: 55, a, min: 32, folga: 1.04 }), enquadrar(camera, [...sala, ...fim], { e: 52, a, min: 26, folga: 1.6 }), 0.55);
+    const havia = !!st;
+    st = null;
+    ficha.hidden = true;
+    passos.hidden = true;
+    document.body.classList.remove('em-viagem');
+    if (havia) palco.set({ abre: 0, ops: [1, 1, 1], elos: [1, 1], chegada: 0, plano: 0, iso: 0, esc: 1 });
+    interior.select(-1, null);
+    controls.enabled = true;
+    pedir();
   }
+
+  /* Percurso: os pontos amostrados a cada 30 cm, com a hora em que a pessoa passa por cada um. O ritmo muda por trecho
+     (campus, corredor, subida) e cai perto dos pontos-chave, onde ela ainda para um instante. */
+  function percurso(q) {
+    const pts = q.pts;
+    const R = [V3(pts[0])],
+      idx = [0];
+    for (let i = 1; i < pts.length; i++) {
+      const a = V3(pts[i - 1]),
+        b = V3(pts[i]);
+      const n = Math.max(1, Math.ceil(a.distanceTo(b) / 0.3));
+      for (let j = 1; j <= n; j++) R.push(a.clone().lerp(b, j / n));
+      idx.push(R.length - 1);
+    }
+    const at = (i) => (i >= 0 && i < idx.length ? idx[i] : -1);
+    /* trechos: dentro do bloco de [ini, fim]; subida de [sobe, chega] */
+    const dIni = q.externo ? (q.iSaida >= 0 ? 0 : -1) : at(q.iEntrada),
+      dFim = q.externo ? at(q.iSaida) : R.length - 1;
+    const kSobe = at(q.iSobe),
+      kChega = at(q.iChega);
+    const chaves = [
+      [q.externo ? -1 : q.iEntrada > 0 ? dIni : -1, PAUSA.entrada],
+      [kSobe, PAUSA.sobe],
+      [kChega, PAUSA.chega],
+      [q.externo && q.iSaida >= 0 ? dFim : -1, PAUSA.entrada],
+    ].filter(([k]) => k > 0);
+    const acc = [0];
+    for (let i = 1; i < R.length; i++) acc.push(acc.at(-1) + R[i].distanceTo(R[i - 1]));
+    const T = [0];
+    for (let i = 1; i < R.length; i++) {
+      const dentro = dIni >= 0 && i > dIni && i <= dFim,
+        sobe = kSobe >= 0 && i > kSobe && i <= kChega;
+      let v = sobe ? (q.via === 'escada' ? VEL.escada : VEL.rampa) : dentro ? VEL.dentro : VEL.fora;
+      const perto = Math.min(acc.at(-1) - acc[i], ...chaves.map(([k]) => Math.abs(acc[i] - acc[k])));
+      v *= 0.32 + 0.68 * suave(clamp(perto / LENTO));
+      let t = T.at(-1) + ((acc[i] - acc[i - 1]) / v) * 1000;
+      for (const [k, p] of chaves) if (k === i) t += p;
+      T.push(t);
+    }
+    return { R, T, acc, dIni, dFim, kSobe, kChega, chaves };
+  }
+  /* posição da pessoa na hora t do percurso (e o índice do ponto) */
+  function noPercurso(P, t) {
+    const { R, T } = P;
+    if (t <= 0) return { p: R[0].clone(), i: 0 };
+    if (t >= T.at(-1)) return { p: R.at(-1).clone(), i: R.length - 1 };
+    let lo = 0,
+      hi = T.length - 1;
+    while (hi - lo > 1) {
+      const m = (lo + hi) >> 1;
+      if (T[m] <= t) lo = m;
+      else hi = m;
+    }
+    const u = clamp((t - T[lo]) / Math.max(1e-6, T[hi] - T[lo]));
+    return { p: R[lo].clone().lerp(R[hi], u), i: u > 0.5 ? hi : lo };
+  }
+  /* destaque por andar a partir da altura da pessoa: o andar dela inteiro, os de cima somem, os de baixo ficam fracos */
+  function opsPorAltura(y) {
+    return [0, 1, 2].map((l) => {
+      const a = (l * FH - y) / FH;
+      return a > 0 ? suave(clamp(1 - a / 0.42)) : 0.12 + 0.88 * suave(clamp(1 + a / 0.55));
+    });
+  }
+
+  function poseFinal(s) {
+    const q = s.plano;
+    if (q.externo) {
+      s.Rf = enquadrar(camera, [s.R.at(-1), ...s.R.slice(Math.max(0, s.R.length - 120))], {
+        e: 52,
+        min: 30,
+        folga: 1.4,
+      });
+      return;
+    }
+    const L = q.level;
+    const sala = (q.poly || [[q.centro[0], q.centro[1]]]).map((p) =>
+      V3(mapear([p[0], L * FH + 0.03, p[1]], 0)).add(new THREE.Vector3(0, ROOM_H, 0)),
+    );
+    const fim = s.R.slice(Math.max(0, s.R.length - 60));
+    let a = AZ0;
+    const v = q.portaVista;
+    if (v) {
+      const az = Math.atan2(v[0], v[1]);
+      if (Math.cos(az - AZ0) < 0.55) a = az + 0.3 * Math.sign(Math.sin(AZ0 - az) || 1);
+    }
+    s.az = a;
+    s.Rf = enquadrar(camera, [...sala, ...fim.slice(-30)], { e: 54, a, min: 26, folga: 1.3 });
+  }
+  /* câmera que segue a pessoa: mais longe no campus, mais perto e mais de cima dentro do bloco */
+  function poseSegue(s, alvo, dentro, sobe) {
+    const d = sobe ? 46 : dentro ? 52 : 78,
+      e = THREE.MathUtils.degToRad(sobe ? 46 : dentro ? 56 : 50);
+    return { t: alvo.clone(), d, e, a: AZ0 };
+  }
+
   function ir(dest, { origem = null, forcar = null, animar = false } = {}) {
-    const plano = rota(dest, origem, forcar); if (!plano) return null;
-    limpar(); palco.parar(); palco.set({ corte: 99, esc: 1 }); ultimo = { dest, origem, forcar };
+    const plano = rota(dest, origem, forcar);
+    if (!plano) return null;
+    limpar();
+    palco.parar();
+    palco.set({ corte: 99, esc: 0 });
+    ultimo = { dest, origem, forcar };
     document.body.classList.add('em-viagem');
     if (plano.zona) interior.select(plano.level, plano.zona.id);
-    const s = { plano, t: 0, ultimoQuadro: performance.now(), fim: false, pausa: null, etapa: -1, lOrig: plano.origem ? plano.origem.level : 0, de: daCamera(camera, controls) };
-    if (plano.externo) {
-      s.fora = linha(plano.pts); s.tempos = [900, Math.max(2600, s.fora.total * 22), 900];
-      s.nomes = [plano.origem ? 'Saída da sala' : 'Portaria', plano.saida ? 'Saída: ' + plano.saida : 'Caminho', plano.ponto.onde];
-    } else {
-      const k = plano.iEntrada; const dentro = plano.pts.slice(k);
-      s.fora = k > 0 ? linha(plano.pts.slice(0, k + 1)) : null; s.dentro = linha(dentro, 1, true);
-      /* o trecho até chegar ao andar de destino esmaece no fim, para não cruzar as salas do andar */
-      const jC = plano.iChega >= 0 ? plano.iChega - k : 0; s.antes = jC > 0 ? linha(dentro.slice(0, jC + 1), 1, true) : null; s.depois = jC > 0 ? linha(dentro.slice(jC), 1, true) : null; if (s.antes) s.dentro.show(0, false);
-      const fS = plano.iSobe >= 0 ? s.dentro.fr(dentro[plano.iSobe - k]) : 1, fC = plano.iChega >= 0 ? s.dentro.fr(dentro[plano.iChega - k]) : 1;
-      s.fS = plano.via ? fS : 1; s.fC = plano.via ? fC : 1;
-      const m = s.dentro.total; const sobeAndares = Math.abs(plano.level - s.lOrig);
-      /* ato 4: primeiro os andares descem até a altura real e a câmera se aproxima; depois a linha sobe */
-      s.tempos = [s.fora ? 900 : 700, s.fora ? Math.max(2200, s.fora.total * 20) : 0, s.fora ? 1600 : 1300, Math.max(1300, s.fS * m * 36), plano.via ? 1300 + 2600 * sobeAndares : 0, Math.max(1500, (1 - s.fC) * m * 42), 1500];
-      const andar = plano.level ? plano.level + 'º andar' : 'Térreo'; const alvo = plano.zona ? (plano.zona.roomNumber ? 'Sala ' + plano.zona.roomNumber : plano.zona.label) : plano.ponto.nome;
-      s.nomes = [plano.origem ? 'Sua sala' : 'Portaria', plano.origem ? 'Sua sala' : plano.entrada[0].toUpperCase() + plano.entrada.slice(1), 'Dentro do bloco', s.lOrig ? s.lOrig + 'º andar' : 'Térreo', plano.via === 'escada' ? 'Escada' : 'Rampa', andar, alvo];
-      /* marcador do destino: um aro na porta */
-      const aro = new THREE.Mesh(new THREE.RingGeometry(0.55, 0.95, 32), mBorda); aro.rotation.x = -Math.PI / 2; aro.renderOrder = 33; grupo.add(aro); s.aro = aro;
+    const P = percurso(plano);
+    const s = {
+      plano,
+      P,
+      R: P.R,
+      t: 0,
+      ultimoQuadro: performance.now(),
+      fim: false,
+      pausa: null,
+      etapa: -1,
+      de: daCamera(camera, controls),
+      alvo: null,
+    };
+    /* trechos da linha: campus, andar de saída, subida, andar de chegada (cada um esmaece com o seu andar) */
+    const corte = [0, P.dIni, P.kSobe, P.kChega, P.dFim, P.R.length - 1].filter(
+      (k, i, l) => k >= 0 && (i === 0 || k > Math.max(...l.slice(0, i).filter((x) => x >= 0))),
+    );
+    s.trechos = [];
+    for (let i = 1; i < corte.length; i++) {
+      const a = corte[i - 1],
+        b = corte[i];
+      if (b - a < 1) continue;
+      const meio = P.R[Math.floor((a + b) / 2)];
+      const dentro = P.dIni >= 0 && a >= P.dIni && b <= P.dFim;
+      const sobe = P.kSobe >= 0 && a === P.kSobe;
+      s.trechos.push({ a, b, dentro, sobe, nivel: Math.round(meio.y / FH), l: linha(P.R.slice(a, b + 1), !dentro) });
     }
-    /* ponto que anda na ponta da linha */
-    s.ponto = new THREE.Mesh(new THREE.SphereGeometry(0.7, 18, 12), new THREE.MeshBasicMaterial({ color: 0x22386f, depthTest: false, fog: false })); s.ponto.renderOrder = 35; grupo.add(s.ponto);
-    s.limites = [0]; s.tempos.forEach((t) => s.limites.push(s.limites.at(-1) + t)); s.dur = s.limites.at(-1);
-    const unicos = s.nomes.filter((t, i) => s.nomes.indexOf(t) === i && s.tempos[i] > 0); s.rot = s.nomes.map((t) => Math.max(0, unicos.indexOf(t)));
-    passos.replaceChildren(...unicos.map((t) => { const el = document.createElement('span'); el.textContent = t; return el; })); passos.hidden = false;
-    const nome = plano.zona ? (plano.zona.roomNumber ? 'Sala ' + plano.zona.roomNumber : plano.zona.label) : plano.ponto.nome;
-    ficha.querySelector('.f-num').textContent = nome; ficha.querySelector('.f-nome').textContent = plano.zona ? plano.zona.name || plano.zona.label : plano.ponto.onde; ficha.querySelector('.f-via').textContent = '';
-    poses(s); st = s; controls.enabled = false;
+    /* etapas mostradas no cartão */
+    const andarNome = (l) => (l ? l + 'º andar' : 'Térreo');
+    const lOrig = plano.origem ? plano.origem.level : 0;
+    const alvoNome = plano.zona
+      ? plano.zona.roomNumber
+        ? 'Sala ' + plano.zona.roomNumber
+        : plano.zona.label
+      : plano.ponto?.nome || 'Destino';
+    s.etapas = plano.externo
+      ? [
+          [0, plano.origem ? 'Saída da sala' : 'Portaria'],
+          [P.dFim > 0 ? P.dFim : 1, plano.saida ? 'Saída: ' + plano.saida : 'Caminho'],
+          [P.R.length - 1, plano.ponto?.onde || alvoNome],
+        ]
+      : [
+          [0, plano.origem ? 'Sua sala' : 'Portaria'],
+          ...(P.dIni > 0
+            ? [[P.dIni, plano.entrada ? plano.entrada[0].toUpperCase() + plano.entrada.slice(1) : 'Entrada']]
+            : []),
+          [P.dIni >= 0 ? P.dIni + 1 : 1, andarNome(lOrig)],
+          ...(P.kSobe >= 0
+            ? [
+                [P.kSobe, plano.via === 'escada' ? 'Escada' : 'Rampa'],
+                [P.kChega, andarNome(plano.level)],
+              ]
+            : []),
+          [P.R.length - 1, alvoNome],
+        ];
+    s.etapas = s.etapas.filter(([, t], i, l) => l.findIndex(([, u]) => u === t) === i);
+    passos.replaceChildren(
+      ...s.etapas.map(([, t]) => {
+        const el = document.createElement('span');
+        el.textContent = t;
+        return el;
+      }),
+    );
+    passos.hidden = false;
+    /* GPS e destino */
+    s.gps = marcadorGPS();
+    grupo.add(s.gps);
+    s.pino = pinoDestino();
+    grupo.add(s.pino);
+    const dp = plano.externo ? P.R.at(-1) : plano.door ? V3(plano.door) : P.R.at(-1);
+    s.pinoEm = dp.clone();
+    ficha.querySelector('.f-num').textContent = alvoNome;
+    ficha.querySelector('.f-nome').textContent = plano.zona
+      ? plano.zona.name || plano.zona.label
+      : plano.ponto?.onde || '';
+    ficha.querySelector('.f-via').textContent = '';
+    /* tempos: voo até o começo, percurso, chegada */
+    s.tVoo = 600;
+    s.tCheg = 950;
+    s.dur = s.tVoo + P.T.at(-1) + s.tCheg;
+    poseFinal(s);
+    st = s;
+    controls.enabled = false;
     if (reduzir() && !animar) st.t = st.dur;
-    pedir(); return plano;
+    pedir();
+    return plano;
   }
-  /* Andares por cima da ponta da linha ficam translúcidos (dá para ver a rampa e o andar de baixo por eles); os de baixo
-     esmaecem um pouco. Só vale com os andares na altura real (sem a escada); com eles afastados não há o que esconder. */
-  function fantasmas(ops, hCab, peso) {
-    for (let l = 0; l < 3; l++) {
-      if (!ops[l]) continue; const a = (l * 3.45 - hCab) / 3.45;
-      const acima = suave(clamp((a - 0.12) / 0.45)), abaixo = suave(clamp((-a - 0.12) / 0.45));
-      ops[l] *= 1 - peso * (0.8 * acima + 0.6 * abaixo);
-    }
-  }
+
   function tick(now) {
-    if (!st || st.fim) return false; const s = st, q = s.plano;
-    const dt = Math.min(60, Math.max(0, now - s.ultimoQuadro)); s.ultimoQuadro = now; if (s.pausa == null) s.t = Math.min(s.dur, s.t + dt);
+    if (!st || st.fim) return false;
+    const s = st,
+      q = s.plano,
+      P = s.P;
+    const dt = Math.min(60, Math.max(0, now - s.ultimoQuadro));
+    s.ultimoQuadro = now;
+    if (s.pausa == null) s.t = Math.min(s.dur, s.t + dt);
     const t = s.pausa != null ? s.pausa * s.dur : s.t;
-    let ato = 0; while (ato < s.tempos.length - 1 && t >= s.limites[ato + 1]) ato++;
-    const k = clamp((t - s.limites[ato]) / Math.max(1, s.tempos[ato])), e = suave(k), lin = k * k * (3 - 2 * k);
-    let p = s.A, cab = null;
-    if (q.externo) {
-      if (ato === 0) { p = mistura(s.de, s.A, e); s.fora.show(0); cab = s.fora.at(0); }
-      else if (ato === 1) { s.fora.show(lin); cab = s.fora.at(lin); }
-      else { s.fora.show(1); cab = s.fora.at(1); }
-      palco.set({ abre: 0, iso: 0 });
-    } else {
-      const L = q.level, lo = s.lOrig; const ops = [0, 0, 0], elos = [0, 0];
-      const faixa = (o) => { for (let l = Math.min(lo, L); l <= Math.max(lo, L); l++) ops[l] = o; for (let l = Math.min(lo, L); l < Math.max(lo, L); l++) elos[l] = o; };
-      let f = 0, abre = 1, chegada = 0, esc = 1;
-      if (ato === 0) { p = mistura(s.de, s.fora ? s.A : s.S, e); abre = s.fora ? 0 : e; faixa(1); }
-      if (ato === 1) { abre = 0; faixa(1); s.fora.show(lin); cab = s.fora.at(lin); }
-      if (ato === 2) { abre = e; faixa(1); p = mistura(s.A, s.S, e); if (s.fora) s.fora.show(1, k < 0.5); }
-      if (ato === 3) { p = s.S; faixa(1); f = s.fS * lin; }
-      if (ato === 4) {
-        /* 30%: os andares descem até a altura real e a câmera vem para perto da subida; 70%: a linha sobe (ou desce) */
-        const kd = suave(clamp(k / 0.3)), ks = clamp((k - 0.3) / 0.7), ls = ks * ks * (3 - 2 * ks);
-        faixa(1); esc = 1 - kd * (1 - ES); f = s.fS + (s.fC - s.fS) * ls;
-        /* a câmera acompanha um pouco a ponta da linha enquanto ela sobe */
-        const c = s.C; const alvo = V3(mapear(s.dentro.real(f).toArray(), ES));
-        const segue = { t: c.t.clone().lerp(alvo, 0.35 * ks), d: c.d, e: c.e, a: c.a + 0.18 * (ls - 0.5) };
-        p = mistura(s.S, segue, kd);
-      }
-      if (ato === 5) {
-        const kk = suave(clamp(k * 1.4)); faixa(1); esc = q.via ? ES : 1;
-        p = mistura(q.via ? { ...s.C, a: s.C.a + 0.09 } : s.S, s.F, kk);
-        for (let l = 0; l < 3; l++) if (l !== L) ops[l] *= 1 - 0.85 * kk; elos[0] *= 1 - 0.8 * kk; elos[1] *= 1 - 0.8 * kk; f = s.fC + (1 - s.fC) * lin;
-      }
-      if (ato === 6) { esc = q.via ? ES : 1; p = mistura(s.F, s.R, e); ops[L] = 1; for (let l = 0; l < 3; l++) if (l !== L && (l < Math.max(lo, L) && l >= Math.min(lo, L))) ops[l] = 0.15; f = 1; chegada = e; }
-      if (q.via && ato >= 3) fantasmas(ops, s.dentro.real(f).y, (1 - esc) * 0.6);
-      palco.set({ abre, ops, elos, chegada, plano: 0, iso: 0, esc });
-      /* a linha segue a abertura que o palco acabou de aplicar */
-      const tAb = interior.abertura(); [s.dentro, s.antes, s.depois].forEach((l) => l?.ajustar(tAb));
-      if (s.aro) { s.aro.position.set(...mapear(q.door, tAb)); s.aro.position.y += 0.35; }
-      if (ato >= 3) {
-        if (s.fora) s.fora.show(1, false); cab = s.dentro.at(f);
-        if (s.antes) { s.dentro.show(0, false); s.antes.show(clamp(f / s.fC)); s.depois.show(clamp((f - s.fC) / (1 - s.fC || 1)), f >= s.fC); s.antes.alfa(ato >= 5 ? 1 - 0.75 * suave(clamp(k * 1.6 + (ato === 6 ? 1 : 0))) : 1); }
-        else s.dentro.show(f);
-      } else { s.dentro.show(0); if (s.antes) { s.antes.show(0); s.depois.show(0); } }
-      if (ato < 3 && !cab) cab = s.fora ? s.fora.at(ato >= 1 ? 1 : 0) : s.dentro.at(0);
+    const tp = clamp((t - s.tVoo) / P.T.at(-1)) * P.T.at(-1),
+      { p: cab, i } = noPercurso(P, tp);
+    const dentro = P.dIni >= 0 && i >= P.dIni && i <= P.dFim,
+      sobe = P.kSobe >= 0 && i > P.kSobe && i < P.kChega;
+    /* abertura do bloco: abre enquanto a pessoa para na entrada (ou já começa aberto, saindo de uma sala) */
+    let abre = 0;
+    if (P.dIni >= 0) {
+      const tIn = P.T[P.dIni] - (P.dIni > 0 ? PAUSA.entrada * 0.9 : 1e9),
+        tOut = P.dFim < P.R.length - 1 ? P.T[P.dFim] : 1e12;
+      abre = suave(clamp((tp - tIn) / 520)) * (1 - suave(clamp((tp - tOut) / 520)));
     }
-    /* enquanto a linha anda (campus, andar de saída, corredor do destino), a câmera chega mais perto e acompanha a
-       ponta dela; nas trocas de ato ela volta ao enquadramento geral, então nada pula */
-    if (cab && !q.externo && (ato === 1 || ato === 3 || ato === 5)) { const kA = clamp((t - s.limites[ato]) / Math.max(1, s.tempos[ato])); const w = suave(clamp(kA / 0.3)) * suave(clamp((1 - kA) / 0.3)); p = { ...p, t: p.t.clone().lerp(cab, 0.55 * w), d: p.d * (1 - 0.24 * w) }; }
-    if (cab) { s.ponto.position.copy(cab); s.ponto.position.y += 0.8; } s.ponto.visible = !!cab && t < s.dur - 1;
+    const ops0 = opsPorAltura(cab.y),
+      ops = ops0.map((o) => 1 + (o - 1) * abre);
+    const elos = [0, 1].map((k) =>
+      sobe || (P.kSobe >= 0 && i >= P.kSobe - 4 && i <= P.kChega + 4) ? 1 : Math.max(ops[k], ops[k + 1]) * 0.5,
+    );
+    const tFim = s.tVoo + P.T.at(-1),
+      chegada = q.externo ? 0 : suave(clamp((t - tFim + 200) / 800));
+    if (!q.externo || P.dIni >= 0) palco.set({ abre, ops, elos, chegada, plano: 0, iso: 0, esc: 0 });
+    else palco.set({ abre: 0, iso: 0 });
+    /* linha: cada trecho aparece atrás da pessoa e esmaece com o andar dele */
+    for (const tr of s.trechos) {
+      tr.l.show((i - tr.a) / Math.max(1, tr.b - tr.a), true);
+      const op = tr.dentro
+        ? tr.sobe
+          ? Math.max(ops[tr.nivel] ?? 1, i <= tr.b + 8 ? 1 : 0.35)
+          : (ops[Math.min(2, Math.max(0, tr.nivel))] ?? 1)
+        : 1 - 0.6 * abre;
+      tr.l.alfa(op);
+    }
+    /* marcador de GPS (com a direção do caminho) e pino do destino */
+    const fr = P.R[Math.min(P.R.length - 1, i + 4)],
+      bk = P.R[Math.max(0, i - 4)];
+    s.gps.position.copy(cab).add(new THREE.Vector3(0, 0.35, 0));
+    s.gps.userData.gira.rotation.y = Math.atan2(fr.x - bk.x, fr.z - bk.z) + Math.PI; // a seta é desenhada apontando para -z
+    /* halo discreto: anel fixo e claro que só respira devagar (sem piscar) */
+    s.gps.userData.halo.scale.setScalar(1.12 + 0.06 * Math.sin(now / 900));
+    s.gps.userData.halo.material.opacity = 0.2;
+    s.gps.visible = t < s.dur - 300;
+    /* de fora, o pino fica acima do telhado (o destino está dentro do bloco); com o bloco aberto, desce até a porta */
+    const pinoY = q.externo ? s.pinoEm.y + 1.6 : s.pinoEm.y + 1.6 + ROOM_H * chegada * 0.6;
+    s.pino.position.set(s.pinoEm.x, pinoY + Math.abs(Math.sin(now / 420)) * 0.35 * (1 - chegada), s.pinoEm.z);
+    /* dentro do bloco, enquanto a pessoa não chega ao andar do destino, o pino fica mais fraco (não briga com a escada) */
+    /* o pino só aparece quando a pessoa chega ao andar do destino (dentro do bloco) */
+    s.pinoVer = q.externo
+      ? 1
+      : Math.min(1, (s.pinoVer || 0) + (abre > 0.6 && Math.abs(cab.y - s.pinoEm.y) < 0.8 ? dt / 300 : -dt / 200));
+    s.pinoVer = Math.max(0, s.pinoVer);
+    if (t >= s.dur) s.pinoVer = 1;
+    s.pino.visible = s.pinoVer > 0.01;
+    s.pino.userData.alfa(s.pinoVer);
+    /* câmera: voo inicial até a pessoa, depois segue de perto (alvo suavizado), e no fim enquadra o destino */
+    /* a câmera mira um pouco à frente da pessoa (meio segundo de caminho), para mostrar por onde ela vai */
+    const { p: frente } = noPercurso(P, Math.min(P.T.at(-1), tp + 500));
+    const segue = centrarLivre(camera, poseSegue(s, cab.clone().lerp(frente, 0.6), dentro, sobe));
+    if (!s.alvo || t < s.tVoo) s.alvo = segue;
+    else {
+      const k = 1 - Math.exp(-dt / 170),
+        kd = 1 - Math.exp(-dt / 500);
+      s.alvo = {
+        t: s.alvo.t.clone().lerp(segue.t, k),
+        d: s.alvo.d + (segue.d - s.alvo.d) * kd,
+        e: s.alvo.e + (segue.e - s.alvo.e) * kd,
+        a: segue.a,
+      };
+    }
+    let p = s.alvo;
+    if (t < s.tVoo) p = mistura(s.de, segue, suave(t / s.tVoo));
+    if (t > tFim) p = mistura(s.alvo, s.Rf, suave(clamp((t - tFim) / s.tCheg)));
     aplicar(camera, controls, p);
-    const et = s.rot[ato];
-    if (et !== s.etapa) { s.etapa = et; [...passos.children].forEach((el, i) => { el.className = i === et ? 'agora' : i < et ? 'feito' : ''; }); document.dispatchEvent(new CustomEvent('mapa:etapa', { detail: { etapa: et, text: passos.children[et]?.textContent || '' } })); }
-    if (t >= s.dur && s.pausa == null) { s.fim = true; controls.enabled = true; controls.update(); document.dispatchEvent(new CustomEvent('mapa:chegada', { detail: q })); }
-    return !s.fim && s.pausa == null;
+    /* etapa atual */
+    let et = 0;
+    s.etapas.forEach(([k], j) => {
+      if (i >= k) et = j;
+    });
+    if (et !== s.etapa) {
+      s.etapa = et;
+      [...passos.children].forEach((el, j) => {
+        el.className = j === et ? 'agora' : j < et ? 'feito' : '';
+      });
+      document.dispatchEvent(
+        new CustomEvent('mapa:etapa', { detail: { etapa: et, text: passos.children[et]?.textContent || '' } }),
+      );
+    }
+    if (t >= s.dur && s.pausa == null) {
+      s.fim = true;
+      controls.enabled = true;
+      controls.update();
+      document.dispatchEvent(new CustomEvent('mapa:chegada', { detail: q }));
+    }
+    return true;
   }
   function posicionarFicha(w, h) {
-    if (!st || !st.fim) { ficha.hidden = true; return; }
-    const q = st.plano; const base = q.externo ? V3(q.pts.at(-1)).add(new THREE.Vector3(0, 3, 0)) : V3(mapear([q.centro[0], q.level * 3.45 + 0.03, q.centro[1]], interior.abertura())).add(new THREE.Vector3(0, ROOM_H + 2.6, 0));
-    const v = base.project(camera); ficha.hidden = v.z > 1 || v.z < -1;
+    if (!st || !st.fim) {
+      ficha.hidden = true;
+      return;
+    }
+    const q = st.plano;
+    const base = q.externo
+      ? st.R.at(-1)
+          .clone()
+          .add(new THREE.Vector3(0, 3, 0))
+      : V3(mapear([q.centro[0], q.level * FH + 0.03, q.centro[1]], interior.abertura())).add(
+          new THREE.Vector3(0, ROOM_H + 2.6, 0),
+        );
+    const v = base.project(camera);
+    ficha.hidden = v.z > 1 || v.z < -1;
     ficha.style.transform = `translate(${Math.max(80, Math.min(w - 80, (v.x * 0.5 + 0.5) * w))}px,${Math.max(110, Math.min(h - 60, (-v.y * 0.5 + 0.5) * h))}px) translate(-50%,-100%)`;
   }
-  function pular() { if (st) { st.pausa = null; st.t = st.dur; st.fim = false; pedir(); } }
-  function congelar(u) { if (st) { st.pausa = u; st.fim = false; st.ultimoQuadro = performance.now(); pedir(); } }
-  function resize() { if (st) { poses(st); if (st.fim) aplicar(camera, controls, st.R); pedir(); } }
+  function pular() {
+    if (st) {
+      st.pausa = null;
+      st.t = st.dur;
+      st.fim = false;
+      pedir();
+    }
+  }
+  function congelar(u) {
+    if (st) {
+      st.pausa = u;
+      st.fim = false;
+      st.ultimoQuadro = performance.now();
+      pedir();
+    }
+  }
+  function resize() {
+    if (st) {
+      poseFinal(st);
+      if (st.fim) aplicar(camera, controls, st.Rf);
+      pedir();
+    }
+  }
   /* camada de desenho da rota: 1 quando o bloco está aberto (segunda passada, por cima) */
-  function camada(n) { grupo.traverse((o) => o.layers.set(n)); }
-  return { camada, ir, limpar, tick, posicionarFicha, pular, congelar, resize, ativa: () => !!st, estado: () => st, repetir: () => ultimo && ir(ultimo.dest, { origem: ultimo.origem, forcar: ultimo.forcar, animar: true }) };
+  function camada(n) {
+    grupo.traverse((o) => o.layers.set(n));
+  }
+  return {
+    camada,
+    ir,
+    limpar,
+    tick,
+    posicionarFicha,
+    pular,
+    congelar,
+    resize,
+    ativa: () => !!st,
+    estado: () => st,
+    repetir: () => ultimo && ir(ultimo.dest, { origem: ultimo.origem, forcar: ultimo.forcar, animar: true }),
+  };
 }

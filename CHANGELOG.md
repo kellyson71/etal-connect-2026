@@ -2,6 +2,20 @@
 
 O projeto segue o git flow: `main` tem só versões publicadas, `develop` junta as funcionalidades e cada uma nasce num ramo `feature/*`.
 
+## 0.10.0 (2026-11-15)
+
+Mapa
+- Modo Evento como mapa ilustrado: cores chapadas por categoria (grama, vias, calçadas, prédios, telhados), partes do evento em cor cheia, contornos nas quinas e etiquetas com ícone. O modo Campus continua realista.
+- Tema escuro do mapa ilustrado, com a luz seguindo o horário (sol e sombras de dia; luar, janelas e postes à noite) e um selo de dia ou noite.
+- Como chegar como um GPS: o bloco fica inteiro, só o andar atual em destaque; a pessoa anda em ritmo constante, desacelera na entrada e na escada ou rampa e sobe na vertical; marcador com seta e pino do destino que aparece no andar certo. Mais rápido que antes.
+- Celular: pinça no ponto dos dedos, giro e inclinação separados, toque duplo para aproximar; tocar o mapa solta a câmera de uma animação.
+- Toque duplo no bloco principal abre os andares; nos outros lugares (auditório, cantina, pátio) mostra a programação deles, com o que está acontecendo agora e a próxima, e "Ver na programação" abre a Agenda só com aquele lugar.
+
+Projeto
+- Repositório organizado: saem o modelo React/Vinext do começo e as cópias antigas do mapa (guardados na tag `antes-da-organizacao`); scripts em pastas por assunto; dados do campus em `dados/`; documentação reunida em `docs/` com um índice só; o arquivo único para duplo clique passa a ser gerado em `dist/` e anexado às versões.
+- Prettier, ESLint e EditorConfig; `npm test` reúne os testes; CI do front-end com lint, formatação e testes.
+- Material de terceiros (fotos do Google Maps, dissertação de 2012) fica fora do repositório, com as fontes citadas.
+
 ## 0.9.2 (2026-11-12)
 
 - Painel: espaço abaixo da busca; avisos, painel da sala e campos acompanham o tema escuro.
