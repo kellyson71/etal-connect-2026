@@ -11,4 +11,4 @@ node_modules/
 **/.venv/
 backend/*.db
 backend/tests/
-/index.html
+/dist/

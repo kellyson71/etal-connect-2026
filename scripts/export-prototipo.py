@@ -1,4 +1,4 @@
-"""Exporta o protótipo para um único index.html na raiz do projeto, para abrir por duplo clique.
+"""Exporta o protótipo para um único arquivo HTML (dist/etal-connect.html), para abrir por duplo clique.
 
 Embute CSS, scripts, dados do mapa e imagens (sprites, texturas, logos). Não precisa de node_modules
 nem de servidor. Sem o servidor local, o login do SUAP não funciona: a tela oferece a conta de
@@ -13,7 +13,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / 'prototipo'
-OUT = ROOT / 'index.html'
+OUT = ROOT / 'dist' / 'etal-connect.html'  # gerado: fica fora do Git (vai anexado às versões no GitHub)
 MIME = {'.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp'}
 
 
@@ -51,5 +51,6 @@ html = re.sub(r'<script src="([\w.-]+\.js)"></script>', inline_script, html)
 html = html.replace('<script>/* plan-data.js */', boot + '<script>/* plan-data.js */', 1)
 html = html.replace('<p class="stage-note">ETAL Connect · protótipo · login pelo SUAP, programação demonstrativa</p>',
                     '<p class="stage-note">ETAL Connect · protótipo exportado · sem o servidor local, entre como visitante ou com dados de exemplo</p>')
+OUT.parent.mkdir(exist_ok=True)
 OUT.write_text(html)
-print(f'index.html: {len(html) / 1024:.0f} KB, {len(assets)} imagens embutidas')
+print(f'{OUT.relative_to(ROOT)}: {len(html) / 1024:.0f} KB, {len(assets)} imagens embutidas')
