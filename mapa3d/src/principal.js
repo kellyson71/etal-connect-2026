@@ -6,7 +6,7 @@ import { fracaoRampa, ESC, escadaPlanta, RAMPA_PAREDES } from './subidas.js';
 import * as THREE from 'three';
 import { PLAN, wp, FH, AUD_H, ENTRY_H, zonePoly, insetPoly, lerp2, dist, rng, centroid, inPoly } from './dados.js';
 import { Lote } from './geo.js';
-import { normalDe, painel, janela, arCond, portaVidro, platibanda, janelasNaAresta, duasAguas, saliencia, paraFora } from './predios.js';
+import { normalDe, painel, portaVidro, platibanda, janelasNaAresta, duasAguas, saliencia, paraFora } from './predios.js';
 import { placa } from './texturas.js';
 import { GAP_Y, BACK } from './interior.js';
 

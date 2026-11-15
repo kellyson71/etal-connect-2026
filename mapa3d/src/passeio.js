@@ -9,7 +9,7 @@
    Arrastar gira a câmera; roda ou pinça aproxima. */
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { ROAD_Y0, ROAD_Y1, byId, FH } from './dados.js';
+import { ROAD_Y0, ROAD_Y1, FH } from './dados.js';
 import { criarColisao } from './colisao.js';
 import { criarMoveis } from './moveis.js';
 

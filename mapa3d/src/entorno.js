@@ -3,7 +3,7 @@
    mato de caatinga espalhado e serras no horizonte. Posições lidas do satélite (prototipo/campus-entorno.js);
    as casas ao longo das ruas são ilustrativas. */
 import * as THREE from 'three';
-import { ENT, pts, inPoly, rng, dist, lerp2, ROAD_Y0, ROAD_Y1, byId } from './dados.js';
+import { ENT, pts, inPoly, rng, dist, lerp2, ROAD_Y1, byId } from './dados.js';
 import { Lote } from './geo.js';
 import { paraFora, painel, duasAguas, normalDe } from './predios.js';
 import { modelo, instanciar } from './vegetacao.js';

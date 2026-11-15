@@ -1,7 +1,7 @@
 /* O que dá cara ao campus nas fotos: a cobertura metálica do pátio (treliça espacial branca sobre pilares),
    o pergolado de madeira, o totem do IFRN, a portaria vermelha, sebes floridas, postes e bancos. */
 import * as THREE from 'three';
-import { pts, byId, GARDEN, HEDGES, GUARITA, PEDESTRE, ROAD_Y0, lerp2, dist, insetPoly, signedArea, rect, altura, CALCADA_FUNDOS, REDES } from './dados.js';
+import { pts, byId, GARDEN, HEDGES, GUARITA, ROAD_Y0, lerp2, dist, insetPoly, signedArea, rect, altura, CALCADA_FUNDOS, REDES } from './dados.js';
 
 import { Lote } from './geo.js';
 import { painel, paraFora, duasAguas } from './predios.js';

@@ -14,7 +14,7 @@
   function write(change) {
     const value = read(); change(value);
     try { localStorage.setItem(key, JSON.stringify(value)); }
-    catch (_) { throw new Error('Não foi possível salvar. Libere espaço no navegador e tente de novo.'); }
+    catch (e) { throw new Error('Não foi possível salvar. Libere espaço no navegador e tente de novo.', { cause: e }); }
     return value;
   }
   const seeds = [

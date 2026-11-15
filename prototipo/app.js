@@ -1066,7 +1066,7 @@
     if (!url) { toast('Este material ainda não tem arquivo nem link.'); return; }
     if (url.startsWith('data:')) { try { url = URL.createObjectURL(await (await fetch(url)).blob()); } catch (_) { /* fica o data: */ } }
     const baixar = m.url && m.url.startsWith('/api/') ? `${url}${url.includes('?') ? '&' : '?'}baixar=true` : url;
-    let corpo = '';
+    let corpo;
     if (inf.tipo === 'pdf') corpo = `<iframe class="mv-doc" src="${esc(url)}#view=FitH" title="${esc(m.name)}"></iframe>`;
     else if (inf.tipo === 'imagem') corpo = `<div class="mv-img"><img src="${esc(url)}" alt="${esc(m.name)}"></div>`;
     else if (inf.tipo === 'youtube') corpo = `<div class="mv-vid"><iframe src="https://www.youtube-nocookie.com/embed/${esc(YT.exec(m.url)[1])}" title="${esc(m.name)}" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>`;

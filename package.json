@@ -10,11 +10,20 @@
   "scripts": {
     "prototipo": "sh prototipo/rodar.sh",
     "demo": "sh scripts/demo/rodar-demo.sh",
+    "test": "node --test mapa3d/tests/ prototipo/tests/ && python3 scripts/planta/check-principal-plan.py",
+    "lint": "eslint .",
+    "format": "prettier --write \"prototipo/**/*.{js,mjs,css}\" \"mapa3d/**/*.{js,mjs,css}\" \"scripts/**/*.mjs\" \"docs/assets/*.{js,css}\" eslint.config.js",
+    "format:check": "prettier --check \"prototipo/**/*.{js,mjs,css}\" \"mapa3d/**/*.{js,mjs,css}\" \"scripts/**/*.mjs\" \"docs/assets/*.{js,css}\" eslint.config.js",
     "planta": "python3 scripts/planta/build-principal-plan.py && python3 scripts/planta/check-principal-plan.py && python3 scripts/planta/build-prototype-plan.py",
     "pwa": "python3 scripts/app/build-pwa.py",
     "export:html": "python3 scripts/app/export-prototipo.py",
     "docs": "python3 scripts/docs/build-documentacao.py",
-    "docs:pdf": "npm run docs && python3 scripts/docs/exportar-docs-pdf.py",
-    "test:comunidade": "node --test prototipo/tests/community.test.mjs"
+    "docs:pdf": "npm run docs && python3 scripts/docs/exportar-docs-pdf.py"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.15.0",
+    "globals": "^17.14.0",
+    "prettier": "^3.10.1"
   }
 }

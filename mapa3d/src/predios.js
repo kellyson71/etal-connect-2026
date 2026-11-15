@@ -1,7 +1,7 @@
 /* Prédios do campus (menos o bloco principal, que tem arquivo próprio).
    Padrão das fotos: parede de azulejo amarelo, platibanda de pastilha azul saliente com forro escuro,
    janelas de vidro escuro e condensadoras de ar-condicionado penduradas na fachada. */
-import { ENT, rect, altura, BUILDINGS, signedArea, insetPoly, dist, lerp2, rng, centroid, F, XT, LIMPO, FP } from './dados.js';
+import { ENT, rect, altura, BUILDINGS, signedArea, insetPoly, dist, lerp2, rng, centroid, LIMPO, FP } from './dados.js';
 
 /* Contorno orientado para que cada aresta a→b tenha a normal (−dy, dx) apontando para fora. */
 export const paraFora = (p) => (signedArea(p) > 0 ? p.slice().reverse() : p);

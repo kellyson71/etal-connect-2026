@@ -21,11 +21,6 @@ const VEL = { fora: 30, dentro: 16, rampa: 10, escada: 5.5 };
 const PAUSA = { entrada: 420, sobe: 220, chega: 160 };
 const LENTO = 5; // metros antes e depois de um ponto-chave em que a pessoa desacelera
 
-function amostrar(pts) {
-  const out = [V3(pts[0])];
-  for (let i = 1; i < pts.length; i++) { const a = V3(pts[i - 1]), b = V3(pts[i]); const n = Math.max(1, Math.ceil(a.distanceTo(b) / 0.3)); for (let j = 1; j <= n; j++) out.push(a.clone().lerp(b, j / n)); }
-  return out;
-}
 function posFita(P, larg, sobe, pos) {
   P.forEach((p, i) => { const a = P[Math.max(0, i - 1)], b = P[Math.min(P.length - 1, i + 1)]; const dx = b.x - a.x, dz = b.z - a.z, L = Math.hypot(dx, dz) || 1; pos.set([p.x - (dz / L) * larg / 2, p.y + sobe, p.z + (dx / L) * larg / 2, p.x + (dz / L) * larg / 2, p.y + sobe, p.z - (dx / L) * larg / 2], i * 6); });
 }

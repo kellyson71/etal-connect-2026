@@ -1,0 +1,23 @@
+# bibliotecas de terceiros e arquivos gerados
+**/vendor/
+prototipo/mapa3d/
+prototipo/plan-data.js
+prototipo/campus-data.js
+prototipo/campus-limpo.js
+prototipo/campus-fundo.js
+prototipo/campus-verde.js
+prototipo/sprites.js
+dados/
+docs/apresentacao.html
+docs/demos/
+docs/comparacao-modelos/
+docs/pdf/
+dist/
+publico/
+backend/
+.contexto/
+node_modules/
+# HTML com scripts e estilos embutidos fica como está
+*.html
+*.md
+*.json

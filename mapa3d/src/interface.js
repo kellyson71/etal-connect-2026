@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { PLAN, BUILDINGS, COVERS, FLATS, wp, FH, zonePoly, centroid } from './dados.js';
 import { rota, maisPerto, PONTOS } from './rotas.js';
 import { LEGENDA } from './estilo.js';
-import { pose, enquadrar, AZ0, daCamera } from './camera.js';
+import { enquadrar } from './camera.js';
 
 const $ = (s) => document.querySelector(s);
 const norm = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
