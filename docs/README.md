@@ -16,6 +16,7 @@ Tudo o que explica o projeto, num lugar só. Os PDFs abrem direto no GitHub; os 
 | Documento | O que tem |
 |---|---|
 | **[Apresentação (PDF)](pdf/ETAL-Connect-apresentacao.pdf)** | O projeto em slides: o encontro, o participante, a organização, o mapa do campus real ao 3D, a presença por QR e o apêndice técnico (arquitetura, banco, API, PWA, rotas). |
+| **[Regras do app](regras-de-negocio.md)** | As regras que a gente decidiu, sem jargão: entrada, limites de tentativa, presença (inclusive sem internet), agenda, materiais, organização e publicações. |
 | **[Referência técnica](tecnico/README.md)** | Requisitos, casos de uso, banco de dados, arquitetura, API, testes, mapa e fontes, PWA. |
 | **[Comparação dos mapas (PDF)](pdf/ETAL-Connect-comparacao-dos-mapas.pdf)** | 20 pares de capturas: o mapa clássico (Canvas) e o mapa 3D (WebGL) vistos dos mesmos lugares. |
 | **[Explorações visuais (PDF)](pdf/ETAL-Connect-exploracoes-visuais.pdf)** | As propostas de design que vieram antes do app atual: direções visuais, home e mapa, e as três entradas testadas. |
