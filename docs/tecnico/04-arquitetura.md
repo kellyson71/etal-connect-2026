@@ -5,9 +5,10 @@
 | Caminho | Responsabilidade |
 |---|---|
 | prototipo/ | Produto atual: app de celular e painel desktop |
-| prototipo/app.js e app.css | Telas, navegação, estado e apresentação |
+| prototipo/app/ e prototipo/estilos/ | Telas, navegação, estado e apresentação, em partes por assunto; montadas no app.js e no app.css por `npm run app` (ver prototipo/LEIAME.md) |
 | prototipo/api.js e config.js | Cliente da API e escolha do modo |
-| prototipo/campus3d.js | Motor único do mapa, em Canvas |
+| mapa3d/ | Mapa 3D (three.js), o padrão do app, embutido num iframe |
+| prototipo/campus3d.js | Mapa clássico em Canvas: miniatura da sala na atividade, minutos a pé nos lembretes e na busca, mapa quando o 3D não está disponível (arquivo único, aparelho fraco, escolha da pessoa) |
 | prototipo/plan-data.js | Planta gerada dos três andares |
 | prototipo/admin.html, admin.js e admin.css | Painel da organização |
 | prototipo/server.py | Servidor local e simulação autorizada de login com SuaPy |
