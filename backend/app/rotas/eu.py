@@ -12,7 +12,7 @@ from .. import formatos
 from ..ao_vivo import canal
 from ..config import config
 from ..db import sessao
-from ..limite import limitar
+from ..limite import contar, limitar
 from ..modelos import Agenda, Arquivo, Atividade, Pessoa, Presenca
 from ..seguranca import agora, ler_qr, pessoa_atual
 
@@ -54,10 +54,11 @@ def _404():
     raise HTTPException(404, 'Atividade não encontrada.')
 
 
-@rota.post('/presenca', dependencies=[Depends(limitar('presenca', 20))])
+@rota.post('/presenca', dependencies=[Depends(limitar('presenca-ip', 600))])
 def presenca(l: Leitura, p: Pessoa = Depends(pessoa_atual), db: Session = Depends(sessao)):
     """QR do evento: credencia. QR de uma atividade: credencia (se preciso) e registra a presença nela.
     Ler de novo não duplica."""
+    contar('presenca', str(p.id), 30, msg='Muitas leituras seguidas. Espere um minuto.')
     dados = ler_qr(l.qr)
     t = agora()
     novo_cred = p.credenciado_em is None

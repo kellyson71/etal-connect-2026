@@ -28,6 +28,9 @@ class Config(BaseSettings):
     suap_escopo: str = 'identificacao email'
     # Entrada direta com matrícula e senha (token JWT da API do SUAP).
     suap_api_url: str = 'https://suap.ifrn.edu.br'
+    # Teto de chamadas simultâneas ao SUAP e quanto tempo (s) um login espera a vez antes do 503 (app/suap_fila.py).
+    suap_simultaneos: int = 8
+    suap_espera: float = 12
 
     # Matrículas ou e-mails com acesso ao painel da organização, separados por vírgula.
     organizacao: str = ''

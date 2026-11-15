@@ -554,6 +554,7 @@ async function apiStart() {
       {
         erro: 'Não foi possível entrar. Tente de novo.',
         'suap-indisponivel': 'O SUAP não respondeu. Tente de novo.',
+        'suap-ocupado': 'Muita gente entrando agora. Toque em entrar de novo em instantes.',
         'link-expirado': 'Esse link expirou. Peça outro.',
       }[login] || 'Não foi possível entrar.',
     );

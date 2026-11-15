@@ -17,7 +17,9 @@ window.ETAL_API = (() => {
     if (!r.ok) {
       const msg =
         j && (typeof j.detail === 'string' ? j.detail : Array.isArray(j.detail) ? 'Confira os dados enviados.' : null);
-      throw Object.assign(new Error(msg || 'Não foi possível falar com o servidor.'), { status: r.status });
+      /* Retry-After: a fila do SUAP está cheia (ou um limite curto); o app pode tentar de novo depois disso */
+      const retryAfter = +r.headers.get('Retry-After') || 0;
+      throw Object.assign(new Error(msg || 'Não foi possível falar com o servidor.'), { status: r.status, retryAfter });
     }
     return j;
   }
