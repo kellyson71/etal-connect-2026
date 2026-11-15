@@ -1,3 +1,10 @@
+/* ETAL Connect · estilos do app.
+   GERADO por scripts/app/montar-app.mjs a partir de prototipo/estilos/: não editar aqui. */
+
+/* ===== estilos/00-base.css ===== */
+/* estilos/00-base.css · variáveis, fontes e base.
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
 /* ETAL Connect · protótipo (proposta Crachá)
    Tipos: Geologica (títulos) + Onest (texto) + Anton (só campeonatos).
    Cores: azul NADIC, verde ETAL, âmbar para pendências. */
@@ -63,6 +70,10 @@ input {
   border-radius: calc(10px * var(--rk, 1));
 }
 
+/* ===== estilos/01-palco-e-navegacao.css ===== */
+/* estilos/01-palco-e-navegacao.css · moldura do celular, palco e navegação.
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
 /* ================= palco e aparelho ================= */
 .stage {
   min-height: 100%;
@@ -445,6 +456,10 @@ svg.swap {
   transform: scale(0.92);
 }
 
+/* ===== estilos/02-pecas-comuns.css ===== */
+/* estilos/02-pecas-comuns.css · peças comuns, botões, cartões e toast.
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
 /* ================= peças comuns ================= */
 .i {
   width: 20px;
@@ -722,6 +737,10 @@ svg.swap {
   bottom: 40px;
 }
 
+/* ===== estilos/03-entrada-e-cracha.css ===== */
+/* estilos/03-entrada-e-cracha.css · entrada e crachá do início.
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
 /* ================= login ================= */
 .suap-logo {
   height: 46px;
@@ -986,6 +1005,10 @@ svg.swap {
   width: 18px;
 }
 
+/* ===== estilos/04-agenda-e-atividade.css ===== */
+/* estilos/04-agenda-e-atividade.css · agenda e atividade (primeira versão).
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
 /* ================= agenda ================= */
 .days {
   position: relative;
@@ -1379,6 +1402,10 @@ svg.swap {
   margin-top: 1px;
 }
 
+/* ===== estilos/05-mapa-credencial-e-perfil.css ===== */
+/* estilos/05-mapa-credencial-e-perfil.css · mapa, credencial, avisos e perfil.
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
 /* ================= mapa ================= */
 .map-screen {
   position: relative;
@@ -1827,6 +1854,10 @@ svg.swap {
   color: #c2410c !important;
 }
 
+/* ===== estilos/06-sobreposicoes-e-campeonatos.css ===== */
+/* estilos/06-sobreposicoes-e-campeonatos.css · sobreposições e campeonatos (primeira versão).
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
 /* ================= overlays ================= */
 .overlay {
   position: absolute;
@@ -2495,6 +2526,10 @@ svg.swap {
   }
 }
 
+/* ===== estilos/07-tema-escuro-e-marca.css ===== */
+/* estilos/07-tema-escuro-e-marca.css · tema escuro e marca.
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
 /* ================= tema escuro ================= */
 :root[data-theme='dark'] {
   --stage-bg: #080e1c;
@@ -2581,6 +2616,10 @@ svg.swap {
   border: 0;
 }
 
+/* ===== estilos/08-login-e-inicio.css ===== */
+/* estilos/08-login-e-inicio.css · login e início.
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
 /* ================= login ================= */
 .login {
   --card: #fff;
@@ -3155,6 +3194,10 @@ svg.swap {
   background: #3d5a8f;
 }
 
+/* ===== estilos/09-agenda-atividade-e-telas.css ===== */
+/* estilos/09-agenda-atividade-e-telas.css · agenda, atividade e telas do perfil.
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
 /* ================= agenda e atividade ================= */
 .ag-tx {
   min-width: 0;
@@ -3592,6 +3635,10 @@ svg.swap {
   color: #aab5cc;
 }
 
+/* ===== estilos/10-leitor-qr.css ===== */
+/* estilos/10-leitor-qr.css · leitor de QR.
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
 /* ================= scanner =================
    Uma cena de câmera: corredor do campus desfocado, placa com QR e os cantos travando na leitura. */
 .scanner {
@@ -3971,6 +4018,10 @@ svg.swap {
 
 /* ================= tela cheia em celular real ================= */
 
+/* ===== estilos/11-mapa-busca-e-nadic.css ===== */
+/* estilos/11-mapa-busca-e-nadic.css · mapa do campus, andares, busca, banners e NADIC.
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
 /* ================= mapa do campus ================= */
 .seg.two {
   grid-template-columns: 1fr 1fr;
@@ -4459,6 +4510,10 @@ a.btn {
   font-weight: 600;
 }
 
+/* ===== estilos/12-inicio-ceu-e-colmeia.css ===== */
+/* estilos/12-inicio-ceu-e-colmeia.css · início: céu, colmeia e campus ao vivo.
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
 /* ================= início: céu, colmeia e campus ao vivo ================= */
 :root {
   --honey: #eaa91e;
@@ -4842,6 +4897,10 @@ a.btn {
   color: #fff;
 }
 
+/* ===== estilos/13-modo-evento-e-personalizacao.css ===== */
+/* estilos/13-modo-evento-e-personalizacao.css · modo Evento, personalização, sobre e retrospectiva.
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
 /* ================= modo evento e 2D/3D ================= */
 .dim {
   position: absolute;
@@ -5780,6 +5839,10 @@ html[data-badge='degrade'] .cu-badge {
   bottom: 50%;
 }
 
+/* ===== estilos/14-ajustes-de-telas.css ===== */
+/* estilos/14-ajustes-de-telas.css · clicável, agenda de hoje, palestrante, desempenho, visitante, lembretes, painel e sobre.
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
 /* ================= clicável deixa claro que é ================= */
 [data-act],
 [data-go] {
@@ -6805,6 +6868,10 @@ button.teacher {
   opacity: 0.75;
 }
 
+/* ===== estilos/15-entrada-cracha-pendurado.css ===== */
+/* estilos/15-entrada-cracha-pendurado.css · entrada: crachá pendurado.
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
 /* ================= entrada: o crachá =================
    O crachá no cordão é o login: os dados aparecem nele enquanto a pessoa digita, ele vira ao entrar
    e, puxado para baixo, leva a tela junto e mostra o app. */
@@ -7375,6 +7442,10 @@ button.teacher {
   }
 }
 
+/* ===== estilos/16-leitor-qr-acabamento.css ===== */
+/* estilos/16-leitor-qr-acabamento.css · leitura do QR: acabamento, ajustes e busca do mapa.
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
 /* ================= leitura do QR: acabamento =================
    Selo hexagonal com favos, tela de boas-vindas, cartão de resultado e aviso de favo novo. */
 .hx-badge {
@@ -8218,6 +8289,11 @@ button.teacher {
   flex: 1;
   min-width: 0;
 }
+
+/* ===== estilos/17-mapa-no-polegar.css ===== */
+/* estilos/17-mapa-no-polegar.css · mapa na zona do polegar, busca no teclado e produção.
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
 /* Ajustes do mapa */
 .map-cfg {
   position: absolute;
@@ -8792,6 +8868,10 @@ html.prod .home-ind {
   display: none !important;
 }
 
+/* ===== estilos/18-campeonatos-e-ceu.css ===== */
+/* estilos/18-campeonatos-e-ceu.css · campeonatos (segunda versão) e céu da tela inicial.
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
 /* ---- campeonatos: situação, inscrição e chave com resultados ---- */
 .games-lead {
   margin: 0;
@@ -9564,6 +9644,10 @@ html[data-perf='simples'] .hm-cloud {
   display: block;
 }
 
+/* ===== estilos/19-inicio-revisao.css ===== */
+/* estilos/19-inicio-revisao.css · revisão do início e colmeia.
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
 /* ===== Revisão da home (11/11/2026): cenário em camadas, menos peso, movimento ===== */
 /* cenário */
 .hm-sky {
@@ -10106,6 +10190,10 @@ html[data-perf='simples'] .hm-cloud {
   stroke-width: 2.1;
 }
 
+/* ===== estilos/20-computador.css ===== */
+/* estilos/20-computador.css · computador sem moldura e passeio.
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
 /* ===== Computador: sem moldura. App numa coluna, mapa grande ao lado (passeio com mouse e teclado) ===== */
 .palco {
   display: none;
@@ -10294,6 +10382,10 @@ html.passeio-cheio .statusbar {
   padding: 0;
 }
 
+/* ===== estilos/21-agenda-e-atividade.css ===== */
+/* estilos/21-agenda-e-atividade.css · agenda como linha do tempo, tipos de atividade e detalhe.
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
 /* ===== Agenda como linha do tempo do evento (revisão 11/11) ===== */
 .agenda {
   gap: 14px;
@@ -11112,6 +11204,10 @@ html.passeio-cheio .statusbar {
   margin: 0;
 }
 
+/* ===== estilos/22-qr-por-tipo-e-campeonato.css ===== */
+/* estilos/22-qr-por-tipo-e-campeonato.css · leitura por tipo, convite para instalar e campeonato (terceira versão).
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
 /* ---- Leitura de QR por tipo (roomResult e Overlays.jogo em app.js) ---- */
 .hx-badge[class*='tp-'] .hx-bg {
   fill: var(--tp);
@@ -11739,6 +11835,10 @@ html.passeio-cheio .statusbar {
   padding: 0 20px;
 }
 
+/* ===== estilos/23-organizacao.css ===== */
+/* estilos/23-organizacao.css · organização no celular.
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
 /* ---- Organização (Screens.org* em app.js) ---- */
 .org-cta {
   display: flex;
@@ -12061,6 +12161,10 @@ html.passeio-cheio .statusbar {
   color: var(--muted);
 }
 
+/* ===== estilos/24-comunidade.css ===== */
+/* estilos/24-comunidade.css · publicações, fotos e perfil.
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
 /* ================= comunidade ================= */
 .tabbar {
   display: grid;
@@ -13002,6 +13106,10 @@ html.passeio-cheio .statusbar {
   flex: none;
 }
 
+/* ===== estilos/25-cartao-ministrante-e-leitor.css ===== */
+/* estilos/25-cartao-ministrante-e-leitor.css · cartão de contato, ministrante e câmera do leitor.
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
 /* ---------- Nome ligado ao SUAP + cartão de contato ---------- */
 .profile-link {
   display: inline-flex;
@@ -13981,6 +14089,11 @@ html.passeio-cheio .statusbar {
 .scanner.cam-live .placard-wrap {
   visibility: hidden;
 }
+
+/* ===== estilos/26-qr-da-equipe-e-materiais.css ===== */
+/* estilos/26-qr-da-equipe-e-materiais.css · QR Codes da equipe e materiais.
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
 /* Tema escuro: debug de QR e selo do campeonato (revisão de 12/11/2026) */
 [data-theme='dark'] .qr-debug {
   background: #0e1932;

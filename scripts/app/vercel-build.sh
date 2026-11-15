@@ -1,6 +1,7 @@
 #!/bin/sh
 # Monta o site estático da Vercel a partir do protótipo. A API vem de api/index.py.
 set -e
+node scripts/app/montar-app.mjs
 python3 scripts/app/build-pwa.py
 rm -rf publico && mkdir -p publico
 cd prototipo

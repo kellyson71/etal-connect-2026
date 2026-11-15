@@ -1,0 +1,88 @@
+/* estilos/07-tema-escuro-e-marca.css · tema escuro e marca.
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
+/* ================= tema escuro ================= */
+:root[data-theme='dark'] {
+  --stage-bg: #080e1c;
+  --stage-glow-top: #15223b;
+  --stage-glow-bottom: #101b30;
+  --bg: #0e1932;
+  --card: #182648;
+  --ink: #e8eefb;
+  --ink-2: #c3cee6;
+  --muted: #94a4c6;
+  --line: #27365e;
+  --line-2: #3a4c7c;
+  --navy: #2d4b8e;
+  --blue: #8fb0ee;
+  --blue-50: #24365f;
+  --green-50: #21401a;
+  --green-ink: #a5e07f;
+  --accent-ink: #c3d6ff;
+  --tab: rgba(19, 31, 60, 0.97);
+  --seg: rgba(24, 38, 72, 0.92);
+  --brand: #3f64b5;
+  --amber-50: #46361a;
+  --amber-ink: #ffd27a;
+  color-scheme: dark;
+}
+[data-theme='dark'] .now,
+[data-theme='dark'] .row-link {
+  box-shadow: none;
+}
+[data-theme='dark'] .mat-ic.pdf {
+  background: #4a2422;
+  color: #ffb4ae;
+}
+[data-theme='dark'] .mat-ic.zip {
+  background: #46361a;
+  color: #ffd27a;
+}
+[data-theme='dark'] .menu.danger li,
+[data-theme='dark'] .menu.danger li > .i:first-child {
+  color: #ff9b93;
+}
+
+.device.text-lg .viewport {
+  zoom: 1.1;
+}
+.device.text-xl .viewport {
+  zoom: 1.2;
+}
+
+/* ================= marca ================= */
+.mark {
+  display: block;
+  overflow: visible;
+}
+.mark.xs {
+  width: 14px;
+  height: 25px;
+  flex: none;
+}
+.wm {
+  align-items: center;
+  gap: 5px;
+}
+.wm .mark.xs {
+  width: 15px;
+  height: 27px;
+}
+.wm b {
+  color: var(--accent-ink);
+}
+.badge-num {
+  position: absolute;
+  top: 5px;
+  right: 4px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: calc(9px * var(--rk, 1));
+  background: var(--red);
+  color: #fff;
+  font: 600 10.5px/17px var(--ui);
+  text-decoration: none;
+  text-align: center;
+  border: 0;
+}

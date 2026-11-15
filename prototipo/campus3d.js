@@ -2322,62 +2322,6 @@
     for (let i = 1; i < nv; i++) seg(quadAt(q, 0, i / nv), quadAt(q, 1, i / nv));
     ctx.stroke();
   }
-  /* Claraboia do Anexo: prisma de vidro em triângulo, que deixa a luz entrar. */
-  function drawSkylight(q, h, c) {
-    const R = 1.5;
-    const ridge = [lerp2(q[0], q[3], 0.5), lerp2(q[1], q[2], 0.5)];
-    const faces = [
-      [q[0], q[1], ridge[1], ridge[0], 0],
-      [q[3], q[2], ridge[1], ridge[0], 1],
-    ];
-    faces.sort((a, b) => depth(...lerp2(a[0], a[1], 0.5)) - depth(...lerp2(b[0], b[1], 0.5)));
-    const tri = (a, e, m) => {
-      const s = P(a[0], a[1], h),
-        t = P(e[0], e[1], h),
-        r = P(m[0], m[1], h + R);
-      ctx.beginPath();
-      ctx.moveTo(s[0], s[1]);
-      ctx.lineTo(t[0], t[1]);
-      ctx.lineTo(r[0], r[1]);
-      ctx.closePath();
-      ctx.fillStyle = c.glassEnd;
-      ctx.fill();
-      ctx.strokeStyle = c.skyFrame;
-      ctx.lineWidth = Math.max(0.5, 0.1 * cam.z);
-      ctx.stroke();
-    };
-    const nearStart = depth(...ridge[0]) > depth(...ridge[1]);
-    tri(...(nearStart ? [q[1], q[2], ridge[1]] : [q[0], q[3], ridge[0]]));
-    faces.forEach(([a, e, r1, r0, side], i) => {
-      const s = P(a[0], a[1], h),
-        t = P(e[0], e[1], h),
-        u = P(r1[0], r1[1], h + R),
-        v = P(r0[0], r0[1], h + R);
-      ctx.beginPath();
-      ctx.moveTo(s[0], s[1]);
-      ctx.lineTo(t[0], t[1]);
-      ctx.lineTo(u[0], u[1]);
-      ctx.lineTo(v[0], v[1]);
-      ctx.closePath();
-      ctx.fillStyle = i ? c.glassLit : c.glassDark;
-      ctx.fill();
-      ctx.strokeStyle = c.skyFrame;
-      ctx.lineWidth = Math.max(0.5, 0.1 * cam.z);
-      ctx.stroke();
-      if (cam.z > 1.2) {
-        const n = 8;
-        ctx.beginPath();
-        for (let k = 1; k < n; k++) {
-          const p0 = P(...lerp2(a, e, k / n), h),
-            p1 = P(...lerp2(r0, r1, k / n), h + R);
-          ctx.moveTo(p0[0], p0[1]);
-          ctx.lineTo(p1[0], p1[1]);
-        }
-        ctx.stroke();
-      }
-    });
-    tri(...(nearStart ? [q[0], q[3], ridge[0]] : [q[1], q[2], ridge[1]]));
-  }
   /* Ginásio comum: paredes retas e cobertura em arco, em faixas. */
   function drawGym(b, c, g, sel) {
     const p = b.p;
@@ -5548,7 +5492,6 @@
       schedule();
     });
   }
-  const fly = (to, ms) => anim(to, ms);
 
   /* ---------- toque ---------- */
   function pick(x, y) {
