@@ -32,6 +32,9 @@ class Config(BaseSettings):
     suap_simultaneos: int = 8
     suap_espera: float = 12
 
+    # Pasta dos materiais enviados pela organização (app/arquivos.py). Em produção, um volume do Docker.
+    arquivos: str = './arquivos'
+
     # Matrículas ou e-mails com acesso ao painel da organização, separados por vírgula.
     organizacao: str = ''
 

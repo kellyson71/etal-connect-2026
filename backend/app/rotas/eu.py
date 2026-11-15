@@ -2,13 +2,13 @@
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.responses import Response
+from fastapi.responses import FileResponse
 from urllib.parse import quote
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from .. import formatos
+from .. import arquivos, formatos
 from ..ao_vivo import canal
 from ..config import config
 from ..db import sessao
@@ -96,5 +96,14 @@ def abrir_arquivo(arquivo_id: str, baixar: bool = False, p: Pessoa = Depends(pes
     presente = db.scalar(select(Presenca).where(Presenca.pessoa_id == p.id, Presenca.atividade_id == arq.atividade_id))
     if p.papel != 'organizacao' and not presente:
         raise HTTPException(403, 'O material abre depois da presença na atividade.')
+    destino = arquivos.caminho(arq.id)
+    if arq.dados is not None:  # material antigo, que estava no banco: passa para o disco
+        if not destino.exists():
+            arquivos.gravar(arq.id, arq.dados)
+        arq.dados = None
+        db.commit()
+    elif not destino.exists():
+        raise HTTPException(404, 'Material não encontrado.')
     disp = 'attachment' if baixar else 'inline'
-    return Response(arq.dados, media_type=arq.tipo, headers={'Content-Disposition': f"{disp}; filename*=UTF-8''{quote(arq.nome)}", 'Cache-Control': 'private, max-age=3600', 'X-Content-Type-Options': 'nosniff'})
+    return FileResponse(destino, media_type=arq.tipo, headers={'Content-Disposition': f"{disp}; filename*=UTF-8''{quote(arq.nome)}",
+                                                              'Cache-Control': 'private, max-age=3600'})

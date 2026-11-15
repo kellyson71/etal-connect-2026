@@ -5,7 +5,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY app ./app
 COPY seed ./seed
-RUN useradd -r -u 10001 etal
+RUN useradd -r -u 10001 etal && mkdir -p /srv/arquivos && chown etal /srv/arquivos
+ENV ETAL_ARQUIVOS=/srv/arquivos
 USER etal
 EXPOSE 8000
 # Um worker só: o canal ao vivo (SSE) fica na memória do processo.

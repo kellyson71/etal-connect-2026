@@ -10,12 +10,13 @@ from typing import Literal
 
 import segno
 from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import HTMLResponse, Response
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from .. import formatos
+from .. import arquivos, formatos
 from ..ao_vivo import canal
 from ..config import config
 from ..db import sessao
@@ -194,7 +195,8 @@ async def enviar_arquivo(atividade_id: str, request: Request, nome: str = '', db
     if len(dados) > LIMITE_ARQUIVO:
         raise HTTPException(413, 'O arquivo passa de 15 MB.')
     nome = (unquote(nome) or 'Material').strip()[:200]
-    arq = Arquivo(id=secrets.token_hex(16), atividade_id=a.id, nome=nome, tipo=tipo, tamanho=len(dados), dados=dados)
+    arq = Arquivo(id=secrets.token_hex(16), atividade_id=a.id, nome=nome, tipo=tipo, tamanho=len(dados), dados=None)
+    await run_in_threadpool(arquivos.gravar, arq.id, dados)
     db.add(arq)
     extra = dict(a.extra or {})
     rotulo = {'pdf': 'PDF', 'zip': 'ZIP', 'imagem': 'Imagem', 'slides': 'Slides', 'texto': 'Texto'}[TIPOS_ARQUIVO[tipo]]

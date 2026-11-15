@@ -23,6 +23,8 @@ services:
       ETAL_URL_PUBLICA: https://${DOMINIO}
       ETAL_ORIGENS: https://${DOMINIO}
       ETAL_COOKIE_SEGURO: "true"
+    volumes:
+      - arquivos_dados:/srv/arquivos  # materiais das atividades
     depends_on:
       db: { condition: service_healthy }
 
@@ -40,6 +42,7 @@ services:
       retries: 10
 
 volumes:
+  arquivos_dados:
   caddy_dados:
   caddy_config:
   pg_dados:

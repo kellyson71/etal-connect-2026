@@ -98,12 +98,13 @@ class CenarioDemo(Base):
 
 
 class Arquivo(Base):
-    """Material enviado pela organização (PDF, imagem, ZIP...). Fica no banco para funcionar igual em SQLite e PostgreSQL."""
+    """Material enviado pela organização (PDF, imagem, ZIP...). O conteúdo fica em disco (app/arquivos.py); `dados` só
+    existe em materiais antigos, de quando ficavam no banco, até a primeira leitura."""
     __tablename__ = 'arquivos'
     id: Mapped[str] = mapped_column(String(32), primary_key=True)
     atividade_id: Mapped[str] = mapped_column(ForeignKey('atividades.id'))
     nome: Mapped[str] = mapped_column(String(200))
     tipo: Mapped[str] = mapped_column(String(100))
     tamanho: Mapped[int] = mapped_column(Integer)
-    dados: Mapped[bytes] = mapped_column(LargeBinary)
+    dados: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
     em: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
