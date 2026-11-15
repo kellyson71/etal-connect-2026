@@ -1,5 +1,5 @@
 /* Texturas feitas em código, com as cores e os desenhos tirados das fotos de referência
-   (referencias/imagens/google-maps). Nenhuma foto entra no modelo: são só azulejos, pastilhas e pisos redesenhados.
+   (fotos do Google Maps, guardadas fora do repositório em referencias/local/google-maps). Nenhuma foto entra no modelo: são só azulejos, pastilhas e pisos redesenhados.
    Cada textura sabe quantos metros cobre, e as malhas usam UV em metros. */
 import * as THREE from 'three';
 import { rng } from './dados.js';
