@@ -37,10 +37,10 @@ CAMPUS = {'PF': 'Campus Pau dos Ferros'}
 
 
 def montar_se_preciso():
-    """O app.js é montado a partir das partes em prototipo/app/: se alguma parte mudou depois da última montagem,
-    monta de novo antes de entregar."""
-    partes = list((ROOT / 'app').glob('*.js'))
-    alvos = [ROOT / 'app.js']
+    """app.js e app.css são montados a partir das partes (prototipo/app/ e prototipo/estilos/): se alguma parte
+    mudou depois da última montagem, monta de novo antes de entregar."""
+    partes = [*(ROOT / 'app').glob('*.js'), *(ROOT / 'estilos').glob('*.css')]
+    alvos = [ROOT / 'app.js', ROOT / 'app.css']
     if not partes:
         return
     if all(a.exists() for a in alvos) and max(q.stat().st_mtime for q in partes) <= min(a.stat().st_mtime for a in alvos):
@@ -132,7 +132,7 @@ class Handler(BaseHTTPRequestHandler):
         file = ROOT / rel
         if rel == 'config.js' and API:
             return self._send(200, f"window.ETAL_CONFIG = {{ api: {json.dumps(API)}, demo: {str(os.environ.get('ETAL_DEMO') == '1').lower()} }};".encode(), TYPES['.js'])
-        if rel == 'app.js':
+        if rel in ('app.js', 'app.css'):
             montar_se_preciso()
         if (rel in PUBLIC or is_asset or is_map) and file.is_file():
             return self._send(200, file.read_bytes(), TYPES[file.suffix])

@@ -1,0 +1,670 @@
+/* estilos/06-sobreposicoes-e-campeonatos.css · sobreposições e campeonatos (primeira versão).
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
+/* ================= overlays ================= */
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+}
+.overlay.open {
+  pointer-events: auto;
+}
+.ov-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(12, 18, 36, 0.45);
+  opacity: 0;
+  transition: opacity 0.35s;
+}
+.overlay.open .ov-backdrop {
+  opacity: 1;
+}
+.ov-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  transition:
+    transform 0.45s var(--ease),
+    opacity 0.35s;
+}
+.overlay.scan .ov-panel,
+.overlay.welcome .ov-panel {
+  top: 0;
+}
+.overlay {
+  top: 54px;
+}
+@media (max-width: 520px) {
+  .overlay {
+    top: calc(env(safe-area-inset-top, 0px) + 10px);
+  }
+}
+.overlay.scan .ov-panel {
+  transform: translateY(100%);
+}
+.overlay.welcome .ov-panel {
+  opacity: 0;
+  transform: scale(1.04);
+}
+.overlay.share .ov-panel {
+  transform: translateY(100%);
+}
+.overlay.open .ov-panel {
+  transform: none;
+  opacity: 1;
+}
+.overlay.scan .ov-backdrop,
+.overlay.welcome .ov-backdrop {
+  display: none;
+}
+
+.scanner {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #0b0f1c;
+  color: #fff;
+}
+.cam {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+  overflow: hidden;
+  background: radial-gradient(80% 55% at 50% 42%, #39445f 0%, #181e30 60%, #0b0f1c 100%);
+}
+.cam-noise {
+  position: absolute;
+  inset: -20%;
+  opacity: 0.25;
+  background: repeating-radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.05) 0 2px, transparent 2px 6px);
+  animation: drift 8s linear infinite;
+}
+@keyframes drift {
+  to {
+    transform: translate(4%, 3%);
+  }
+}
+.cam-top {
+  position: absolute;
+  top: 10px;
+  left: 18px;
+  right: 18px;
+  display: flex;
+  justify-content: space-between;
+}
+.round {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  display: grid;
+  place-items: center;
+  backdrop-filter: blur(8px);
+}
+.frame {
+  width: 232px;
+  height: 232px;
+  position: relative;
+  transition: transform 0.35s var(--spring);
+}
+.frame > i {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  border: 4px solid #fff;
+  transition: border-color 0.25s;
+}
+.frame > i:nth-child(1) {
+  top: 0;
+  left: 0;
+  border-right: 0;
+  border-bottom: 0;
+  border-radius: calc(20px * var(--rk, 1)) 0 0 0;
+}
+.frame > i:nth-child(2) {
+  top: 0;
+  right: 0;
+  border-left: 0;
+  border-bottom: 0;
+  border-radius: 0 calc(20px * var(--rk, 1)) 0 0;
+}
+.frame > i:nth-child(3) {
+  bottom: 0;
+  left: 0;
+  border-right: 0;
+  border-top: 0;
+  border-radius: 0 0 0 calc(20px * var(--rk, 1));
+}
+.frame > i:nth-child(4) {
+  bottom: 0;
+  right: 0;
+  border-left: 0;
+  border-top: 0;
+  border-radius: 0 0 calc(20px * var(--rk, 1)) 0;
+}
+.scanline {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  top: 20px;
+  height: 2px;
+  border-radius: calc(2px * var(--rk, 1));
+  background: linear-gradient(90deg, transparent, #8fdc5c, transparent);
+  animation: scan 2.2s ease-in-out infinite alternate;
+}
+@keyframes scan {
+  to {
+    top: calc(100% - 22px);
+  }
+}
+.frame-ok {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  transform: scale(0.6);
+  transition: all 0.35s var(--spring);
+}
+.frame-ok .i {
+  width: 64px;
+  height: 64px;
+  padding: 14px;
+  box-sizing: content-box;
+  border-radius: 50%;
+  background: #7cc94a;
+  color: #0f2a05;
+  stroke-width: 3;
+}
+.frame.ok {
+  transform: scale(0.94);
+}
+.frame.ok > i {
+  border-color: #7cc94a;
+}
+.frame.ok .scanline {
+  opacity: 0;
+}
+.frame.ok .frame-ok {
+  opacity: 1;
+  transform: none;
+}
+.cam-hint {
+  position: relative;
+  margin: 0;
+  font-size: 15px;
+  color: #d6dcea;
+}
+.cam-sheet {
+  background: var(--card);
+  color: var(--ink);
+  border-radius: calc(26px * var(--rk, 1)) calc(26px * var(--rk, 1)) 0 0;
+  padding: 18px 20px 34px;
+}
+.sim-label {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.sim {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.sim button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 4px;
+  border-radius: calc(16px * var(--rk, 1));
+  background: var(--bg);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-ink);
+  transition: transform 0.15s;
+}
+.sim button:active {
+  transform: scale(0.95);
+}
+
+@keyframes pop {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.sheet {
+  background: var(--card);
+  border-radius: calc(28px * var(--rk, 1)) calc(28px * var(--rk, 1)) 0 0;
+  padding: 10px 22px 38px;
+}
+.sheet h2 {
+  margin: 0;
+  font: 600 21px var(--display);
+  letter-spacing: -0.02em;
+}
+.sh-p {
+  margin: 6px 0 16px;
+  color: var(--muted);
+  font-size: 14.5px;
+}
+.shortlink {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 10px 10px 16px;
+  border-radius: calc(16px * var(--rk, 1));
+  background: var(--bg);
+}
+.shortlink b {
+  font:
+    600 18px ui-monospace,
+    SFMono-Regular,
+    monospace;
+  color: var(--accent-ink);
+  letter-spacing: -0.01em;
+}
+.share-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+.share-row button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px;
+  border-radius: calc(14px * var(--rk, 1));
+  border: 1.5px solid var(--line);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent-ink);
+}
+
+/* ================= campeonatos ================= */
+.poster {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 200px;
+  border-radius: calc(26px * var(--rk, 1));
+  overflow: hidden;
+  text-align: left;
+  color: #fff;
+  isolation: isolate;
+  transition: transform 0.25s var(--ease);
+}
+.poster:active {
+  transform: scale(0.98);
+}
+.poster .art,
+.tour-hero .art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+.poster .art {
+  transition: transform 0.6s var(--ease);
+}
+.poster:hover .art {
+  transform: scale(1.04);
+}
+.poster-tx {
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  right: 18px;
+  display: flex;
+  flex-direction: column;
+}
+.p-name {
+  font:
+    400 44px/0.92 'Anton',
+    Impact,
+    sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.005em;
+  max-width: 9ch;
+}
+.p-tag {
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0.85;
+}
+.poster-foot {
+  position: absolute;
+  left: 18px;
+  right: 14px;
+  bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+}
+.faces {
+  display: flex;
+}
+.faces i {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-left: -8px;
+  display: grid;
+  place-items: center;
+  font: 600 10.5px var(--display);
+  font-style: normal;
+  border: 2px solid rgba(0, 0, 0, 0.25);
+  background: #fff;
+  color: #1f2f57;
+}
+.mk .faces i {
+  background: #ffd5c2;
+  color: #5a0d10;
+}
+.fifa .faces i {
+  background: #e9ffe9;
+  color: #14491f;
+}
+.faces i:last-child {
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+}
+
+.tour {
+  min-height: 100%;
+  color: #fff;
+}
+.tour.mk {
+  background: #140a0d;
+}
+.tour.fifa {
+  background: #0b1f12;
+}
+.tour-hero {
+  position: relative;
+  height: 230px;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.tour-hero::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 90px;
+  z-index: -1;
+}
+.tour.mk .tour-hero::after {
+  background: linear-gradient(transparent, #140a0d);
+}
+.tour.fifa .tour-hero::after {
+  background: linear-gradient(transparent, #0b1f12);
+}
+.bar.on-dark .iconbtn:not(.ghost) {
+  background: rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(8px);
+  color: #fff;
+}
+.tour-title {
+  padding: 0 20px 14px;
+  display: flex;
+  flex-direction: column;
+}
+.tour-title .p-name {
+  font-size: 52px;
+  max-width: none;
+}
+.tour-meta {
+  font-size: 13.5px;
+  opacity: 0.85;
+  margin-top: 6px;
+}
+.tour-tabs {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin: 6px 20px 0;
+  padding: 4px;
+  border-radius: calc(14px * var(--rk, 1));
+  background: rgba(255, 255, 255, 0.08);
+}
+.tour-tabs button {
+  position: relative;
+  z-index: 1;
+  padding: 9px 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  transition: color 0.3s;
+}
+.tour-tabs button.on {
+  color: #140a0d;
+}
+.tour.fifa .tour-tabs button.on {
+  color: #0b1f12;
+}
+.tour-tabs .seg-ind {
+  background: var(--card);
+}
+.tour-body {
+  padding: 18px 0 30px;
+}
+.bracket {
+  display: flex;
+  gap: 26px;
+  overflow-x: auto;
+  padding: 0 20px 6px;
+  scroll-padding-left: 20px;
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+}
+.bk-round {
+  flex: none;
+  width: 170px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  scroll-snap-align: start;
+}
+.bk-round.r2 {
+  justify-content: space-around;
+  padding: 38px 0;
+}
+.bk-round.r3 {
+  justify-content: center;
+}
+.bk-round h3 {
+  margin: 0 0 2px;
+  font:
+    400 15px 'Anton',
+    Impact,
+    sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.65;
+}
+.match {
+  position: relative;
+  border-radius: calc(16px * var(--rk, 1));
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 10px;
+}
+.match time {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 600;
+  opacity: 0.6;
+  margin-bottom: 4px;
+}
+.match time .i {
+  width: 13px;
+  height: 13px;
+}
+.pl {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+.pl i {
+  width: 24px;
+  height: 24px;
+  border-radius: calc(8px * var(--rk, 1));
+  display: grid;
+  place-items: center;
+  font: 600 10px var(--display);
+  font-style: normal;
+  flex: none;
+}
+.mk .pl i {
+  background: #ff5a2a;
+  color: #1a0709;
+}
+.fifa .pl i {
+  background: #7cd36b;
+  color: #0b1f12;
+}
+.pl b {
+  font-size: 14px;
+  font-weight: 600;
+}
+.tbd .pl i {
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+.tbd .pl b {
+  opacity: 0.45;
+  font-weight: 500;
+}
+.match:not(.final)::after {
+  content: '';
+  position: absolute;
+  right: -27px;
+  top: 50%;
+  width: 26px;
+  height: 1.5px;
+  background: rgba(255, 255, 255, 0.18);
+}
+.r2 .match::after {
+  right: -27px;
+}
+.final {
+  border-color: rgba(255, 213, 120, 0.45);
+  background: rgba(255, 213, 120, 0.08);
+}
+.final time {
+  color: #ffd57a;
+  opacity: 1;
+}
+.players {
+  list-style: none;
+  margin: 0;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.players li {
+  border-radius: calc(18px * var(--rk, 1));
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.players i {
+  width: 36px;
+  height: 36px;
+  border-radius: calc(12px * var(--rk, 1));
+  display: grid;
+  place-items: center;
+  font: 600 12px var(--display);
+  font-style: normal;
+  margin-bottom: 8px;
+}
+.mk .players i {
+  background: #ff5a2a;
+  color: #1a0709;
+}
+.fifa .players i {
+  background: #7cd36b;
+  color: #0b1f12;
+}
+.players b {
+  font:
+    400 20px/1 'Anton',
+    Impact,
+    sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+.players small {
+  font-size: 12.5px;
+  opacity: 0.6;
+}
+.rules {
+  margin: 0 20px;
+  border-radius: calc(18px * var(--rk, 1));
+  background: rgba(255, 255, 255, 0.07);
+  padding: 4px 16px;
+}
+.rules div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 14px;
+}
+.rules div:first-child {
+  border-top: 0;
+}
+.rules dt {
+  opacity: 0.6;
+}
+.rules dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+}
+.tour .desc {
+  color: rgba(255, 255, 255, 0.75);
+  padding: 16px 20px 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

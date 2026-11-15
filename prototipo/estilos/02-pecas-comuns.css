@@ -1,0 +1,279 @@
+/* estilos/02-pecas-comuns.css · peças comuns, botões, cartões e toast.
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
+/* ================= peças comuns ================= */
+.i {
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+.pad {
+  padding: 4px 20px 28px;
+}
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.apphead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 52px;
+  padding: 0 12px 0 20px;
+  flex: none;
+}
+.bar {
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  min-height: 52px;
+  padding: 0 8px;
+  flex: none;
+}
+.bar-title {
+  margin: 0;
+  text-align: center;
+  font: 600 17px var(--display);
+  letter-spacing: -0.01em;
+}
+.title {
+  margin: 0;
+  font: 600 30px/1 var(--display);
+  letter-spacing: -0.03em;
+}
+.title-lg {
+  margin: 0;
+  font: 600 25px/1.15 var(--display);
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+.h {
+  margin: 0 0 -6px;
+  font: 600 17px var(--display);
+  letter-spacing: -0.01em;
+}
+.iconbtn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  position: relative;
+  transition:
+    background 0.2s,
+    transform 0.15s;
+}
+.iconbtn:active {
+  transform: scale(0.9);
+  background: rgba(31, 47, 87, 0.06);
+}
+.iconbtn.sm {
+  width: 36px;
+  height: 36px;
+}
+.iconbtn.sm .i {
+  width: 18px;
+  height: 18px;
+}
+.iconbtn.ghost {
+  pointer-events: none;
+}
+.badge-dot {
+  position: absolute;
+  top: 10px;
+  right: 11px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--red);
+  border: 2px solid var(--bg);
+}
+.wm {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+}
+.wm b {
+  font: 700 25px/1 var(--display);
+  letter-spacing: -0.045em;
+  color: var(--accent-ink);
+}
+.wm i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+}
+.wm > span {
+  font: 500 14px var(--ui);
+  color: var(--muted);
+  margin-left: 2px;
+}
+.wm.sm b {
+  font-size: 18px;
+}
+.wm.sm > span {
+  font-size: 12px;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: calc(14px * var(--rk, 1));
+  font-weight: 600;
+  font-size: 15px;
+  transition:
+    transform 0.15s var(--ease),
+    background 0.2s,
+    opacity 0.2s;
+}
+.btn:active {
+  transform: scale(0.97);
+}
+.btn .i {
+  width: 19px;
+  height: 19px;
+}
+.btn.big {
+  padding: 15px 18px;
+  font-size: 16px;
+  border-radius: calc(16px * var(--rk, 1));
+  width: 100%;
+}
+.btn.sm {
+  padding: 8px 12px;
+  font-size: 13.5px;
+  border-radius: calc(11px * var(--rk, 1));
+}
+.btn.primary {
+  background: var(--navy);
+  color: #fff;
+}
+.btn.soft {
+  background: var(--blue-50);
+  color: var(--accent-ink);
+}
+.btn.ghost {
+  color: var(--accent-ink);
+}
+.btn.done {
+  background: var(--green-50);
+  color: var(--green-ink);
+}
+.kind {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--blue);
+}
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 9px;
+  border-radius: calc(8px * var(--rk, 1));
+}
+.tag .i {
+  width: 13px;
+  height: 13px;
+  stroke-width: 3;
+}
+.tag.ok {
+  background: var(--green-50);
+  color: var(--green-ink);
+}
+.desc {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+.av {
+  width: 48px;
+  height: 48px;
+  border-radius: calc(15px * var(--rk, 1));
+  background: #fff;
+  color: var(--accent-ink);
+  display: grid;
+  place-items: center;
+  font: 600 16px var(--display);
+  flex: none;
+}
+.ava {
+  width: 36px;
+  height: 36px;
+  border-radius: calc(11px * var(--rk, 1));
+  background: var(--blue-50);
+  color: var(--accent-ink);
+  display: grid;
+  place-items: center;
+  font: 600 13px var(--display);
+  flex: none;
+}
+.ava.lg {
+  width: 44px;
+  height: 44px;
+  border-radius: calc(14px * var(--rk, 1));
+  font-size: 15px;
+}
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  padding: 48px 24px;
+  color: var(--muted);
+}
+.empty .i {
+  width: 30px;
+  height: 30px;
+}
+.empty p {
+  margin: 0;
+  max-width: 26ch;
+}
+
+/* toast */
+.toast {
+  position: absolute;
+  z-index: 80;
+  left: 50%;
+  bottom: 104px;
+  transform: translate(-50%, 16px);
+  opacity: 0;
+  pointer-events: none;
+  background: #141c33;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 11px 16px;
+  border-radius: calc(14px * var(--rk, 1));
+  white-space: nowrap;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.4);
+}
+.toast.show {
+  animation: toast 2.2s var(--ease) both;
+}
+@keyframes toast {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 16px);
+  }
+  12%,
+  85% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+}
+.device.no-chrome .toast {
+  bottom: 40px;
+}

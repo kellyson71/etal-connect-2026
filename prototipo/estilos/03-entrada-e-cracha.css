@@ -1,0 +1,266 @@
+/* estilos/03-entrada-e-cracha.css · entrada e crachá do início.
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
+/* ================= login ================= */
+.suap-logo {
+  height: 46px;
+  width: auto;
+  display: block;
+}
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.field > span {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.field input {
+  width: 100%;
+  border: 1.5px solid var(--line);
+  background: #f8fafd;
+  border-radius: calc(15px * var(--rk, 1));
+  padding: 15px 16px;
+  font-size: 16px;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+.field input:focus {
+  outline: 0;
+  border-color: var(--blue);
+  background: #fff;
+}
+.pwd {
+  position: relative;
+}
+.pwd input {
+  padding-right: 52px;
+}
+.pwd .iconbtn {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  margin-top: -18px;
+  color: var(--muted);
+}
+.link-sm {
+  align-self: flex-start;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--blue);
+  margin: -4px 0 8px;
+}
+.btn .spin {
+  display: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2.5px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  animation: spin 0.8s linear infinite;
+}
+.btn.loading span {
+  display: none;
+}
+.btn.loading .spin {
+  display: block;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ================= crachá (início) ================= */
+.badge {
+  border-radius: calc(26px * var(--rk, 1));
+  background: var(--navy);
+  color: #fff;
+  overflow: hidden;
+  position: relative;
+  isolation: isolate;
+  box-shadow: 0 18px 30px -22px rgba(34, 56, 111, 0.8);
+}
+.badge::before,
+.passcard::before {
+  content: '';
+  position: absolute;
+  right: -18px;
+  top: -10px;
+  width: 170px;
+  height: 150px;
+  z-index: -1;
+  opacity: 0.08;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='45'%3E%3Cpath d='M13 0l13 7.5v15L13 30 0 22.5v-15zM13 30v15' fill='none' stroke='%23fff' stroke-width='1.5'/%3E%3C/svg%3E");
+}
+.badge-card {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 18px 18px 16px;
+  color: #fff;
+}
+.b-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.b-mark {
+  font: 700 17px/1 var(--display);
+  letter-spacing: -0.04em;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+.b-mark i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #7cc94a;
+}
+.pins {
+  width: 38px;
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.7);
+  stroke-width: 1.8;
+  opacity: 0.75;
+}
+.b-id {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin-top: 18px;
+}
+.b-name {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.b-name strong {
+  font: 600 18px/1.2 var(--display);
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.b-name span {
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.76);
+  margin-top: 2px;
+}
+.b-strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 13px 16px 13px 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background 0.2s;
+}
+.b-strip:active {
+  background: rgba(255, 255, 255, 0.06);
+}
+.b-strip .dot {
+  width: 32px;
+  height: 32px;
+  padding: 7px;
+  border-radius: calc(10px * var(--rk, 1));
+}
+.b-strip span {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.b-strip b {
+  font-size: 14.5px;
+  font-weight: 600;
+}
+.b-strip small {
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.76);
+}
+.b-strip > .i:last-child {
+  color: rgba(255, 255, 255, 0.76);
+  width: 18px;
+}
+.b-strip.pend {
+  background: rgba(255, 255, 255, 0.07);
+}
+.b-strip.pend .dot {
+  background: #ffd27a;
+  color: #5c3700;
+}
+.b-strip.ok .dot {
+  background: #7cc94a;
+  color: #173b06;
+  stroke-width: 3;
+}
+
+.now {
+  background: var(--card);
+  border-radius: calc(22px * var(--rk, 1));
+  padding: 16px 16px 14px;
+  box-shadow:
+    0 1px 2px rgba(31, 47, 87, 0.05),
+    0 8px 22px -14px rgba(31, 47, 87, 0.25);
+  cursor: pointer;
+  transition: transform 0.2s var(--ease);
+}
+.now:active {
+  transform: scale(0.985);
+}
+.now-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.now h3 {
+  font: 600 18.5px/1.25 var(--display);
+  letter-spacing: -0.015em;
+  margin: 8px 0 10px;
+}
+.now .m {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 5px 0;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+.now .m .i {
+  width: 17px;
+  height: 17px;
+  color: var(--blue);
+}
+.now-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+.now-actions .btn:first-child {
+  flex: 1;
+}
+.row-link {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 15px 16px;
+  border-radius: calc(18px * var(--rk, 1));
+  background: var(--card);
+  font-size: 14.5px;
+  text-align: left;
+}
+.row-link .i {
+  color: var(--muted);
+  width: 18px;
+}

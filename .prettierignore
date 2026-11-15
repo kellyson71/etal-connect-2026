@@ -7,8 +7,9 @@ prototipo/campus-limpo.js
 prototipo/campus-fundo.js
 prototipo/campus-verde.js
 prototipo/sprites.js
-# montado a partir de prototipo/app/ (npm run app)
+# montados a partir de prototipo/app/ e prototipo/estilos/ (npm run app)
 prototipo/app.js
+prototipo/app.css
 # a versão e a lista de arquivos são regravadas por npm run pwa
 prototipo/sw.js
 dados/

@@ -1,0 +1,385 @@
+/* estilos/12-inicio-ceu-e-colmeia.css · início: céu, colmeia e campus ao vivo.
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
+/* ================= início: céu, colmeia e campus ao vivo ================= */
+:root {
+  --honey: #eaa91e;
+  --honey-ink: #553600;
+  --honey-line: #d8cfb6;
+}
+[data-theme='dark'] {
+  --honey: #f0b83a;
+  --honey-ink: #3d2700;
+  --honey-line: #3e4a6e;
+}
+.device.sky-status:not(.sky-past):not(.ov-dark):not(.ov-light):not(.ov-navy):not(.ov-dim) .statusbar {
+  background: var(--sky-1);
+  color: #fff;
+}
+.hm-sky {
+  position: relative;
+  height: 216px;
+  flex: none;
+  margin-bottom: -46px;
+  overflow: hidden;
+  isolation: isolate;
+}
+.hm-sky::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 46px;
+  z-index: -1;
+  background: linear-gradient(180deg, var(--sil-near) 0%, var(--bg) 100%);
+}
+.hm-sky .apphead {
+  position: relative;
+  z-index: 2;
+}
+.hm-bg {
+  position: absolute;
+  inset: 0 0 46px 0;
+  z-index: -2;
+  background: linear-gradient(180deg, var(--sky-1) 0%, var(--sky-2) 58%, var(--sky-3) 100%);
+}
+.hm-sun {
+  position: absolute;
+  left: var(--sun-x);
+  top: var(--sun-y);
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border-radius: 50%;
+  background: var(--sun-c);
+  opacity: var(--sun-o);
+  transition:
+    opacity 0.4s,
+    transform 0.2s var(--spring);
+  cursor: pointer;
+}
+.hm-sun:active {
+  transform: scale(0.9);
+}
+.hm-moon {
+  position: absolute;
+  left: var(--moon-x);
+  top: var(--moon-y);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  box-shadow: inset -8px -3px 0 0 #f3efd8;
+  opacity: var(--night);
+  pointer-events: none;
+}
+.hm-stars {
+  position: absolute;
+  inset: 0;
+  opacity: var(--night);
+  pointer-events: none;
+  background-image:
+    radial-gradient(1px 1px at 12% 22%, #fff 99%, transparent),
+    radial-gradient(1px 1px at 28% 44%, #fff 99%, transparent),
+    radial-gradient(1.4px 1.4px at 41% 16%, #fff 99%, transparent),
+    radial-gradient(1px 1px at 57% 34%, #fff 99%, transparent),
+    radial-gradient(1px 1px at 69% 12%, #fff 99%, transparent),
+    radial-gradient(1.4px 1.4px at 83% 40%, #fff 99%, transparent),
+    radial-gradient(1px 1px at 93% 20%, #fff 99%, transparent),
+    radial-gradient(1px 1px at 8% 52%, #fff 99%, transparent);
+}
+.hm-skyline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 162/50;
+  display: block;
+  pointer-events: none;
+}
+.sl-far {
+  fill: var(--sil-far);
+}
+.sl-mid {
+  fill: var(--sil-mid);
+}
+.sl-near {
+  fill: var(--sil-near);
+}
+.device .sl-win rect {
+  fill: #ffd67e;
+  opacity: calc(0.1 + var(--night) * 0.85);
+}
+.wm.on-sky b,
+.wm.on-sky > span {
+  color: #fff;
+}
+.wm.on-sky > span {
+  opacity: 0.88;
+}
+.iconbtn.on-sky {
+  color: #fff;
+}
+.home {
+  position: relative;
+  z-index: 1;
+}
+.page > .home {
+  padding-top: 0;
+}
+/* ao vivo */
+.hm-live {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 16px;
+  grid-template-rows: auto auto;
+  column-gap: 8px;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  background: var(--card);
+  border-radius: calc(18px * var(--rk, 1));
+  padding: 10px 12px 10px 14px;
+}
+.hm-live > .i {
+  grid-column: 2;
+  grid-row: 1/3;
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+}
+.hm-live-tag {
+  grid-column: 1;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--green-ink);
+}
+.hm-live-row {
+  grid-column: 1;
+  display: block;
+  overflow: hidden;
+  height: 21px;
+}
+.hm-live-msg {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  white-space: nowrap;
+  transition:
+    transform 0.24s var(--ease),
+    opacity 0.2s;
+}
+.hm-live-msg > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hm-live-msg .i {
+  width: 16px;
+  height: 16px;
+  color: var(--blue);
+}
+.hm-live-msg.out {
+  transform: translateY(-16px);
+  opacity: 0;
+}
+.hm-live-msg.in {
+  animation: liveIn 0.36s var(--ease);
+}
+@keyframes liveIn {
+  from {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+/* colmeia */
+.hm-combcard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  background: var(--card);
+  border-radius: calc(20px * var(--rk, 1));
+  padding: 10px 12px 10px 10px;
+  transition: transform 0.15s var(--ease);
+}
+.hm-combcard:active {
+  transform: scale(0.985);
+}
+.hm-combcard > .i {
+  color: var(--muted);
+  width: 17px;
+}
+.hm-comb {
+  width: 84px;
+  height: 80px;
+  flex: none;
+  overflow: visible;
+}
+.hm-comb .cell path {
+  fill: none;
+  stroke: var(--honey-line);
+  stroke-width: 1.3;
+}
+.hm-comb .cell.on path {
+  fill: var(--honey);
+  stroke: var(--honey);
+}
+.hm-comb .glyph {
+  color: var(--honey-ink);
+}
+.hm-comb .cell-in {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.hm-comb .cell.pop .cell-in {
+  animation: combPop 0.7s var(--spring) 0.35s both;
+}
+@keyframes combPop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0.2;
+  }
+  60% {
+    transform: scale(1.18);
+    opacity: 1;
+  }
+  100% {
+    transform: none;
+  }
+}
+.hm-combtx {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.hm-combtx b {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.hm-combtx strong {
+  font: 600 18px/1.2 var(--display);
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+.hm-combtx small {
+  font-size: 13px;
+  line-height: 1.3;
+  color: var(--ink-2);
+  margin-top: 2px;
+}
+.hm-colmeia {
+  gap: 14px;
+}
+.hm-bigcomb {
+  display: flex;
+  justify-content: center;
+  padding: 6px 0 0;
+}
+.hm-comb.big {
+  width: 224px;
+  height: 214px;
+}
+.hm-count {
+  margin: 0;
+  text-align: center;
+  font-size: 15px;
+  color: var(--ink-2);
+}
+.hm-count b {
+  font: 600 22px var(--display);
+  color: var(--ink);
+}
+.hm-combs {
+  list-style: none;
+  margin: 0;
+  padding: 2px 14px;
+  background: var(--card);
+  border-radius: calc(20px * var(--rk, 1));
+}
+.hm-combs li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+.hm-combs li:first-child {
+  border-top: 0;
+}
+.hm-combs i {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: calc(11px * var(--rk, 1));
+  background: var(--bg);
+  color: var(--muted);
+}
+.hm-combs .i {
+  width: 17px;
+  height: 17px;
+}
+.hm-combs li.on i {
+  background: var(--honey);
+  color: var(--honey-ink);
+}
+.hm-combs span {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.hm-combs b {
+  font-size: 14.5px;
+  font-weight: 600;
+}
+.hm-combs small {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.hm-combs li.on small {
+  color: var(--green-ink);
+  font-weight: 500;
+}
+/* controle do céu fora do celular */
+.stage-sky {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12.5px;
+  color: #5f6d88;
+}
+.stage-sky input {
+  width: 210px;
+  accent-color: var(--navy);
+}
+.stage-sky output {
+  font:
+    600 12.5px ui-monospace,
+    SFMono-Regular,
+    monospace;
+  min-width: 40px;
+}
+@media (max-width: 520px) {
+  .stage-sky {
+    display: none;
+  }
+}
+
+.av {
+  color: var(--navy);
+}
+.av.lg {
+  color: #fff;
+}

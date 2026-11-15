@@ -1,5 +1,5 @@
-// Monta prototipo/app.js a partir das partes em prototipo/app/ (na ordem dos números, no mesmo escopo).
-// O app.js é gerado: edite as partes.
+// Monta prototipo/app.js e prototipo/app.css a partir das partes em prototipo/app/ e prototipo/estilos/
+// (na ordem dos números; as partes do JS rodam no mesmo escopo). Os dois arquivos são gerados: edite as partes.
 // Uso: node scripts/app/montar-app.mjs [--verificar]
 import fs from 'node:fs';
 import path from 'node:path';
@@ -23,8 +23,17 @@ export function montarJs() {
   return out + '})();\n';
 }
 
+export function montarCss() {
+  let out =
+    '/* ETAL Connect · estilos do app.\n' +
+    '   GERADO por scripts/app/montar-app.mjs a partir de prototipo/estilos/: não editar aqui. */\n';
+  for (const f of partes('estilos', '.css')) out += `\n/* ===== estilos/${f} ===== */\n` + ler('estilos', f);
+  return out;
+}
+
 const SAIDAS = [
   ['app.js', montarJs],
+  ['app.css', montarCss],
 ];
 
 if (process.argv[1] === new URL(import.meta.url).pathname) {
@@ -44,5 +53,5 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
     }
   }
   if (!ok) process.exit(1);
-  if (process.argv.includes('--verificar')) console.log('prototipo/app.js em dia');
+  if (process.argv.includes('--verificar')) console.log('prototipo/app.js e app.css em dia');
 }
