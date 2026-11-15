@@ -23,6 +23,8 @@ Na revisão documental de 09/11/2026, a execução local de .venv/bin/python -m 
 | test_migracoes (2) | O modelo bate com as migrações; banco antigo é atualizado sem perder dados |
 | test_presenca_adiada (10) | Leitura guardada sem internet: vale durante a atividade; fora dela, tarde demais ou com hora no futuro não vale; fuso convertido; não duplica; QR falso recusado; recusa não credencia |
 | test_publicacoes (16) | Ver exige entrar; sem credenciamento não publica; publicar, comentar, curtir, salvar; matrícula e e-mail não vazam; menções; fotos regravadas sem localização; foto falsa recusada; só o autor apaga, e apaga tudo; organização oculta, restaura e guarda histórico; participante não modera; denúncia e ocultação automática; arquivar denúncia de conteúdo apagado; limite por pessoa; limpeza das antigas; versão evita baixar de novo |
+| test_limites (+2) | No teto da rede só contam senhas erradas; esperar na fila do SUAP não gasta tentativa |
+| test_monitor (3) | O log não leva token, nome, matrícula nem IP; números do servidor só para a organização; saúde consulta o banco |
 | test_material_antigo_do_banco_passa_para_o_disco | Material guardado no banco antes da mudança vai para o disco ao ser aberto |
 | test_login_suap_com_senha | `POST /api/auth/suap/senha` com cliente HTTP simulado: senha errada responde 401; senha certa responde 200, abre a sessão (`/api/eu` traz o nome) e a foto relativa vira URL completa do SUAP |
 
@@ -41,6 +43,8 @@ No app e no mapa (`npm test` e `npm run test:navegador`, também na CI do front-
 | `montar-app.mjs --verificar` | O app.js e o app.css montados estão em dia com as partes |
 
 O teste das telas confere que nada quebra; não compara a aparência das telas.
+
+Carga: [09-teste-de-carga.md](09-teste-de-carga.md) (700 pessoas na abertura, com PostgreSQL e um SUAP de mentira).
 
 ## Reproduzir os testes
 
@@ -82,4 +86,4 @@ evidencias.json inclui os hashes das fontes do app; cenas.json registra o hash d
 
 ## O que continua aberto
 
-Entrega SMTP e retorno OAuth2 reais, carga do evento, acessibilidade, participantes reais no painel e recuperação de backup. O CI em .github/workflows/backend.yml testa a API; a etapa de implantação é condicional.
+Entrega SMTP e retorno OAuth2 reais, velocidade do SUAP de verdade e carga no servidor do NADIC, acessibilidade, participantes reais no painel e recuperação de backup. O CI em .github/workflows/backend.yml testa a API; a etapa de implantação é condicional.

@@ -12,15 +12,16 @@ Anotando aqui as regras que a gente foi decidindo pro ETAL Connect, pra não se 
 
 ## Pra ninguém usar o app pra descobrir senha dos outros
 
-- Cada matrícula pode errar a senha no máximo 6 vezes por minuto. Na 7ª tentativa o app bloqueia aquela matrícula por um minuto. Assim não dá pra ficar chutando senha de alguém pelo nosso app.
+- Cada matrícula pode errar a senha no máximo 6 vezes por minuto. Na 7ª tentativa o app bloqueia aquela matrícula por um minuto. Assim não dá pra ficar chutando senha de alguém pelo nosso app. Só conta senha errada: quem ficou esperando na fila e tentou de novo não perde tentativa.
 - O limite é por matrícula, e não pela internet que a pessoa tá usando. No Wi-Fi do campus todo mundo sai pelo mesmo endereço, e se fosse por endereço o evento inteiro travaria na abertura.
-- Mesmo assim tem um teto por rede, bem alto (120 tentativas de login por minuto), só pra segurar abuso.
+- Mesmo assim tem um teto por rede: no máximo 60 senhas erradas por minuto vindas da mesma rede. Conta só as erradas, porque no teste de carga um teto de 120 logins por minuto por rede barrou 498 de 700 pessoas (o campus inteiro sai pelo mesmo endereço). Quem acerta a senha não esbarra nisso.
+- O resto do app tem um teto por rede bem alto (3.000 pedidos por minuto), só contra abuso.
 - Convidado: no máximo 3 links por e-mail a cada 10 minutos. Mais que isso o app diz pra olhar a caixa de entrada e o spam.
 
 ## Muita gente entrando ao mesmo tempo
 
-- Na abertura vai todo mundo entrar junto. O app não manda tudo de uma vez pro SUAP: no máximo 8 entradas conversam com o SUAP ao mesmo tempo, o resto espera a vez.
-- Ninguém fica 2 minutos olhando uma tela de carregamento. Se a fila encher, a espera é de no máximo uns 12 segundos. Aí o app mostra "Muita gente entrando agora. Tentando de novo em X s…" e tenta sozinho, sem a pessoa fazer nada.
+- Na abertura vai todo mundo entrar junto. O app não manda tudo de uma vez pro SUAP: no máximo 16 entradas conversam com o SUAP ao mesmo tempo, o resto espera a vez. No teste com 700 pessoas chegando em 1 minuto, todo mundo entrou: metade em até 8 s, a última em 33 s.
+- Ninguém fica parado numa tela de carregamento sem saber o que tá acontecendo. Se a fila encher, cada espera é de no máximo uns 12 segundos; aí o app mostra "Muita gente entrando agora. Tentando de novo em X s…" e tenta sozinho, sem a pessoa fazer nada, por até 4 minutos.
 - Se o SUAP cair de vez, o app avisa que o SUAP não respondeu. Aí o plano B é entrar como convidado ou a equipe credenciar na mão.
 
 ## Credenciamento e presença
@@ -106,4 +107,4 @@ Isso eu fiquei com receio, então ficou assim:
 ## O que ainda falta decidir
 
 - LGPD: termo, política de privacidade e por quanto tempo os dados ficam (inclusive as cópias nas denúncias).
-- Se o limite de 6 tentativas por matrícula e a fila de 8 no SUAP tão bons, a gente vê no teste de carga.
+- Quão rápido o SUAP de verdade responde na abertura (o teste de carga usou um SUAP de mentira). Dá pra medir antes com poucas contas de teste e, se precisar, aumentar a fila.

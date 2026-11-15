@@ -17,6 +17,7 @@ O projeto cresceu por experimentação e ajustes no protótipo. Não houve reuni
 | Swagger e chamada real | [API](05-api.md) e tabela de rotas da apresentação |
 | Eventos e inscrições no SUAP | [Investigação da API e da Área do Participante](investigacao-suap-eventos.md) |
 | Evidências e próximos passos | [Verificação](06-testes.md) |
+| Abertura com 700 pessoas | [Teste de carga](09-teste-de-carga.md) |
 | Plantas, satélite e lógica de localização | [Mapa e fontes](07-mapa-e-fontes.md) |
 | PWA, alternativa nativa e demos dos slides | [PWA e apresentação](08-pwa-e-apresentacao.md) |
 
