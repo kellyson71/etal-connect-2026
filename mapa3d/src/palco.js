@@ -39,5 +39,7 @@ export function criarPalco({ principal, interior, estilo, camera, controls, pedi
   }
   function set(parcial) { Object.assign(st, parcial); aplicarEstado(); }
   function parar() { if (tw) { tw = null; controls.enabled = true; } }
-  return { ir, tick, set, parar, estado: () => st, ativo: () => !!tw };
+  /* o dedo no mapa solta a câmera da animação na hora; o resto do estado (bloco abrindo, andares) termina sozinho */
+  function soltarCamera() { if (tw?.p1) { tw.p1 = null; controls.enabled = true; } }
+  return { ir, tick, set, parar, soltarCamera, estado: () => st, ativo: () => !!tw };
 }

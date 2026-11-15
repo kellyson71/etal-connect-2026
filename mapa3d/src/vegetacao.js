@@ -85,8 +85,10 @@ export function construirVegetacao(M, { vasos = [], vasosDentro = [], flores = [
   /* calçada dos fundos do bloco, na saída da porta de vidro: quatro árvores em fila, com as redes entre elas */
   for (let i = arvores.length - 1; i >= 0; i--) { const t = arvores[i]; if (t.x > -30 && t.x < -5 && t.y > -59 && t.y < -50.6) arvores.splice(i, 1); }
   REDES.forEach(([x, y], i) => arvores.push({ x, y, r: 2.3, tone: i % 3 }));
-  const folha = desaturavel(new THREE.MeshLambertMaterial({ color: 0xffffff })); const casca = desaturavel(new THREE.MeshLambertMaterial({ color: 0x7a6248 }));
-  const palmMat = desaturavel(new THREE.MeshLambertMaterial({ color: 0xffffff, side: THREE.DoubleSide }));
+  /* a chave diz ao modo ilustrado (cartum.js) o que cada material é */
+  const comChave = (m, chave) => { m.userData.chave = chave; return desaturavel(m); };
+  const folha = comChave(new THREE.MeshLambertMaterial({ color: 0xffffff }), 'folha'); const casca = comChave(new THREE.MeshLambertMaterial({ color: 0x7a6248 }), 'tronco');
+  const palmMat = comChave(new THREE.MeshLambertMaterial({ color: 0xffffff, side: THREE.DoubleSide }), 'palma');
 
   /* buganvília sobre o pergolado: tufos verdes e rosados */
   if (flores.length) {

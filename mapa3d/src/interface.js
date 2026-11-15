@@ -12,7 +12,7 @@ const nomeAndar = (l) => (l ? `${l}º andar` : 'Térreo');
 const ler = (k, padrao) => { try { return JSON.parse(localStorage.getItem(k)) ?? padrao; } catch { return padrao; } };
 
 export function iniciarInterface(ctx) {
-  const { scene, camera, controls, renderer, principal, interior, palco, estilo, viagem, passeio, veg, entorno, sol, pedir, hora, prepararCampus, verCampus, predios, detalhes } = ctx;
+  const { gestos, scene, camera, controls, renderer, principal, interior, palco, estilo, viagem, passeio, veg, entorno, sol, pedir, hora, prepararCampus, verCampus, predios, detalhes } = ctx;
   let andarReal = null; // andar visto por dentro no prédio real (modos Evento e Campus)
   let selecionado = null, modo = 'evento', andarFoco = null, plano2d = false, percurso = null, ultimoQuadro = 0, amostras = [], autoNivel = 0;
   let sessoes = window.DATA?.sessions || []; let origem = null; // { level, zonaId, titulo }
@@ -107,18 +107,51 @@ export function iniciarInterface(ctx) {
   $('#proxima').onclick = () => { if (!proxima) return; select({ kind: 'activity', level: proxima.floor, id: proxima.zone, title: proxima.title, sub: `${proxima.time} · ${nomeAndar(proxima.floor)}`, activity: proxima }); ir(); };
   const salaAtividades = document.createElement('section'); salaAtividades.id = 'sala-atividades'; salaAtividades.hidden = true;
   $('#meta').after(salaAtividades);
+  /* Atividades de um lugar. O bloco principal reúne todas as salas (menos o auditório, que tem cor e lista próprias). */
+  let agoraEv = window.DATA?.now || null; // { day, time } do evento (o app manda)
+  const LUGAR_AUD = (() => { const z = PLAN.floors[0].zones.find((q) => q.id === 'auditorio'); return z && { id: 'auditorio', label: 'Auditório', p: zonePoly(z).map(wp) }; })();
+  function sessoesDoLugar(it) {
+    if (it.kind !== 'place') return sessoes.filter((s) => s.floor === it.level && s.zone === it.id);
+    if (it.id === 'auditorio') return sessoes.filter((s) => s.zone === 'auditorio');
+    if (it.id === 'principal') return sessoes.filter((s) => Number.isInteger(s.floor) && s.zone && s.zone !== 'auditorio');
+    return sessoes.filter((s) => s.place === it.id);
+  }
+  const DIAS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+  const semana = (d) => DIAS[new Date(2025, 10, d).getDay()];
+  const minutos = (t) => { const [h, m] = String(t || '0:0').split(':').map(Number); return h * 60 + m; };
+  function situacao(s) {
+    if (!agoraEv) return '';
+    const a = agoraEv.day * 1440 + minutos(agoraEv.time), ini = s.day * 1440 + minutos(s.time), fim = s.end ? s.day * 1440 + minutos(s.end) : ini + 60;
+    return a >= ini && a < fim ? 'agora' : ini > a ? 'futuro' : 'passou';
+  }
   function listarAtividades(it) {
-    const rows = sessoes.filter((s) => it.kind === 'place' ? s.place === it.id : s.floor === it.level && s.zone === it.id).sort((a,b) => a.day - b.day || a.time.localeCompare(b.time));
+    const rows = sessoesDoLugar(it).sort((a, b) => a.day - b.day || a.time.localeCompare(b.time));
     salaAtividades.replaceChildren(); salaAtividades.hidden = !rows.length;
     $('#cartao').classList.remove('recolhido'); $('#recolher').setAttribute('aria-expanded', 'true');
+    if (!rows.length) return;
+    /* o que está acontecendo agora e a próxima ganham selo; a lista começa nelas */
+    const prox = rows.find((s) => situacao(s) === 'futuro'); let dia = null, rolar = null;
+    const lista = it.kind === 'place' || rows.length > 2;
+    if (lista) { const cab = document.createElement('p'); cab.className = 'sa-resumo'; cab.textContent = `${rows.length} ${rows.length === 1 ? 'atividade' : 'atividades'} aqui`; salaAtividades.append(cab); }
     for (const s of rows) {
-      const b = document.createElement('button'); b.type = 'button';
-      const title = document.createElement('b'); title.textContent = s.title;
-      const when = document.createElement('small'); when.textContent = `${s.day} nov · ${s.time} · ${s.type || 'Atividade'}`;
-      b.append(title, when);
-      b.onclick = () => { if (parent !== window) parent.postMessage({ type: 'etal:mapa:atividade', id: s.id }, location.origin); else aviso(s.title + ' · ' + when.textContent); };
+      if (lista && s.day !== dia) { dia = s.day; const h = document.createElement('h3'); h.className = 'sa-dia'; h.textContent = `${semana(s.day)}, ${s.day} nov`; salaAtividades.append(h); }
+      const st = situacao(s);
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'sa-item ' + st;
+      const hora = document.createElement('time'); hora.textContent = s.time;
+      const tx = document.createElement('span'); const title = document.createElement('b'); title.textContent = s.title;
+      const when = document.createElement('small'); when.textContent = lista ? (s.room || s.type || 'Atividade') : `${s.day} nov · ${s.type || 'Atividade'}`;
+      tx.append(title, when); b.append(hora, tx);
+      if (st === 'agora' || s === prox) { const sel = document.createElement('em'); sel.textContent = st === 'agora' ? 'Agora' : 'A seguir'; b.append(sel); rolar ??= b; }
+      b.onclick = () => { if (parent !== window) parent.postMessage({ type: 'etal:mapa:atividade', id: s.id }, location.origin); else aviso(s.title + ' · ' + s.time); };
       salaAtividades.append(b);
     }
+    /* ver a mesma lista na Agenda do app */
+    if (lista && parent !== window) {
+      const v = document.createElement('button'); v.type = 'button'; v.className = 'sa-agenda'; v.textContent = 'Ver na programação';
+      v.onclick = () => parent.postMessage({ type: 'etal:mapa:programacao', nome: it.title, ids: rows.map((s) => s.id), dia: (prox || rows[0]).day }, location.origin);
+      salaAtividades.append(v);
+    }
+    if (rolar) requestAnimationFrame(() => { salaAtividades.scrollTop = Math.max(0, rolar.offsetTop - salaAtividades.offsetTop - 34); });
   }
   function select(it, { voar = true } = {}) {
     listarAtividades(it);
@@ -127,8 +160,8 @@ export function iniciarInterface(ctx) {
     $('#titulo').textContent = it.title; $('#descricao').textContent = it.sub; $('#limpar').hidden = false;
     ['pular', 'repetir', 'etapas', 'etapas-texto'].forEach((id) => ($('#' + id).hidden = true)); $('#etapa-atual').textContent = '';
     if (it.kind === 'place') {
-      $('#ir').disabled = true; $('#via-wrap').hidden = true; $('#meta').textContent = 'No campus';
-      if (voar) palco.ir({}, enquadrar(camera, it.building.p.map((q) => new THREE.Vector3(q[0], 0, q[1])), { e: 50, min: 34 }), ms(900)); return;
+      $('#ir').disabled = true; $('#via-wrap').hidden = true; $('#meta').textContent = sessoesDoLugar(it).length ? '' : 'No campus';
+      if (voar) palco.ir({}, enquadrar(camera, it.building.p.map((q) => new THREE.Vector3(q[0], 0, q[1])), { e: 50, min: 56 }), ms(900)); return;
     }
     const mesma = origem && it.kind !== 'ponto' && origem.level === it.level && origem.zonaId === it.id;
     const r = rota(destinoDe(it), mesma ? null : origem, $('#via').value || null); $('#ir').disabled = !r; $('#via-wrap').hidden = !r || !r.via;
@@ -234,16 +267,45 @@ export function iniciarInterface(ctx) {
   /* ---------- etiquetas do evento (pílulas, como no app) ---------- */
   const etiquetas = [];
   const noBloco = (px, py, h) => { const w = wp([px, py]); return new THREE.Vector3(w[0], h, w[1]); };
-  const meio = (id, h) => { const b = [...BUILDINGS, ...COVERS].find((q) => q.id === id); const c = centroid(b.p); return new THREE.Vector3(c[0], h, c[1]); };
-  [{ t: 'Bloco principal', cor: 'verde', p: noBloco(620, 300, 13) }, { t: 'Auditório', cor: 'azul', p: noBloco(118, 200, 10.5) }, { t: 'Cantina', cor: 'laranja', p: meio('cantina', 6) }, { t: 'Pátio', cor: 'patio', p: meio('patio', 8.6) }, { t: 'Obelisco', cor: 'vermelho', p: meio('obelisco', 6.6) }]
-    .forEach((q) => { const el = document.createElement('button'); el.textContent = q.t + ' ›'; el.className = 'pilula ' + q.cor; el.onclick = () => focarParte(q.t); $('#rotulos').append(el); etiquetas.push({ el, p: q.p }); });
+  const meio = (id, h) => { const b = [...BUILDINGS, ...COVERS, ...FLATS].find((q) => q.id === id); const c = centroid(b.p); return new THREE.Vector3(c[0], h ?? (b.h || 0) + 1.5, c[1]); };
+  /* ícone de cada lugar, como nos mapas ilustrados de campus: o que é cada prédio se entende de longe */
+  const ic = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
+  const ICONE = {
+    aula: ic('<path d="M3 4h18M4 4v10h16V4M12 14v3M8 21l4-4 4 4"/>'),
+    mic: ic('<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/>'),
+    talher: ic('<path d="M7 3v18M4.5 3v5a2.5 2.5 0 0 0 5 0V3M17.5 21V3c-2.2 1.2-3.5 4-3.5 7.5h3.5"/>'),
+    banco: ic('<path d="M4 10h16M3.5 14h17M6 14v5M18 14v5M6 10V6.5h12V10"/>'),
+    obelisco: ic('<path d="M12 2.5l2.2 3V19h-4.4V5.5zM6.5 21h11"/>'),
+    entrada: ic('<path d="M14 4h5v16h-5M3 12h11M10 8l4 4-4 4"/>'),
+    livro: ic('<path d="M4 19.5V5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2 2 2 0 0 0 2 2h13"/>'),
+    bola: ic('<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c3 2.4 3 14.6 0 17M12 3.5c-3 2.4-3 14.6 0 17"/>'),
+    campo: ic('<rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="M12 5v14"/><circle cx="12" cy="12" r="2.6"/>'),
+    lab: ic('<path d="M9 3h6M10 3v6.5L4.8 18.3A1.8 1.8 0 0 0 6.4 21h11.2a1.8 1.8 0 0 0 1.6-2.7L14 9.5V3M7.5 15h9"/>'),
+    agua: ic('<path d="M3 15.5c3 0 3 2 6 2s3-2 6-2 3 2 6 2M3 10c3 0 3 2 6 2s3-2 6-2 3 2 6 2"/>'),
+    predio: ic('<path d="M4 21V4h10v17M14 9h6v12M7.5 8h3M7.5 12h3M7.5 16h3M3 21h18"/>'),
+  };
+  const etiqueta = (html, cls, p, onclick, prio) => { const el = document.createElement('button'); el.innerHTML = html; el.className = cls; el.onclick = onclick; $('#rotulos').append(el); etiquetas.push({ el, p, prio }); };
+  /* partes do evento: pílula na cor da parte, com ícone */
+  [{ t: 'Bloco principal', cor: 'verde', i: 'aula', p: noBloco(620, 300, 13) }, { t: 'Auditório', cor: 'azul', i: 'mic', p: noBloco(118, 200, 10.5) }, { t: 'Cantina', cor: 'laranja', i: 'talher', p: meio('cantina', 6) }, { t: 'Pátio', cor: 'patio', i: 'banco', p: meio('patio', 8.6) }, { t: 'Obelisco', cor: 'vermelho', i: 'obelisco', p: meio('obelisco', 6.6) }]
+    .forEach((q) => etiqueta(`${ICONE[q.i]}<span>${q.t}</span>`, 'pilula ' + q.cor, q.p, () => {
+      /* a pílula abre o lugar com a programação dele */
+      const b = { 'Bloco principal': LUGARES.principal, Auditório: LUGAR_AUD, Cantina: LUGARES.cantina, Pátio: LUGARES.patio, Obelisco: LUGARES.obelisco }[q.t];
+      if (b) select(lugarItem(b)); else focarParte(q.t);
+    }, 0));
+  /* o resto do campus: marcador branco com ícone e o nome curto (tocar mostra o lugar no cartão) */
+  [['portaria', 'entrada', 'Entrada'], ['biblioteca', 'livro', 'Biblioteca'], ['laboratorios', 'lab', 'Laboratórios'], ['anexo', 'predio', 'Anexo'], ['ginasio', 'bola', 'Ginásio'], ['campo', 'campo', 'Campo'], ['piscina', 'agua', 'Piscina']]
+    .forEach(([id, i, t]) => etiqueta(`${ICONE[i]}<span>${t}</span>`, 'marco', meio(id), () => { const b = LUGARES[id]; if (b) select({ kind: 'place', id, title: b.label, sub: 'Campus', building: b }); }, 1));
 
   /* ---------- tocar numa sala ---------- */
-  const raio = new THREE.Raycaster(); raio.layers.enable(1); let toque = null;
+  const raio = new THREE.Raycaster(); raio.layers.enable(1); let toque = null, ultimoToque = null;
   $('#tela').addEventListener('pointerdown', (e) => { toque = { x: e.clientX, y: e.clientY, t: performance.now() }; });
   $('#tela').addEventListener('pointerup', (e) => {
     if (!toque || Math.hypot(e.clientX - toque.x, e.clientY - toque.y) > 6 || performance.now() - toque.t > 500) return; toque = null;
     if (viagem.estado() && !viagem.estado().fim) return;
+    /* dois toques seguidos no mesmo ponto */
+    const agora = performance.now(), duplo = ultimoToque && agora - ultimoToque.t < 340 && Math.hypot(e.clientX - ultimoToque.x, e.clientY - ultimoToque.y) < 40;
+    ultimoToque = duplo ? null : { t: agora, x: e.clientX, y: e.clientY };
+    if (duplo && palco.estado().abre < 0.9) { toqueDuplo(e); return; }
     if (palco.estado().abre < 0.9) { if (modo !== 'passear') tocarLugar(e); return; }
     const r = $('#tela').getBoundingClientRect(); raio.setFromCamera(new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, (-(e.clientY - r.top) / r.height) * 2 + 1), camera);
     const foco = modo === 'andares' ? andarFoco : andarReal; const hits = raio.intersectObjects(interior.rooms.filter((m) => palco.estado().ops[m.userData.level] > 0.3 && (foco == null || m.userData.level === foco)), false);
@@ -254,12 +316,19 @@ export function iniciarInterface(ctx) {
      O obelisco esconde o passeio: cinco toques seguidos nele. */
   const raioLugar = new THREE.Raycaster(); const LUGARES = Object.fromEntries([...BUILDINGS, ...COVERS, ...FLATS].filter((b) => b.label).map((b) => [b.id, b]));
   let obelisco = { n: 0, t: 0 };
-  function tocarLugar(e) {
-    if (window.MAPA3D?.abertura?.ativa()) return;
+  /* lugar debaixo do dedo: id do prédio (o auditório é a casca azul do bloco principal) */
+  function lugarEm(e) {
     const r = $('#tela').getBoundingClientRect(); raioLugar.setFromCamera(new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, (-(e.clientY - r.top) / r.height) * 2 + 1), camera);
     const alvos = [predios, principal.grupo, detalhes].filter(Boolean); const hit = raioLugar.intersectObjects(alvos, true).find((h) => h.object.visible);
-    let o = hit?.object; while (o && !LUGARES[o.name] && !(o === principal.grupo)) o = o.parent;
-    const id = o === principal.grupo ? 'principal' : o?.name; if (!id || !LUGARES[id]) return;
+    let o = hit?.object, casca = false; while (o && !LUGARES[o.name] && !(o === principal.grupo)) { if (o.name === 'casca' || o.name === 'tetos-baixos') casca = true; o = o.parent; }
+    const id = o === principal.grupo ? (casca && LUGAR_AUD ? 'auditorio' : 'principal') : o?.name;
+    return id === 'auditorio' ? LUGAR_AUD : LUGARES[id] || null;
+  }
+  /* o auditório é uma sala do térreo: abre como sala, com "Como chegar" */
+  const lugarItem = (b) => (b.id === 'auditorio' ? { kind: 'room', level: 0, id: 'auditorio', title: 'Auditório', sub: 'Palestras · Térreo do bloco principal', zone: PLAN.floors[0].zones.find((z) => z.id === 'auditorio') } : { kind: 'place', id: b.id, title: b.label, sub: 'Campus', building: b });
+  function tocarLugar(e) {
+    if (window.MAPA3D?.abertura?.ativa()) return;
+    const b = lugarEm(e); if (!b) return; const id = b.id;
     if (id === 'obelisco') {
       const agora = performance.now(); obelisco = agora - obelisco.t < 2000 ? { n: obelisco.n + 1, t: agora } : { n: 1, t: agora };
       if (obelisco.n >= 5) { obelisco = { n: 0, t: 0 }; aviso('Você achou um segredo!'); setMode('passear'); return; }
@@ -267,7 +336,16 @@ export function iniciarInterface(ctx) {
       if (obelisco.n > 1) return;
     }
     if (selecionado?.kind === 'place' && selecionado.id === id) return;
-    const b = LUGARES[id]; select({ kind: 'place', id, title: b.label, sub: 'Campus', building: b }, { voar: id !== 'obelisco' }); // o obelisco fica parado: é nele que se toca de novo
+    select(lugarItem(b), { voar: id !== 'obelisco' }); // o obelisco fica parado: é nele que se toca de novo
+  }
+  /* Toque duplo: no bloco principal, abre os andares; em outro lugar, mostra a programação dele (cartão aberto, com a
+     atividade de agora ou a próxima em destaque); num lugar vazio, aproxima. */
+  function toqueDuplo(e) {
+    if (window.MAPA3D?.abertura?.ativa() || modo === 'passear') return;
+    const b = lugarEm(e);
+    if (b?.id === 'principal') { setMode('andares'); return; }
+    if (b && b.id !== 'obelisco') { select(lugarItem(b)); if (!sessoesDoLugar(lugarItem(b)).length) aviso('Nenhuma atividade aqui.'); return; }
+    if (!b) gestos?.aproximar(e.clientX, e.clientY, (p) => palco.ir({}, p, ms(450)));
   }
 
   /* ---------- integração com o app ---------- */
@@ -283,7 +361,7 @@ export function iniciarInterface(ctx) {
   window.CampusNovo = api;
   window.addEventListener('message', (e) => {
     if (e.origin !== location.origin || e.source !== parent || !['etal:mapa:abrir', 'etal:mapa:sincronizar'].includes(e.data?.type)) return;
-    const d = e.data; if (Array.isArray(d.sessions)) sessoes = d.sessions; if (d.tema === 'escuro' || d.tema === 'claro') document.documentElement.dataset.tema = d.tema; if ('proxima' in d) { proxima = d.proxima && Number.isInteger(d.proxima.floor) ? d.proxima : null; mostrarProxima(); } if ('foto' in d || 'nome' in d) passeio.setFoto(d.foto, d.nome); api.syncRooms(d.rooms); if ('origem' in d) api.setOrigem(d.origem);
+    const d = e.data; if (Array.isArray(d.sessions)) sessoes = d.sessions; if (d.agora && Number.isInteger(d.agora.day)) agoraEv = d.agora; if (d.tema === 'escuro' || d.tema === 'claro') document.documentElement.dataset.tema = d.tema; if ('proxima' in d) { proxima = d.proxima && Number.isInteger(d.proxima.floor) ? d.proxima : null; mostrarProxima(); } if ('foto' in d || 'nome' in d) passeio.setFoto(d.foto, d.nome); api.syncRooms(d.rooms); if ('origem' in d) api.setOrigem(d.origem);
     if (d.hour != null) hora(d.hour); // o app manda a hora do aparelho (ou a escolhida no céu)
     if (selecionado) listarAtividades(selecionado); if (d.type === 'etal:mapa:sincronizar') return; if (d.reduced != null) $('#reduzir').checked = !!d.reduced;
     /* o app pode pedir um modo (tela grande do computador) e uma rota tira o mapa do passeio */
@@ -306,7 +384,8 @@ export function iniciarInterface(ctx) {
       const ocupado = []; const ver = modo === 'evento' && !passeio.ativo() && !viagem.ativa() && palco.estado().abre < 0.05 && !window.MAPA3D?.abertura?.ativa();
       for (const l of etiquetas) {
         const p = l.p.clone().project(camera), x = (p.x * 0.5 + 0.5) * innerWidth, y = (-p.y * 0.5 + 0.5) * innerHeight;
-        const ok = ver && p.z > -1 && p.z < 1 && x > 60 && x < innerWidth - 60 && y > 140 && y < innerHeight - 40 && !ocupado.some((o) => Math.abs(o.x - x) < 110 && Math.abs(o.y - y) < 32);
+        /* as do evento têm a vez; os marcadores do campus só entram onde sobra lugar */
+        const ok = ver && p.z > -1 && p.z < 1 && x > 60 && x < innerWidth - 60 && y > 140 && y < innerHeight - 40 && !ocupado.some((o) => Math.abs(o.x - x) < (l.prio ? 100 : 120) && Math.abs(o.y - y) < 34);
         l.el.hidden = !ok; if (ok) { l.el.style.left = x + 'px'; l.el.style.top = y + 'px'; ocupado.push({ x, y }); }
       }
       const dt = now - ultimoQuadro; ultimoQuadro = now;

@@ -988,6 +988,8 @@
     let list = D.sessions.filter((s) => s.day === day);
     if (['pal', 'mesa', 'mini', 'camp'].includes(f)) list = list.filter((s) => tipoDe(s).g === f);
     if (f === 'saved') list = list.filter((s) => S.saved.has(s.id) || s.speakerId === String(D.person.id));
+    /* vindo do mapa: só as atividades de um lugar (prédio, auditório, pátio) */
+    const lugar = S.agendaLugar; if (lugar) list = list.filter((s) => lugar.ids.includes(s.id));
     const slots = [...new Set(list.map((s) => s.time))];
     const idx = D.days.findIndex((d) => d.day === day);
     const filters = [['all', 'Tudo'], ['saved', 'Minhas'], ['pal', 'Palestras'], ['mesa', 'Mesas'], ['mini', 'Minicursos'], ['camp', 'Campeonatos']].filter(([k]) => !TIPOS_G.has(k) || D.sessions.some((x) => tipoDe(x).g === k));
@@ -1021,6 +1023,7 @@
       <div class="pad stack agenda">
         <div class="days st" style="--i:0;--k:${idx}"><i class="days-ind"></i>${D.days.map((d) => `<button class="${d.day === day ? 'on' : ''}" data-act="day" data-day="${d.day}">${d.week}<b>${d.day}</b></button>`).join('')}</div>
         <p class="ag-resumo st" ${st(1)}><b>${dia.long ? dia.long.split(',')[0] : dia.week}</b><span>${list.length} ${list.length === 1 ? 'atividade' : 'atividades'}${agora ? ` · <em>${agora} agora</em>` : ''}${meus ? ` · ${meus} ${meus === 1 ? 'sua' : 'suas'}` : ''}</span></p>
+        ${lugar ? `<p class="ag-lugar st" ${st(1)}>${ic('map')}<span>Só no <b>${lugar.nome}</b></span><button data-act="agendaLugar" aria-label="Mostrar todos os lugares">${ic('x')}</button></p>` : ''}
         <div class="chips ag-chips st" ${st(1)}>${filters.map(([k, t]) => `<button class="${k === f ? 'on' : ''} f-${tp(k)}" data-act="filter" data-f="${k}">${TIPOS_G.has(k) ? '<i></i>' : ''}${k === 'saved' ? ic('bookmark') : ''}${t}</button>`).join('')}</div>
         <div class="agenda-list ag-trilho" data-swap>
         ${slots.length ? slots.map((t, si) => { const noSlot = list.filter((s) => s.time === t); const vivo = noSlot.some(isNow); return `<div class="slot st ${vivo ? 'now' : ''}" ${st(2 + si)}><time>${t}${vivo ? '<em>agora</em>' : ''}</time><div>${noSlot.filter((s) => S.saved.has(s.id)).length > 1 ? `<p class="clash">${ic('info')}Você salvou mais de uma atividade neste horário.</p>` : ''}<ul class="ag">${noSlot.map(row).join('')}</ul></div></div>`; }).join('')
@@ -1256,7 +1259,18 @@
      Evento (o passeio virou segredo do mapa). "Ver como celular" volta para a moldura; a escolha fica em etal-moldura. ---- */
   const wideMq = matchMedia('(min-width: 1000px) and (pointer: fine)');
   let palcoFrame = null, palcoPronto = false, palcoFila = null;
-  const dadosMapa = (extra = {}) => ({ type: 'etal:mapa:abrir', ...extra, tema: isDark() ? 'escuro' : 'claro', proxima: proximaMinha(), origem: origemAgora(), foto: D.person.photo || null, nome: D.person.name || '', hour: skyHour, reduced: reduce, sessions: D.sessions.map((x) => ({ id: x.id, title: x.title, time: x.time, day: x.day, type: x.type, place: x.place, tournament: x.tournament, floor: x.floor, zone: x.zone })), rooms: Object.fromEntries(P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => [`${f.level}:${z.id}`, z.roomNumber]))) });
+  const dadosMapa = (extra = {}) => ({ type: 'etal:mapa:abrir', ...extra, tema: isDark() ? 'escuro' : 'claro', proxima: proximaMinha(), origem: origemAgora(), foto: D.person.photo || null, nome: D.person.name || '', hour: skyHour, reduced: reduce, agora: { day: D.now.day, time: D.now.time }, sessions: D.sessions.map((x) => ({ id: x.id, title: x.title, time: x.time, end: x.end, day: x.day, type: x.type, room: x.room, place: x.place, tournament: x.tournament, floor: x.floor, zone: x.zone })), rooms: Object.fromEntries(P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => [`${f.level}:${z.id}`, z.roomNumber]))) });
+  /* "Ver na programação" no cartão de um lugar do mapa: a Agenda abre só com as atividades dele */
+  window.addEventListener('message', (e) => {
+    if (e.origin !== location.origin || e.data?.type !== 'etal:mapa:programacao') return;
+    const frames = [palcoFrame, mapaFixo?.querySelector('iframe')].filter(Boolean);
+    if (!frames.some((f) => f.contentWindow === e.source)) return;
+    const ids = Array.isArray(e.data.ids) ? e.data.ids.filter((id) => D.sessions.some((x) => x.id === id)) : [];
+    if (!ids.length) return;
+    S.agendaLugar = { nome: String(e.data.nome || 'Este lugar').slice(0, 60), ids };
+    S.agendaFilter = 'all'; if (D.days.some((d) => d.day === e.data.dia)) S.agendaDay = e.data.dia;
+    switchTab('agenda', true);
+  });
   window.addEventListener('message', (e) => {
     if (e.origin !== location.origin || e.data?.type !== 'etal:mapa:atividade') return;
     const frames = [palcoFrame, mapaFixo?.querySelector('iframe')].filter(Boolean);
@@ -1296,7 +1310,7 @@
   /* O mapa 3D fica num iframe só, criado na primeira vez e nunca removido: trocar de aba apenas o esconde. Antes ele
      era recriado a cada abertura da aba Mapa e o campus inteiro era montado de novo (vários segundos no celular). */
   let mapaFixo = null, mapaPronto = false, mapaFila = null;
-  const dadosAba = (type, pedida = {}) => ({ type, ...pedida, tema: isDark() ? 'escuro' : 'claro', proxima: proximaMinha(), origem: origemAgora(), foto: D.person.photo || null, nome: D.person.name || '', hour: skyHour, reduced: reduce, sessions: D.sessions.map((x) => ({ id: x.id, title: x.title, time: x.time, day: x.day, type: x.type, place: x.place, tournament: x.tournament, floor: x.floor, zone: x.zone })), rooms: Object.fromEntries(P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => [`${f.level}:${z.id}`, z.roomNumber]))) });
+  const dadosAba = (type, pedida = {}) => ({ type, ...pedida, tema: isDark() ? 'escuro' : 'claro', proxima: proximaMinha(), origem: origemAgora(), foto: D.person.photo || null, nome: D.person.name || '', hour: skyHour, reduced: reduce, agora: { day: D.now.day, time: D.now.time }, sessions: D.sessions.map((x) => ({ id: x.id, title: x.title, time: x.time, end: x.end, day: x.day, type: x.type, room: x.room, place: x.place, tournament: x.tournament, floor: x.floor, zone: x.zone })), rooms: Object.fromEntries(P.floors.flatMap((f) => f.zones.filter((z) => z.roomNumber).map((z) => [`${f.level}:${z.id}`, z.roomNumber]))) });
   function mapaFixoEnviar(type, pedida) {
     if (!mapaPronto) { mapaFila = pedida; return; }
     mapaFixo.querySelector('iframe').contentWindow.postMessage(dadosAba(type, pedida), location.origin);
@@ -3066,6 +3080,7 @@
       case 'simulate': if (!canDebugQr()) break; if (API) demoQr(el.dataset.q); else demoHit('etal:' + el.dataset.q); break;
       case 'scanopen': scanOpen(el.dataset.q); break;
       case 'scanagain': scanAgain(); break;
+      case 'agendaLugar': S.agendaLugar = null; rerender(); break;
       case 'day': S.agendaDay = +el.dataset.day; rerender(); vp.querySelector('.page .agenda-list')?.classList.add('swap'); break;
       case 'filter': S.agendaFilter = el.dataset.f; rerender(); vp.querySelector('.page .agenda-list')?.classList.add('swap'); break;
       case 'save': {
