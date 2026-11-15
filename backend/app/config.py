@@ -29,8 +29,21 @@ class Config(BaseSettings):
     # Entrada direta com matrícula e senha (token JWT da API do SUAP).
     suap_api_url: str = 'https://suap.ifrn.edu.br'
     # Teto de chamadas simultâneas ao SUAP e quanto tempo (s) um login espera a vez antes do 503 (app/suap_fila.py).
-    suap_simultaneos: int = 8
+    # No teste de carga (scripts/carga), 700 pessoas em 1 minuto: com 8, a última esperou 2 min; com 16, 33 s.
+    suap_simultaneos: int = 16
     suap_espera: float = 12
+
+    # Tetos por endereço de rede, por minuto. No Wi-Fi do campus todo mundo pode sair pelo mesmo IP: por isso o teto
+    # geral é alto (o teste de carga com 700 pessoas num IP só passa) e o que protege de verdade é o limite por pessoa.
+    # Na senha do SUAP, o teto da rede conta só as senhas erradas (é o que uma tentativa de adivinhar senha gera).
+    teto_rede: int = 3000
+    teto_rede_senha_errada: int = 60
+
+    # Capacidade de um processo: threads para as rotas comuns (o padrão do AnyIO é 40) e conexões com o PostgreSQL
+    # (fixas + extras na hora do pico). Threads e conexões andam juntas: cada rota comum usa uma conexão.
+    threads: int = 60
+    banco_conexoes: int = 30
+    banco_extras: int = 20
 
     # Pasta dos materiais enviados pela organização (app/arquivos.py). Em produção, um volume do Docker.
     arquivos: str = './arquivos'
