@@ -54,8 +54,7 @@ Verificação:
 ```
 node --test mapa3d/tests/rotas.test.mjs
 python3 mapa3d/servir.py
-python3 mapa3d/tests/browser.py
 ```
-O teste de navegador usa Playwright Python e `CHROME_BIN` (padrão `/opt/google/chrome/chrome`). Capturas de revisão em `/tmp/etal-*.png`. O cenário real ainda contém posições estimadas; não é levantamento de acessibilidade nem navegação GPS.
+O cenário real ainda contém posições estimadas; não é levantamento de acessibilidade nem navegação GPS.
 
 Resultados de 10/11: cinco testes automatizados de rotas passaram; fluxo Playwright em 390×844 passou (três destinos, movimento reduzido, seleção, andares separados, planta, atividade → mapa → retorno, sem erros JavaScript). O perfil de desempenho ainda precisa ser medido em celulares físicos; headless/SwiftShader não representa a GPU do usuário.

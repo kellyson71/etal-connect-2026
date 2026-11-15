@@ -11,7 +11,7 @@ Capturado em 2026-11-11T14:42:05-03:00. Fonte: commit `442215668157f37e6f6c88f23
 
 Reproduzir a partir da raiz: `python3 scripts/documentar-modelos.py`.
 É necessário Playwright, Pillow e Chrome; o script abre e encerra seu próprio servidor local.
-As capturas usam contextos novos, dados demonstrativos e armazenamento isolado; não alteram o aplicativo nem o backup `modelo-3d/`.
+As capturas usam contextos novos, dados demonstrativos e armazenamento isolado; não alteram o aplicativo.
 
 Clássico: https://etal-connect.vercel.app/?tela=mapa&mapa=classico&moldura&tema=light&qualidade=alta&ceu=14
 Novo: https://etal-connect.vercel.app/?tela=mapa&mapa=novo&moldura&tema=light&ceu=14

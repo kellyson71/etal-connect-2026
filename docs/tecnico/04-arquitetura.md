@@ -19,8 +19,6 @@
 | backend/tests/ | Testes de API com pytest |
 | deploy/ | Caddy + API + PostgreSQL em Docker Compose |
 | api/index.py e vercel.json | Configuração alternativa de função Python e arquivos estáticos |
-| app/ | Primeira versão React / Vinext; legado |
-| modelo-3d/ | Cópia congelada do mapa; não editar |
 
 ## Caminho de uma chamada
 
