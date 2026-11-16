@@ -21,6 +21,10 @@ Publicações no servidor
 - Limites por pessoa e limpeza depois de 90 dias (`python -m app.manutencao publicacoes`).
 - Moderação também no painel do computador, pela API.
 
+Plano B
+- Listas de presença em papel para imprimir pelo painel (uma por atividade, já com quem salvou na agenda) e o lançamento delas depois, com presença marcada como manual.
+- `docs/contingencia.md`: o que fazer se o app, a internet, o SUAP ou o servidor falharem.
+
 Monitoramento e teste de carga
 - Uma linha JSON por requisição (rota sem tokens, sem IP nem dado da pessoa) e rodízio dos logs no Docker.
 - Painel da organização → Servidor: requisições, tempos, erros, fila do SUAP, celulares ao vivo e movimento dos últimos 10 minutos.
