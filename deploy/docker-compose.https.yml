@@ -1,0 +1,15 @@
+# Só se o servidor NÃO tiver um proxy na frente: o Caddy do app assume as portas 80 e 443 e pede o certificado do
+# DOMINIO sozinho (Let's Encrypt). O DNS precisa apontar para o servidor e as duas portas precisam estar abertas.
+#   docker compose -f docker-compose.yml -f docker-compose.https.yml up -d
+services:
+  web:
+    ports: ['80:80', '443:443']
+    environment:
+      SITE: ${DOMINIO}
+    volumes:
+      - caddy_dados:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_dados:
+  caddy_config:
