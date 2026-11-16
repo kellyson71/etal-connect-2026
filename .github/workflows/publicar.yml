@@ -1,0 +1,88 @@
+# Publicação, no mesmo modelo dos outros sistemas do NADIC (nadic-ifrn/horarios): a cada push na main, testa, gera as
+# imagens, publica no GitHub Container Registry e, se o servidor estiver configurado, atualiza ele por SSH.
+#
+# Configurar no GitHub (Settings → Secrets and variables → Actions) para a atualização automática:
+#   segredos: SSH_HOST, SSH_PORT, SSH_USER e SSH_PASSWORD (ou SSH_CHAVE, uma chave privada)
+#   variável: IMPLANTAR = sim        opcional: PASTA (padrão /home/<SSH_USER>/etal)
+# Sem a variável IMPLANTAR, só as imagens são publicadas; o servidor pode atualizar à mão (deploy/README.md).
+name: publicar
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGEM: ghcr.io/${{ github.repository }}
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: backend } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12', cache: pip, cache-dependency-path: backend/requirements*.txt }
+      - run: pip install -r requirements-dev.txt
+      - run: python -m pytest -q
+
+  imagens:
+    needs: testes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Entrar no GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Gerar e publicar as imagens (api e web)
+        run: |
+          VERSAO=${GITHUB_SHA::7}
+          docker build -t $IMAGEM-api:latest -t $IMAGEM-api:$VERSAO backend
+          docker build -f deploy/web.Dockerfile -t $IMAGEM-web:latest -t $IMAGEM-web:$VERSAO .
+          for i in api web; do docker push $IMAGEM-$i:latest; docker push $IMAGEM-$i:$VERSAO; done
+          echo "Imagens publicadas: latest e $VERSAO" >> $GITHUB_STEP_SUMMARY
+
+  servidor:
+    needs: imagens
+    if: vars.IMPLANTAR == 'sim'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Levar o docker-compose.yml atualizado
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          key: ${{ secrets.SSH_CHAVE }}
+          source: deploy/docker-compose.yml
+          target: ${{ vars.PASTA || format('/home/{0}/etal', secrets.SSH_USER) }}
+          strip_components: 1
+      - name: Atualizar o servidor
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          key: ${{ secrets.SSH_CHAVE }}
+          script: |
+            set -e
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            cd ${{ vars.PASTA || format('/home/{0}/etal', secrets.SSH_USER) }}
+            docker compose pull
+            # a API aplica as migrações do banco sozinha ao iniciar
+            docker compose up -d --remove-orphans
+            for i in $(seq 1 30); do
+              docker compose exec -T api python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/saude', timeout=3)" && exit 0
+              sleep 3
+            done
+            docker compose logs --tail 50 api
+            exit 1
