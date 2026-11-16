@@ -277,6 +277,7 @@
     ['campeonatos', 'Campeonatos', 'trophy'],
     ['avisos', 'Avisos', 'bell'],
     ['comunidade', 'Moderação', 'alert'],
+    ['contingencia', 'Plano B', 'file'],
     ['sistema', 'Servidor', 'pulse'],
   ];
   const state = { day: D.now.day, ptype: 'todos', pstat: 'todos', q: '', limit: 40, floor: 2, room: null };
@@ -490,7 +491,36 @@
   const ms = (v) => (v == null ? '—' : v < 1000 ? `${Math.round(v)} ms` : `${(v / 1000).toFixed(1)} s`);
   const linhaSis = (rotulo, valor, alerta = false) =>
     `<tr><td>${rotulo}</td><td class="${alerta ? 'sis-alerta' : ''}"><b>${valor}</b></td></tr>`;
+  /* Plano B (docs/contingencia.md): listas em papel para imprimir e o lançamento delas depois. */
+  let papelResultado = '';
   const Views = {
+    contingencia() {
+      const API = window.ETAL_API;
+      if (!API)
+        return '<section class="card"><h2>Plano B</h2><p>As listas em papel e o lançamento delas usam o servidor. Nesta demonstração, sem servidor, elas não aparecem.</p></section>';
+      const link = (href, texto, cls = 'soft') =>
+        `<a class="btn ${cls} sm" target="_blank" rel="noopener" href="${API.url(href)}">${texto}</a>`;
+      return `<div class="grid g-2">
+          <section class="card"><h2>Imprimir antes de cada dia</h2>
+            <p>Se o app, a internet ou o servidor caírem, a equipe passa a lista em papel na sala e na recepção. Cada folha já vem com quem salvou a atividade na agenda, mais linhas em branco.</p>
+            <div class="cont-acoes">${D.days.map((d) => link(`/api/org/listas-papel?dia=${d.day}`, `${ic('download')}Listas do dia ${d.day}`)).join('')}${link('/api/org/qrs', `${ic('grid')}QRs das salas`)}</div>
+            <h2 class="mt">Guardar uma cópia agora</h2>
+            <p>Para ter os dados mesmo se o servidor sair do ar.</p>
+            <div class="cont-acoes">${link('/api/org/presencas.csv', `${ic('download')}Presenças (CSV)`)}${link('/api/org/credenciados.csv', `${ic('download')}Credenciados (CSV)`)}</div>
+          </section>
+          <section class="card"><h2>Lançar lista em papel</h2>
+            <form data-form="papel" class="cont-form">
+              <label class="fld">Lista<select name="atividade"><option value="">Credenciamento (recepção)</option>${D.sessions
+                .filter((x) => x.id !== 'credenciamento')
+                .map((x) => `<option value="${esc(x.id)}">${esc(x.short)} · ${x.day}/11 ${x.time}</option>`)
+                .join('')}</select></label>
+              <label class="fld">Matrículas ou e-mails<textarea name="pessoas" rows="7" required placeholder="Um por linha, como estão na folha"></textarea><small>Quem ainda não estava credenciado é credenciado junto. A presença fica marcada como manual.</small></label>
+              <button class="btn primary" type="submit">${ic('check')}Lançar</button>
+            </form>
+            <div class="cont-res" aria-live="polite">${papelResultado}</div>
+          </section>
+        </div>`;
+    },
     sistema() {
       if (!window.ETAL_API)
         return '<section class="card"><h2>Servidor</h2><p>Este painel está sem servidor (demonstração). Os números aparecem quando o app roda com a API.</p></section>';
@@ -1203,6 +1233,25 @@
   });
   document.addEventListener('submit', (e) => {
     const f = e.target;
+    if (f.dataset.form === 'papel') {
+      e.preventDefault();
+      const d = new FormData(f);
+      const botao = f.querySelector('button[type="submit"]');
+      botao.disabled = true;
+      window.ETAL_API.post('/api/org/presenca-manual', {
+        atividade: d.get('atividade') || null,
+        pessoas: d.get('pessoas'),
+      })
+        .then((r) => {
+          const nomes = (l) => l.map(esc).join(', ');
+          papelResultado = `<p><b>${r.lancadas.length} lançada(s).</b>${r.lancadas.length ? ` ${nomes(r.lancadas)}` : ''}</p>${r.ja_tinham.length ? `<p>${r.ja_tinham.length} já tinha(m): ${nomes(r.ja_tinham)}</p>` : ''}${r.nao_encontradas.length ? `<p class="sis-alerta"><b>Sem cadastro no app (${r.nao_encontradas.length}):</b> ${nomes(r.nao_encontradas)}. Confira se a matrícula está certa; quem nunca entrou no app precisa entrar uma vez (ou entrar como convidado) para ser lançado.</p>` : ''}`;
+          toast(`Lista lançada: ${r.lancadas.length} presença(s)`);
+          render();
+        })
+        .catch((x) => toast(x.message))
+        .finally(() => (botao.disabled = false));
+      return;
+    }
     if (f.dataset.form === 'notice') {
       e.preventDefault();
       const d = new FormData(f);

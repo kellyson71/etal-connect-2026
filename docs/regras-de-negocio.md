@@ -73,6 +73,7 @@ Isso eu fiquei com receio, então ficou assim:
   - nos campeonatos: abrir e fechar inscrição, inscrever ou tirar jogador, marcar o vencedor de cada partida (e desfazer) e editar as regras;
   - moderar as publicações;
   - imprimir os QRs das salas e exportar a lista de presença pros certificados.
+- Plano B: imprimir as listas em papel do dia e, depois, lançar o que foi assinado (ver [contingencia.md](contingencia.md)). A presença lançada assim fica marcada como "manual".
 - A tela de QRs de teste (debug) só aparece pra organização e só no modo de demonstração. No evento de verdade ela não existe.
 
 ## Publicações

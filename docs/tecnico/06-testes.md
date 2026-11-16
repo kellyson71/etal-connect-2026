@@ -25,6 +25,7 @@ Na revisão documental de 09/11/2026, a execução local de .venv/bin/python -m 
 | test_publicacoes (16) | Ver exige entrar; sem credenciamento não publica; publicar, comentar, curtir, salvar; matrícula e e-mail não vazam; menções; fotos regravadas sem localização; foto falsa recusada; só o autor apaga, e apaga tudo; organização oculta, restaura e guarda histórico; participante não modera; denúncia e ocultação automática; arquivar denúncia de conteúdo apagado; limite por pessoa; limpeza das antigas; versão evita baixar de novo |
 | test_limites (+2) | No teto da rede só contam senhas erradas; esperar na fila do SUAP não gasta tentativa |
 | test_monitor (3) | O log não leva token, nome, matrícula nem IP; números do servidor só para a organização; saúde consulta o banco |
+| test_contingencia (3) | Lista em papel com quem salvou e linhas em branco (nomes escapados); lançar a lista credencia e registra presença manual, sem duplicar, e devolve quem não tem cadastro; só a organização |
 | test_material_antigo_do_banco_passa_para_o_disco | Material guardado no banco antes da mudança vai para o disco ao ser aberto |
 | test_login_suap_com_senha | `POST /api/auth/suap/senha` com cliente HTTP simulado: senha errada responde 401; senha certa responde 200, abre a sessão (`/api/eu` traz o nome) e a foto relativa vira URL completa do SUAP |
 
