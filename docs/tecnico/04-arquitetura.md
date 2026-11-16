@@ -35,7 +35,7 @@ No Docker: Caddy entrega os arquivos e encaminha /api e /q para a API. O navegad
 | http://127.0.0.1:8011 | API local em outra porta; exige CORS compatível |
 | string vazia | API na mesma origem; configuração entregue pelo deploy |
 
-O cliente envia cookies com credentials: include. Ao iniciar com API, lê programação, avisos e perfil. O modo de avisos é SSE por padrão; vivo: consulta muda para consultas a cada 12 segundos.
+O cliente envia cookies com credentials: include. Ao iniciar com API, lê programação, avisos e perfil. O modo de avisos é SSE por padrão; vivo: consulta muda para consultas a cada minuto, só com a aba visível.
 
 ## Offline
 
