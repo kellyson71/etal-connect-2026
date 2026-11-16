@@ -25,6 +25,7 @@ Publicação no servidor do NADIC
 - Duas imagens prontas, publicadas no GitHub Container Registry a cada push na `main`, no mesmo modelo do horários: o app (Caddy com o site e o mapa 3D já montados) e a API. O servidor só precisa do `docker-compose.yml` e do `.env`; com os segredos de SSH, o GitHub também atualiza o servidor.
 - Corrigido: a imagem da API não levava as migrações do banco e não subia; e o mapa 3D (gerado no build) ficava fora do site servido pelo Docker.
 - O app fica atrás do proxy do servidor (trechos prontos para nginx e Apache) ou, com as portas livres, pede o próprio certificado.
+- Vercel mais econômica: o app consulta a cada minuto, só com a aba visível (antes, a cada 12 s), e a programação e os avisos voltam 304 sem corpo quando nada mudou. No plano gratuito, as consultas de abas abertas tinham estourado a cota do mês.
 - Versão de teste na Vercel em dia com as migrações e as dependências novas (antes quebraria na próxima versão), com teste para não voltar a quebrar.
 - `deploy/README.md` (passo a passo), `deploy/diagnostico.sh` (o que o servidor tem) e `deploy/backup.sh` (banco e arquivos, 14 dias).
 

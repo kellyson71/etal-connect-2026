@@ -173,3 +173,14 @@ def test_debug_qr_so_para_administrador_em_demo(app_cliente, monkeypatch):
     assert mini[0] in app_cliente.get('/api/eu').json()['present']
     monkeypatch.setattr(config(),'demo',False)
     assert app_cliente.get('/api/org/debug/qrs').status_code == 404
+
+
+def test_programacao_e_avisos_com_etag(app_cliente):
+    """Consulta periódica sem mudança volta 304, sem corpo (economia na Vercel)."""
+    r = app_cliente.get('/api/programacao')
+    etag = r.headers['etag']
+    assert r.status_code == 200 and r.json()['sessions'] and r.headers['cache-control'] == 'no-cache'
+    r2 = app_cliente.get('/api/programacao', headers={'If-None-Match': etag})
+    assert r2.status_code == 304 and r2.content == b''
+    a = app_cliente.get('/api/avisos')
+    assert app_cliente.get('/api/avisos', headers={'If-None-Match': a.headers['etag']}).status_code == 304

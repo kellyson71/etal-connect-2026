@@ -2,8 +2,11 @@
 import asyncio
 from collections import Counter
 
+import hashlib
+import json
+
 from fastapi import APIRouter, Depends, Request
-from fastapi.responses import StreamingResponse
+from fastapi.responses import Response, StreamingResponse
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -22,17 +25,28 @@ def saude(db: Session = Depends(sessao)):
     return {'ok': True}
 
 
+def _json_com_etag(request: Request, dados) -> Response:
+    """Resposta com ETag: se o app já tem esta versão, volta 304 sem corpo. O navegador faz isso sozinho nas consultas
+    periódicas (hospedagem sem ao vivo, como a Vercel), e a programação não é baixada de novo a cada consulta."""
+    corpo = json.dumps(dados, ensure_ascii=False, separators=(',', ':'), default=str).encode()
+    etag = '"' + hashlib.sha1(corpo).hexdigest()[:20] + '"'
+    cab = {'ETag': etag, 'Cache-Control': 'no-cache'}
+    if etag in request.headers.get('if-none-match', ''):
+        return Response(status_code=304, headers=cab)
+    return Response(corpo, media_type='application/json', headers=cab)
+
+
 @rota.get('/programacao')
-def programacao(db: Session = Depends(sessao)):
+def programacao(request: Request, db: Session = Depends(sessao)):
     inscritos = Counter(dict(db.execute(select(Agenda.atividade_id, func.count()).group_by(Agenda.atividade_id)).all()))
     ativs = db.scalars(select(Atividade).order_by(Atividade.data, Atividade.inicio)).all()
     salas = {n.chave: n.numero for n in db.scalars(select(NumeroSala))}
-    return {'sessions': [formatos.atividade(a, inscritos[a.id]) for a in ativs], 'rooms': salas}
+    return _json_com_etag(request, {'sessions': [formatos.atividade(a, inscritos[a.id]) for a in ativs], 'rooms': salas})
 
 
 @rota.get('/avisos')
-def avisos(db: Session = Depends(sessao)):
-    return [formatos.aviso(v) for v in db.scalars(select(Aviso).order_by(Aviso.em.desc(), Aviso.id.desc()).limit(50))]
+def avisos(request: Request, db: Session = Depends(sessao)):
+    return _json_com_etag(request, [formatos.aviso(v) for v in db.scalars(select(Aviso).order_by(Aviso.em.desc(), Aviso.id.desc()).limit(50))])
 
 
 @rota.get('/lotacao')
