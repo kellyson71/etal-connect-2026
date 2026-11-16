@@ -64,7 +64,7 @@ Erros normalmente usam detail. As permissões das rotas não implicam que o Swag
 
 ## Atualizações ao vivo
 
-SSE em /api/ao-vivo envia aviso, sala, numeros e lotacao. O canal é mantido na memória do processo. Na configuração Vercel, o cliente consulta avisos e programação a cada 12 segundos. Notificação push de servidor não está implementada.
+SSE em /api/ao-vivo envia aviso, sala, numeros e lotacao. O canal é mantido na memória do processo. Na configuração Vercel, o cliente consulta avisos e programação a cada minuto, só com a aba visível (respostas 304 quando nada mudou). Notificação push de servidor não está implementada.
 
 ## Configuração e importação
 

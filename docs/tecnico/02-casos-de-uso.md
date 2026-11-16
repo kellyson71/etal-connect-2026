@@ -70,7 +70,7 @@ A janela padrão é de 20 minutos antes do início até o fim da atividade. A pr
 1. Organização entra no painel com a API ligada.
 2. Envia aviso ou muda a sala de uma atividade.
 3. A API grava a mudança e publica a atualização.
-4. O app recebe por SSE; na configuração Vercel, consulta a cada 12 segundos.
+4. O app recebe por SSE; na configuração Vercel, consulta a cada minuto, só com a aba visível.
 
 Troca de sala gera aviso por padrão. A numeração usa a chave andar:zona e aparece nas atividades, planta e mapa 3D. Participante comum recebe 403 nas rotas da organização.
 

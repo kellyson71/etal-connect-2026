@@ -1409,9 +1409,9 @@ function pubEstado() {
     PUB.v = null;
     PUB.dono = D.person.id;
   }
-  /* também confere a cada 20 s com a tela aberta (aviso ao vivo perdido, ou hospedagem sem conexão contínua);
-     com a mesma versão, o servidor responde só "igual" */
-  if (!PUB.v || PUB.velho || Date.now() - PUB.em > 20000) {
+  /* também confere com a tela aberta, caso um aviso ao vivo se perca: a cada 20 s, ou a cada 60 s sem conexão
+     contínua (Vercel). Com a mesma versão, o servidor responde só "igual" */
+  if (!PUB.v || PUB.velho || Date.now() - PUB.em > (window.ETAL_CONFIG?.vivo === 'consulta' ? 60000 : 20000)) {
     PUB.velho = false;
     pubCarregar();
   }
