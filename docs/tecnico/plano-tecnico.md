@@ -120,16 +120,11 @@ A programação de exemplo sai do protótipo: `node scripts/app/exportar-program
 
 ## Pôr no ar
 
-1. Na máquina do IFRN: Docker e Docker Compose instalados; portas 80 e 443 abertas para a internet.
-2. DNS: `etal.nadic.ifrn.edu.br` apontando para a máquina (pedido à TI do IFRN).
-3. `git clone` do repositório; `cd deploy && cp .env.example .env` e preencher (segredo, senha do banco, SUAP, organização, e-mail).
-4. `docker compose up -d --build`. O Caddy pede o certificado HTTPS sozinho.
-5. Importar a programação: `docker compose exec api python -m app.importar programacao seed/programacao.json`.
-6. Importar inscritos do SUAP (opcional): `docker compose exec api python -m app.importar inscritos /caminho/inscritos.csv`.
-7. Imprimir os QRs: `https://DOMINIO/api/org/qrs` (logado como organização).
-8. Implantação automática: no GitHub, segredos `SSH_HOST`, `SSH_USUARIO`, `SSH_CHAVE`, `PASTA` e variável `IMPLANTAR=sim`.
-
-Backup: `docker compose exec db pg_dump -U etal etal > backup.sql` (agendar no cron da máquina durante o evento).
+Passo a passo completo em [`deploy/README.md`](../../deploy/README.md). Resumo: o GitHub gera duas imagens a cada push
+na `main` (`.github/workflows/publicar.yml`), o app (Caddy com o site montado) e a API, e publica no GitHub Container
+Registry, como os outros sistemas do NADIC. O servidor só tem `docker-compose.yml` e `.env`; o proxy dele (nginx ou
+Apache) encaminha o domínio para `127.0.0.1:8080`. Com os segredos de SSH configurados, o GitHub também atualiza o
+servidor. Migrações do banco rodam sozinhas quando a API sobe. Backup: `deploy/backup.sh`.
 
 ## Fases
 

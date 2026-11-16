@@ -1,0 +1,18 @@
+# Só o que a imagem do app usa (deploy/web.Dockerfile). O resto do repositório fica fora do contexto.
+*
+!prototipo
+!mapa3d
+!scripts/app
+!deploy/Caddyfile
+# gerados, locais ou de desenvolvimento
+prototipo/mapa3d
+prototipo/.venv
+prototipo/.certs
+prototipo/tests
+prototipo/server.py
+prototipo/server.log
+prototipo/rodar.sh
+prototipo/requirements.txt
+**/__pycache__
+mapa3d/tests
+mapa3d/servir.py
