@@ -21,6 +21,12 @@ Publicações no servidor
 - Limites por pessoa e limpeza depois de 90 dias (`python -m app.manutencao publicacoes`).
 - Moderação também no painel do computador, pela API.
 
+Publicação no servidor do NADIC
+- Duas imagens prontas, publicadas no GitHub Container Registry a cada push na `main`, no mesmo modelo do horários: o app (Caddy com o site e o mapa 3D já montados) e a API. O servidor só precisa do `docker-compose.yml` e do `.env`; com os segredos de SSH, o GitHub também atualiza o servidor.
+- Corrigido: a imagem da API não levava as migrações do banco e não subia; e o mapa 3D (gerado no build) ficava fora do site servido pelo Docker.
+- O app fica atrás do proxy do servidor (trechos prontos para nginx e Apache) ou, com as portas livres, pede o próprio certificado.
+- `deploy/README.md` (passo a passo), `deploy/diagnostico.sh` (o que o servidor tem) e `deploy/backup.sh` (banco e arquivos, 14 dias).
+
 Plano B
 - Listas de presença em papel para imprimir pelo painel (uma por atividade, já com quem salvou na agenda) e o lançamento delas depois, com presença marcada como manual.
 - `docs/contingencia.md`: o que fazer se o app, a internet, o SUAP ou o servidor falharem.
