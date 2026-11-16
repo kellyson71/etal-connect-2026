@@ -40,3 +40,24 @@ def test_banco_antigo_e_atualizado_sem_perder_dados(tmp_path):
         "    print(c.execute(text('SELECT nome FROM pessoas')).scalar(), c.execute(text('SELECT version_num FROM alembic_version')).scalar())\n"
     ))
     assert saida.startswith('Pessoa Antiga ')
+
+
+def test_banco_antigo_sem_alguma_tabela_ganha_as_que_faltam(tmp_path):
+    """Banco de uma versão ainda mais antiga, sem a tabela de materiais (o caso do banco da Vercel)."""
+    banco = f'sqlite:///{tmp_path / "bem-antigo.db"}'
+    _rodar(banco, (
+        'from alembic.config import Config; from alembic import command; from app.db import BASE, engine; from sqlalchemy import text\n'
+        "cfg = Config(str(BASE / 'alembic.ini')); command.upgrade(cfg, '0001')\n"
+        "with engine.begin() as c:\n"
+        "    c.execute(text('DROP TABLE alembic_version'))\n"
+        "    c.execute(text('DROP TABLE arquivos'))\n"
+        "    c.execute(text(\"INSERT INTO pessoas (tipo, nome, papel) VALUES ('visitante', 'Pessoa Antiga', 'participante')\"))\n"
+    ))
+    saida = _rodar(banco, (
+        'from app.db import migrar, engine; from sqlalchemy import text, inspect\n'
+        'migrar()\n'
+        "with engine.connect() as c:\n"
+        "    print(c.execute(text('SELECT nome FROM pessoas')).scalar(), 'arquivos' in inspect(c).get_table_names(),\n"
+        "          'publicacoes' in inspect(c).get_table_names())\n"
+    ))
+    assert saida.split() == ['Pessoa', 'Antiga', 'True', 'True']

@@ -27,11 +27,14 @@ SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
 
 BASE = Path(__file__).resolve().parents[1]
 REVISAO_BASE = '0001'  # tabelas como estavam antes das migrações
+TABELAS_BASE = ('pessoas', 'atividades', 'agenda', 'presencas', 'avisos', 'numeros_sala', 'links_acesso', 'cenarios_demo',
+                'arquivos')
 
 
 def migrar() -> None:
     """Leva o banco até a última migração (migracoes/versoes/). Um banco criado antes das migrações (com as tabelas e
-    sem alembic_version) é marcado na revisão base e segue dali."""
+    sem alembic_version) é marcado na revisão base e segue dali. Se ele for de uma versão ainda mais antiga, sem alguma
+    tabela da revisão base (o banco da Vercel não tinha a de materiais), essas tabelas são criadas antes."""
     from alembic import command
     from alembic.config import Config
 
@@ -40,6 +43,9 @@ def migrar() -> None:
         tabelas = set(inspect(con).get_table_names())
         cfg.attributes['conexao'] = con
         if 'pessoas' in tabelas and 'alembic_version' not in tabelas:
+            from . import modelos  # noqa: F401 (registra as tabelas)
+            faltam = [Base.metadata.tables[t] for t in TABELAS_BASE if t not in tabelas]
+            Base.metadata.create_all(con, tables=faltam)
             command.stamp(cfg, REVISAO_BASE)
         command.upgrade(cfg, 'head')
 
