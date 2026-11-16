@@ -5,6 +5,9 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY app ./app
 COPY seed ./seed
+# migrações do banco: a API aplica as que faltam ao iniciar (app/db.py)
+COPY alembic.ini ./
+COPY migracoes ./migracoes
 RUN useradd -r -u 10001 etal && mkdir -p /srv/arquivos && chown etal /srv/arquivos
 ENV ETAL_ARQUIVOS=/srv/arquivos
 USER etal
