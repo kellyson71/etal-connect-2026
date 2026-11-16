@@ -5,7 +5,7 @@
   "buildCommand": "sh scripts/app/vercel-build.sh",
   "outputDirectory": "publico",
   "functions": {
-    "api/index.py": { "includeFiles": "backend/{app,seed}/**", "maxDuration": 30 }
+    "api/index.py": { "includeFiles": "backend/{alembic.ini,app/**,seed/**,migracoes/**}", "maxDuration": 30 }
   },
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index" },
