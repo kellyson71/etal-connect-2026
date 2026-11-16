@@ -1,4 +1,16 @@
-{$DOMINIO} {
+# Servidor do app (imagem web): entrega o PWA e encaminha /api e /q para a API.
+# Por padrão escuta HTTP na porta 80 do contêiner e fica atrás do proxy do servidor (nginx ou Apache), que cuida do
+# HTTPS, como os outros sistemas do NADIC. Com SITE=etal.nadic.ifrn.edu.br, o próprio Caddy pede o certificado; aí as
+# portas 80 e 443 do servidor precisam ser dele (deploy/docker-compose.https.yml).
+{
+	servers {
+		# O proxy do servidor chega por uma rede privada (a do Docker): mantém o IP real de quem acessa e o https
+		# informado por ele. Sem isso, todo mundo pareceria vir do mesmo endereço e os limites por rede somariam todos.
+		trusted_proxies static private_ranges
+	}
+}
+
+{$SITE::80} {
 	encode zstd gzip
 	header {
 		Strict-Transport-Security "max-age=31536000"
@@ -23,8 +35,6 @@
 	# O app (PWA). O service worker não pode ficar em cache longo.
 	handle {
 		root * /srv/app
-		@privado path /server.py /server.log /rodar.sh /requirements.txt /.venv/*
-		respond @privado 404
 		header /sw.js Cache-Control "no-cache"
 		try_files {path} /index.html
 		file_server
