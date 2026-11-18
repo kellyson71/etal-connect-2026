@@ -919,6 +919,9 @@ const communityWrite = (change) => {
     return false;
   }
 };
+/* Publicar, comentar, curtir e denunciar: com o QR da recepção ou, com servidor, fora do horário do evento (antes do
+   primeiro dia a conversa já pode começar). O chat geral é aberto a quem entrou. */
+const communityPode = () => S.auth && (!!S.credAt || (API && !!PUB.v?.semCredencial));
 const canModerateCommunity = () => S.auth && (API ? !!D.person.org : !!orgDe());
 const communitySeeds = window.COMMUNITY.seeds;
 let communityMode = 'feed';
@@ -1077,7 +1080,7 @@ function communityWall(v) {
       ${photos.length ? `<div class="social-photo-grid">${photos.map(({ p, photo, index }) => `<button data-act="community-photo-open" data-id="${esc(p.id)}" data-index="${index}" aria-label="Ver foto ${index + 1} da publicação de ${esc(p.name)}"><img src="${esc(photo.src)}" alt="${esc(photo.alt || 'Foto no mural')}" loading="lazy"><span>${esc(p.name.split(' ')[0])} · ${p.day || '—'} nov</span></button>`).join('')}</div>` : communityEmpty('Nenhuma foto para estes filtros.')}</div>`;
 }
 function communityReportOpen(target) {
-  if (!S.credAt) {
+  if (!communityPode()) {
     toast('Leia o QR Code da recepção para participar.');
     return;
   }
@@ -1101,7 +1104,7 @@ Screens.communityPerson = ({ id }) => {
   const card = own ? cardGet() || {} : prof?.card || {};
   const who = own ? D.person : { ...person, ...(prof || {}), name: person.name, photo: person.photo };
   return {
-    html: `${header(own ? 'Seu perfil' : 'Participante')}<div class="pad social-card">${cardPreview(card, who, { own })}<div class="social-card-acts">${own ? `<button class="btn soft" data-go="cartao">${ic('pencil')}Editar perfil</button>` : S.credAt ? `<button class="btn soft" data-act="community-mention-person" data-id="${esc(person.id)}">${ic('contact')}Marcar na publicação</button>` : ''}</div></div><div class="community-feed">${posts.map((p) => communityPost(p, v)).join('') || communityEmpty('Ainda não há publicações.')}</div>`,
+    html: `${header(own ? 'Seu perfil' : 'Participante')}<div class="pad social-card">${cardPreview(card, who, { own })}<div class="social-card-acts">${own ? `<button class="btn soft" data-go="cartao">${ic('pencil')}Editar perfil</button>` : communityPode() ? `<button class="btn soft" data-act="community-mention-person" data-id="${esc(person.id)}">${ic('contact')}Marcar na publicação</button>` : ''}</div></div><div class="community-feed">${posts.map((p) => communityPost(p, v)).join('') || communityEmpty('Ainda não há publicações.')}</div>`,
   };
 };
 Screens.orgCommunity = () =>
@@ -1124,7 +1127,7 @@ function communityPost(p, v, detail = false) {
       ${
         detail
           ? `<section class="community-comments"><h2>Comentários</h2>${comments.length ? comments.map((c) => `<div class="community-comment"><button class="social-who" data-go="communityPerson" data-id="${esc(String(c.author))}" aria-label="Ver perfil">${communityAvatar(c)}</button><div><b data-go="communityPerson" data-id="${esc(String(c.author))}">${esc(c.author === String(D.person.id) ? D.person.name : c.name)}</b><p class="community-text">${communityText(c.text, v)}</p></div><button class="iconbtn social-report-button" data-act="community-report" data-target="${esc(SOCIAL.commentKey(p.id, c.id))}" aria-label="Denunciar comentário">${ic('flag')}</button></div>`).join('') : '<p class="community-muted">Comece essa conversa.</p>'}
-      ${S.credAt ? `<form data-form="community-comment" data-id="${esc(p.id)}" class="community-reply"><label class="sr-only" for="community-reply">Seu comentário</label><textarea id="community-reply" name="text" data-community-draft="comment" data-id="${esc(p.id)}" maxlength="1000" rows="2" placeholder="Escreva um comentário…" required>${esc(communityDraft.comments[p.id] || '')}</textarea><button class="iconbtn" type="submit" aria-label="Enviar comentário">${ic('arrow')}</button></form>` : communityGate()}</section>`
+      ${communityPode() ? `<form data-form="community-comment" data-id="${esc(p.id)}" class="community-reply"><label class="sr-only" for="community-reply">Seu comentário</label><textarea id="community-reply" name="text" data-community-draft="comment" data-id="${esc(p.id)}" maxlength="1000" rows="2" placeholder="Escreva um comentário…" required>${esc(communityDraft.comments[p.id] || '')}</textarea><button class="iconbtn" type="submit" aria-label="Enviar comentário">${ic('arrow')}</button></form>` : communityGate()}</section>`
           : ''
       }
     </article>`;
@@ -1146,7 +1149,7 @@ Screens.community = () => {
                   `<div class="community-message ${m.author === String(D.person.id) ? 'mine' : ''}"><div class="community-chat-author"><button class="social-who" data-go="communityPerson" data-id="${esc(String(m.author))}" aria-label="Ver perfil">${communityAvatar(m)}</button><b data-go="communityPerson" data-id="${esc(String(m.author))}">${esc(m.author === String(D.person.id) ? D.person.name : m.name)}</b><button class="iconbtn social-report-button" data-act="community-report" data-target="${esc(SOCIAL.messageKey(m.id))}" aria-label="Denunciar mensagem">${ic('flag')}</button></div><p class="community-text">${communityText(m.text, v)}</p><time>${esc(communityTime(m))}</time></div>`,
               )
               .join('')}</div>
-      ${S.credAt ? `<form data-form="community-message" class="community-reply community-chat-form"><label class="sr-only" for="community-message">Sua mensagem</label><textarea id="community-message" data-community-draft="message" name="text" rows="2" maxlength="1000" placeholder="Mande um oi para a galera…" required>${esc(communityDraft.message)}</textarea><button class="iconbtn" type="submit" aria-label="Enviar mensagem">${ic('arrow')}</button></form>` : communityGate()}</div>`
+      ${S.auth ? `<form data-form="community-message" class="community-reply community-chat-form"><label class="sr-only" for="community-message">Sua mensagem</label><textarea id="community-message" data-community-draft="message" name="text" rows="2" maxlength="1000" placeholder="Mande um oi para a galera…" required>${esc(communityDraft.message)}</textarea><button class="iconbtn" type="submit" aria-label="Enviar mensagem">${ic('arrow')}</button></form>` : communityGate()}</div>`
           : communityMode === 'wall'
             ? communityWall(v)
             : communityMode === 'mentions'
@@ -1158,7 +1161,7 @@ Screens.community = () => {
                     )
                     .join('') || communityEmpty('Quando alguém marcar você, a menção aparece aqui.')
                 }</div>`
-              : `<div class="community-feed">${communityMode === 'feed' && S.credAt ? `<div class="community-start"><button class="community-start-text" data-act="community-compose">${meAv()}<span>Compartilhe algo do evento…</span></button><div class="community-start-actions"><button data-act="community-compose" data-photo="1">${ic('image')}Foto / imagem</button><button data-act="community-compose">${ic('plus')}Publicar</button></div></div>` : communityMode === 'feed' ? communityGate() : ''}${(() => {
+              : `<div class="community-feed">${communityMode === 'feed' && communityPode() ? `<div class="community-start"><button class="community-start-text" data-act="community-compose">${meAv()}<span>Compartilhe algo do evento…</span></button><div class="community-start-actions"><button data-act="community-compose" data-photo="1">${ic('image')}Foto / imagem</button><button data-act="community-compose">${ic('plus')}Publicar</button></div></div>` : communityMode === 'feed' ? communityGate() : ''}${(() => {
                   const posts = communityPosts(v).filter(
                     (p) => communityMode !== 'saved' || (v.bookmarks[String(D.person.id)] || []).includes(p.id),
                   );
@@ -1234,9 +1237,9 @@ Screens.communityCompose = () => {
   const activity = byId(communityDraft.activity);
   const canPost = !communityImageBusy && (communityDraft.post.trim() || communityDraft.images.length);
   return {
-    html: `${header('Nova publicação', { right: S.credAt ? `<button class="compose-submit" type="submit" form="community-post-form" ${canPost ? '' : 'disabled'}>Publicar</button>` : '' })}
+    html: `${header('Nova publicação', { right: communityPode() ? `<button class="compose-submit" type="submit" form="community-post-form" ${canPost ? '' : 'disabled'}>Publicar</button>` : '' })}
       <div class="community-compose">${
-        S.credAt
+        communityPode()
           ? `<form id="community-post-form" class="post-editor" data-form="community-post">
         <div class="community-identity">${meAv()}<div><b>${esc(D.person.name)}</b><small>${esc(D.event?.name || 'ETAL')}</small></div></div>
         <details class="compose-context"><summary>${ic(activity ? 'pin' : 'cal')}<span><b>${esc(activity?.short || 'Adicionar atividade')}</b><small>${activity ? `${activity.day} nov · ${esc(activity.room)}` : 'Opcional'}${activity && communityDraft.contextReason === 'qr' ? ' · Check-in realizado' : activity && communityDraft.contextReason === 'agenda' ? ' · Na sua agenda agora' : ''}</small></span>${ic('chev')}</summary>
@@ -1387,7 +1390,50 @@ window.addEventListener('storage', (e) => {
    Ao vivo: o servidor avisa só o número da versão; o app busca de novo apenas se a versão mudou e se a tela de
    publicações estiver aberta (senão, quando ela abrir), com um atraso aleatório para os celulares não pedirem juntos. */
 const PUB = { v: null, dono: null, buscando: null, deNovo: false, velho: false, timer: 0, em: 0 };
-if (API) SOCIAL.usarServidor();
+if (API) SOCIAL.usarServidor({ exemplos: DEMO });
+/* /demo com servidor: as publicações e a mensagem de exemplo aparecem junto com as de verdade. Elas não existem no
+   servidor, então curtir, salvar, comentar, denunciar e moderar nelas fica neste aparelho. */
+const PUB_EXEMPLOS = 'etal-exemplos-demo';
+const pubExemplo = (id) => DEMO && SOCIAL.seeds.some((p) => p.id === id);
+function pubAlvoExemplo(alvo) {
+  const [tipo, id] = String(alvo).split(':');
+  return tipo === 'message' ? DEMO && SOCIAL.seedMessages.some((m) => m.id === id) : pubExemplo(id);
+}
+function pubExemplos() {
+  try {
+    return {
+      likes: {},
+      bookmarks: {},
+      comments: {},
+      moderation: {},
+      ...JSON.parse(localStorage.getItem(PUB_EXEMPLOS)),
+    };
+  } catch (_) {
+    return { likes: {}, bookmarks: {}, comments: {}, moderation: {} };
+  }
+}
+function pubExemplosAplicar(v) {
+  if (!DEMO || !v) return;
+  const ex = pubExemplos();
+  const me = String(D.person.id);
+  for (const p of SOCIAL.seeds) {
+    v.likes[p.id] = ex.likes[p.id] || [];
+    v.comments[p.id] = ex.comments[p.id] || [];
+  }
+  v.bookmarks[me] = [...(v.bookmarks[me] || []).filter((id) => !pubExemplo(id)), ...(ex.bookmarks[me] || [])];
+  for (const [alvo, m] of Object.entries(ex.moderation)) if (pubAlvoExemplo(alvo)) v.moderation[alvo] = m;
+}
+function pubExemplosMudar(change) {
+  const ex = pubExemplos();
+  change(ex, String(D.person.id));
+  try {
+    localStorage.setItem(PUB_EXEMPLOS, JSON.stringify(ex));
+  } catch (_) {
+    /* sem armazenamento: vale até recarregar */
+  }
+  pubExemplosAplicar(PUB.v);
+  rerender();
+}
 const PUB_TELAS = ['communityPost', 'communityPerson', 'orgCommunity', 'communityCompose'];
 const pubNaTela = () => S.auth && (S.tab === 'community' || PUB_TELAS.includes(top().s));
 const pubVistasKey = () => `etal-mencoes-vistas:${D.person.id}`;
@@ -1436,7 +1482,13 @@ function pubCarregar() {
   const versao = PUB.v ? `?versao=${PUB.v.versao}` : '';
   PUB.buscando = API.get('/api/publicacoes' + versao)
     .then((v) => {
-      if (v.igual) return;
+      if (v.igual) {
+        if (PUB.v && PUB.v.semCredencial !== v.semCredencial) {
+          PUB.v.semCredencial = v.semCredencial;
+          if (pubNaTela() && !pubDigitando() && !ov.classList.contains('open')) rerender();
+        }
+        return;
+      }
       for (const p of v.posts) for (const img of p.images || []) img.src = API.url(img.src);
       let vistas = [];
       try {
@@ -1445,6 +1497,7 @@ function pubCarregar() {
         /* sem armazenamento */
       }
       v.mentionSeen = { [String(D.person.id)]: vistas };
+      pubExemplosAplicar(v);
       PUB.v = v;
       if (pubNaTela() && !pubDigitando() && !ov.classList.contains('open')) rerender();
     })
@@ -1489,6 +1542,10 @@ function pubAlternar(lista, id) {
 }
 function pubCurtir(id) {
   const me = String(D.person.id);
+  if (pubExemplo(id)) {
+    pubExemplosMudar((ex) => (ex.likes[id] = pubAlternar(ex.likes[id] || [], me)));
+    return;
+  }
   if (PUB.v) PUB.v.likes[id] = pubAlternar(PUB.v.likes[id] || [], me);
   rerender();
   pubFazer(API.post(`/api/publicacoes/${encodeURIComponent(id)}/curtir`));
@@ -1496,6 +1553,14 @@ function pubCurtir(id) {
 function pubSalvar(id) {
   const me = String(D.person.id);
   let salvou = false;
+  if (pubExemplo(id)) {
+    pubExemplosMudar((ex) => {
+      salvou = !(ex.bookmarks[me] || []).includes(id);
+      ex.bookmarks[me] = pubAlternar(ex.bookmarks[me] || [], id);
+    });
+    toast(salvou ? 'Publicação salva' : 'Removida dos salvos');
+    return;
+  }
   if (PUB.v) {
     const antes = PUB.v.bookmarks[me] || [];
     salvou = !antes.includes(id);
@@ -1506,6 +1571,12 @@ function pubSalvar(id) {
   pubFazer(API.post(`/api/publicacoes/${encodeURIComponent(id)}/salvar`));
 }
 async function pubApagar(id) {
+  if (pubExemplo(id)) {
+    pubExemplosMudar((ex) => (ex.moderation[SOCIAL.postKey(id)] = { hidden: true }));
+    if (top().s === 'communityPost') navBack();
+    toast('Publicação tirada do ar (fica no histórico da moderação)');
+    return;
+  }
   const r = await pubFazer(API.del(`/api/publicacoes/${encodeURIComponent(id)}`));
   if (!r) return;
   if (top().s === 'communityPost') navBack();
@@ -1513,12 +1584,21 @@ async function pubApagar(id) {
   toast(r.resultado === 'oculta' ? 'Publicação tirada do ar (fica no histórico da moderação)' : 'Publicação excluída');
 }
 async function pubModerar(alvo, acao, nota) {
+  if (pubAlvoExemplo(alvo)) {
+    if (acao !== 'dismiss') pubExemplosMudar((ex) => (ex.moderation[alvo] = { hidden: acao === 'hide' }));
+    toast('Revisão salva');
+    return;
+  }
   if (await pubFazer(API.post('/api/publicacoes/moderar', { alvo, acao, nota }))) {
     rerender();
     toast('Revisão salva');
   }
 }
 async function pubDenunciar(alvo, motivo, detalhe) {
+  if (pubAlvoExemplo(alvo)) {
+    closeOverlay(() => toast('Denúncia registrada para revisão'));
+    return;
+  }
   const r = await pubFazer(
     API.post(`/api/publicacoes/${encodeURIComponent(pubIdDoAlvo(alvo))}/denunciar`, { motivo, detalhe }),
   );
@@ -1533,8 +1613,13 @@ async function pubDenunciar(alvo, motivo, detalhe) {
 let pubEnviando = false;
 async function pubEnviar(kind, text, postId) {
   if (pubEnviando) return false;
-  pubEnviando = true;
   const mencoes = communityMentions(text).map((p) => p.id);
+  if (kind === 'community-comment' && pubExemplo(postId)) {
+    const novo = { ...communityAuthor(), id: SOCIAL.uid(), created: Date.now(), text, mentions: mencoes };
+    pubExemplosMudar((ex) => (ex.comments[postId] = [...(ex.comments[postId] || []), novo]));
+    return true;
+  }
+  pubEnviando = true;
   const botao = $('.page:not(.leaving) .compose-submit');
   if (botao) botao.disabled = true;
   try {
@@ -5786,7 +5871,7 @@ ACOES['community-insert-mention'] = (el, e, a) => {
 };
 
 ACOES['community-mention-person'] = (el, e, a) => {
-  if (!S.credAt) return;
+  if (!communityPode()) return;
   const person = communityPeople().find((p) => p.id === el.dataset.id);
   if (!person) return;
   communityDraft.post += `${communityDraft.post && !communityDraft.post.endsWith(' ') ? ' ' : ''}@${person.handle} `;
@@ -5826,7 +5911,7 @@ ACOES['social-mod'] = (el, e, a) => {
 };
 
 ACOES['community-compose'] = (el, e, a) => {
-  if (!S.credAt) {
+  if (!communityPode()) {
     toast('Leia o QR da recepção para participar.');
     return;
   }
@@ -5842,7 +5927,7 @@ ACOES['community-remove-image'] = (el, e, a) => {
 };
 
 ACOES['community-like'] = (el, e, a) => {
-  if (!S.credAt) {
+  if (!communityPode()) {
     toast('Leia o QR da recepção para participar.');
     return;
   }
@@ -6570,7 +6655,7 @@ document.addEventListener('click', (e) => {
 document.addEventListener('submit', async (e) => {
   if (e.target.dataset.form === 'community-report') {
     e.preventDefault();
-    if (!S.auth || !S.credAt) {
+    if (!communityPode()) {
       toast('Leia o QR Code da recepção para participar.');
       return;
     }
@@ -6637,7 +6722,7 @@ document.addEventListener('submit', async (e) => {
 
   if (['community-post', 'community-message', 'community-comment'].includes(e.target.dataset.form)) {
     e.preventDefault();
-    if (!S.auth || !S.credAt) {
+    if (!S.auth || (e.target.dataset.form !== 'community-message' && !communityPode())) {
       toast('Leia o QR da recepção para participar.');
       return;
     }

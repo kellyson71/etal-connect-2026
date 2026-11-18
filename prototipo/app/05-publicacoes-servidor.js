@@ -6,7 +6,50 @@
    Ao vivo: o servidor avisa só o número da versão; o app busca de novo apenas se a versão mudou e se a tela de
    publicações estiver aberta (senão, quando ela abrir), com um atraso aleatório para os celulares não pedirem juntos. */
 const PUB = { v: null, dono: null, buscando: null, deNovo: false, velho: false, timer: 0, em: 0 };
-if (API) SOCIAL.usarServidor();
+if (API) SOCIAL.usarServidor({ exemplos: DEMO });
+/* /demo com servidor: as publicações e a mensagem de exemplo aparecem junto com as de verdade. Elas não existem no
+   servidor, então curtir, salvar, comentar, denunciar e moderar nelas fica neste aparelho. */
+const PUB_EXEMPLOS = 'etal-exemplos-demo';
+const pubExemplo = (id) => DEMO && SOCIAL.seeds.some((p) => p.id === id);
+function pubAlvoExemplo(alvo) {
+  const [tipo, id] = String(alvo).split(':');
+  return tipo === 'message' ? DEMO && SOCIAL.seedMessages.some((m) => m.id === id) : pubExemplo(id);
+}
+function pubExemplos() {
+  try {
+    return {
+      likes: {},
+      bookmarks: {},
+      comments: {},
+      moderation: {},
+      ...JSON.parse(localStorage.getItem(PUB_EXEMPLOS)),
+    };
+  } catch (_) {
+    return { likes: {}, bookmarks: {}, comments: {}, moderation: {} };
+  }
+}
+function pubExemplosAplicar(v) {
+  if (!DEMO || !v) return;
+  const ex = pubExemplos();
+  const me = String(D.person.id);
+  for (const p of SOCIAL.seeds) {
+    v.likes[p.id] = ex.likes[p.id] || [];
+    v.comments[p.id] = ex.comments[p.id] || [];
+  }
+  v.bookmarks[me] = [...(v.bookmarks[me] || []).filter((id) => !pubExemplo(id)), ...(ex.bookmarks[me] || [])];
+  for (const [alvo, m] of Object.entries(ex.moderation)) if (pubAlvoExemplo(alvo)) v.moderation[alvo] = m;
+}
+function pubExemplosMudar(change) {
+  const ex = pubExemplos();
+  change(ex, String(D.person.id));
+  try {
+    localStorage.setItem(PUB_EXEMPLOS, JSON.stringify(ex));
+  } catch (_) {
+    /* sem armazenamento: vale até recarregar */
+  }
+  pubExemplosAplicar(PUB.v);
+  rerender();
+}
 const PUB_TELAS = ['communityPost', 'communityPerson', 'orgCommunity', 'communityCompose'];
 const pubNaTela = () => S.auth && (S.tab === 'community' || PUB_TELAS.includes(top().s));
 const pubVistasKey = () => `etal-mencoes-vistas:${D.person.id}`;
@@ -55,7 +98,13 @@ function pubCarregar() {
   const versao = PUB.v ? `?versao=${PUB.v.versao}` : '';
   PUB.buscando = API.get('/api/publicacoes' + versao)
     .then((v) => {
-      if (v.igual) return;
+      if (v.igual) {
+        if (PUB.v && PUB.v.semCredencial !== v.semCredencial) {
+          PUB.v.semCredencial = v.semCredencial;
+          if (pubNaTela() && !pubDigitando() && !ov.classList.contains('open')) rerender();
+        }
+        return;
+      }
       for (const p of v.posts) for (const img of p.images || []) img.src = API.url(img.src);
       let vistas = [];
       try {
@@ -64,6 +113,7 @@ function pubCarregar() {
         /* sem armazenamento */
       }
       v.mentionSeen = { [String(D.person.id)]: vistas };
+      pubExemplosAplicar(v);
       PUB.v = v;
       if (pubNaTela() && !pubDigitando() && !ov.classList.contains('open')) rerender();
     })
@@ -108,6 +158,10 @@ function pubAlternar(lista, id) {
 }
 function pubCurtir(id) {
   const me = String(D.person.id);
+  if (pubExemplo(id)) {
+    pubExemplosMudar((ex) => (ex.likes[id] = pubAlternar(ex.likes[id] || [], me)));
+    return;
+  }
   if (PUB.v) PUB.v.likes[id] = pubAlternar(PUB.v.likes[id] || [], me);
   rerender();
   pubFazer(API.post(`/api/publicacoes/${encodeURIComponent(id)}/curtir`));
@@ -115,6 +169,14 @@ function pubCurtir(id) {
 function pubSalvar(id) {
   const me = String(D.person.id);
   let salvou = false;
+  if (pubExemplo(id)) {
+    pubExemplosMudar((ex) => {
+      salvou = !(ex.bookmarks[me] || []).includes(id);
+      ex.bookmarks[me] = pubAlternar(ex.bookmarks[me] || [], id);
+    });
+    toast(salvou ? 'Publicação salva' : 'Removida dos salvos');
+    return;
+  }
   if (PUB.v) {
     const antes = PUB.v.bookmarks[me] || [];
     salvou = !antes.includes(id);
@@ -125,6 +187,12 @@ function pubSalvar(id) {
   pubFazer(API.post(`/api/publicacoes/${encodeURIComponent(id)}/salvar`));
 }
 async function pubApagar(id) {
+  if (pubExemplo(id)) {
+    pubExemplosMudar((ex) => (ex.moderation[SOCIAL.postKey(id)] = { hidden: true }));
+    if (top().s === 'communityPost') navBack();
+    toast('Publicação tirada do ar (fica no histórico da moderação)');
+    return;
+  }
   const r = await pubFazer(API.del(`/api/publicacoes/${encodeURIComponent(id)}`));
   if (!r) return;
   if (top().s === 'communityPost') navBack();
@@ -132,12 +200,21 @@ async function pubApagar(id) {
   toast(r.resultado === 'oculta' ? 'Publicação tirada do ar (fica no histórico da moderação)' : 'Publicação excluída');
 }
 async function pubModerar(alvo, acao, nota) {
+  if (pubAlvoExemplo(alvo)) {
+    if (acao !== 'dismiss') pubExemplosMudar((ex) => (ex.moderation[alvo] = { hidden: acao === 'hide' }));
+    toast('Revisão salva');
+    return;
+  }
   if (await pubFazer(API.post('/api/publicacoes/moderar', { alvo, acao, nota }))) {
     rerender();
     toast('Revisão salva');
   }
 }
 async function pubDenunciar(alvo, motivo, detalhe) {
+  if (pubAlvoExemplo(alvo)) {
+    closeOverlay(() => toast('Denúncia registrada para revisão'));
+    return;
+  }
   const r = await pubFazer(
     API.post(`/api/publicacoes/${encodeURIComponent(pubIdDoAlvo(alvo))}/denunciar`, { motivo, detalhe }),
   );
@@ -152,8 +229,13 @@ async function pubDenunciar(alvo, motivo, detalhe) {
 let pubEnviando = false;
 async function pubEnviar(kind, text, postId) {
   if (pubEnviando) return false;
-  pubEnviando = true;
   const mencoes = communityMentions(text).map((p) => p.id);
+  if (kind === 'community-comment' && pubExemplo(postId)) {
+    const novo = { ...communityAuthor(), id: SOCIAL.uid(), created: Date.now(), text, mentions: mencoes };
+    pubExemplosMudar((ex) => (ex.comments[postId] = [...(ex.comments[postId] || []), novo]));
+    return true;
+  }
+  pubEnviando = true;
   const botao = $('.page:not(.leaving) .compose-submit');
   if (botao) botao.disabled = true;
   try {
