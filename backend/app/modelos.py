@@ -14,6 +14,8 @@ class Pessoa(Base):
     matricula: Mapped[str | None] = mapped_column(String(32), unique=True)
     email: Mapped[str | None] = mapped_column(String(254), unique=True)
     nome: Mapped[str] = mapped_column(String(200))
+    # nome completo no SUAP (social ou de registro): é por ele que a pessoa é achada nas listas de inscrição
+    nome_completo: Mapped[str | None] = mapped_column(String(200))
     curso: Mapped[str | None] = mapped_column(String(200))
     campus: Mapped[str | None] = mapped_column(String(120))
     instituicao: Mapped[str | None] = mapped_column(String(200))

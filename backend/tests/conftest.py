@@ -7,7 +7,7 @@ import pytest
 BASE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BASE))
 os.environ.update({'ETAL_BANCO': 'sqlite:///./teste.db', 'ETAL_LOGIN_DEV': '1', 'ETAL_JANELA_PRESENCA': '0',
-                   'ETAL_SEGREDO': 'segredo-de-teste', 'ETAL_URL_PUBLICA': 'http://teste',
+                   'ETAL_SEGREDO': 'segredo-de-teste', 'ETAL_SUAP_INSCRICOES_URL': '', 'ETAL_URL_PUBLICA': 'http://teste',
                    'ETAL_ARQUIVOS': str(Path(__file__).resolve().parents[1] / '.arquivos-teste')})
 
 

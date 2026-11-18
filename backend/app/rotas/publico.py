@@ -10,7 +10,7 @@ from fastapi.responses import Response, StreamingResponse
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from .. import formatos
+from .. import formatos, suap_inscricoes
 from ..ao_vivo import canal
 from ..db import sessao
 from ..modelos import Agenda, Atividade, Aviso, NumeroSala, Presenca
@@ -41,7 +41,16 @@ def programacao(request: Request, db: Session = Depends(sessao)):
     inscritos = Counter(dict(db.execute(select(Agenda.atividade_id, func.count()).group_by(Agenda.atividade_id)).all()))
     ativs = db.scalars(select(Atividade).order_by(Atividade.data, Atividade.inicio)).all()
     salas = {n.chave: n.numero for n in db.scalars(select(NumeroSala))}
-    return _json_com_etag(request, {'sessions': [formatos.atividade(a, inscritos[a.id]) for a in ativs], 'rooms': salas})
+    sessoes = [formatos.atividade(a, inscritos[a.id]) for a in ativs]
+    # minicursos: vagas de verdade, da página de inscrição do evento no SUAP (quando ela responde)
+    lidas = suap_inscricoes.atividades()
+    if lidas:
+        mapa = suap_inscricoes.correspondencia(lidas, [a for a in ativs if a.tipo in suap_inscricoes.COM_INSCRICAO])
+        for s in sessoes:
+            achada = mapa.get(s['id'])
+            if achada and achada.restantes is not None:
+                s['seats'], s['taken'] = achada.participantes + achada.restantes, achada.participantes
+    return _json_com_etag(request, {'sessions': sessoes, 'rooms': salas})
 
 
 @rota.get('/avisos')

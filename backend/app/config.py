@@ -20,6 +20,9 @@ class Config(BaseSettings):
 
     # OAuth2 do SUAP: a aplicação precisa ser registrada pela TI do IFRN.
     suap_portal: bool = False
+    # Página pública de inscrição do evento no SUAP: vagas reais dos minicursos e quem está inscrito em cada um
+    # (app/suap_inscricoes.py). Vazio desliga.
+    suap_inscricoes_url: str = 'https://suap.ifrn.edu.br/eventos/inscricao/1/8528/'
     suap_client_id: str = ''
     suap_client_secret: str = ''
     suap_authorize_url: str = 'https://suap.ifrn.edu.br/o/authorize/'

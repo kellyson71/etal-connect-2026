@@ -6,10 +6,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 from urllib.parse import quote
 from pydantic import BaseModel, Field
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
-from .. import arquivos, formatos
+from .. import arquivos, formatos, suap_inscricoes
 from ..ao_vivo import canal
 from ..config import config
 from ..db import sessao
@@ -18,18 +18,42 @@ from ..modelos import Agenda, Arquivo, Atividade, Pessoa, Presenca
 from ..seguranca import agora, ler_qr, pessoa_atual
 
 rota = APIRouter(prefix='/api', tags=['participante'])
+# Minicurso e oficina têm vaga limitada e a inscrição é no SUAP: quem está inscrito vem da lista de inscritos da página
+# do evento no SUAP (app/suap_inscricoes.py) ou da lista importada pela organização (python -m app.importar inscritos),
+# não do marcador do app.
+COM_INSCRICAO = suap_inscricoes.COM_INSCRICAO
+
+
+def sincronizar_inscricoes(db: Session, p: Pessoa) -> set[str]:
+    """Põe na agenda as atividades em que a pessoa está inscrita no SUAP. Nos minicursos a lista manda sozinha: o que
+    saiu da lista sai da agenda (os que não estão na página ficam, como os da lista importada). Devolve as inscrições."""
+    lidas = suap_inscricoes.atividades()
+    if not lidas:
+        return set()
+    ativs = db.scalars(select(Atividade)).all()
+    mapa = suap_inscricoes.correspondencia(lidas, ativs)
+    if not mapa:
+        return set()
+    tipos = {a.id: a.tipo for a in ativs}
+    meus = {aid for aid, s in mapa.items() if suap_inscricoes.esta_na_lista([p.nome_completo, p.nome], s)}
+    atuais = set(db.scalars(select(Agenda.atividade_id).where(Agenda.pessoa_id == p.id, Agenda.atividade_id.in_(list(mapa)))))
+    for aid in meus - atuais:
+        db.add(Agenda(pessoa_id=p.id, atividade_id=aid))
+    sair = {aid for aid in atuais - meus if tipos.get(aid) in COM_INSCRICAO}
+    if sair:
+        db.execute(delete(Agenda).where(Agenda.pessoa_id == p.id, Agenda.atividade_id.in_(sair)))
+    if sair or meus - atuais:
+        db.commit()
+    return meus
 
 
 @rota.get('/eu')
 def eu(p: Pessoa = Depends(pessoa_atual), db: Session = Depends(sessao)):
+    """Perfil, agenda e presenças. `inscricoes`: atividades em que a pessoa está inscrita no SUAP (já na agenda)."""
+    inscricoes = sincronizar_inscricoes(db, p)
     agenda = db.scalars(select(Agenda.atividade_id).where(Agenda.pessoa_id == p.id)).all()
     pres = {a: em.strftime('%H:%M') for a, em in db.execute(select(Presenca.atividade_id, Presenca.em).where(Presenca.pessoa_id == p.id))}
-    return {'person': formatos.pessoa(p), 'saved': list(agenda), 'present': pres}
-
-
-# Minicurso e oficina têm vaga limitada e a inscrição é no SUAP: quem está inscrito vem da lista importada pela
-# organização (python -m app.importar inscritos), não do marcador do app.
-COM_INSCRICAO = {'Minicurso', 'Oficina'}
+    return {'person': formatos.pessoa(p), 'saved': list(agenda), 'inscricoes': sorted(inscricoes), 'present': pres}
 
 
 @rota.post('/eu/agenda/{atividade_id}')
@@ -52,6 +76,8 @@ def tirar(atividade_id: str, p: Pessoa = Depends(pessoa_atual), db: Session = De
     a = db.get(Atividade, atividade_id)
     if a and a.tipo in COM_INSCRICAO:
         raise HTTPException(409, 'Para cancelar a inscrição no minicurso, use o SUAP.')
+    if a and a.id in sincronizar_inscricoes(db, p):
+        raise HTTPException(409, 'Você está inscrito nesta atividade no SUAP. Para cancelar, use o SUAP.')
     item = db.scalar(select(Agenda).where(Agenda.pessoa_id == p.id, Agenda.atividade_id == atividade_id))
     if item:
         db.delete(item)

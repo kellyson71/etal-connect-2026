@@ -89,7 +89,7 @@ def ambiente():
         banco = Path(pasta) / 'e2e.db'
         env = {**os.environ, 'ETAL_BANCO': f'sqlite:///{banco}', 'ETAL_LOGIN_DEV': '1', 'ETAL_JANELA_PRESENCA': '0',
                'ETAL_SEGREDO': 'segredo-do-teste-de-ponta-a-ponta', 'ETAL_ARQUIVOS': str(Path(pasta) / 'arquivos'),
-               'ETAL_ORIGENS': base, 'ETAL_URL_PUBLICA': base}
+               'ETAL_ORIGENS': base, 'ETAL_URL_PUBLICA': base, 'ETAL_SUAP_INSCRICOES_URL': ''}
         py = python_api()
         subprocess.run([py, '-m', 'app.importar', 'programacao', 'seed/programacao.json'], cwd=BACK, env=env,
                        check=True, capture_output=True)
