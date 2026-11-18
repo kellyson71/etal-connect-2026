@@ -36,6 +36,10 @@ ACOES['rate'] = (el, e, a) => {
 
 ACOES['save'] = (el, e, a) => {
   const id = el.dataset.id;
+  if (inscrito(byId(id))) {
+    toast('Você está inscrito nesta atividade no SUAP');
+    return;
+  }
   if (comInscricao(byId(id))) {
     toast('A inscrição em minicurso é feita no SUAP');
     return;

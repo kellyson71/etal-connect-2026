@@ -125,7 +125,7 @@ function savedEmpty(day) {
   return `<div class="empty-saved">
       ${illo('mark')}
       <h3 class="st" ${st(1)}>Nada salvo na ${week}</h3>
-      <p class="st" ${st(2)}>Toque no marcador de uma palestra ou mesa e ela entra na sua agenda. Minicursos aparecem aqui quando você se inscreve no SUAP.</p>
+      <p class="st" ${st(2)}>Toque no marcador de uma palestra ou mesa e ela entra na sua agenda. Atividades em que você se inscreveu no SUAP aparecem aqui sozinhas.</p>
       ${others.length ? `<div class="es-days st" ${st(3)}>${others.map(([x, n]) => `<button data-act="day" data-day="${x.day}">${x.week} ${x.day}<b>${n} ${n === 1 ? 'salva' : 'salvas'}</b></button>`).join('')}</div>` : ''}
       ${ideas.length ? `<section class="es-ideas st" ${st(4)}><h4>Sugestões para esse dia</h4><ul>${ideas.map((q) => `<li ${goOf(q)}><time>${q.time}</time><span><b>${q.short}</b><small>${q.type} · ${q.room}</small></span><button class="bm" data-act="save" data-id="${q.id}" aria-label="Salvar ${q.short}">${ic('bookmark')}</button></li>`).join('')}</ul></section>` : ''}
       <button class="btn soft st" ${st(5)} data-act="filter" data-f="all">Ver toda a programação</button>
@@ -156,15 +156,15 @@ Screens.agenda = () => {
        marcador à direita. O tipo aparece no hexágono colorido (as cores são as dos hexágonos do logo do ETAL), não em
        texto; a legenda das cores são os filtros logo acima. Vagas só aparecem quando acabando ou esgotadas. */
   const bm = (s) =>
-    comInscricao(s)
+    comInscricao(s) || inscrito(s)
       ? ''
       : `<button class="bm ${S.saved.has(s.id) ? 'on' : ''}" data-act="save" data-id="${s.id}" aria-label="${S.saved.has(s.id) ? 'Remover dos salvos' : 'Salvar'}">${ic('bookmark')}</button>`;
   const hexa = (s) =>
     `<span class="ses-hex" role="img" aria-label="${s.type}"><svg viewBox="-20 -20 40 40" aria-hidden="true"><path d="M0-18.5 16-9.25v18.5L0 18.5-16 9.25v-18.5Z"/></svg>${ic(tipoDe(s).icon)}</span>`;
   const selo = (s) => {
     /* minicurso: inscrito no SUAP, ou as vagas preenchidas (discreto) */
-    if (comInscricao(s))
-      return inscrito(s) ? `<span class="ses-selo inscrito">${ic('check')}Inscrito</span>` : vagasLinha(s);
+    if (inscrito(s)) return `<span class="ses-selo inscrito">${ic('check')}Inscrito</span>`;
+    if (comInscricao(s)) return vagasLinha(s);
     /* "agora" já aparece na linha do tempo */ if (!s.seats) return '';
     const n = s.seats - s.taken;
     return n <= 0

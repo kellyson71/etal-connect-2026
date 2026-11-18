@@ -7,6 +7,8 @@ const fresh = () => ({
   credAt: null,
   present: {},
   saved: new Set(D.enrolled),
+  /* atividades em que a pessoa está inscrita no SUAP (vem do servidor; ficam na agenda e não saem pelo app) */
+  inscricoes: new Set(),
   tab: 'home',
   stacks: {
     community: [{ s: 'community' }],

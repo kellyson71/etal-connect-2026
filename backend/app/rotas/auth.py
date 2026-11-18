@@ -61,6 +61,7 @@ def _pessoa_suap(d: dict, db: Session) -> Pessoa | None:
         p = Pessoa(tipo='suap', matricula=matricula)
         db.add(p)
     p.nome = _nome_bonito(d.get('nome_usual') or d.get('nome') or matricula)
+    p.nome_completo = d.get('nome_social') or d.get('nome_registro') or d.get('nome') or p.nome_completo
     p.email = p.email or (email if email and not db.scalar(select(Pessoa).where(Pessoa.email == email, Pessoa.id != p.id)) else None)
     p.campus = d.get('campus') or p.campus
     foto = d.get('foto') or d.get('url_foto_150x200') or ''
