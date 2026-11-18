@@ -50,8 +50,10 @@ Isso eu fiquei com receio, então ficou assim:
 
 ## Agenda
 
-- A pessoa salva as atividades que quer ver.
-- Se a atividade tem vagas, salvar respeita o limite: acabou a vaga, o app não deixa.
+- A pessoa salva as palestras, mesas e demais atividades abertas que quer ver.
+- Minicurso (e oficina) tem vaga limitada e a inscrição é feita no SUAP, não no app. Por isso minicurso não tem marcador: o app mostra as vagas preenchidas (ex.: 26 de 30) e um botão que leva à inscrição no SUAP.
+- Quem está inscrito em cada minicurso vem da lista do SUAP que a organização importa. O minicurso entra sozinho na agenda da pessoa, com o selo "Inscrito", em "Meus minicursos" na tela inicial e no filtro "Minha agenda". Cancelar é pelo SUAP.
+- A aba Programação mostra tudo; "Minha agenda" é o filtro com o que a pessoa salvou e os minicursos em que está inscrita.
 - Pode salvar duas coisas no mesmo horário, mas o app avisa.
 - Lembrete 10 minutos antes de cada atividade salva, com a sala e o caminho.
 

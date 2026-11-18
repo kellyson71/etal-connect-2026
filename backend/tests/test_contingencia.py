@@ -2,9 +2,12 @@
 from conftest import entrar
 
 
-def test_lista_em_papel_traz_quem_salvou_e_linhas_em_branco(app_cliente):
+def test_lista_em_papel_traz_quem_se_inscreveu_e_linhas_em_branco(app_cliente, tmp_path):
+    from app import importar
     entrar(app_cliente, 'Zé <Script>', matricula='20250001')
-    app_cliente.post('/api/eu/agenda/game-maker')
+    lista = tmp_path / 'inscritos.csv'
+    lista.write_text('nome;matricula;atividades\nZé <Script>;20250001;game-maker\n', encoding='utf-8')
+    assert importar.inscritos(str(lista)) == (0, 1)
     entrar(app_cliente, 'Equipe', org=True, matricula='org')
     r = app_cliente.get('/api/org/listas-papel?atividade=game-maker')
     assert r.status_code == 200 and 'text/html' in r.headers['content-type']

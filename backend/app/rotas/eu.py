@@ -27,9 +27,17 @@ def eu(p: Pessoa = Depends(pessoa_atual), db: Session = Depends(sessao)):
     return {'person': formatos.pessoa(p), 'saved': list(agenda), 'present': pres}
 
 
+# Minicurso e oficina têm vaga limitada e a inscrição é no SUAP: quem está inscrito vem da lista importada pela
+# organização (python -m app.importar inscritos), não do marcador do app.
+COM_INSCRICAO = {'Minicurso', 'Oficina'}
+
+
 @rota.post('/eu/agenda/{atividade_id}')
 def salvar(atividade_id: str, p: Pessoa = Depends(pessoa_atual), db: Session = Depends(sessao)):
+    """Salva uma atividade na agenda. Minicurso e oficina não: a inscrição neles é feita no SUAP."""
     a = db.get(Atividade, atividade_id) or _404()
+    if a.tipo in COM_INSCRICAO:
+        raise HTTPException(409, 'A inscrição neste minicurso é feita no SUAP.')
     if not db.scalar(select(Agenda).where(Agenda.pessoa_id == p.id, Agenda.atividade_id == a.id)):
         if a.vagas and db.scalar(select(func.count()).select_from(Agenda).where(Agenda.atividade_id == a.id)) >= a.vagas:
             raise HTTPException(409, 'Vagas esgotadas.')
@@ -40,6 +48,10 @@ def salvar(atividade_id: str, p: Pessoa = Depends(pessoa_atual), db: Session = D
 
 @rota.delete('/eu/agenda/{atividade_id}')
 def tirar(atividade_id: str, p: Pessoa = Depends(pessoa_atual), db: Session = Depends(sessao)):
+    """Tira da agenda. A inscrição em minicurso só sai pelo SUAP (e pela próxima lista importada)."""
+    a = db.get(Atividade, atividade_id)
+    if a and a.tipo in COM_INSCRICAO:
+        raise HTTPException(409, 'Para cancelar a inscrição no minicurso, use o SUAP.')
     item = db.scalar(select(Agenda).where(Agenda.pessoa_id == p.id, Agenda.atividade_id == atividade_id))
     if item:
         db.delete(item)

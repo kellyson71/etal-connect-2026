@@ -32,7 +32,7 @@ Os dados de alunos (inclusive menores de idade) ficam dentro do IFRN.
 | `POST /api/auth/visitante` → `GET /api/auth/link` | visitantes | link de entrada por e-mail (30 min, uso único) |
 | `POST /api/auth/dev` | só com `ETAL_LOGIN_DEV=1` | entrada sem senha, para testar |
 | `GET /api/eu` | logado | perfil, agenda, presenças, credenciamento |
-| `POST/DELETE /api/eu/agenda/{id}` | logado | salvar atividade (respeita vagas) |
+| `POST/DELETE /api/eu/agenda/{id}` | logado | salvar atividade (respeita vagas); minicurso e oficina não (409: inscrição no SUAP) |
 | `POST /api/presenca` | logado | QR do evento credencia; QR de atividade registra presença (sem duplicar) |
 | `POST /api/org/avisos` | organização | aviso (vai na hora para todos) |
 | `PATCH /api/org/atividades/{id}/sala` | organização | troca de sala com aviso automático |

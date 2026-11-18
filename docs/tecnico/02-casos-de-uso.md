@@ -34,7 +34,7 @@ Resultado: a pessoa está autenticada. O campo de credenciamento pode continuar 
 3. Salvar na agenda pessoal.
 4. Abrir a localização; o mapa usa andar e zona para desenhar a rota.
 
-No modo API, salvar envia POST /api/eu/agenda/{atividade_id}. Repetir não duplica. Atividade inexistente retorna 404; vagas esgotadas retornam 409. Remover usa DELETE na mesma rota. Salvar não registra presença.
+No modo API, salvar envia POST /api/eu/agenda/{atividade_id}. Repetir não duplica. Atividade inexistente retorna 404; vagas esgotadas retornam 409. Remover usa DELETE na mesma rota. Salvar não registra presença. Minicurso e oficina retornam 409 nas duas operações: a inscrição é feita no SUAP e chega pela lista importada (`python -m app.importar inscritos`, coluna `atividades`).
 
 ## Achar um lugar e traçar a rota
 
