@@ -170,7 +170,7 @@ function profileEditOpen() {
   if (!S.auth && !lgPending) return;
   profileEditDraft = { name: D.person.name, photo: D.person.photo || null };
   openOverlay(
-    `<form class="sheet profile-editor" data-form="profile-edit" role="dialog" aria-modal="true" aria-labelledby="profile-edit-title"><i class="grab"></i><header><h2 id="profile-edit-title">Editar perfil</h2><button type="button" class="iconbtn" data-act="closeov" aria-label="Fechar edição">${ic('x')}</button></header>
+    `<form class="sheet profile-editor" data-form="profile-edit" role="dialog" aria-modal="true" aria-labelledby="profile-edit-title"><i class="grab"></i><header><h2 id="profile-edit-title">Foto e nome</h2><button type="button" class="iconbtn" data-act="closeov" aria-label="Fechar edição">${ic('x')}</button></header>
       <div class="profile-edit-photo"></div><label class="btn soft community-file">${ic('image')}Escolher foto<input id="profile-photo" type="file" accept="image/jpeg,image/png,image/webp"></label>
       <div class="profile-presets" aria-label="Avatares ilustrados">${PROFILE_AVATARS.map((src, i) => `<button type="button" data-act="profile-preset" data-index="${i}" aria-label="Usar avatar ilustrado ${i + 1}"><img src="${esc(src)}" alt=""></button>`).join('')}</div>
       <button class="profile-remove" type="button" data-act="profile-remove-photo">Remover foto</button>

@@ -150,6 +150,17 @@ const TIPOS = {
 };
 const TIPOS_G = new Set(['pal', 'mesa', 'mini', 'camp']);
 const tipoDe = (x) => TIPOS[x.type] || { k: 'out', g: 'out', icon: 'cal', formato: '' };
+/* Minicurso e oficina têm vaga limitada e a inscrição é feita no SUAP: no app não se salvam. Quem está inscrito vem da
+   lista da organização (com servidor, a agenda importada; sem servidor, D.enrolled), e o app só mostra e leva ao SUAP. */
+const comInscricao = (x) => tipoDe(x).g === 'mini';
+const inscrito = (x) => comInscricao(x) && S.saved.has(x.id);
+const linkInscricao = (x) => x.inscricao || x.link || '';
+const vagasLivres = (x) => (x.seats ? Math.max(0, x.seats - (x.taken || 0)) : null);
+/* vagas preenchidas, discreto: barrinha e "26 de 30" (cheio vira "Esgotado") */
+const vagasLinha = (x) =>
+  !x.seats
+    ? ''
+    : `<span class="vagas-linha ${vagasLivres(x) === 0 ? 'cheio' : vagasLivres(x) <= 5 ? 'pouca' : ''}">${seatBar(x)}<small>${vagasLivres(x) === 0 ? 'Esgotado' : `${Math.min(x.taken || 0, x.seats)} de ${x.seats} vagas`}</small></span>`;
 const duracao = (x) => {
   if (!x.end) return '';
   const [a, b] = [x.time, x.end].map((t) => {
@@ -792,7 +803,7 @@ function profileEditOpen() {
   if (!S.auth && !lgPending) return;
   profileEditDraft = { name: D.person.name, photo: D.person.photo || null };
   openOverlay(
-    `<form class="sheet profile-editor" data-form="profile-edit" role="dialog" aria-modal="true" aria-labelledby="profile-edit-title"><i class="grab"></i><header><h2 id="profile-edit-title">Editar perfil</h2><button type="button" class="iconbtn" data-act="closeov" aria-label="Fechar edição">${ic('x')}</button></header>
+    `<form class="sheet profile-editor" data-form="profile-edit" role="dialog" aria-modal="true" aria-labelledby="profile-edit-title"><i class="grab"></i><header><h2 id="profile-edit-title">Foto e nome</h2><button type="button" class="iconbtn" data-act="closeov" aria-label="Fechar edição">${ic('x')}</button></header>
       <div class="profile-edit-photo"></div><label class="btn soft community-file">${ic('image')}Escolher foto<input id="profile-photo" type="file" accept="image/jpeg,image/png,image/webp"></label>
       <div class="profile-presets" aria-label="Avatares ilustrados">${PROFILE_AVATARS.map((src, i) => `<button type="button" data-act="profile-preset" data-index="${i}" aria-label="Usar avatar ilustrado ${i + 1}"><img src="${esc(src)}" alt=""></button>`).join('')}</div>
       <button class="profile-remove" type="button" data-act="profile-remove-photo">Remover foto</button>
@@ -2123,14 +2134,24 @@ function badge() {
 /* app/07-inicio-e-agenda.js · início e agenda.
    Parte do app.js: os arquivos de prototipo/app/ rodam juntos, na ordem dos números, no mesmo escopo
    (scripts/app/montar-app.mjs). */
+/* linha da agenda na home: minicurso inscrito ganha o selo "Inscrito" (a inscrição é no SUAP) */
+const nextRow = (n) =>
+  `<li data-go="activity" data-id="${n.id}"><span class="date"><small>${dayOf(n.day).week}</small><b>${n.day}</b></span><span class="next-tx"><b>${n.short}</b><small>${n.time} · ${n.room}</small>${inscrito(n) ? `<em class="selo-inscrito">${ic('check')}Inscrito</em>` : ''}</span>
+            <button class="remind ${S.reminders.has(n.id) ? 'on' : ''}" data-act="remind" data-id="${n.id}" aria-pressed="${S.reminders.has(n.id)}" aria-label="Lembrar 10 minutos antes">${ic('alarm')}</button></li>`;
 Screens.home = () => {
   const s = byId('react-native');
   const here = S.present[s.id];
-  const next = D.enrolled.map(byId).filter((x) => x.id !== s.id);
+  /* o que a pessoa salvou e os minicursos em que está inscrita (no SUAP), em ordem de dia e hora */
+  const meus = [...S.saved]
+    .map(byId)
+    .filter((x) => x && x.id !== s.id)
+    .sort((a, b) => a.day - b.day || a.time.localeCompare(b.time));
+  const minicursos = meus.filter(inscrito);
+  const next = meus.filter((x) => !comInscricao(x));
   const speakers = speakersList();
   /* atalhos numa fileira só; Mapa e Avisos já estão na barra de baixo e no sino */
   const actions = [
-    ['cal', 'Programação', 'data-act="tab" data-tab="agenda"'],
+    ['cal', 'Programação', 'data-act="programacao"'],
     ['mic', 'Palestrantes', 'data-go="speakers"'],
     ['file', 'Materiais', 'data-go="materials"'],
     ['award', 'Certificados', 'data-go="certificates"'],
@@ -2151,7 +2172,7 @@ Screens.home = () => {
 
           <div class="sec st" ${st(2)}><h2>Agora</h2><span>Qua, 26 nov · <span id="nowclock">${skyClock()}</span></span></div>
           <article class="now st" ${st(3)} data-go="activity" data-id="${s.id}">
-            <div class="now-top"><span class="kind">${s.type}${S.saved.has(s.id) ? ' · sua inscrição' : ''}</span>${here ? `<span class="tag ok">${ic('check')}Presente</span>` : ic('chev', 'i now-chev')}</div>
+            <div class="now-top"><span class="kind">${s.type}${inscrito(s) ? ' · inscrição feita' : ''}</span>${here ? `<span class="tag ok">${ic('check')}Presente</span>` : ic('chev', 'i now-chev')}</div>
             <h3>${s.title}</h3>
             <div class="now-sp">${spAv(s)}<span>${s.speakerShort}</span></div>
             <p class="m">${ic('clock')}${s.time} às ${s.end}</p>
@@ -2171,16 +2192,15 @@ Screens.home = () => {
           ${UI.home.colmeia ? combCard() : ''}
 
           ${
+            UI.home.agenda && minicursos.length
+              ? `<div class="sec rv"><h2>Meus minicursos</h2><button data-act="mine">Minha agenda</button></div>
+          <ul class="next meus-mini rv">${minicursos.map(nextRow).join('')}</ul>`
+              : ''
+          }
+          ${
             UI.home.agenda
               ? `<div class="sec rv"><h2>Sua agenda</h2><button data-act="mine">Ver tudo</button></div>
-          <ul class="next rv">${next
-            .map(
-              (
-                n,
-              ) => `<li data-go="activity" data-id="${n.id}"><span class="date"><small>${dayOf(n.day).week}</small><b>${n.day}</b></span><span class="next-tx"><b>${n.short}</b><small>${n.time} · ${n.room}</small></span>
-            <button class="remind ${S.reminders.has(n.id) ? 'on' : ''}" data-act="remind" data-id="${n.id}" aria-pressed="${S.reminders.has(n.id)}" aria-label="Lembrar 10 minutos antes">${ic('alarm')}</button></li>`,
-            )
-            .join('')}</ul>`
+          ${next.length ? `<ul class="next rv">${next.map(nextRow).join('')}</ul>` : `<button class="next-vazio rv" data-act="programacao">${ic('bookmark')}<span><b>Nada salvo ainda</b><small>Na programação, toque no marcador de uma palestra ou mesa</small></span>${ic('chev')}</button>`}`
               : ''
           }
 
@@ -2207,11 +2227,11 @@ function savedEmpty(day) {
     .filter((x) => x.day !== day)
     .map((x) => [x, D.sessions.filter((q) => q.day === x.day && S.saved.has(q.id)).length])
     .filter(([, n]) => n);
-  const ideas = D.sessions.filter((q) => q.day === day && !q.simple).slice(0, 3);
+  const ideas = D.sessions.filter((q) => q.day === day && !q.simple && !comInscricao(q)).slice(0, 3);
   return `<div class="empty-saved">
       ${illo('mark')}
       <h3 class="st" ${st(1)}>Nada salvo na ${week}</h3>
-      <p class="st" ${st(2)}>Toque no marcador de uma atividade e ela entra na sua agenda.</p>
+      <p class="st" ${st(2)}>Toque no marcador de uma palestra ou mesa e ela entra na sua agenda. Minicursos aparecem aqui quando você se inscreve no SUAP.</p>
       ${others.length ? `<div class="es-days st" ${st(3)}>${others.map(([x, n]) => `<button data-act="day" data-day="${x.day}">${x.week} ${x.day}<b>${n} ${n === 1 ? 'salva' : 'salvas'}</b></button>`).join('')}</div>` : ''}
       ${ideas.length ? `<section class="es-ideas st" ${st(4)}><h4>Sugestões para esse dia</h4><ul>${ideas.map((q) => `<li ${goOf(q)}><time>${q.time}</time><span><b>${q.short}</b><small>${q.type} · ${q.room}</small></span><button class="bm" data-act="save" data-id="${q.id}" aria-label="Salvar ${q.short}">${ic('bookmark')}</button></li>`).join('')}</ul></section>` : ''}
       <button class="btn soft st" ${st(5)} data-act="filter" data-f="all">Ver toda a programação</button>
@@ -2230,7 +2250,7 @@ Screens.agenda = () => {
   const idx = D.days.findIndex((d) => d.day === day);
   const filters = [
     ['all', 'Tudo'],
-    ['saved', 'Minhas'],
+    ['saved', 'Minha agenda'],
     ['pal', 'Palestras'],
     ['mesa', 'Mesas'],
     ['mini', 'Minicursos'],
@@ -2242,10 +2262,15 @@ Screens.agenda = () => {
        marcador à direita. O tipo aparece no hexágono colorido (as cores são as dos hexágonos do logo do ETAL), não em
        texto; a legenda das cores são os filtros logo acima. Vagas só aparecem quando acabando ou esgotadas. */
   const bm = (s) =>
-    `<button class="bm ${S.saved.has(s.id) ? 'on' : ''}" data-act="save" data-id="${s.id}" aria-label="${S.saved.has(s.id) ? 'Remover dos salvos' : 'Salvar'}">${ic('bookmark')}</button>`;
+    comInscricao(s)
+      ? ''
+      : `<button class="bm ${S.saved.has(s.id) ? 'on' : ''}" data-act="save" data-id="${s.id}" aria-label="${S.saved.has(s.id) ? 'Remover dos salvos' : 'Salvar'}">${ic('bookmark')}</button>`;
   const hexa = (s) =>
     `<span class="ses-hex" role="img" aria-label="${s.type}"><svg viewBox="-20 -20 40 40" aria-hidden="true"><path d="M0-18.5 16-9.25v18.5L0 18.5-16 9.25v-18.5Z"/></svg>${ic(tipoDe(s).icon)}</span>`;
   const selo = (s) => {
+    /* minicurso: inscrito no SUAP, ou as vagas preenchidas (discreto) */
+    if (comInscricao(s))
+      return inscrito(s) ? `<span class="ses-selo inscrito">${ic('check')}Inscrito</span>` : vagasLinha(s);
     /* "agora" já aparece na linha do tempo */ if (!s.seats) return '';
     const n = s.seats - s.taken;
     return n <= 0
@@ -2291,7 +2316,7 @@ Screens.agenda = () => {
   const meus = D.sessions.filter((x) => x.day === day && S.saved.has(x.id)).length;
   const dia = dayOf(day);
   return {
-    html: `<header class="apphead"><h1 class="title">Agenda</h1><button class="iconbtn" data-act="finder" aria-label="Buscar">${ic('search')}</button></header>
+    html: `<header class="apphead"><h1 class="title">${f === 'saved' ? 'Minha agenda' : 'Programação'}</h1><button class="iconbtn" data-act="finder" aria-label="Buscar">${ic('search')}</button></header>
       <div class="pad stack agenda">
         <div class="days st" style="--i:0;--k:${idx}"><i class="days-ind"></i>${D.days.map((d) => `<button class="${d.day === day ? 'on' : ''}" data-act="day" data-day="${d.day}">${d.week}<b>${d.day}</b></button>`).join('')}</div>
         <p class="ag-resumo st" ${st(1)}><b>${dia.long ? dia.long.split(',')[0] : dia.week}</b><span>${list.length} ${list.length === 1 ? 'atividade' : 'atividades'}${agora ? ` · <em>${agora} agora</em>` : ''}${meus ? ` · ${meus} ${meus === 1 ? 'sua' : 'suas'}` : ''}</span></p>
@@ -2551,6 +2576,13 @@ Screens.activity = ({ id }) => {
         <div class="gl-quando"><small>${d.week} · ${s.day} nov</small><b>${s.time}</b><span>até ${s.end}${duracao(s) ? ` · ${duracao(s)}` : ''}</span></div>
         ${vagasRestam == null ? '' : `<div class="gl-vagas ${vagasRestam === 0 ? 'cheio' : vagasRestam <= 5 ? 'pouca' : ''}"><small>Vagas</small><b>${vagasRestam === 0 ? 'Esgotado' : vagasRestam}</b>${vagasRestam ? `<span>de ${s.seats}</span>` : ''}${seatBar(s)}</div>`}
       </div>`;
+  /* minicurso: a inscrição é no SUAP (vaga limitada); o app mostra se a pessoa já está inscrita ou leva até lá */
+  const link = linkInscricao(s);
+  const inscricao = !comInscricao(s)
+    ? ''
+    : inscrito(s)
+      ? `<div class="inscricao ok st" ${st(3)}>${ic('check')}<span><b>Inscrição feita</b><small>Você se inscreveu pelo SUAP. Chegue no horário para registrar a presença.</small></span></div>`
+      : `<div class="inscricao st" ${st(3)}>${ic('id')}<span><b>${vagasRestam === 0 ? 'Vagas esgotadas' : 'Inscrição pelo SUAP'}</b><small>${vagasRestam === 0 ? 'Confira no SUAP se abriu alguma vaga.' : 'Vagas limitadas: a inscrição é feita no SUAP, pelo botão abaixo.'}</small></span></div>`;
   const lugar = `<button class="lugar st" ${st(4)} ${mapAct(s)} aria-label="Ver ${s.room} no mapa"><canvas class="thumb3d"></canvas><span class="lg-tx"><b>${s.room}</b><small>${Number.isInteger(s.floor) ? floorOf(s.floor).label : ''}</small></span><span class="lg-ir">${ic('route')}Como chegar</span></button>`;
   const lembrar = `<button class="remindrow st ${lembrete ? 'on' : ''}" ${st(5)} data-act="remind" data-id="${id}" aria-pressed="${lembrete}">${ic('alarm')}<span>${lembrete ? `Lembrete às ${hhmm(toMin(s.time) - LEAD)}` : `Lembrar ${LEAD} min antes`}</span><i class="switch"></i></button>`;
   const fonte = '';
@@ -2572,13 +2604,14 @@ Screens.activity = ({ id }) => {
         : '';
   return {
     mount: mountThumb(s),
-    html: `${header('', { right: `<button class="iconbtn bm ${S.saved.has(id) ? 'on' : ''}" data-act="save" data-id="${id}" aria-label="Salvar">${ic('bookmark')}</button>` })}
+    html: `${header('', { right: comInscricao(s) ? '' : `<button class="iconbtn bm ${S.saved.has(id) ? 'on' : ''}" data-act="save" data-id="${id}" aria-label="${S.saved.has(id) ? 'Remover da agenda' : 'Salvar na agenda'}">${ic('bookmark')}</button>` })}
       <div class="pad stack detail detalhe-v2">
         <span class="kind kind-tp tp-${t.k} st" ${st(0)}>${ic(t.icon)}${s.type}</span>
         <h1 class="title-lg st" ${st(1)}>${s.title}</h1>
         ${API && pendenteDe(id) ? `<p class="leitura-pendente st" ${st(1)}>${ic('qr')}<span><b>Leitura guardada, ainda sem valer.</b> O app envia a presença quando a internet voltar.</span></p>` : ''}
         ${t.g === 'mesa' ? '' : quem}
         ${blocos}
+        ${inscricao}
         ${lugar}
         ${t.g === 'mesa' ? quem.replace('<ul>', '<h2 class="h">Quem conversa</h2><ul>') : ''}
         ${lembrar}
@@ -2587,7 +2620,11 @@ Screens.activity = ({ id }) => {
         ${extra}
         ${s.materials.length ? `<p class="locked st" ${st(9)}>${ic('lock')}${s.materials.length} ${s.materials.length === 1 ? 'material' : 'materiais'} depois da presença</p>` : ''}
       </div>
-      <div class="cta-bar"><button class="btn primary big" data-act="scan">${ic('qr')}Registrar presença</button></div>`,
+      <div class="cta-bar">${
+        comInscricao(s) && !inscrito(s) && link
+          ? `<a class="btn ${vagasRestam === 0 ? 'soft' : 'primary'} big" href="${esc(link)}" target="_blank" rel="noopener">${ic('open')}${vagasRestam === 0 ? 'Ver no SUAP' : 'Inscrever-se no SUAP'}</a>`
+          : `<button class="btn primary big" data-act="scan">${ic('qr')}Registrar presença</button>`
+      }</div>`,
   };
 };
 
@@ -3674,18 +3711,18 @@ Screens.mais = () => ({
 Screens.profile = () => ({
   html: `${header('Perfil')}
       <div class="pad stack">
-        <section class="profile-hero st" ${st(0)}><button class="profile-portrait" data-act="profile-edit" aria-label="Editar foto e nome">${meAv('av')}<span class="profile-pencil">${ic('pencil')}</span></button><h2>${esc(D.person.name)}</h2><div class="profile-link">${linkLine()}</div><p>${esc(D.person.courseFull || D.person.course || '')}</p><small>${esc([D.person.year, D.person.campus].filter(Boolean).join(' · '))}</small><button class="profile-edit-link" data-act="profile-edit">${ic('pencil')}Editar perfil</button></section>
+        <section class="profile-hero st" ${st(0)}><button class="profile-portrait" data-act="profile-edit" aria-label="Editar foto e nome">${meAv('av')}<span class="profile-pencil">${ic('pencil')}</span></button><h2>${esc(D.person.name)}</h2><div class="profile-link">${linkLine()}</div><p>${esc(D.person.courseFull || D.person.course || '')}</p><small>${esc([D.person.year, D.person.campus].filter(Boolean).join(' · '))}</small><button class="profile-edit-link" data-go="cartao">${ic('pencil')}Editar perfil</button></section>
         ${taughtActivityCard(D.person)}
         ${orgDe() ? `<button class="org-cta st" ${st(1)} data-go="org">${ic('building')}<span><small>Você é da organização · ${esc(orgDe().papel)}</small><b>Painel da organização</b></span>${ic('chev')}</button>` : ''}
         <button class="retro-cta st" ${st(1)} data-act="retro">${comb('tiny')}<span><b>Minha retrospectiva</b><small>O que você fez e aprendeu no ETAL</small></span>${ic('chev')}</button>
         <ul class="menu st" ${st(1)}>
           <li data-go="credential">${ic('id')}<span>Minha credencial</span><em>${S.credAt ? 'Ativa' : 'Pendente'}</em>${ic('chev', 'i chev')}</li>
-          <li data-act="mine">${ic('list')}<span>Minhas atividades</span><em>${S.saved.size}</em>${ic('chev', 'i chev')}</li>
+          <li data-act="mine">${ic('list')}<span>Minha agenda</span><em>${S.saved.size}</em>${ic('chev', 'i chev')}</li>
           <li data-go="materials">${ic('file')}<span>Materiais</span><em>${Object.keys(S.present).reduce((n, k) => n + byId(k).materials.length, 0)}</em>${ic('chev', 'i chev')}</li>
           <li data-go="suapEvents">${ic('cal')}<span>Meus eventos no SUAP</span>${ic('chev', 'i chev')}</li>
           <li data-go="certificates">${ic('award')}<span>Certificados</span>${ic('chev', 'i chev')}</li>
           <li data-go="network">${ic('contact')}<span>Contatos</span><em>${S.contacts.length}</em>${ic('chev', 'i chev')}</li>
-          <li data-go="cartao">${ic('id')}<span>Perfil público</span><em>${cardGet() ? (cardGet().publish === false ? 'Oculto' : 'Visível') : 'Personalizar'}</em>${ic('chev', 'i chev')}</li>
+          <li data-go="cartao">${ic('id')}<span>Interesses e contato</span><em>${cardGet() ? (cardGet().publish === false ? 'Oculto' : 'Visível') : 'Personalizar'}</em>${ic('chev', 'i chev')}</li>
         </ul>
         <ul class="menu st" ${st(2)}>
           <li data-go="games" class="games-row">${ic('trophy')}<span>Campeonatos</span><em>Qui 27</em>${ic('chev', 'i chev')}</li>
@@ -3977,14 +4014,18 @@ Screens.certificates = () => {
   };
 };
 
-/* Cartão de contato: o que aparece para quem ler o QR do seu crachá. Tudo opcional; na primeira entrada vem com "Pular". */
+/* Editar perfil: foto e nome de exibição, mais o cartão de contato (o que aparece para quem ler o QR do seu crachá).
+   Tudo opcional; na primeira entrada vem como convite, com "Pular" sempre à vista na barra de baixo. */
+const cartaoEu = () =>
+  `<button type="button" class="ct-eu" data-act="profile-edit">${meAv('av')}<span><b>${esc(D.person.name)}</b><small>Foto e nome de exibição</small></span><span class="ct-eu-edit">${ic('pencil')}Alterar</span></button>`;
 Screens.cartao = (pp = {}) => {
   const c = cardGet() || { publish: true, email: D.person.email || '', nadic: '', langs: [], areas: [], open: [] };
   const intro = !!pp.intro;
   return {
-    html: `${header(intro ? 'Seu perfil' : 'Perfil público', { right: intro ? '<button class="ct-skip" data-act="cartao-pular">Pular</button>' : '' })}
-      <form class="ct-form pad" data-form="cartao" novalidate>
-        ${intro ? `<div class="ct-hello st" ${st(0)}><small>Opcional</small><h2>Personalize seu perfil</h2></div>` : ''}
+    html: `${header(intro ? 'Seu perfil' : 'Editar perfil', { right: intro ? '<button class="ct-skip" data-act="cartao-pular">Pular</button>' : '' })}
+      <form class="ct-form pad" id="ct-form" data-form="cartao" novalidate>
+        ${intro ? `<div class="ct-hello st" ${st(0)}><small>Opcional</small><h2>Personalize seu perfil</h2><p>Interesses e contato ajudam colegas a te encontrar pelo QR do crachá. Dá para pular e preencher depois em Perfil.</p></div>` : ''}
+        <div class="st" ${st(0)}>${cartaoEu()}</div>
         <div class="ct-preview st" ${st(1)}>${cardPreview(c)}</div>
         <label class="ct-switch st" ${st(2)}><span><b>Perfil visível</b><small>Para quem tocar no seu nome ou ler seu QR</small></span><input type="checkbox" name="publish" ${c.publish !== false ? 'checked' : ''}><i></i></label>
 
@@ -4005,8 +4046,8 @@ Screens.cartao = (pp = {}) => {
           <label class="ct-field area"><textarea name="bio" maxlength="140" rows="2" placeholder="Ex.: Curto jogos e estou aprendendo Godot.">${esc(c.bio || '')}</textarea><em class="ct-count">${(c.bio || '').length}/140</em></label>
         </section>
 
-        <div class="ct-actions"><button class="btn primary big" type="submit">${ic('check')}Salvar</button>${intro ? '<button class="btn ghost" type="button" data-act="cartao-pular">Pular por enquanto</button>' : ''}</div>
-      </form>`,
+      </form>
+      <div class="cta-bar ct-barra ${intro ? 'dupla' : ''}">${intro ? '<button class="btn soft big" type="button" data-act="cartao-pular">Pular por agora</button>' : ''}<button class="btn primary big" type="submit" form="ct-form">${ic('check')}Salvar</button></div>`,
     mount: (page) => {
       const f = $('[data-form="cartao"]', page);
       if (!f) return;
@@ -4728,7 +4769,7 @@ function switchTab(t, reset = false) {
 function renderTabbar() {
   const tabs = [
     ['home', 'home', 'Início'],
-    ['agenda', 'cal', 'Agenda'],
+    ['agenda', 'cal', 'Programação'],
     null,
     ['map', 'map', 'Mapa'],
     ['community', 'image', 'Publicações'],
@@ -5611,6 +5652,12 @@ ACOES['today'] = (el, e, a) => {
   el.closest('.today').classList.toggle('open', S.todayOpen);
 };
 
+/* "Programação" (atalho da home e aba de baixo) é sempre a lista completa; "Minha agenda" é o filtro de "Ver tudo" */
+ACOES['programacao'] = (el, e, a) => {
+  S.agendaFilter = 'all';
+  switchTab('agenda', true);
+};
+
 /* ===== app/25-acoes-atividade.js ===== */
 /* app/25-acoes-atividade.js · ações de atividade.
    Parte do app.js: os arquivos de prototipo/app/ rodam juntos, na ordem dos números, no mesmo escopo
@@ -5650,6 +5697,10 @@ ACOES['rate'] = (el, e, a) => {
 
 ACOES['save'] = (el, e, a) => {
   const id = el.dataset.id;
+  if (comInscricao(byId(id))) {
+    toast('A inscrição em minicurso é feita no SUAP');
+    return;
+  }
   if (API && S.auth)
     API[S.saved.has(id) ? 'del' : 'post'](`/api/eu/agenda/${encodeURIComponent(id)}`).catch((x) => {
       toast(x.message);
@@ -6299,6 +6350,7 @@ ACOES['back'] = (el, e, a) => {
 
 ACOES['tab'] = (el, e, a) => {
   if (el.dataset.tab === 'map' && S.tab !== 'map' && soonRoute()) return;
+  if (el.dataset.tab === 'agenda' && S.tab !== 'agenda') S.agendaFilter = 'all';
   switchTab(el.dataset.tab);
 };
 
@@ -6711,6 +6763,13 @@ document.addEventListener('submit', async (e) => {
       if (onBadge) {
         $('.bx-face.filled', $('.login')).innerHTML = badgeFace(lgPending);
         $('[data-live="hello"]').textContent = `Tudo certo, ${D.person.first}!`;
+      } else if (top().s === 'cartao') {
+        /* na edição do perfil: troca só a foto e o nome, sem perder o que foi digitado no resto do formulário */
+        const pg = vp.querySelector('.page:not(.leaving)');
+        const eu = $('.ct-eu', pg);
+        if (eu) eu.outerHTML = cartaoEu();
+        $('[data-form="cartao"]', pg)?.dispatchEvent(new Event('input'));
+        mapaFixoEnviar('etal:mapa:sincronizar', {});
       } else {
         rerender();
         mapaFixoEnviar('etal:mapa:sincronizar', {});

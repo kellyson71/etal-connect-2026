@@ -12,6 +12,7 @@ ACOES['back'] = (el, e, a) => {
 
 ACOES['tab'] = (el, e, a) => {
   if (el.dataset.tab === 'map' && S.tab !== 'map' && soonRoute()) return;
+  if (el.dataset.tab === 'agenda' && S.tab !== 'agenda') S.agendaFilter = 'all';
   switchTab(el.dataset.tab);
 };
 
