@@ -14836,3 +14836,43 @@ html.passeio-cheio .statusbar {
   height: 100%;
   object-fit: cover;
 }
+
+/* home: destaque (agora ou a próxima) e, logo abaixo, o resto da agenda */
+.now-top .tag {
+  flex: none;
+}
+.now-top .tag.salva {
+  background: var(--blue-50);
+  color: var(--accent-ink);
+}
+.now-top .tag.aberta {
+  background: var(--amber-50);
+  color: var(--amber-ink);
+}
+.now-top .tag:not(.ok):not(.salva):not(.aberta) {
+  background: var(--line);
+  color: var(--muted);
+}
+.now-actions a.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-decoration: none;
+}
+.now-actions .btn .i {
+  width: 16px;
+  height: 16px;
+}
+.remind-btn.on {
+  color: var(--accent-ink);
+}
+.remind-btn.on .i {
+  fill: currentColor;
+}
+.next-cap {
+  margin: 2px 4px -4px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+}

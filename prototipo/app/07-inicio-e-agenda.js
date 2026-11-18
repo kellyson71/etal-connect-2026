@@ -5,16 +5,56 @@
 const nextRow = (n) =>
   `<li data-go="activity" data-id="${n.id}"><span class="date"><small>${dayOf(n.day).week}</small><b>${n.day}</b></span><span class="next-tx"><b>${n.short}</b><small>${n.time} · ${n.room}</small>${inscrito(n) ? `<em class="selo-inscrito">${ic('check')}Inscrito</em>` : ''}</span>
             <button class="remind ${S.reminders.has(n.id) ? 'on' : ''}" data-act="remind" data-id="${n.id}" aria-pressed="${S.reminders.has(n.id)}" aria-label="Lembrar 10 minutos antes">${ic('alarm')}</button></li>`;
-Screens.home = () => {
-  const s = byId('react-native');
+/* Destaque da home, junto com a agenda: a atividade da pessoa (minicurso em que está inscrita ou atividade que salvou)
+   que está acontecendo; senão, a próxima dela; sem nada dela, o que acontece agora (ou a seguir) aberto a todos. */
+const acabou = (x) => x.day < D.now.day || (x.day === D.now.day && x.end <= D.now.time);
+const emOrdem = (a, b) => a.day - b.day || a.time.localeCompare(b.time);
+function destaqueHome() {
+  const validas = D.sessions.filter((x) => !x.simple && !acabou(x)).sort(emOrdem);
+  const minhas = validas.filter((x) => S.saved.has(x.id) || S.present[x.id]);
+  const s =
+    minhas.find((x) => S.present[x.id] && isNow(x)) ||
+    minhas.find(isNow) ||
+    minhas[0] ||
+    validas.find((x) => isNow(x) && !comInscricao(x)) ||
+    validas.find((x) => !comInscricao(x)) ||
+    validas[0];
+  if (!s) return { s: null, titulo: '', minhas };
+  const minha = minhas.includes(s);
+  const titulo = isNow(s) ? (minha ? 'Agora' : 'Agora no ETAL') : minha ? 'Sua próxima atividade' : 'A seguir no ETAL';
+  return { s, titulo, minhas: minhas.filter((x) => x !== s) };
+}
+function destaqueCard(s) {
   const here = S.present[s.id];
-  /* o que a pessoa salvou e os minicursos em que está inscrita (no SUAP), em ordem de dia e hora */
-  const meus = [...S.saved]
-    .map(byId)
-    .filter((x) => x && x.id !== s.id)
-    .sort((a, b) => a.day - b.day || a.time.localeCompare(b.time));
-  const minicursos = meus.filter(inscrito);
-  const next = meus.filter((x) => !comInscricao(x));
+  const agora = isNow(s);
+  const selo = here
+    ? `<span class="tag ok">${ic('check')}Presente</span>`
+    : inscrito(s)
+      ? `<span class="tag ok">${ic('check')}Inscrito</span>`
+      : S.saved.has(s.id)
+        ? `<span class="tag salva">${ic('bookmark')}Na sua agenda</span>`
+        : comInscricao(s)
+          ? `<span class="tag">Inscrição no SUAP</span>`
+          : `<span class="tag aberta">Aberto a todos</span>`;
+  const comoChegar = `<button class="btn primary" data-act="openmap" data-floor="${s.floor}" data-zone="${s.zone}">Como chegar</button>`;
+  const segundo = agora
+    ? `<button class="btn soft" data-act="scan">${ic('qr')}Presença</button>`
+    : comInscricao(s) && !inscrito(s) && linkInscricao(s)
+      ? `<a class="btn soft" href="${esc(linkInscricao(s))}" target="_blank" rel="noopener">${ic('open')}Inscrever-se</a>`
+      : !comInscricao(s) && !S.saved.has(s.id)
+        ? `<button class="btn soft" data-act="save" data-id="${s.id}">${ic('bookmark')}Salvar</button>`
+        : `<button class="btn soft remind-btn ${S.reminders.has(s.id) ? 'on' : ''}" data-act="remind" data-id="${s.id}" aria-pressed="${S.reminders.has(s.id)}">${ic('alarm')}${S.reminders.has(s.id) ? 'Lembrete ligado' : 'Lembrar'}</button>`;
+  return `<article class="now st" ${st(3)} data-go="activity" data-id="${s.id}">
+            <div class="now-top"><span class="kind">${s.type}</span>${selo}</div>
+            <h3>${s.title}</h3>
+            ${s.speakerShort ? `<div class="now-sp">${spAv(s)}<span>${s.speakerShort}</span></div>` : ''}
+            <p class="m">${ic('clock')}${agora ? '' : `${dayOf(s.day).week}, ${s.day} nov · `}${s.time} às ${s.end}</p>
+            <p class="m">${ic('pin')}${whereOf(s)}</p>
+            <div class="now-actions">${here ? `<button class="btn primary" data-go="activity" data-id="${s.id}">Abrir aula</button>` : comoChegar + segundo}</div>
+          </article>`;
+}
+Screens.home = () => {
+  const d = destaqueHome();
   const speakers = speakersList();
   /* atalhos numa fileira só; Mapa e Avisos já estão na barra de baixo e no sino */
   const actions = [
@@ -37,39 +77,26 @@ Screens.home = () => {
           ${badge()}
           ${UI.home.live ? `<button class="hm-live st" ${st(1)} aria-live="polite"><span class="hm-live-tag"><i></i>Ao vivo</span><span class="hm-live-row"><span class="hm-live-msg"></span></span>${ic('chev')}</button>` : ''}
 
-          <div class="sec st" ${st(2)}><h2>Agora</h2><span>Qua, 26 nov · <span id="nowclock">${skyClock()}</span></span></div>
-          <article class="now st" ${st(3)} data-go="activity" data-id="${s.id}">
-            <div class="now-top"><span class="kind">${s.type}${inscrito(s) ? ' · inscrição feita' : ''}</span>${here ? `<span class="tag ok">${ic('check')}Presente</span>` : ic('chev', 'i now-chev')}</div>
-            <h3>${s.title}</h3>
-            <div class="now-sp">${spAv(s)}<span>${s.speakerShort}</span></div>
-            <p class="m">${ic('clock')}${s.time} às ${s.end}</p>
-            <p class="m">${ic('pin')}${whereOf(s)}</p>
-            <div class="now-actions">
-              ${
-                here
-                  ? `<button class="btn primary" data-go="activity" data-id="${s.id}">Abrir aula</button>`
-                  : `<button class="btn primary" data-act="openmap" data-floor="${s.floor}" data-zone="${s.zone}">Como chegar</button><button class="btn soft" data-act="scan">${ic('qr')}Presença</button>`
-              }
-            </div>
-          </article>
+          ${
+            d.s
+              ? `<div class="sec st" ${st(2)}><h2>${d.titulo}</h2>${d.minhas.length || S.saved.size ? '<button data-act="mine">Minha agenda</button>' : `<span>${dayOf(D.now.day).week}, ${D.now.day} nov · <span id="nowclock">${skyClock()}</span></span>`}</div>
+          ${destaqueCard(d.s)}
+          ${
+            UI.home.agenda
+              ? d.minhas.length
+                ? `<p class="next-cap rv">Depois, na sua agenda</p><ul class="next rv">${d.minhas.map(nextRow).join('')}</ul>`
+                : S.saved.size
+                  ? ''
+                  : `<button class="next-vazio rv" data-act="programacao">${ic('bookmark')}<span><b>Monte sua agenda</b><small>Na programação, salve palestras e mesas. Minicursos entram quando você se inscreve no SUAP.</small></span>${ic('chev')}</button>`
+              : ''
+          }`
+              : ''
+          }
           ${UI.home.atalhos ? `<nav class="quick rv" aria-label="Atalhos">${actions.map(([i, t, a], n) => `<button ${a} style="--n:${n}"><span>${ic(i)}</span><em>${t}</em></button>`).join('')}</nav>` : ''}
 
           ${!standalone() && !prefs.get('etal-instalar-oculto') ? `<div class="instalar rv"><button class="inst-main" data-act="install">${ic('download')}<span><b>Instale o ETAL Connect</b><small>Lembretes no celular e mapa sem internet</small></span></button><button class="inst-x" data-act="instalar-fechar" aria-label="Agora não">${ic('x')}</button></div>` : ''}
           ${cardAsk() ? `<div class="ct-invite rv"><button class="ct-inv-main" data-go="cartao">${ic('contact')}<span><b>Personalize seu perfil</b><small>Interesses, NADIC e contato</small></span></button><button class="ct-inv-skip" data-act="cartao-pular">Pular</button></div>` : ''}
           ${UI.home.colmeia ? combCard() : ''}
-
-          ${
-            UI.home.agenda && minicursos.length
-              ? `<div class="sec rv"><h2>Meus minicursos</h2><button data-act="mine">Minha agenda</button></div>
-          <ul class="next meus-mini rv">${minicursos.map(nextRow).join('')}</ul>`
-              : ''
-          }
-          ${
-            UI.home.agenda
-              ? `<div class="sec rv"><h2>Sua agenda</h2><button data-act="mine">Ver tudo</button></div>
-          ${next.length ? `<ul class="next rv">${next.map(nextRow).join('')}</ul>` : `<button class="next-vazio rv" data-act="programacao">${ic('bookmark')}<span><b>Nada salvo ainda</b><small>Na programação, toque no marcador de uma palestra ou mesa</small></span>${ic('chev')}</button>`}`
-              : ''
-          }
 
           ${
             UI.home.palestrantes
