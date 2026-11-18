@@ -202,13 +202,15 @@ const speakersList = () => {
   const seen = new Set();
   return D.sessions.filter((x) => x.speakerShort && !seen.has(x.speakerShort) && seen.add(x.speakerShort));
 };
+/* Em minutos, para a soma não acumular resto de ponto flutuante (1,5 h virava 1.4999999999999982). */
 const hoursOf = (s) => {
   const [a, b] = [s.time, s.end].map((t) => {
     const [h, m] = t.split(':').map(Number);
-    return h + m / 60;
+    return h * 60 + m;
   });
-  return b - a;
+  return (b - a) / 60;
 };
+const horasTxt = (h) => (Math.round(h * 10) / 10).toLocaleString('pt-BR');
 const seatBar = (s) =>
   !s.seats
     ? ''

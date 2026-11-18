@@ -44,8 +44,8 @@ Screens.certificates = () => {
   const total = rows.reduce((n, s) => n + hoursOf(s), 0);
   return {
     html: `${header('Certificados')}<div class="pad stack"><button class="btn soft" data-go="suapEvents">Consultar certificados no SUAP ${ic('open')}</button>
-        <section class="cert-top st" ${st(0)}><span class="ring big" style="--p:${Math.round((hours / total) * 100)}"><b>${hours}h</b></span><div><strong>${hours} de ${total} horas</strong><span>Acompanhe suas horas de participação e consulte os certificados no SUAP.</span></div></section>
-        <ul class="certs st" ${st(1)}>${rows.map((s) => `<li class="${S.present[s.id] ? 'done' : ''}" data-go="activity" data-id="${s.id}"><i>${ic(S.present[s.id] ? 'check' : 'clock')}</i><span><b>${s.short}</b><small>${S.present[s.id] ? `Presença às ${S.present[s.id]} · ${hoursOf(s)}h` : `${dayOf(s.day).week} ${s.day}, ${s.time} · ${hoursOf(s)}h`}</small></span></li>`).join('')}</ul>
+        <section class="cert-top st" ${st(0)}><span class="ring big" style="--p:${total ? Math.round((hours / total) * 100) : 0}"><b>${horasTxt(hours)}h</b></span><div><strong>${horasTxt(hours)} de ${horasTxt(total)} horas</strong><span>Acompanhe suas horas de participação e consulte os certificados no SUAP.</span></div></section>
+        <ul class="certs st" ${st(1)}>${rows.map((s) => `<li class="${S.present[s.id] ? 'done' : ''}" data-go="activity" data-id="${s.id}"><i>${ic(S.present[s.id] ? 'check' : 'clock')}</i><span><b>${s.short}</b><small>${S.present[s.id] ? `Presença às ${S.present[s.id]} · ${horasTxt(hoursOf(s))}h` : `${dayOf(s.day).week} ${s.day}, ${s.time} · ${horasTxt(hoursOf(s))}h`}</small></span></li>`).join('')}</ul>
       </div>`,
   };
 };
