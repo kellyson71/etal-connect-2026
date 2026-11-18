@@ -208,13 +208,15 @@ const speakersList = () => {
   const seen = new Set();
   return D.sessions.filter((x) => x.speakerShort && !seen.has(x.speakerShort) && seen.add(x.speakerShort));
 };
+/* Em minutos, para a soma não acumular resto de ponto flutuante (1,5 h virava 1.4999999999999982). */
 const hoursOf = (s) => {
   const [a, b] = [s.time, s.end].map((t) => {
     const [h, m] = t.split(':').map(Number);
-    return h + m / 60;
+    return h * 60 + m;
   });
-  return b - a;
+  return (b - a) / 60;
 };
+const horasTxt = (h) => (Math.round(h * 10) / 10).toLocaleString('pt-BR');
 const seatBar = (s) =>
   !s.seats
     ? ''
@@ -3659,7 +3661,7 @@ function retroSlides(r) {
     `<div class="re-c">${tag}<small>Quem fez parte</small><div class="re-people">${r.people.map((x) => `<span><i>${x.initials}</i>${x.speakerShort}</span>`).join('')}</div><dl class="re-stats"><div><dd>${r.questions}</dd><dt>${r.questions === 1 ? 'pergunta' : 'perguntas'}</dt></div><div><dd>${r.contacts}</dd><dt>${r.contacts === 1 ? 'contato' : 'contatos'}</dt></div><div><dd>${r.ratings}</dd><dt>${r.ratings === 1 ? 'avaliação' : 'avaliações'}</dt></div></dl></div>`,
     `<div class="re-c">${tag}<small>Sua colmeia</small><div class="re-comb">${comb('big', r.demo)}</div><p>${got} de ${D.combs.length} favos.</p></div>`,
     `<div class="re-c">${tag}<small>O que é o ETAL</small><p class="re-long">${D.etal.about}</p><ol class="re-time">${D.etal.editions.map(([y, nm]) => `<li class="${y === '2025' ? 'on' : ''}"><time>${y}</time>${nm}</li>`).join('')}</ol></div>`,
-    `<div class="re-c re-end">${mark('mark re-mark')}${tag}<h1>Até o próximo ETAL</h1><p>${r.hours} ${r.hours === 1 ? 'hora' : 'horas'}, ${n} ${n === 1 ? 'atividade' : 'atividades'} e ${got} ${got === 1 ? 'favo' : 'favos'}.</p><div class="re-actions"><button class="btn big re-primary" data-act="retroshare">${ic('share')}Compartilhar</button><button class="btn big re-ghost" data-act="retroclose">Fechar</button></div></div>`,
+    `<div class="re-c re-end">${mark('mark re-mark')}${tag}<h1>Até o próximo ETAL</h1><p>${horasTxt(r.hours)} ${r.hours === 1 ? 'hora' : 'horas'}, ${n} ${n === 1 ? 'atividade' : 'atividades'} e ${got} ${got === 1 ? 'favo' : 'favos'}.</p><div class="re-actions"><button class="btn big re-primary" data-act="retroshare">${ic('share')}Compartilhar</button><button class="btn big re-ghost" data-act="retroclose">Fechar</button></div></div>`,
   ];
 }
 let retro = null;
@@ -3679,7 +3681,7 @@ function retroShow(i) {
     const t0 = performance.now();
     const tick = (n) => {
       const k = reduce ? 1 : Math.min(1, (n - t0) / 900);
-      num.textContent = `${Math.round(to * (1 - (1 - k) ** 3))}h`;
+      num.textContent = `${k < 1 ? Math.round(to * (1 - (1 - k) ** 3)) : horasTxt(to)}h`;
       if (k < 1 && num.isConnected) requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
@@ -3707,7 +3709,7 @@ function retroOpen(demo) {
     i: 0,
     slides: retroSlides(data),
     t: 0,
-    text: `Meu ETAL: ${data.hours} horas em ${data.list.length} atividades e ${demo ? D.combs.length : combEarned().length} favos na colmeia.`,
+    text: `Meu ETAL: ${horasTxt(data.hours)} horas em ${data.list.length} atividades e ${demo ? D.combs.length : combEarned().length} favos na colmeia.`,
   };
   openOverlay(Overlays.retro(retro.slides.length), 'retro');
   retroShow(0);
@@ -4038,8 +4040,8 @@ Screens.certificates = () => {
   const total = rows.reduce((n, s) => n + hoursOf(s), 0);
   return {
     html: `${header('Certificados')}<div class="pad stack"><button class="btn soft" data-go="suapEvents">Consultar certificados no SUAP ${ic('open')}</button>
-        <section class="cert-top st" ${st(0)}><span class="ring big" style="--p:${Math.round((hours / total) * 100)}"><b>${hours}h</b></span><div><strong>${hours} de ${total} horas</strong><span>Acompanhe suas horas de participação e consulte os certificados no SUAP.</span></div></section>
-        <ul class="certs st" ${st(1)}>${rows.map((s) => `<li class="${S.present[s.id] ? 'done' : ''}" data-go="activity" data-id="${s.id}"><i>${ic(S.present[s.id] ? 'check' : 'clock')}</i><span><b>${s.short}</b><small>${S.present[s.id] ? `Presença às ${S.present[s.id]} · ${hoursOf(s)}h` : `${dayOf(s.day).week} ${s.day}, ${s.time} · ${hoursOf(s)}h`}</small></span></li>`).join('')}</ul>
+        <section class="cert-top st" ${st(0)}><span class="ring big" style="--p:${total ? Math.round((hours / total) * 100) : 0}"><b>${horasTxt(hours)}h</b></span><div><strong>${horasTxt(hours)} de ${horasTxt(total)} horas</strong><span>Acompanhe suas horas de participação e consulte os certificados no SUAP.</span></div></section>
+        <ul class="certs st" ${st(1)}>${rows.map((s) => `<li class="${S.present[s.id] ? 'done' : ''}" data-go="activity" data-id="${s.id}"><i>${ic(S.present[s.id] ? 'check' : 'clock')}</i><span><b>${s.short}</b><small>${S.present[s.id] ? `Presença às ${S.present[s.id]} · ${horasTxt(hoursOf(s))}h` : `${dayOf(s.day).week} ${s.day}, ${s.time} · ${horasTxt(hoursOf(s))}h`}</small></span></li>`).join('')}</ul>
       </div>`,
   };
 };

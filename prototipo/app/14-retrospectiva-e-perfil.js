@@ -28,7 +28,7 @@ function retroSlides(r) {
     `<div class="re-c">${tag}<small>Quem fez parte</small><div class="re-people">${r.people.map((x) => `<span><i>${x.initials}</i>${x.speakerShort}</span>`).join('')}</div><dl class="re-stats"><div><dd>${r.questions}</dd><dt>${r.questions === 1 ? 'pergunta' : 'perguntas'}</dt></div><div><dd>${r.contacts}</dd><dt>${r.contacts === 1 ? 'contato' : 'contatos'}</dt></div><div><dd>${r.ratings}</dd><dt>${r.ratings === 1 ? 'avaliação' : 'avaliações'}</dt></div></dl></div>`,
     `<div class="re-c">${tag}<small>Sua colmeia</small><div class="re-comb">${comb('big', r.demo)}</div><p>${got} de ${D.combs.length} favos.</p></div>`,
     `<div class="re-c">${tag}<small>O que é o ETAL</small><p class="re-long">${D.etal.about}</p><ol class="re-time">${D.etal.editions.map(([y, nm]) => `<li class="${y === '2025' ? 'on' : ''}"><time>${y}</time>${nm}</li>`).join('')}</ol></div>`,
-    `<div class="re-c re-end">${mark('mark re-mark')}${tag}<h1>Até o próximo ETAL</h1><p>${r.hours} ${r.hours === 1 ? 'hora' : 'horas'}, ${n} ${n === 1 ? 'atividade' : 'atividades'} e ${got} ${got === 1 ? 'favo' : 'favos'}.</p><div class="re-actions"><button class="btn big re-primary" data-act="retroshare">${ic('share')}Compartilhar</button><button class="btn big re-ghost" data-act="retroclose">Fechar</button></div></div>`,
+    `<div class="re-c re-end">${mark('mark re-mark')}${tag}<h1>Até o próximo ETAL</h1><p>${horasTxt(r.hours)} ${r.hours === 1 ? 'hora' : 'horas'}, ${n} ${n === 1 ? 'atividade' : 'atividades'} e ${got} ${got === 1 ? 'favo' : 'favos'}.</p><div class="re-actions"><button class="btn big re-primary" data-act="retroshare">${ic('share')}Compartilhar</button><button class="btn big re-ghost" data-act="retroclose">Fechar</button></div></div>`,
   ];
 }
 let retro = null;
@@ -48,7 +48,7 @@ function retroShow(i) {
     const t0 = performance.now();
     const tick = (n) => {
       const k = reduce ? 1 : Math.min(1, (n - t0) / 900);
-      num.textContent = `${Math.round(to * (1 - (1 - k) ** 3))}h`;
+      num.textContent = `${k < 1 ? Math.round(to * (1 - (1 - k) ** 3)) : horasTxt(to)}h`;
       if (k < 1 && num.isConnected) requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
@@ -76,7 +76,7 @@ function retroOpen(demo) {
     i: 0,
     slides: retroSlides(data),
     t: 0,
-    text: `Meu ETAL: ${data.hours} horas em ${data.list.length} atividades e ${demo ? D.combs.length : combEarned().length} favos na colmeia.`,
+    text: `Meu ETAL: ${horasTxt(data.hours)} horas em ${data.list.length} atividades e ${demo ? D.combs.length : combEarned().length} favos na colmeia.`,
   };
   openOverlay(Overlays.retro(retro.slides.length), 'retro');
   retroShow(0);
