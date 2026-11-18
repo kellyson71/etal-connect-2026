@@ -44,11 +44,30 @@ def test_ver_exige_entrar(app_cliente):
     assert app_cliente.get('/api/publicacoes').status_code == 401
 
 
-def test_sem_credenciamento_ve_mas_nao_publica(app_cliente):
+def no_evento(monkeypatch, quando):
+    from datetime import datetime
+    from app.rotas import publicacoes
+    monkeypatch.setattr(publicacoes, 'agora', lambda: datetime.fromisoformat(quando))
+
+
+def test_durante_o_evento_sem_credenciamento_ve_e_conversa_mas_nao_publica(app_cliente, monkeypatch):
+    no_evento(monkeypatch, '2025-11-27T10:00')
     entrar(app_cliente, 'Caio Teste')
-    assert app_cliente.get('/api/publicacoes').status_code == 200
+    v = app_cliente.get('/api/publicacoes').json()
+    assert v['semCredencial'] is False
     assert app_cliente.post('/api/publicacoes', json={'texto': 'oi'}).status_code == 403
-    assert app_cliente.post('/api/publicacoes/mensagens', json={'texto': 'oi'}).status_code == 403
+    assert app_cliente.post('/api/publicacoes/mensagens', json={'texto': 'oi'}).status_code == 200
+    assert app_cliente.get(f'/api/publicacoes?versao={v["versao"]}').json()['semCredencial'] is False
+
+
+def test_antes_do_evento_publica_sem_credenciamento(app_cliente, monkeypatch):
+    no_evento(monkeypatch, '2025-11-20T10:00')
+    entrar(app_cliente, 'Caio Teste')
+    assert app_cliente.get('/api/publicacoes').json()['semCredencial'] is True
+    pid = app_cliente.post('/api/publicacoes', json={'texto': 'Quem vem pro ETAL?'}).json()['id']
+    assert app_cliente.post(f'/api/publicacoes/{pid}/comentarios', json={'texto': 'Eu!'}).status_code == 200
+    assert app_cliente.post(f'/api/publicacoes/{pid}/curtir').json() == {'curtiu': True}
+    assert app_cliente.post('/api/publicacoes/mensagens', json={'texto': 'oi'}).status_code == 200
 
 
 def test_publicar_comentar_curtir_salvar(tres):
@@ -213,7 +232,7 @@ def test_manutencao_apaga_publicacoes_antigas(tres):
 def test_versao_evita_baixar_de_novo(tres):
     ana, bia, _ = tres
     v = bia.get('/api/publicacoes').json()['versao']
-    assert bia.get(f'/api/publicacoes?versao={v}').json() == {'versao': v, 'igual': True}
+    assert bia.get(f'/api/publicacoes?versao={v}').json() == {'versao': v, 'igual': True, 'semCredencial': True}
     ana.post('/api/publicacoes', json={'texto': 'novidade'})
     r = bia.get(f'/api/publicacoes?versao={v}').json()
     assert r['versao'] > v and r['posts'][0]['text'] == 'novidade'

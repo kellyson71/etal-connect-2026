@@ -1,5 +1,5 @@
 /* Publicações compartilhadas pelo app e pelo painel. Sem servidor, ficam neste navegador (demonstração); com servidor
-   (app/05-publicacoes-servidor.js), o estado vem da API neste mesmo formato e os exemplos saem. */
+   (app/05-publicacoes-servidor.js), o estado vem da API neste mesmo formato e os exemplos saem, menos no /demo. */
 (() => {
   'use strict';
   const key = 'etal-comunidade-v1';
@@ -133,9 +133,10 @@
   ];
   const seedComments = { ...(window.DATA?.demoComments || {}) };
   let servidor = false;
-  /* Com servidor: sem publicações de exemplo, e a moderação vale para todo mundo */
-  function usarServidor() {
+  /* Com servidor a moderação vale para todo mundo, e as publicações de exemplo saem (no /demo, elas ficam) */
+  function usarServidor({ exemplos = false } = {}) {
     servidor = true;
+    if (exemplos) return;
     seeds.splice(0);
     seedMessages.splice(0);
     for (const k of Object.keys(seedComments)) delete seedComments[k];

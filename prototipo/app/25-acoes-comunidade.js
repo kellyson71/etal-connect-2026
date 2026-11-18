@@ -61,7 +61,7 @@ ACOES['community-insert-mention'] = (el, e, a) => {
 };
 
 ACOES['community-mention-person'] = (el, e, a) => {
-  if (!S.credAt) return;
+  if (!communityPode()) return;
   const person = communityPeople().find((p) => p.id === el.dataset.id);
   if (!person) return;
   communityDraft.post += `${communityDraft.post && !communityDraft.post.endsWith(' ') ? ' ' : ''}@${person.handle} `;
@@ -101,7 +101,7 @@ ACOES['social-mod'] = (el, e, a) => {
 };
 
 ACOES['community-compose'] = (el, e, a) => {
-  if (!S.credAt) {
+  if (!communityPode()) {
     toast('Leia o QR da recepção para participar.');
     return;
   }
@@ -117,7 +117,7 @@ ACOES['community-remove-image'] = (el, e, a) => {
 };
 
 ACOES['community-like'] = (el, e, a) => {
-  if (!S.credAt) {
+  if (!communityPode()) {
     toast('Leia o QR da recepção para participar.');
     return;
   }

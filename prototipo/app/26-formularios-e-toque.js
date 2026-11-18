@@ -5,7 +5,7 @@
 document.addEventListener('submit', async (e) => {
   if (e.target.dataset.form === 'community-report') {
     e.preventDefault();
-    if (!S.auth || !S.credAt) {
+    if (!communityPode()) {
       toast('Leia o QR Code da recepção para participar.');
       return;
     }
@@ -72,7 +72,7 @@ document.addEventListener('submit', async (e) => {
 
   if (['community-post', 'community-message', 'community-comment'].includes(e.target.dataset.form)) {
     e.preventDefault();
-    if (!S.auth || !S.credAt) {
+    if (!S.auth || (e.target.dataset.form !== 'community-message' && !communityPode())) {
       toast('Leia o QR da recepção para participar.');
       return;
     }
