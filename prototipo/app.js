@@ -150,10 +150,11 @@ const TIPOS = {
 };
 const TIPOS_G = new Set(['pal', 'mesa', 'mini', 'camp']);
 const tipoDe = (x) => TIPOS[x.type] || { k: 'out', g: 'out', icon: 'cal', formato: '' };
-/* Minicurso e oficina têm vaga limitada e a inscrição é feita no SUAP: no app não se salvam. Quem está inscrito vem da
-   lista da organização (com servidor, a agenda importada; sem servidor, D.enrolled), e o app só mostra e leva ao SUAP. */
+/* Minicurso e oficina têm vaga limitada e a inscrição é feita no SUAP: no app não se salvam. No SUAP a inscrição é por
+   atividade (minicurso, palestra, mesa...), feita antes do evento; o servidor acha a pessoa nas listas de inscritos e
+   manda essas atividades em S.inscricoes. Sem servidor, os minicursos da agenda de exemplo contam como inscritos. */
 const comInscricao = (x) => tipoDe(x).g === 'mini';
-const inscrito = (x) => comInscricao(x) && S.saved.has(x.id);
+const inscrito = (x) => !!x && (S.inscricoes.has(x.id) || (comInscricao(x) && S.saved.has(x.id)));
 const linkInscricao = (x) => x.inscricao || x.link || '';
 const vagasLivres = (x) => (x.seats ? Math.max(0, x.seats - (x.taken || 0)) : null);
 /* vagas preenchidas, discreto: barrinha e "26 de 30" (cheio vira "Esgotado") */
@@ -545,6 +546,8 @@ const fresh = () => ({
   credAt: null,
   present: {},
   saved: new Set(D.enrolled),
+  /* atividades em que a pessoa está inscrita no SUAP (vem do servidor; ficam na agenda e não saem pelo app) */
+  inscricoes: new Set(),
   tab: 'home',
   stacks: {
     community: [{ s: 'community' }],
@@ -2258,7 +2261,7 @@ function savedEmpty(day) {
   return `<div class="empty-saved">
       ${illo('mark')}
       <h3 class="st" ${st(1)}>Nada salvo na ${week}</h3>
-      <p class="st" ${st(2)}>Toque no marcador de uma palestra ou mesa e ela entra na sua agenda. Minicursos aparecem aqui quando você se inscreve no SUAP.</p>
+      <p class="st" ${st(2)}>Toque no marcador de uma palestra ou mesa e ela entra na sua agenda. Atividades em que você se inscreveu no SUAP aparecem aqui sozinhas.</p>
       ${others.length ? `<div class="es-days st" ${st(3)}>${others.map(([x, n]) => `<button data-act="day" data-day="${x.day}">${x.week} ${x.day}<b>${n} ${n === 1 ? 'salva' : 'salvas'}</b></button>`).join('')}</div>` : ''}
       ${ideas.length ? `<section class="es-ideas st" ${st(4)}><h4>Sugestões para esse dia</h4><ul>${ideas.map((q) => `<li ${goOf(q)}><time>${q.time}</time><span><b>${q.short}</b><small>${q.type} · ${q.room}</small></span><button class="bm" data-act="save" data-id="${q.id}" aria-label="Salvar ${q.short}">${ic('bookmark')}</button></li>`).join('')}</ul></section>` : ''}
       <button class="btn soft st" ${st(5)} data-act="filter" data-f="all">Ver toda a programação</button>
@@ -2289,15 +2292,15 @@ Screens.agenda = () => {
        marcador à direita. O tipo aparece no hexágono colorido (as cores são as dos hexágonos do logo do ETAL), não em
        texto; a legenda das cores são os filtros logo acima. Vagas só aparecem quando acabando ou esgotadas. */
   const bm = (s) =>
-    comInscricao(s)
+    comInscricao(s) || inscrito(s)
       ? ''
       : `<button class="bm ${S.saved.has(s.id) ? 'on' : ''}" data-act="save" data-id="${s.id}" aria-label="${S.saved.has(s.id) ? 'Remover dos salvos' : 'Salvar'}">${ic('bookmark')}</button>`;
   const hexa = (s) =>
     `<span class="ses-hex" role="img" aria-label="${s.type}"><svg viewBox="-20 -20 40 40" aria-hidden="true"><path d="M0-18.5 16-9.25v18.5L0 18.5-16 9.25v-18.5Z"/></svg>${ic(tipoDe(s).icon)}</span>`;
   const selo = (s) => {
     /* minicurso: inscrito no SUAP, ou as vagas preenchidas (discreto) */
-    if (comInscricao(s))
-      return inscrito(s) ? `<span class="ses-selo inscrito">${ic('check')}Inscrito</span>` : vagasLinha(s);
+    if (inscrito(s)) return `<span class="ses-selo inscrito">${ic('check')}Inscrito</span>`;
+    if (comInscricao(s)) return vagasLinha(s);
     /* "agora" já aparece na linha do tempo */ if (!s.seats) return '';
     const n = s.seats - s.taken;
     return n <= 0
@@ -2605,10 +2608,10 @@ Screens.activity = ({ id }) => {
       </div>`;
   /* minicurso: a inscrição é no SUAP (vaga limitada); o app mostra se a pessoa já está inscrita ou leva até lá */
   const link = linkInscricao(s);
-  const inscricao = !comInscricao(s)
-    ? ''
-    : inscrito(s)
-      ? `<div class="inscricao ok st" ${st(3)}>${ic('check')}<span><b>Inscrição feita</b><small>Você se inscreveu pelo SUAP. Chegue no horário para registrar a presença.</small></span></div>`
+  const inscricao = inscrito(s)
+    ? `<div class="inscricao ok st" ${st(3)}>${ic('check')}<span><b>Inscrição feita</b><small>Você se inscreveu pelo SUAP. Chegue no horário para registrar a presença.</small></span></div>`
+    : !comInscricao(s)
+      ? ''
       : `<div class="inscricao st" ${st(3)}>${ic('id')}<span><b>${vagasRestam === 0 ? 'Vagas esgotadas' : 'Inscrição pelo SUAP'}</b><small>${vagasRestam === 0 ? 'Confira no SUAP se abriu alguma vaga.' : 'Vagas limitadas: a inscrição é feita no SUAP, pelo botão abaixo.'}</small></span></div>`;
   const lugar = `<button class="lugar st" ${st(4)} ${mapAct(s)} aria-label="Ver ${s.room} no mapa"><canvas class="thumb3d"></canvas><span class="lg-tx"><b>${s.room}</b><small>${Number.isInteger(s.floor) ? floorOf(s.floor).label : ''}</small></span><span class="lg-ir">${ic('route')}Como chegar</span></button>`;
   const lembrar = `<button class="remindrow st ${lembrete ? 'on' : ''}" ${st(5)} data-act="remind" data-id="${id}" aria-pressed="${lembrete}">${ic('alarm')}<span>${lembrete ? `Lembrete às ${hhmm(toMin(s.time) - LEAD)}` : `Lembrar ${LEAD} min antes`}</span><i class="switch"></i></button>`;
@@ -2631,7 +2634,7 @@ Screens.activity = ({ id }) => {
         : '';
   return {
     mount: mountThumb(s),
-    html: `${header('', { right: comInscricao(s) ? '' : `<button class="iconbtn bm ${S.saved.has(id) ? 'on' : ''}" data-act="save" data-id="${id}" aria-label="${S.saved.has(id) ? 'Remover da agenda' : 'Salvar na agenda'}">${ic('bookmark')}</button>` })}
+    html: `${header('', { right: comInscricao(s) || inscrito(s) ? '' : `<button class="iconbtn bm ${S.saved.has(id) ? 'on' : ''}" data-act="save" data-id="${id}" aria-label="${S.saved.has(id) ? 'Remover da agenda' : 'Salvar na agenda'}">${ic('bookmark')}</button>` })}
       <div class="pad stack detail detalhe-v2">
         <span class="kind kind-tp tp-${t.k} st" ${st(0)}>${ic(t.icon)}${s.type}</span>
         <h1 class="title-lg st" ${st(1)}>${s.title}</h1>
@@ -5724,6 +5727,10 @@ ACOES['rate'] = (el, e, a) => {
 
 ACOES['save'] = (el, e, a) => {
   const id = el.dataset.id;
+  if (inscrito(byId(id))) {
+    toast('Você está inscrito nesta atividade no SUAP');
+    return;
+  }
   if (comInscricao(byId(id))) {
     toast('A inscrição em minicurso é feita no SUAP');
     return;
@@ -7318,6 +7325,7 @@ function apiState(me) {
   Object.keys(D.person).forEach((k) => delete D.person[k]);
   applyProfile(apiPerson(me.person));
   S.saved = new Set(me.saved);
+  S.inscricoes = new Set(me.inscricoes || []);
   D.enrolled.length = 0;
   D.enrolled.push(...me.saved);
   S.present = { ...me.present };

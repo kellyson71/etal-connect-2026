@@ -25,6 +25,7 @@ function apiState(me) {
   Object.keys(D.person).forEach((k) => delete D.person[k]);
   applyProfile(apiPerson(me.person));
   S.saved = new Set(me.saved);
+  S.inscricoes = new Set(me.inscricoes || []);
   D.enrolled.length = 0;
   D.enrolled.push(...me.saved);
   S.present = { ...me.present };
