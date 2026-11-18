@@ -1,0 +1,35 @@
+# Versão de teste na Vercel: a cada push no develop, sobe o site e a API com o Vercel CLI (o build roda na Vercel,
+# pelo vercel.json). O projeto fica numa conta da Vercel sem vínculo com o GitHub: o deploy usa um token dela.
+#
+# Configurar no GitHub (Settings → Secrets and variables → Actions): segredo VERCEL_TOKEN, criado em
+# vercel.com/account/tokens na conta dona do projeto. Sem ele, o workflow só avisa e não publica.
+name: vercel
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+concurrency:
+  group: vercel-producao
+  cancel-in-progress: true
+
+env:
+  VERCEL_ORG_ID: team_IEtjPLI1o3TbUDVHWLq2nvO7
+  VERCEL_PROJECT_ID: prj_teKvvYwyE95kAKHfMtaHp5R0SwQG
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Publicar em produção
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::notice::Sem o segredo VERCEL_TOKEN: nada publicado."
+            exit 0
+          fi
+          npx --yes vercel@65.16.0 deploy --prod --yes --token "$VERCEL_TOKEN"

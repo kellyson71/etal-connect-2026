@@ -73,4 +73,4 @@ Não editar o index.html gerado. Preservar a geometria e as regras em docs/mapas
 
 Docker Compose usa PostgreSQL 16 e Caddy. A API roda com um processo porque o SSE vive na memória. Escalar exige distribuir os eventos por outro mecanismo. A configuração Vercel usa função Python e consulta periódica, com PostgreSQL externo. A existência desses arquivos não é evidência de implantação ativa.
 
-O workflow backend.yml contém testes e uma etapa condicional de implantação. A documentação não presume uma rotina git flow nem um histórico de releases apenas por existir uma sugestão de fluxo.
+O workflow backend.yml contém testes e uma etapa condicional de implantação. O vercel.yml publica a versão de teste na Vercel a cada push no develop, com o Vercel CLI e o segredo VERCEL_TOKEN (o projeto da Vercel fica numa conta sem vínculo com o GitHub); sem o segredo, não publica. A documentação não presume uma rotina git flow nem um histórico de releases apenas por existir uma sugestão de fluxo.
