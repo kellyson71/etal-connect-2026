@@ -1166,10 +1166,39 @@ export function iniciarInterface(ctx) {
     viagem.resize();
     qualidade();
   });
+  /* O navegador pode tirar o contexto 3D (abas demais com o mapa, GPU reiniciada). Em vez de ficar na planta, o mapa
+     reabre quando a aba está à vista, e a câmera volta do sessionStorage. No máximo duas reaberturas por minuto, para
+     não entrar em ciclo num aparelho em que o 3D não se sustenta. */
+  let perdido = false;
+  const reabrir = () => {
+    if (!perdido || document.hidden) return;
+    let feitas = [];
+    try {
+      feitas = JSON.parse(sessionStorage.getItem('mapa3d-reaberturas')) || [];
+    } catch {
+      /* sem sessionStorage: conta do zero */
+    }
+    feitas = feitas.filter((t) => Date.now() - t < 60000);
+    if (feitas.length >= 2) {
+      $('#fallback-tx').textContent = 'O navegador pausou o mapa 3D. Feche outras abas com o mapa e tente de novo.';
+      return;
+    }
+    try {
+      sessionStorage.setItem('mapa3d-reaberturas', JSON.stringify([...feitas, Date.now()]));
+    } catch {
+      /* segue sem contar */
+    }
+    location.reload();
+  };
   $('#tela').addEventListener('webglcontextlost', (e) => {
     e.preventDefault();
+    perdido = true;
+    $('#fallback-tx').textContent = 'O navegador pausou o mapa 3D. Reabrindo…';
     $('#fallback').hidden = false;
+    setTimeout(reabrir, 1200);
   });
+  $('#tela').addEventListener('webglcontextrestored', reabrir);
+  document.addEventListener('visibilitychange', reabrir);
   setMode('evento');
 
   return {
