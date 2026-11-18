@@ -1,7 +1,9 @@
 """Publicações do evento: feed com fotos, comentários, chat geral, curtidas, salvos, denúncias e moderação.
 
 Regras (docs/regras-de-negocio.md):
-- ver é para quem entrou; publicar, comentar, curtir, mandar mensagem e denunciar é para quem está credenciado;
+- ver é para quem entrou; o chat geral é aberto a quem entrou;
+- publicar, comentar, curtir e denunciar: durante o evento, só quem está credenciado; antes do evento (e depois dele),
+  quem entrou, para a conversa começar antes do primeiro dia;
 - até 6 fotos por publicação; o servidor confere que é imagem e grava de novo, sem os dados escondidos da foto
   (como a localização do GPS);
 - cada um apaga o que é seu; conteúdo de outra pessoa a organização tira do ar (oculta), com nota e histórico;
@@ -45,8 +47,20 @@ MAX_POSTS, MAX_MENSAGENS = 300, 200  # o que o app recebe: as mais recentes
 _versao = {'n': int(time.time() * 1000)}
 
 
-def _credenciada(p: Pessoa = Depends(pessoa_atual)) -> Pessoa:
-    if p.credenciado_em is None:
+def evento_em_andamento(db: Session) -> bool:
+    """Do início da primeira atividade ao fim da última, pela hora do campus."""
+    from ..modelos import Atividade
+    ini = db.execute(select(Atividade.data, Atividade.inicio).order_by(Atividade.data, Atividade.inicio).limit(1)).first()
+    fim = db.execute(select(Atividade.data, Atividade.fim).order_by(Atividade.data.desc(), Atividade.fim.desc()).limit(1)).first()
+    if not ini:
+        return False
+    hora = lambda d, h: datetime.strptime(f'{d.isoformat()} {h}', '%Y-%m-%d %H:%M')  # noqa: E731
+    return hora(*ini) <= agora() <= hora(*fim)
+
+
+def _participante(p: Pessoa = Depends(pessoa_atual), db: Session = Depends(sessao)) -> Pessoa:
+    """Durante o evento, participar pede o QR da recepção; fora dele, basta ter entrado."""
+    if p.credenciado_em is None and evento_em_andamento(db):
         raise HTTPException(403, 'Leia o QR Code da recepção para participar.')
     return p
 
@@ -98,7 +112,7 @@ def estado(db: Session, eu: Pessoa) -> dict:
         vivos = {x.id for x in itens if x.tipo == 'post'}
         itens = [x for x in itens if x.tipo != 'comentario' or x.pai_id in vivos]
     pessoas = {p.id: p for p in db.scalars(select(Pessoa).where(Pessoa.id.in_({x.pessoa_id for x in itens})))} if itens else {}
-    v = {'versao': _versao['n'], 'posts': [], 'messages': [], 'comments': {}, 'likes': {}, 'bookmarks': {}, 'reports': [], 'moderation': {},
+    v = {'versao': _versao['n'], 'semCredencial': not evento_em_andamento(db), 'posts': [], 'messages': [], 'comments': {}, 'likes': {}, 'bookmarks': {}, 'reports': [], 'moderation': {},
          'audit': [], 'mentionSeen': {}}
     ids = {x.id for x in itens}
     for x in itens:
@@ -140,11 +154,12 @@ def _avisar(tipo: str = 'mudou') -> None:
 @rota.get('', dependencies=[Depends(limitar('publicacoes'))])
 def ver(versao: int | None = None, eu: Pessoa = Depends(pessoa_atual), db: Session = Depends(sessao)):
     """Feed (as 300 publicações mais recentes, com os comentários), chat (as 200 últimas mensagens), curtidas e os
-    salvos da pessoa. Para a organização, também o que está oculto, as denúncias e o histórico da moderação. Com
-    `versao` igual à atual, responde só `{versao, igual: true}`."""
+    salvos da pessoa. `semCredencial` diz se dá para participar sem o QR da recepção (fora do evento). Para a
+    organização, também o que está oculto, as denúncias e o histórico da moderação. Com `versao` igual à atual,
+    responde só `{versao, igual: true, semCredencial}`."""
     contar('publicacoes-ver', str(eu.id), 60, msg='Muitas atualizações seguidas. Espere um pouco.')
     if versao == _versao['n']:
-        return {'versao': versao, 'igual': True}
+        return {'versao': versao, 'igual': True, 'semCredencial': not evento_em_andamento(db)}
     return estado(db, eu)
 
 
@@ -208,7 +223,7 @@ def _agora_exato() -> datetime:
 
 
 @rota.post('', dependencies=[Depends(limitar('publicar'))])
-async def publicar(n: NovaPublicacao, eu: Pessoa = Depends(_credenciada), db: Session = Depends(sessao)):
+async def publicar(n: NovaPublicacao, eu: Pessoa = Depends(_participante), db: Session = Depends(sessao)):
     """Nova publicação (texto e/ou até 6 fotos)."""
     contar('publicar', str(eu.id), 10, janela=600, msg='Você publicou bastante agora. Espere uns minutos.')
     texto = n.texto.strip()
@@ -243,8 +258,8 @@ def _post_visivel(db: Session, pid: str) -> Publicacao:
 
 
 @rota.post('/{pid}/comentarios', dependencies=[Depends(limitar('comentar'))])
-def comentar(pid: str, n: NovoTexto, eu: Pessoa = Depends(_credenciada), db: Session = Depends(sessao)):
-    """Comentário numa publicação visível (só para quem está credenciado)."""
+def comentar(pid: str, n: NovoTexto, eu: Pessoa = Depends(_participante), db: Session = Depends(sessao)):
+    """Comentário numa publicação visível (durante o evento, só para quem está credenciado)."""
     contar('comentar', str(eu.id), 30, janela=300, msg='Muitos comentários seguidos. Espere um pouco.')
     _post_visivel(db, pid)
     x = Publicacao(id=_novo_id(), tipo='comentario', pessoa_id=eu.id, pai_id=pid, texto=n.texto.strip(),
@@ -256,8 +271,8 @@ def comentar(pid: str, n: NovoTexto, eu: Pessoa = Depends(_credenciada), db: Ses
 
 
 @rota.post('/mensagens', dependencies=[Depends(limitar('comentar'))])
-def mensagem(n: NovoTexto, eu: Pessoa = Depends(_credenciada), db: Session = Depends(sessao)):
-    """Mensagem no chat geral."""
+def mensagem(n: NovoTexto, eu: Pessoa = Depends(pessoa_atual), db: Session = Depends(sessao)):
+    """Mensagem no chat geral (aberto a quem entrou, credenciado ou não)."""
     contar('comentar', str(eu.id), 30, janela=300, msg='Muitas mensagens seguidas. Espere um pouco.')
     x = Publicacao(id=_novo_id(), tipo='mensagem', pessoa_id=eu.id, texto=n.texto.strip(),
                    mencoes=_mencoes(n.mencoes, eu, db), criada_em=_agora_exato())
@@ -279,7 +294,7 @@ def _alternar(modelo, pid: str, eu: Pessoa, db: Session) -> bool:
 
 
 @rota.post('/{pid}/curtir')
-def curtir(pid: str, eu: Pessoa = Depends(_credenciada), db: Session = Depends(sessao)):
+def curtir(pid: str, eu: Pessoa = Depends(_participante), db: Session = Depends(sessao)):
     """Curte a publicação, ou desfaz a curtida se já tinha curtido."""
     contar('curtir', str(eu.id), 120, msg='Calma: muitas curtidas seguidas.')
     r = _alternar(Curtida, pid, eu, db)
@@ -345,7 +360,7 @@ class NovaDenuncia(BaseModel):
 
 
 @rota.post('/{pid}/denunciar')
-def denunciar(pid: str, n: NovaDenuncia, eu: Pessoa = Depends(_credenciada), db: Session = Depends(sessao)):
+def denunciar(pid: str, n: NovaDenuncia, eu: Pessoa = Depends(_participante), db: Session = Depends(sessao)):
     """Denuncia uma publicação, comentário ou mensagem. Denúncias de pessoas diferentes acima do limite tiram o
     conteúdo do ar até a organização revisar."""
     contar('denunciar', str(eu.id), 10, janela=600, msg='Muitas denúncias seguidas. A organização já foi avisada.')

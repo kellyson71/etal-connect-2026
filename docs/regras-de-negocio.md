@@ -26,7 +26,7 @@ Anotando aqui as regras que a gente foi decidindo pro ETAL Connect, pra não se 
 
 ## Credenciamento e presença
 
-- O credenciamento é lendo o QR da recepção. Sem credenciamento a pessoa vê o app, mas não participa (não posta, não comenta, não denuncia).
+- O credenciamento é lendo o QR da recepção. Durante o evento, sem credenciamento a pessoa vê o app, mas não participa das publicações (não posta, não comenta, não denuncia); o chat fica aberto.
 - Presença numa atividade é lendo o QR da sala. O QR principal é o de papel na porta.
 - O QR é assinado pelo servidor, então não dá pra inventar um QR que funcione.
 - O QR de uma atividade só vale de 20 minutos antes até o fim dela.
@@ -78,7 +78,8 @@ Isso eu fiquei com receio, então ficou assim:
 
 ## Publicações
 
-- Ver as publicações é pra quem entrou. Postar, curtir, comentar, mandar mensagem no chat e denunciar é só pra quem já tá credenciado.
+- Ver as publicações é pra quem entrou. O chat geral é aberto pra quem entrou, credenciado ou não.
+- Postar, curtir, comentar e denunciar: antes do evento, basta ter entrado (a conversa começa antes do primeiro dia). Durante o evento (do início da primeira atividade ao fim da última), só quem já tá credenciado. Depois do evento volta a valer só o login.
 - Ficam no servidor: todo mundo vê as mesmas, e quem tá com a tela aberta vê chegar na hora, sem recarregar.
 - O que fica guardado: o texto, as fotos (até 6 por post, cada uma com descrição), a atividade e o dia, quem curtiu, os comentários, o chat geral, as denúncias e o histórico da moderação.
 - As fotos são reduzidas no celular, e o servidor ainda grava cada uma de novo, tirando o que vem escondido na foto (tipo a localização do GPS).

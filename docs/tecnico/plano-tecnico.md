@@ -42,8 +42,9 @@ Os dados de alunos (inclusive menores de idade) ficam dentro do IFRN.
 | `GET /api/org/qrs` | organização | página para imprimir os QRs (evento e um por atividade) |
 | `GET /q/{token}` | todos | QR lido pela câmera do celular, fora do app: abre o app |
 | `GET /api/publicacoes` | logado | feed, comentários, chat, curtidas e salvos; para a organização, também ocultos, denúncias e histórico |
-| `POST /api/publicacoes`, `/{id}/comentarios`, `/mensagens` | credenciado | publicar (até 6 fotos), comentar, mandar mensagem |
-| `POST /api/publicacoes/{id}/curtir`, `/salvar`, `/denunciar`; `DELETE /api/publicacoes/{id}` | credenciado (salvar e apagar: logado) | curtir, salvar, denunciar, apagar o que é seu |
+| `POST /api/publicacoes`, `/{id}/comentarios` | credenciado durante o evento; antes e depois, logado | publicar (até 6 fotos), comentar |
+| `POST /api/publicacoes/mensagens` | logado | mandar mensagem no chat geral |
+| `POST /api/publicacoes/{id}/curtir`, `/salvar`, `/denunciar`; `DELETE /api/publicacoes/{id}` | como publicar (salvar e apagar: logado) | curtir, salvar, denunciar, apagar o que é seu |
 | `GET /api/org/listas-papel?dia=` | organização | listas de presença em papel para imprimir (plano B) |
 | `POST /api/org/presenca-manual` | organização | lança uma lista em papel: credencia e registra presença (`via = 'manual'`) |
 | `GET /api/org/sistema` | organização | números do servidor nos últimos 10 minutos |
