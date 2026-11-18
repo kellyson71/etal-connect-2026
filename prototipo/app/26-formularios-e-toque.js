@@ -61,6 +61,13 @@ document.addEventListener('submit', async (e) => {
       if (onBadge) {
         $('.bx-face.filled', $('.login')).innerHTML = badgeFace(lgPending);
         $('[data-live="hello"]').textContent = `Tudo certo, ${D.person.first}!`;
+      } else if (top().s === 'cartao') {
+        /* na edição do perfil: troca só a foto e o nome, sem perder o que foi digitado no resto do formulário */
+        const pg = vp.querySelector('.page:not(.leaving)');
+        const eu = $('.ct-eu', pg);
+        if (eu) eu.outerHTML = cartaoEu();
+        $('[data-form="cartao"]', pg)?.dispatchEvent(new Event('input'));
+        mapaFixoEnviar('etal:mapa:sincronizar', {});
       } else {
         rerender();
         mapaFixoEnviar('etal:mapa:sincronizar', {});

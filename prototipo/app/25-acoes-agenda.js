@@ -23,3 +23,9 @@ ACOES['today'] = (el, e, a) => {
   el.setAttribute('aria-expanded', S.todayOpen);
   el.closest('.today').classList.toggle('open', S.todayOpen);
 };
+
+/* "Programação" (atalho da home e aba de baixo) é sempre a lista completa; "Minha agenda" é o filtro de "Ver tudo" */
+ACOES['programacao'] = (el, e, a) => {
+  S.agendaFilter = 'all';
+  switchTab('agenda', true);
+};

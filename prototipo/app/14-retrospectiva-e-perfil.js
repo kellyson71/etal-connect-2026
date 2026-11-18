@@ -110,18 +110,18 @@ Screens.mais = () => ({
 Screens.profile = () => ({
   html: `${header('Perfil')}
       <div class="pad stack">
-        <section class="profile-hero st" ${st(0)}><button class="profile-portrait" data-act="profile-edit" aria-label="Editar foto e nome">${meAv('av')}<span class="profile-pencil">${ic('pencil')}</span></button><h2>${esc(D.person.name)}</h2><div class="profile-link">${linkLine()}</div><p>${esc(D.person.courseFull || D.person.course || '')}</p><small>${esc([D.person.year, D.person.campus].filter(Boolean).join(' · '))}</small><button class="profile-edit-link" data-act="profile-edit">${ic('pencil')}Editar perfil</button></section>
+        <section class="profile-hero st" ${st(0)}><button class="profile-portrait" data-act="profile-edit" aria-label="Editar foto e nome">${meAv('av')}<span class="profile-pencil">${ic('pencil')}</span></button><h2>${esc(D.person.name)}</h2><div class="profile-link">${linkLine()}</div><p>${esc(D.person.courseFull || D.person.course || '')}</p><small>${esc([D.person.year, D.person.campus].filter(Boolean).join(' · '))}</small><button class="profile-edit-link" data-go="cartao">${ic('pencil')}Editar perfil</button></section>
         ${taughtActivityCard(D.person)}
         ${orgDe() ? `<button class="org-cta st" ${st(1)} data-go="org">${ic('building')}<span><small>Você é da organização · ${esc(orgDe().papel)}</small><b>Painel da organização</b></span>${ic('chev')}</button>` : ''}
         <button class="retro-cta st" ${st(1)} data-act="retro">${comb('tiny')}<span><b>Minha retrospectiva</b><small>O que você fez e aprendeu no ETAL</small></span>${ic('chev')}</button>
         <ul class="menu st" ${st(1)}>
           <li data-go="credential">${ic('id')}<span>Minha credencial</span><em>${S.credAt ? 'Ativa' : 'Pendente'}</em>${ic('chev', 'i chev')}</li>
-          <li data-act="mine">${ic('list')}<span>Minhas atividades</span><em>${S.saved.size}</em>${ic('chev', 'i chev')}</li>
+          <li data-act="mine">${ic('list')}<span>Minha agenda</span><em>${S.saved.size}</em>${ic('chev', 'i chev')}</li>
           <li data-go="materials">${ic('file')}<span>Materiais</span><em>${Object.keys(S.present).reduce((n, k) => n + byId(k).materials.length, 0)}</em>${ic('chev', 'i chev')}</li>
           <li data-go="suapEvents">${ic('cal')}<span>Meus eventos no SUAP</span>${ic('chev', 'i chev')}</li>
           <li data-go="certificates">${ic('award')}<span>Certificados</span>${ic('chev', 'i chev')}</li>
           <li data-go="network">${ic('contact')}<span>Contatos</span><em>${S.contacts.length}</em>${ic('chev', 'i chev')}</li>
-          <li data-go="cartao">${ic('id')}<span>Perfil público</span><em>${cardGet() ? (cardGet().publish === false ? 'Oculto' : 'Visível') : 'Personalizar'}</em>${ic('chev', 'i chev')}</li>
+          <li data-go="cartao">${ic('id')}<span>Interesses e contato</span><em>${cardGet() ? (cardGet().publish === false ? 'Oculto' : 'Visível') : 'Personalizar'}</em>${ic('chev', 'i chev')}</li>
         </ul>
         <ul class="menu st" ${st(2)}>
           <li data-go="games" class="games-row">${ic('trophy')}<span>Campeonatos</span><em>Qui 27</em>${ic('chev', 'i chev')}</li>

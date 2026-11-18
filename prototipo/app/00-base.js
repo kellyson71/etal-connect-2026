@@ -144,6 +144,17 @@ const TIPOS = {
 };
 const TIPOS_G = new Set(['pal', 'mesa', 'mini', 'camp']);
 const tipoDe = (x) => TIPOS[x.type] || { k: 'out', g: 'out', icon: 'cal', formato: '' };
+/* Minicurso e oficina têm vaga limitada e a inscrição é feita no SUAP: no app não se salvam. Quem está inscrito vem da
+   lista da organização (com servidor, a agenda importada; sem servidor, D.enrolled), e o app só mostra e leva ao SUAP. */
+const comInscricao = (x) => tipoDe(x).g === 'mini';
+const inscrito = (x) => comInscricao(x) && S.saved.has(x.id);
+const linkInscricao = (x) => x.inscricao || x.link || '';
+const vagasLivres = (x) => (x.seats ? Math.max(0, x.seats - (x.taken || 0)) : null);
+/* vagas preenchidas, discreto: barrinha e "26 de 30" (cheio vira "Esgotado") */
+const vagasLinha = (x) =>
+  !x.seats
+    ? ''
+    : `<span class="vagas-linha ${vagasLivres(x) === 0 ? 'cheio' : vagasLivres(x) <= 5 ? 'pouca' : ''}">${seatBar(x)}<small>${vagasLivres(x) === 0 ? 'Esgotado' : `${Math.min(x.taken || 0, x.seats)} de ${x.seats} vagas`}</small></span>`;
 const duracao = (x) => {
   if (!x.end) return '';
   const [a, b] = [x.time, x.end].map((t) => {

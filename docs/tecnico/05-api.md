@@ -21,8 +21,8 @@ A lista exata de métodos e caminhos está na tabela gerada do OpenAPI, nas refe
 | Verificar API e banco | GET /api/saude | ok: true |
 | Carregar programação | GET /api/programacao | sessions e rooms |
 | Recuperar sessão | GET /api/eu | person, saved e present |
-| Salvar atividade | POST /api/eu/agenda/{atividade_id} | ok; idempotente |
-| Remover atividade | DELETE /api/eu/agenda/{atividade_id} | ok; idempotente |
+| Salvar atividade | POST /api/eu/agenda/{atividade_id} | ok; idempotente; minicurso e oficina: 409 (inscrição no SUAP) |
+| Remover atividade | DELETE /api/eu/agenda/{atividade_id} | ok; idempotente; minicurso e oficina: 409 |
 | Registrar leitura | POST /api/presenca com qr | credentialed, newCredential, activity, alreadyPresent e time |
 | Publicar aviso | POST /api/org/avisos | Aviso criado, HTTP 201 |
 | Trocar sala | PATCH /api/org/atividades/{atividade_id}/sala | Atividade atualizada; aviso por padrão |
@@ -75,4 +75,4 @@ python -m app.importar programacao seed/programacao.json
 python -m app.importar inscritos inscritos.csv
 ```
 
-Importação de programação atualiza pelo id. Importação de inscritos cria pessoas novas por matrícula ou e-mail. Não substitui uma integração institucional de presença ou certificado.
+Importação de programação atualiza pelo id. Importação de inscritos cria pessoas novas por matrícula ou e-mail e, na coluna opcional `atividades` (IDs separados por espaço ou `|`), registra os minicursos em que cada pessoa se inscreveu no SUAP. É essa lista que marca "Inscrito" no app e conta as vagas preenchidas; importar de novo não duplica. Não substitui uma integração institucional de presença ou certificado.

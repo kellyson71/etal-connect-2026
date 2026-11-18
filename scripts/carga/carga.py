@@ -67,7 +67,7 @@ async def ouvir(c: httpx.AsyncClient, i: int, aviso_em: dict):
         pass
 
 
-async def pessoa(i, a, qrs, ativs, aviso_em, ouvintes):
+async def pessoa(i, a, qrs, ativs, salvaveis, aviso_em, ouvintes):
     await asyncio.sleep(a.chegada * random.random())
     ip = f'10.{i % a.ips // 65536}.{i % a.ips // 256 % 256}.{i % a.ips % 256}'
     c = httpx.AsyncClient(base_url=a.api, headers={'X-Forwarded-For': ip}, timeout=40)
@@ -100,7 +100,7 @@ async def pessoa(i, a, qrs, ativs, aviso_em, ouvintes):
         await medir('eu', c.get('/api/eu'))
         ouvintes.append(asyncio.create_task(ouvir(c, i, aviso_em)))
         await medir('presenca (credenciar)', c.post('/api/presenca', json={'qr': qrs[None]}))
-        for aid in random.sample(ativs, 3):
+        for aid in random.sample(salvaveis, 3):
             await medir('agenda (salvar)', c.post(f'/api/eu/agenda/{aid}'))
         await medir('presenca (atividade)', c.post('/api/presenca', json={'qr': qrs[random.choice(ativs)]}))
         r = await medir('publicacoes', c.get('/api/publicacoes'))
@@ -130,11 +130,14 @@ async def principal(a):
     lista = (await org.get('/api/org/qrs/lista')).json()
     qrs = {q['id']: q['token'] for q in lista}
     ativs = [q['id'] for q in lista if q['id']]
+    # minicurso não se salva no app (a inscrição é no SUAP): a agenda usa as outras atividades
+    prog = (await org.get('/api/programacao')).json()['sessions']
+    salvaveis = [x['id'] for x in prog if x['type'] not in ('Minicurso', 'Oficina')]
     aviso_em: dict = {}
     ouvintes: list = []
     print(f'{a.pessoas} pessoas chegando em {a.chegada} s, entrada por {a.entrada}, {a.ips} endereço(s) de rede…', flush=True)
     t0 = time.perf_counter()
-    tarefas = [asyncio.create_task(pessoa(i, a, qrs, ativs, aviso_em, ouvintes)) for i in range(a.pessoas)]
+    tarefas = [asyncio.create_task(pessoa(i, a, qrs, ativs, salvaveis, aviso_em, ouvintes)) for i in range(a.pessoas)]
 
     async def acompanhar():
         while not parar.is_set():

@@ -50,14 +50,18 @@ Screens.certificates = () => {
   };
 };
 
-/* Cartão de contato: o que aparece para quem ler o QR do seu crachá. Tudo opcional; na primeira entrada vem com "Pular". */
+/* Editar perfil: foto e nome de exibição, mais o cartão de contato (o que aparece para quem ler o QR do seu crachá).
+   Tudo opcional; na primeira entrada vem como convite, com "Pular" sempre à vista na barra de baixo. */
+const cartaoEu = () =>
+  `<button type="button" class="ct-eu" data-act="profile-edit">${meAv('av')}<span><b>${esc(D.person.name)}</b><small>Foto e nome de exibição</small></span><span class="ct-eu-edit">${ic('pencil')}Alterar</span></button>`;
 Screens.cartao = (pp = {}) => {
   const c = cardGet() || { publish: true, email: D.person.email || '', nadic: '', langs: [], areas: [], open: [] };
   const intro = !!pp.intro;
   return {
-    html: `${header(intro ? 'Seu perfil' : 'Perfil público', { right: intro ? '<button class="ct-skip" data-act="cartao-pular">Pular</button>' : '' })}
-      <form class="ct-form pad" data-form="cartao" novalidate>
-        ${intro ? `<div class="ct-hello st" ${st(0)}><small>Opcional</small><h2>Personalize seu perfil</h2></div>` : ''}
+    html: `${header(intro ? 'Seu perfil' : 'Editar perfil', { right: intro ? '<button class="ct-skip" data-act="cartao-pular">Pular</button>' : '' })}
+      <form class="ct-form pad" id="ct-form" data-form="cartao" novalidate>
+        ${intro ? `<div class="ct-hello st" ${st(0)}><small>Opcional</small><h2>Personalize seu perfil</h2><p>Interesses e contato ajudam colegas a te encontrar pelo QR do crachá. Dá para pular e preencher depois em Perfil.</p></div>` : ''}
+        <div class="st" ${st(0)}>${cartaoEu()}</div>
         <div class="ct-preview st" ${st(1)}>${cardPreview(c)}</div>
         <label class="ct-switch st" ${st(2)}><span><b>Perfil visível</b><small>Para quem tocar no seu nome ou ler seu QR</small></span><input type="checkbox" name="publish" ${c.publish !== false ? 'checked' : ''}><i></i></label>
 
@@ -78,8 +82,8 @@ Screens.cartao = (pp = {}) => {
           <label class="ct-field area"><textarea name="bio" maxlength="140" rows="2" placeholder="Ex.: Curto jogos e estou aprendendo Godot.">${esc(c.bio || '')}</textarea><em class="ct-count">${(c.bio || '').length}/140</em></label>
         </section>
 
-        <div class="ct-actions"><button class="btn primary big" type="submit">${ic('check')}Salvar</button>${intro ? '<button class="btn ghost" type="button" data-act="cartao-pular">Pular por enquanto</button>' : ''}</div>
-      </form>`,
+      </form>
+      <div class="cta-bar ct-barra ${intro ? 'dupla' : ''}">${intro ? '<button class="btn soft big" type="button" data-act="cartao-pular">Pular por agora</button>' : ''}<button class="btn primary big" type="submit" form="ct-form">${ic('check')}Salvar</button></div>`,
     mount: (page) => {
       const f = $('[data-form="cartao"]', page);
       if (!f) return;

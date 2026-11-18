@@ -208,7 +208,7 @@ function switchTab(t, reset = false) {
 function renderTabbar() {
   const tabs = [
     ['home', 'home', 'Início'],
-    ['agenda', 'cal', 'Agenda'],
+    ['agenda', 'cal', 'Programação'],
     null,
     ['map', 'map', 'Mapa'],
     ['community', 'image', 'Publicações'],

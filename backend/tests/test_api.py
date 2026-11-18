@@ -28,6 +28,27 @@ def test_agenda(app_cliente):
     assert app_cliente.get('/api/eu').json()['saved'] == []
 
 
+def test_minicurso_nao_se_salva_no_app(app_cliente):
+    entrar(app_cliente)
+    r = app_cliente.post('/api/eu/agenda/react-native')
+    assert r.status_code == 409 and 'SUAP' in r.json()['detail']
+    assert app_cliente.get('/api/eu').json()['saved'] == []
+
+
+def test_inscricoes_em_minicurso_vem_da_lista_importada(app_cliente, tmp_path):
+    from app import importar
+    entrar(app_cliente, 'Ana Teste', matricula='20250009')
+    lista = tmp_path / 'inscritos.csv'
+    lista.write_text('nome;matricula;email;atividades\nAna Teste;20250009;;react-native|game-maker nao-existe\n'
+                     'Bia Nova;;bia@exemplo.com;react-native\n', encoding='utf-8')
+    assert importar.inscritos(str(lista)) == (1, 3)
+    assert importar.inscritos(str(lista)) == (0, 0)  # importar de novo não duplica
+    assert sorted(app_cliente.get('/api/eu').json()['saved']) == ['game-maker', 'react-native']
+    prog = {x['id']: x for x in app_cliente.get('/api/programacao').json()['sessions']}
+    assert prog['react-native']['taken'] == 2
+    assert app_cliente.delete('/api/eu/agenda/react-native').status_code == 409  # cancelar é no SUAP
+
+
 def test_presenca_por_qr(app_cliente):
     entrar(app_cliente)
     # QR do evento: só credencia

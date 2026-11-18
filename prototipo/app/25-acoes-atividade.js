@@ -36,6 +36,10 @@ ACOES['rate'] = (el, e, a) => {
 
 ACOES['save'] = (el, e, a) => {
   const id = el.dataset.id;
+  if (comInscricao(byId(id))) {
+    toast('A inscrição em minicurso é feita no SUAP');
+    return;
+  }
   if (API && S.auth)
     API[S.saved.has(id) ? 'del' : 'post'](`/api/eu/agenda/${encodeURIComponent(id)}`).catch((x) => {
       toast(x.message);
