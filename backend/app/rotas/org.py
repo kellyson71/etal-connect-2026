@@ -439,10 +439,18 @@ def _chave_planilha(versao: str) -> str:
     return hmac.new(config().segredo.encode(), f'planilha:{versao}'.encode(), hashlib.sha256).hexdigest()[:32]
 
 
+def _base_api(request: Request) -> str:
+    """Endereço da API como o navegador a alcançou (atrás do Caddy ou da Vercel, pelos cabeçalhos do proxy). Não é o
+    endereço do app: no desenvolvimento, app e API ficam em portas diferentes."""
+    proto = request.headers.get('x-forwarded-proto') or request.url.scheme
+    host = request.headers.get('x-forwarded-host') or request.headers.get('host') or request.url.netloc
+    return f'{proto}://{host}'
+
+
 @rota.get('/planilha')
 def link_planilha(request: Request, db: Session = Depends(sessao)):
     """Endereço da planilha de participantes para colar no Google Sheets (=IMPORTDATA) ou no Excel (Dados > Da Web)."""
-    return {'url': f"{publica(request).rstrip('/')}/api/planilha/{_chave_planilha(_versao_planilha(db))}.csv"}
+    return {'url': f'{_base_api(request)}/api/planilha/{_chave_planilha(_versao_planilha(db))}.csv'}
 
 
 @rota.post('/planilha/novo')

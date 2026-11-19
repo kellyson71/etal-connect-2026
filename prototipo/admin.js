@@ -37,6 +37,10 @@
       '<path d="M8 4h8v5a4 4 0 0 1-8 0Z"/><path d="M8 6H4v1a3 3 0 0 0 4 3M16 6h4v1a3 3 0 0 1-4 3M12 13v4M8 20h8M9 17h6"/>',
     pulse: '<path d="M3 12h4l3-8 4 16 3-8h4"/>',
     grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+    star: '<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2-5.5-2.9-5.5 2.9 1-6.2L3 9.6l6.2-.9Z"/>',
+    chart: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+    sheet: '<rect x="3" y="3" width="18" height="18" rx="2.5"/><path d="M3 9h18M3 15h18M9 3v18"/>',
+    copy: '<rect x="8" y="8" width="13" height="13" rx="2.5"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/>',
   };
   const ic = (n) =>
     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]}</svg>`;
@@ -267,6 +271,265 @@
   })();
   const credOf = (p) => ORG.creds[p.id] || p.cred || null;
   const credCount = () => PEOPLE.filter(credOf).length;
+  /* Demonstração: agenda, presenças, saídas, avaliações e perfil simulados (sempre os mesmos), para os filtros, os
+     números do público e o ranking das avaliações funcionarem sem servidor. */
+  const SIM_LANGS = ['Python', 'JavaScript', 'Java', 'C', 'PHP', 'TypeScript', 'C#', 'Kotlin', 'SQL', 'GDScript'];
+  const SIM_AREAS = ['Web', 'Mobile', 'Jogos', 'IA', 'Dados', 'Redes', 'Segurança', 'Design e UX', 'Robótica'];
+  const SIM_OPEN = ['Estágio', 'Projetos de pesquisa', 'Grupo de estudo', 'Hackathons', 'Monitoria'];
+  const RAPIDOS = [
+    'Didática clara',
+    'Conteúdo prático',
+    'Bom ritmo',
+    'Material útil',
+    'Tirou minhas dúvidas',
+    'Quero mais',
+    'Rápido demais',
+    'Faltou prática',
+    'Difícil de acompanhar',
+    'Problema técnico',
+    'Sala desconfortável',
+  ];
+  const SIM_COMENT = [
+    'Gostei muito da parte prática, deu para sair com o projeto rodando.',
+    'O conteúdo foi bom, mas o tempo ficou curto para os exercícios.',
+    'Professor explicou muito bem, queria uma continuação.',
+    'A internet do laboratório caiu algumas vezes.',
+    'Poderia ter mais exemplos para quem está começando.',
+    'Melhor atividade do evento até agora!',
+  ];
+  const SIM_NOTAS = {};
+  /* avaliação no fim: aula, palestra, mesa e oficina (abertura, encerramento e campeonato não têm) */
+  const AVALIAVEIS = ['Minicurso', 'Palestra', 'Mesa-redonda', 'Oficina'];
+  (() => {
+    const r = rng(77);
+    const comVaga = D.sessions.filter((x) => x.seats || ['Palestra', 'Mesa-redonda'].includes(x.type));
+    const pickN = (a, n) => [...a].sort(() => r() - 0.5).slice(0, n);
+    PEOPLE.forEach((p) => {
+      p.saved = pickN(comVaga, 1 + Math.floor(r() * 3)).map((x) => x.id);
+      p.present = credOf(p) ? p.saved.filter(() => r() < 0.8) : [];
+      p.left = p.present.filter(() => r() < 0.75);
+      p.rated = p.left.filter((id) => AVALIAVEIS.includes(D.sessions.find((x) => x.id === id)?.type) && r() < 0.7);
+      p.profile = r() < 0.55;
+      p.nadic = p.profile ? (r() < 0.14 ? 'bolsista' : r() < 0.1 ? 'ex' : 'nao') : '';
+      p.langs = p.profile ? pickN(SIM_LANGS, 1 + Math.floor(r() * 3)) : [];
+      p.areas = p.profile ? pickN(SIM_AREAS, 1 + Math.floor(r() * 2)) : [];
+      p.open = p.profile && r() < 0.6 ? pickN(SIM_OPEN, 1 + Math.floor(r() * 2)) : [];
+      p.rated.forEach((aid) => {
+        const n = Math.min(5, Math.max(1, Math.round(3.6 + r() * 2 - (aid.length % 3) * 0.5)));
+        (SIM_NOTAS[aid] = SIM_NOTAS[aid] || []).push({
+          n,
+          quick: pickN(n >= 4 ? RAPIDOS.slice(0, 6) : RAPIDOS.slice(6), 1 + Math.floor(r() * 2)),
+          text: r() < 0.3 ? SIM_COMENT[Math.floor(r() * SIM_COMENT.length)] : '',
+        });
+      });
+    });
+  })();
+  /* Com servidor, os participantes de verdade (GET /api/org/participantes), no mesmo formato dos simulados. */
+  let REAIS = null;
+  let reaisBuscando = false;
+  const pessoas = () => REAIS || PEOPLE;
+  async function pessoasCarregar() {
+    if (reaisBuscando) return;
+    reaisBuscando = true;
+    try {
+      const lista = await window.ETAL_API.get('/api/org/participantes');
+      REAIS = lista.map((p) => ({
+        id: String(p.id),
+        code: p.matricula || p.email || '',
+        name: p.name,
+        ifrn: p.source !== 'visitante',
+        email: p.email || '',
+        course: p.course || '',
+        kind: p.source === 'visitante' ? 'Visitante' : '',
+        city: p.city || p.institution || '',
+        cred: p.credentialedAt ? p.credentialedAt.slice(11, 16) : null,
+        saved: p.saved,
+        present: p.present,
+        left: p.left,
+        rated: p.rated,
+        profile: p.profile,
+        nadic: p.nadic,
+        langs: p.langs,
+        areas: p.areas,
+        open: p.open,
+      }));
+      if (['participantes', 'dados'].includes(current())) render();
+    } catch (x) {
+      toast(x.message);
+    } finally {
+      reaisBuscando = false;
+    }
+  }
+  const atividade = (id) => D.sessions.find((x) => x.id === id);
+  /* Participantes por categoria: tipo, credenciamento, atividade (e a situação nela), NADIC, curso e linguagem. */
+  const SITUACOES = [
+    ['inscritos', 'Inscritos ou presentes', (p, a) => p.saved.includes(a) || p.present.includes(a)],
+    ['presentes', 'Presentes', (p, a) => p.present.includes(a)],
+    ['fim', 'Ficaram até o fim', (p, a) => (p.left || []).includes(a)],
+    ['avaliaram', 'Avaliaram', (p, a) => (p.rated || []).includes(a)],
+    ['faltaram', 'Inscritos que faltaram', (p, a) => p.saved.includes(a) && !p.present.includes(a)],
+  ];
+  function filtrados() {
+    const q = state.q.trim().toLowerCase();
+    const sit = SITUACOES.find(([k]) => k === state.fsit) || SITUACOES[0];
+    return pessoas().filter(
+      (p) =>
+        (state.ptype === 'todos' || (state.ptype === 'ifrn') === p.ifrn) &&
+        (state.pstat === 'todos' || (state.pstat === 'cred') === !!credOf(p)) &&
+        (!state.fativ || sit[2](p, state.fativ)) &&
+        (!state.fnadic || (state.fnadic === 'sem' ? !p.profile : p.nadic === state.fnadic)) &&
+        (!state.fcurso || p.course === state.fcurso) &&
+        (!state.flang || (p.langs || []).includes(state.flang) || (p.areas || []).includes(state.flang)) &&
+        (!q || `${p.name} ${p.id} ${p.code || ''} ${p.email}`.toLowerCase().includes(q)),
+    );
+  }
+  function filtrosHTML() {
+    const todos = pessoas();
+    const conta = (id) => todos.filter((p) => p.saved.includes(id) || p.present.includes(id)).length;
+    const porTipo = {};
+    D.sessions
+      .filter((x) => x.id !== 'credenciamento')
+      .forEach((x) => (porTipo[x.type] = porTipo[x.type] || []).push(x));
+    const opt = (v, t, sel) => `<option value="${esc(v)}" ${sel === v ? 'selected' : ''}>${esc(t)}</option>`;
+    const cursos = [...new Set(todos.map((p) => p.course).filter(Boolean))].sort();
+    const langs = [...new Set(todos.flatMap((p) => [...(p.langs || []), ...(p.areas || [])]))].sort();
+    return `<label class="fld">Atividade<select data-filtro="fativ"><option value="">Todas as atividades</option>${Object.entries(
+      porTipo,
+    )
+      .map(
+        ([tipo, xs]) =>
+          `<optgroup label="${esc(tipo)}">${xs.map((x) => opt(x.id, `${x.short} · ${x.day}/11 ${x.time} (${conta(x.id)})`, state.fativ)).join('')}</optgroup>`,
+      )
+      .join('')}</select></label>
+      <label class="fld">Situação na atividade<select data-filtro="fsit" ${state.fativ ? '' : 'disabled'}>${SITUACOES.map(([k, t]) => opt(k, t, state.fsit)).join('')}</select></label>
+      <label class="fld">NADIC<select data-filtro="fnadic">${[
+        ['', 'Todos'],
+        ['bolsista', 'Bolsistas'],
+        ['ex', 'Ex-bolsistas'],
+        ['nao', 'Não são do NADIC'],
+        ['sem', 'Sem perfil preenchido'],
+      ]
+        .map(([v, t]) => opt(v, t, state.fnadic))
+        .join('')}</select></label>
+      <label class="fld">Curso<select data-filtro="fcurso"><option value="">Todos</option>${cursos.map((c) => opt(c, c, state.fcurso)).join('')}</select></label>
+      <label class="fld">Interesse ou linguagem<select data-filtro="flang"><option value="">Todos</option>${langs.map((c) => opt(c, c, state.flang)).join('')}</select></label>`;
+  }
+  /* barras horizontais de contagens [[rótulo, n, ...], ...] */
+  function barras(lista, unidade, tip) {
+    if (!lista.length) return '<p class="sub">Sem dados ainda.</p>';
+    const max = Math.max(...lista.map((v) => v[1])) || 1;
+    return `<ul class="hbars">${lista
+      .slice(0, 10)
+      .map(
+        (v) =>
+          `<li data-tip="${esc(tip ? tip(v) : `${v[0]}: ${v[1]} ${unidade}`)}"><span>${esc(v[0])}</span><span class="track"><i style="width:${(v[1] / max) * 100}%"></i></span><b>${v[1]}</b></li>`,
+      )
+      .join('')}</ul>`;
+  }
+  const contar = (itens) =>
+    Object.entries(itens.reduce((m, x) => ((m[x] = (m[x] || 0) + 1), m), {})).sort((a, b) => b[1] - a[1]);
+  /* Dados do público: com servidor, GET /api/org/dados; sem ele, das pessoas simuladas e das publicações deste navegador. */
+  let DADOS = null;
+  let dadosBuscando = false;
+  async function dadosCarregar() {
+    if (dadosBuscando) return;
+    dadosBuscando = true;
+    try {
+      DADOS = await window.ETAL_API.get('/api/org/dados');
+      if (current() === 'dados') render();
+    } catch (x) {
+      toast(x.message);
+    } finally {
+      dadosBuscando = false;
+    }
+  }
+  function dadosLocais() {
+    const ps = PEOPLE;
+    const perfis = ps.filter((p) => p.profile);
+    const v = window.COMMUNITY.read();
+    const posts = (v.posts || []).filter((x) => !x.hidden);
+    const pres = contar(ps.flatMap((p) => p.present));
+    const fim = contar(ps.flatMap((p) => p.left));
+    return {
+      pessoas: ps.length,
+      ifrn: ps.filter((p) => p.ifrn).length,
+      visitantes: ps.filter((p) => !p.ifrn).length,
+      perfis: perfis.length,
+      perfisPublicos: Math.round(perfis.length * 0.9),
+      nadic: contar(perfis.map((p) => p.nadic)),
+      langs: contar(perfis.flatMap((p) => p.langs)),
+      areas: contar(perfis.flatMap((p) => p.areas)),
+      open: contar(perfis.flatMap((p) => p.open)),
+      cursos: contar(ps.map((p) => p.course).filter(Boolean)),
+      cidades: contar(ps.map((p) => p.city).filter(Boolean)),
+      presencas: pres.map(([a, n]) => [a, n, (fim.find(([b]) => b === a) || [0, 0])[1]]),
+      publicacoes: {
+        posts: posts.length,
+        comentarios: posts.reduce((n, x) => n + (x.comments || []).length, 0),
+        mensagens: (v.messages || []).length,
+        assuntos: contar(posts.map((x) => x.topic || x.assunto).filter(Boolean)),
+      },
+    };
+  }
+  /* Avaliações: com servidor, GET /api/org/avaliacoes; sem ele, as notas simuladas. */
+  let AVAL = null;
+  let avalBuscando = false;
+  async function avalCarregar() {
+    if (avalBuscando) return;
+    avalBuscando = true;
+    try {
+      AVAL = await window.ETAL_API.get('/api/org/avaliacoes');
+      if (current() === 'avaliacoes') render();
+    } catch (x) {
+      toast(x.message);
+    } finally {
+      avalBuscando = false;
+    }
+  }
+  function avalLocais() {
+    return Object.entries(SIM_NOTAS).map(([aid, vs]) => {
+      const notas = vs.map((v) => v.n);
+      return {
+        activity: aid,
+        count: vs.length,
+        avg: notas.reduce((a, b) => a + b, 0) / notas.length,
+        dist: [1, 2, 3, 4, 5].map((n) => notas.filter((x) => x === n).length),
+        present: PEOPLE.filter((p) => p.present.includes(aid)).length,
+        left: PEOPLE.filter((p) => p.left.includes(aid)).length,
+        quick: contar(vs.flatMap((v) => v.quick)),
+        comments: vs.filter((v) => v.text).map((v) => ({ n: v.n, text: v.text })),
+      };
+    });
+  }
+  /* Link para planilha (Google Sheets lê com =IMPORTDATA e atualiza sozinho). O filtro de atividade vai no endereço. */
+  async function planilhaDialog(novo = false) {
+    const dlg = $('#dlg');
+    dlg.className = '';
+    if (!API) {
+      dlg.innerHTML = `<form method="dialog"><h2>Planilha no Google Sheets</h2><p>Com o servidor ligado, o painel gera um endereço que o Google Sheets lê sozinho e mantém atualizado durante o evento. Nesta demonstração sem servidor, use <b>Planilha (CSV)</b> e importe o arquivo.</p><div class="acts"><button class="btn primary" value="ok">Entendi</button></div></form>`;
+      dlg.showModal();
+      return;
+    }
+    let url;
+    try {
+      url = (novo ? await API.post('/api/org/planilha/novo') : await API.get('/api/org/planilha')).url;
+    } catch (x) {
+      toast(x.message);
+      return;
+    }
+    const sit = { presentes: 'presentes', fim: 'presentes', avaliaram: 'avaliaram' }[state.fsit] || '';
+    const filtro = state.fativ ? `?atividade=${encodeURIComponent(state.fativ)}${sit ? `&situacao=${sit}` : ''}` : '';
+    const final = url + filtro;
+    const formula = `=IMPORTDATA("${final}")`;
+    dlg.innerHTML = `<form method="dialog" class="planilha"><h2>${ic('sheet')}Planilha no Google Sheets</h2>
+      <p>Cole a fórmula na célula A1 de uma planilha nova. O Google atualiza sozinho a cada hora (ou ao reabrir).${state.fativ ? ` Filtrada em <b>${esc(atividade(state.fativ)?.short || '')}</b>.` : ''}</p>
+      <label class="fld">Fórmula<input readonly value="${esc(formula)}" data-copiar></label>
+      <label class="fld">Só o endereço (Excel: Dados → Da Web)<input readonly value="${esc(final)}" data-copiar></label>
+      <p class="sis-alerta">Quem tiver o endereço lê nomes, matrículas e e-mails. Compartilhe só com a comissão. Se vazar, gere um novo: o antigo para de funcionar na hora.</p>
+      <div class="acts"><button class="btn ghost" type="button" data-act="planilhanovo">Gerar novo endereço</button><button class="btn soft" type="button" data-act="copiar">${ic('copy')}Copiar fórmula</button><button class="btn primary" value="ok">Fechar</button></div></form>`;
+    if (!dlg.open) dlg.showModal();
+    if (novo) toast('Endereço novo gerado; o anterior não funciona mais');
+  }
 
   /* ---------- navegação ---------- */
   const SECTIONS = [
@@ -274,13 +537,32 @@
     ['planta', 'Planta ao vivo', 'map'],
     ['programacao', 'Programação', 'cal'],
     ['participantes', 'Participantes', 'users'],
+    ['dados', 'Dados do público', 'chart'],
+    ['avaliacoes', 'Avaliações', 'star'],
     ['campeonatos', 'Campeonatos', 'trophy'],
     ['avisos', 'Avisos', 'bell'],
     ['comunidade', 'Moderação', 'alert'],
     ['contingencia', 'Plano B', 'file'],
     ['sistema', 'Servidor', 'pulse'],
   ];
-  const state = { day: D.now.day, ptype: 'todos', pstat: 'todos', q: '', limit: 40, floor: 2, room: null };
+  const state = {
+    day: D.now.day,
+    ptype: 'todos',
+    pstat: 'todos',
+    q: '',
+    limit: 40,
+    floor: 2,
+    room: null,
+    /* filtros de participantes por categoria */
+    fativ: '',
+    fsit: 'inscritos',
+    fnadic: '',
+    fcurso: '',
+    flang: '',
+    /* avaliações */
+    aordem: 'melhor',
+    atipo: '',
+  };
   const current = () => (SECTIONS.find(([k]) => `#${k}` === location.hash) || SECTIONS[0])[0];
   /* No celular a barra lateral vira uma barra de abas embaixo: as quatro seções do dia a dia e "Mais" (as outras). */
   const PRINCIPAIS = ['visao', 'planta', 'programacao', 'participantes'];
@@ -683,15 +965,24 @@
         </tbody></table></div></section>`;
     },
     participantes() {
-      const q = state.q.trim().toLowerCase();
-      const list = PEOPLE.filter(
-        (p) =>
-          (state.ptype === 'todos' || (state.ptype === 'ifrn') === p.ifrn) &&
-          (state.pstat === 'todos' || (state.pstat === 'cred') === !!credOf(p)) &&
-          (!q || `${p.name} ${p.id} ${p.email}`.toLowerCase().includes(q)),
-      );
+      if (API && !REAIS) {
+        pessoasCarregar();
+        return '<p class="empty">Carregando os participantes…</p>';
+      }
+      const list = filtrados();
       const seg = (k, opts) =>
         `<div class="seg" role="group">${opts.map(([v, t]) => `<button type="button" data-act="${k}" data-v="${v}" aria-pressed="${state[k] === v}">${t}</button>`).join('')}</div>`;
+      const x = state.fativ && atividade(state.fativ);
+      const ativTxt = (p) => {
+        const n = (p.present || []).length;
+        return x
+          ? `<span class="pill ${(p.rated || []).includes(x.id) ? 'ok' : (p.present || []).includes(x.id) ? 'ifrn' : 'wait'}">${(p.rated || []).includes(x.id) ? 'Avaliou' : (p.left || []).includes(x.id) ? 'Até o fim' : (p.present || []).includes(x.id) ? 'Presente' : 'Inscrito'}</span>`
+          : `<small>${(p.saved || []).length} na agenda · ${n} ${n === 1 ? 'presença' : 'presenças'}</small>`;
+      };
+      const perfilTxt = (p) =>
+        p.profile
+          ? `${p.nadic === 'bolsista' ? '<span class="pill ifrn">NADIC</span> ' : p.nadic === 'ex' ? '<span class="pill vis">Ex-NADIC</span> ' : ''}<small>${esc([...(p.langs || []), ...(p.areas || [])].slice(0, 3).join(' · '))}</small>`
+          : '<small class="muted">Sem perfil</small>';
       return `<section class="card"><div class="toolbar">${seg('ptype', [
         ['todos', 'Todos'],
         ['ifrn', 'IFRN'],
@@ -700,23 +991,97 @@
         ['todos', 'Todos'],
         ['cred', 'Credenciados'],
         ['pend', 'Pendentes'],
-      ])}
-        <span class="count">${list.length} ${list.length === 1 ? 'pessoa' : 'pessoas'}${q ? ` para “${esc(state.q)}”` : ''}</span><button class="btn soft sm" data-act="csv" data-v="participantes" type="button">${ic('download')}Exportar CSV</button></div>
+      ])}</div>
+        <div class="filtros">${filtrosHTML()}</div>
+        <div class="toolbar"><span class="count">${list.length} ${list.length === 1 ? 'pessoa' : 'pessoas'}${x ? ` · ${esc(x.short)}` : ''}${state.q ? ` para “${esc(state.q)}”` : ''}</span>
+          ${state.fativ || state.fnadic || state.fcurso || state.flang ? `<button class="btn ghost sm" data-act="flimpar" type="button">${ic('x')}Limpar filtros</button>` : ''}
+          <span class="acts-dir"><button class="btn soft sm" data-act="csv" data-v="participantes" type="button">${ic('download')}Planilha (CSV)</button><button class="btn soft sm" data-act="planilha" type="button">${ic('sheet')}Google Sheets</button></span></div>
         ${
           list.length
-            ? `<div class="tbl-wrap"><table><thead><tr><th>Nome</th><th>Perfil</th><th>Matrícula ou código</th><th>Credenciamento</th><th></th></tr></thead><tbody>
+            ? `<div class="tbl-wrap"><table><thead><tr><th>Nome</th><th>Perfil</th><th>Matrícula ou código</th><th>${x ? 'Na atividade' : 'Atividades'}</th><th>Interesses</th><th>Credenciamento</th><th></th></tr></thead><tbody>
         ${list
           .slice(0, state.limit)
           .map((p) => {
             const c = credOf(p);
             return `<tr><td class="title"><b>${esc(p.name)}${p.here ? ' <span class="pill vis">neste aparelho</span>' : ''}</b><small>${esc(p.email)}</small></td>
-          <td>${p.ifrn ? `<span class="pill ifrn">IFRN</span> ${esc(p.course)}` : `<span class="pill vis">Visitante</span> ${esc(p.kind || '')} · ${esc(p.city || '')}`}</td><td class="num">${esc(p.id)}</td>
+          <td>${p.ifrn ? `<span class="pill ifrn">IFRN</span> ${esc(p.course)}` : `<span class="pill vis">Visitante</span> ${esc(p.kind || '')}${p.city ? ` · ${esc(p.city)}` : ''}`}</td><td class="num">${esc(p.code || p.id)}</td>
+          <td>${ativTxt(p)}</td><td>${perfilTxt(p)}</td>
           <td>${c ? `<span class="pill ok">${ic('check')}às ${c}</span>` : '<span class="pill wait">Pendente</span>'}</td>
           <td class="r">${c ? '' : `<button class="btn soft sm" data-act="cred" data-id="${esc(p.id)}" type="button">Credenciar</button>`}</td></tr>`;
           })
           .join('')}
         </tbody></table></div>${list.length > state.limit ? `<p class="empty"><button class="btn soft" data-act="more" type="button">Mostrar mais ${Math.min(40, list.length - state.limit)}</button></p>` : ''}`
-            : `<p class="empty">Ninguém encontrado. Confira o nome, a matrícula ou o e-mail.</p>`
+            : `<p class="empty">Ninguém com esses filtros. Confira o nome, a matrícula ou o e-mail, ou limpe os filtros.</p>`
+        }</section>`;
+    },
+    dados() {
+      const d = API ? DADOS : dadosLocais();
+      if (!d) {
+        dadosCarregar();
+        return '<p class="empty">Carregando os números do público…</p>';
+      }
+      const pc = (a, b) => (b ? Math.round((a / b) * 100) : 0);
+      const nadic = Object.fromEntries(d.nadic);
+      return `<div class="grid g-kpi">
+          <section class="card kpi"><b>${d.pessoas}</b><span>pessoas no app</span><small>${d.ifrn} do IFRN · ${d.visitantes} visitantes</small></section>
+          <section class="card kpi"><b>${pc(d.perfis, d.pessoas)}%</b><span>preencheram o perfil</span><span class="bar"><i style="width:${pc(d.perfis, d.pessoas)}%"></i></span><small>${d.perfis} perfis · ${d.perfisPublicos} visíveis</small></section>
+          <section class="card kpi"><b>${nadic.bolsista || 0}</b><span>bolsistas do NADIC</span><small>${nadic.ex || 0} ex-bolsistas · ${nadic.nao || 0} não são</small></section>
+          <section class="card kpi"><b>${d.publicacoes.posts}</b><span>publicações</span><small>${d.publicacoes.comentarios} comentários · ${d.publicacoes.mensagens} mensagens no chat</small></section>
+        </div>
+        <div class="grid g-2 mt">
+          <section class="card"><h2>Linguagens que o público usa</h2>${barras(d.langs, 'pessoas')}</section>
+          <section class="card"><h2>Interesses</h2>${barras(d.areas, 'pessoas')}</section>
+          <section class="card"><h2>O que o público procura</h2>${barras(d.open, 'pessoas')}<p class="sub mt">Bom para convidar empresas (estágio) e professores (pesquisa) na próxima edição.</p></section>
+          <section class="card"><h2>Cursos</h2>${barras(d.cursos, 'pessoas')}</section>
+          <section class="card"><h2>Presença por atividade</h2>${barras(
+            d.presencas.slice(0, 10).map(([a, n, fim]) => [atividade(a)?.short || a, n, fim]),
+            'presentes',
+            (v) => `${v[1]} presentes · ${v[2]} até o fim`,
+          )}</section>
+          <section class="card"><h2>Assuntos das publicações</h2>${d.publicacoes.assuntos.length ? barras(d.publicacoes.assuntos, 'publicações') : '<p class="sub">Ainda sem publicações com assunto.</p>'}</section>
+        </div>
+        <p class="sub mt">${API ? 'Contagens dos perfis preenchidos no app. Quem não preencheu não entra nas barras.' : 'Números simulados para a demonstração. Com o servidor, vêm dos perfis de verdade.'}</p>`;
+    },
+    avaliacoes() {
+      const rows = API ? AVAL : avalLocais();
+      if (!rows) {
+        avalCarregar();
+        return '<p class="empty">Carregando as avaliações…</p>';
+      }
+      const tipos = [...new Set(rows.map((r) => atividade(r.activity)?.type).filter(Boolean))];
+      const lista = rows
+        .filter((r) => !state.atipo || atividade(r.activity)?.type === state.atipo)
+        .sort((a, b) =>
+          state.aordem === 'pior' ? a.avg - b.avg || b.count - a.count : b.avg - a.avg || b.count - a.count,
+        );
+      const seg = (k, opts) =>
+        `<div class="seg" role="group">${opts.map(([v, t]) => `<button type="button" data-act="${k}" data-v="${v}" aria-pressed="${state[k] === v}">${t}</button>`).join('')}</div>`;
+      const estrelas = (m) =>
+        `<span class="estrelas" style="--m:${(m / 5) * 100}%" role="img" aria-label="${m.toFixed(1)} de 5"></span>`;
+      const total = rows.reduce((n, r) => n + r.count, 0);
+      const media = total ? rows.reduce((n, r) => n + r.avg * r.count, 0) / total : 0;
+      return `<div class="grid g-kpi">
+          <section class="card kpi"><b>${total}</b><span>avaliações</span><small>em ${rows.length} atividades</small></section>
+          <section class="card kpi"><b>${media.toFixed(1)}</b><span>média geral</span>${estrelas(media)}</section>
+          <section class="card kpi"><b>${esc(lista[0] ? atividade(lista[0].activity)?.short || '' : '—')}</b><span>${state.aordem === 'pior' ? 'precisa de atenção' : 'mais bem avaliada'}</span></section>
+        </div>
+        <section class="card mt"><div class="toolbar">${seg('aordem', [
+          ['melhor', 'Mais bem avaliadas'],
+          ['pior', 'Menos avaliadas'],
+        ])}${seg('atipo', [['', 'Todas'], ...tipos.map((t) => [t, t])])}<span class="count">Notas de quem leu o QR na entrada e na saída. Os comentários chegam sem o nome.</span></div>
+        ${
+          lista.length
+            ? `<div class="aval-lista">${lista
+                .map((r, i) => {
+                  const x = atividade(r.activity) || { short: r.activity, type: '' };
+                  const resp = r.left ? Math.round((r.count / r.left) * 100) : 0;
+                  return `<details class="aval"><summary><span class="aval-pos">${i + 1}</span><span class="aval-tt"><b>${esc(x.short)}</b><small>${esc(x.type)}${x.speakerShort ? ` · ${esc(x.speakerShort)}` : ''}</small></span><span class="aval-nota"><b>${r.avg.toFixed(1)}</b>${estrelas(r.avg)}</span><span class="aval-n"><b>${r.count}</b><small>${resp ? `${resp}% de quem ficou até o fim` : 'avaliações'}</small></span>${ic('more')}</summary>
+                    <div class="aval-corpo"><div class="aval-dist">${[5, 4, 3, 2, 1].map((n) => `<div><span>${n}★</span><span class="track"><i style="width:${r.count ? (r.dist[n - 1] / r.count) * 100 : 0}%"></i></span><b>${r.dist[n - 1]}</b></div>`).join('')}</div>
+                    <div><h3>Comentários rápidos</h3>${r.quick.length ? `<div class="aval-tags">${r.quick.map(([t, n]) => `<span class="${RAPIDOS.indexOf(t) >= 6 ? 'ruim' : ''}">${esc(t)} <b>${n}</b></span>`).join('')}</div>` : '<p class="sub">Nenhum.</p>'}
+                    <h3>Comentários</h3>${r.comments.length ? `<ul class="aval-com">${r.comments.map((c) => `<li><span class="estrelas sm" style="--m:${c.n * 20}%"></span>${esc(c.text)}</li>`).join('')}</ul>` : '<p class="sub">Ninguém deixou comentário aberto.</p>'}</div></div></details>`;
+                })
+                .join('')}</div>`
+            : '<p class="empty">Ainda não há avaliações. Elas aparecem quando o público lê o QR da sala no fim da atividade.</p>'
         }</section>`;
     },
     campeonatos() {
@@ -1054,20 +1419,41 @@
             ]),
           ]
         : [
-            ['nome', 'perfil', 'curso_ou_cidade', 'matricula_ou_codigo', 'email', 'credenciado_as'],
-            ...PEOPLE.map((p) => [
+            [
+              'nome',
+              'perfil',
+              'curso_ou_cidade',
+              'matricula_ou_codigo',
+              'email',
+              'credenciado_as',
+              'nadic',
+              'linguagens',
+              'interesses',
+              'inscricoes',
+              'presencas',
+              'ate_o_fim',
+              'avaliou',
+            ],
+            ...filtrados().map((p) => [
               p.name,
               p.ifrn ? 'IFRN' : 'Visitante',
               p.ifrn ? p.course : p.city,
-              p.id,
+              p.code || p.id,
               p.email,
               credOf(p) || '',
+              p.nadic || '',
+              (p.langs || []).join(', '),
+              (p.areas || []).join(', '),
+              p.saved.map((a) => atividade(a)?.short || a).join(', '),
+              p.present.map((a) => atividade(a)?.short || a).join(', '),
+              (p.left || []).map((a) => atividade(a)?.short || a).join(', '),
+              (p.rated || []).map((a) => atividade(a)?.short || a).join(', '),
             ]),
           ];
     const text = rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(';')).join('\n');
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob(['﻿' + text], { type: 'text/csv' }));
-    a.download = `etal-${kind}.csv`;
+    a.download = `etal-${kind}${kind === 'participantes' && state.fativ ? `-${state.fativ}` : ''}.csv`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     toast('Arquivo CSV baixado');
@@ -1138,6 +1524,26 @@
     if (a === 'day') {
       state.day = +el.dataset.v;
       render();
+    }
+    if (a === 'aordem' || a === 'atipo') {
+      state[a] = el.dataset.v;
+      render();
+    }
+    if (a === 'flimpar') {
+      Object.assign(state, { fativ: '', fsit: 'inscritos', fnadic: '', fcurso: '', flang: '', limit: 40 });
+      render();
+    }
+    if (a === 'planilha') planilhaDialog();
+    if (a === 'planilhanovo') planilhaDialog(true);
+    if (a === 'copiar') {
+      const inp = el.closest('form').querySelector('[data-copiar]');
+      navigator.clipboard?.writeText(inp.value).then(
+        () => toast('Fórmula copiada'),
+        () => {
+          inp.select();
+          toast('Selecione e copie a fórmula');
+        },
+      );
     }
     if (a === 'ptype' || a === 'pstat') {
       state[a] = el.dataset.v;
@@ -1217,6 +1623,17 @@
         '',
       );
     }
+    if (a === 'cred' && REAIS) {
+      API.post(`/api/org/credenciar/${encodeURIComponent(el.dataset.id)}`)
+        .then((r) => {
+          const p = REAIS.find((q) => q.id === el.dataset.id);
+          if (p) p.cred = r.credentialedAt ? r.credentialedAt.slice(11, 16) : stamp();
+          render();
+          toast(`Credenciamento de ${r.name.split(' ')[0]} confirmado`);
+        })
+        .catch((x) => toast(x.message));
+      return;
+    }
     if (a === 'cred') {
       const p = PEOPLE.find((q) => q.id === el.dataset.id);
       ORG.creds[p.id] = stamp();
@@ -1224,6 +1641,13 @@
       render();
       toast(`Credenciamento de ${p.name.split(' ')[0]} confirmado às ${stamp()}`);
     }
+  });
+  document.addEventListener('change', (e) => {
+    const k = e.target.dataset?.filtro;
+    if (!k) return;
+    state[k] = e.target.value;
+    state.limit = 40;
+    render();
   });
   document.addEventListener('keydown', (e) => {
     if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.occ')) {
@@ -1424,6 +1848,7 @@
     rotularTabelas();
   }
   window.addEventListener('hashchange', () => {
+    if ($('#dlg').open) $('#dlg').close();
     render();
     view.focus({ preventScroll: true });
     window.scrollTo(0, 0);

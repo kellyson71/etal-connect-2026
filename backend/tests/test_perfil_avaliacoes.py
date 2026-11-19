@@ -1,5 +1,6 @@
 """Perfil do app no servidor, saída pelo QR da sala, avaliações, busca de pessoas, dados e planilha do painel."""
 from datetime import datetime, timedelta
+from urllib.parse import urlsplit
 
 from app.seguranca import token_qr
 from conftest import entrar
@@ -87,7 +88,7 @@ def test_painel_dados_avaliacoes_e_planilha(app_cliente):
     assert av[0]['comments'] == [{'n': 4, 'text': 'Mais exercícios', 'at': av[0]['comments'][0]['at']}]
     assert 'Carla' not in str(av)
     url = app_cliente.get('/api/org/planilha').json()['url']
-    caminho = url.split('http://teste', 1)[1]
+    caminho = urlsplit(url).path
     csv = app_cliente.get(caminho, params={'atividade': aid, 'situacao': 'avaliaram'}).text
     assert csv.startswith('nome,tipo') and 'Carla Participante' in csv and '2023001' in csv and 'Org' not in csv
     novo = app_cliente.post('/api/org/planilha/novo').json()['url']
