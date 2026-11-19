@@ -571,7 +571,10 @@ const fresh = () => ({
   tourTab: 'chave',
   reminders: new Set(remSaved()),
   votes: new Set(),
+  /* avaliações: id → { n, quick: [], text } (nota de 1 a 5, comentários rápidos e comentário aberto) */
   ratings: {},
+  /* saída: segunda leitura do QR da sala, no fim da atividade; libera a avaliação */
+  left: {},
   asked: {},
   contacts: [],
 });
@@ -712,16 +715,46 @@ const cardGet = (id = D.person.id) => {
     return null;
   }
 };
+/* O convite para preencher o perfil abre uma vez por pessoa neste aparelho: preencheu, pulou ou só fechou, não volta.
+   Dá para completar depois em Perfil. Com servidor, o perfil salvo lá também conta como preenchido. */
 const cardSkipped = (id = D.person.id) => prefs.get(`etal-cartao-pulado:${id}`) === '1';
 const cardSkip = (id = D.person.id) => prefs.set(`etal-cartao-pulado:${id}`, '1');
-/* Homologação/demo: o convite volta a cada entrada e a cada recarga, mesmo já preenchido ou pulado. */
-let cardDemoDone = false;
-const cardAsk = () => S.auth && D.person.id && (DEMO ? !cardDemoDone : !cardGet() && !cardSkipped());
+const cardAsk = () => S.auth && D.person.id && !cardGet() && !cardSkipped();
 const cardIntro = (ms) =>
   setTimeout(() => {
-    if (cardAsk() && !ov.classList.contains('open') && S.tab === 'home' && top().s !== 'cartao')
+    if (cardAsk() && !ov.classList.contains('open') && S.tab === 'home' && top().s !== 'cartao') {
+      cardSkip();
       push('cartao', { intro: 1 });
+    }
   }, ms);
+function cardSave(v) {
+  try {
+    localStorage.setItem(cardKey(D.person.id), JSON.stringify({ ...v, at: Date.now() }));
+  } catch (_) {
+    return false;
+  }
+  if (API) API.put('/api/eu/cartao', v).catch(() => toast('Perfil salvo neste aparelho; o servidor não respondeu.'));
+  return true;
+}
+/* Quanto do perfil está preenchido: o convite mostra o progresso para dar vontade de completar. */
+const CARD_PARTES = [
+  ['nadic', (c) => !!c.nadic],
+  ['areas', (c) => !!c.areas?.length],
+  ['langs', (c) => !!c.langs?.length],
+  ['open', (c) => !!c.open?.length],
+  ['contato', (c) => !!(c.phone || c.email || c.link)],
+  ['bio', (c) => !!c.bio],
+];
+const cardProgresso = (c) => Math.round((CARD_PARTES.filter(([, f]) => f(c)).length / CARD_PARTES.length) * 100);
+/* Fundos do crachá: o participante escolhe um e ele aparece quando mostra o crachá a alguém. */
+const CRACHA_TEMAS = [
+  ['', 'ETAL'],
+  ['noite', 'Noite'],
+  ['favo', 'Favo'],
+  ['codigo', 'Código'],
+  ['por-do-sol', 'Pôr do sol'],
+  ['mata', 'Caatinga'],
+];
 const personAv = (p) =>
   p.photo
     ? `<span class="av has-photo"><img src="${esc(p.photo)}" alt=""></span>`
@@ -801,6 +834,7 @@ function cardRead(f) {
     areas: d.getAll('areas'),
     open: d.getAll('open'),
     bio: t('bio', 140),
+    tema: t('tema', 20),
   };
 }
 
@@ -2233,7 +2267,6 @@ Screens.home = () => {
           ${UI.home.atalhos ? `<nav class="quick rv" aria-label="Atalhos">${actions.map(([i, t, a], n) => `<button ${a} style="--n:${n}"><span>${ic(i)}</span><em>${t}</em></button>`).join('')}</nav>` : ''}
 
           ${!standalone() && !prefs.get('etal-instalar-oculto') ? `<div class="instalar rv"><button class="inst-main" data-act="install">${ic('download')}<span><b>Instale o ETAL Connect</b><small>Lembretes no celular e mapa sem internet</small></span></button><button class="inst-x" data-act="instalar-fechar" aria-label="Agora não">${ic('x')}</button></div>` : ''}
-          ${cardAsk() ? `<div class="ct-invite rv"><button class="ct-inv-main" data-go="cartao">${ic('contact')}<span><b>Personalize seu perfil</b><small>Interesses, NADIC e contato</small></span></button><button class="ct-inv-skip" data-act="cartao-pular">Pular</button></div>` : ''}
           ${UI.home.colmeia ? combCard() : ''}
 
           ${
@@ -2576,8 +2609,9 @@ Screens.activity = ({ id }) => {
     return {
       html: `${header('', { right: `<button class="iconbtn" data-act="share" data-id="${id}" aria-label="Enviar para o computador">${ic('laptop')}</button>` })}
         <div class="pad stack class-open">
-          <div class="co-head st" ${st(0)}><span class="tag ok">${ic('check')}Presença às ${here}</span><span class="kind">${s.type} · ${s.room}</span></div>
+          <div class="co-head st" ${st(0)}><span class="tag ok">${ic('check')}${S.left[id] ? `Das ${here} às ${S.left[id]}` : `Presença às ${here}`}</span><span class="kind">${s.type} · ${s.room}</span></div>
           <h1 class="title-lg st" ${st(1)}>${s.title}</h1>
+          <div class="co-rapido st" ${st(1)}><button data-act="rolar" data-alvo=".mats">${ic('file')}Materiais${s.materials?.length ? ` <em>${s.materials.length}</em>` : ''}</button><button data-act="ask" data-id="${id}">${ic('chat')}Perguntar</button><button data-act="${S.left[id] ? 'avaliar' : 'rolar'}" data-id="${id}" data-alvo=".rate-lock">${ic('star')}${notaDe(id) ? `${notaDe(id)}/5` : 'Avaliar'}</button></div>
           <button class="teacher st" ${st(2)} data-go="speaker" data-id="${id}">${spAv(s, true)}<span><b>${s.speakerShort}</b><small>${s.role}</small></span><span class="time"><b>${s.time}–${s.end}</b><small>${d.week}, ${s.day} nov</small></span></button>
           <button class="sendpc st" ${st(3)} data-act="share" data-id="${id}"><span class="sp-ic">${ic('laptop')}</span><span><b>Abrir no computador</b><small>${s.link}</small></span>${ic('chev')}</button>
           <section class="st" ${st(4)}><h2 class="h">Materiais</h2></section>
@@ -2585,7 +2619,7 @@ Screens.activity = ({ id }) => {
           <section class="block st" ${st(10)}><h2 class="h">Nesta aula</h2><ul class="learn">${s.learn.map((l) => `<li>${ic('check')}<span>${l}</span></li>`).join('')}</ul></section>
           <section class="block st" ${st(11)}><h2 class="h">Leve para a sala</h2><p class="desc">${s.requirements}</p></section>
           <section class="block st" ${st(12)}><div class="sec"><h2>Perguntas</h2><button data-act="ask" data-id="${id}">Perguntar</button></div>${questionsOf(id)}</section>
-          <section class="block rate st" ${st(13)}><h2 class="h">Avalie esta atividade</h2><div class="stars" role="radiogroup" aria-label="Nota">${[1, 2, 3, 4, 5].map((n) => `<button class="${(S.ratings[id] || 0) >= n ? 'on' : ''}" data-act="rate" data-id="${id}" data-n="${n}" aria-label="${n} de 5">${ic('star')}</button>`).join('')}</div></section>
+          <div class="st" ${st(13)}>${rateBlock(id)}</div>
         </div>`,
     };
   }
@@ -3754,7 +3788,8 @@ Screens.profile = () => ({
           <li data-go="suapEvents">${ic('cal')}<span>Meus eventos no SUAP</span>${ic('chev', 'i chev')}</li>
           <li data-go="certificates">${ic('award')}<span>Certificados</span>${ic('chev', 'i chev')}</li>
           <li data-go="network">${ic('contact')}<span>Contatos</span><em>${S.contacts.length}</em>${ic('chev', 'i chev')}</li>
-          <li data-go="cartao">${ic('id')}<span>Interesses e contato</span><em>${cardGet() ? (cardGet().publish === false ? 'Oculto' : 'Visível') : 'Personalizar'}</em>${ic('chev', 'i chev')}</li>
+          <li data-go="pessoas">${ic('search')}<span>Encontrar pessoas</span><em>Busca por nome</em>${ic('chev', 'i chev')}</li>
+          <li data-go="cartao">${ic('id')}<span>Seu perfil e crachá</span><em>${cardGet() ? (cardGet().publish === false ? 'Oculto' : `${cardProgresso(cardGet())}%`) : 'Completar'}</em>${ic('chev', 'i chev')}</li>
         </ul>
         <ul class="menu st" ${st(2)}>
           <li data-go="games" class="games-row">${ic('trophy')}<span>Campeonatos</span><em>Qui 27</em>${ic('chev', 'i chev')}</li>
@@ -3993,6 +4028,309 @@ Screens.orgEquipe = () =>
       }
     : semAcesso();
 
+/* ===== app/16-avaliacao-e-pessoas.js ===== */
+/* app/16-avaliacao-e-pessoas.js · avaliação no fim da atividade, crachá para mostrar e busca de pessoas.
+   Parte do app.js: os arquivos de prototipo/app/ rodam juntos, na ordem dos números, no mesmo escopo
+   (scripts/app/montar-app.mjs). */
+
+/* ---------------- avaliação ----------------
+   Fluxo: a pessoa lê o QR da sala na entrada (presença) e de novo no fim (saída). A saída libera uma folha curta: nota
+   em estrelas, comentários rápidos de um toque e um comentário aberto opcional. A organização vê tudo sem o nome. */
+const RAPIDOS_BONS = [
+  'Didática clara',
+  'Conteúdo prático',
+  'Bom ritmo',
+  'Material útil',
+  'Tirou minhas dúvidas',
+  'Quero mais',
+];
+const RAPIDOS_RUINS = [
+  'Rápido demais',
+  'Faltou prática',
+  'Difícil de acompanhar',
+  'Problema técnico',
+  'Sala desconfortável',
+];
+const NOTA_TXT = ['', 'Não gostei', 'Poderia ser melhor', 'Foi ok', 'Gostei', 'Amei'];
+/* nota guardada: número (versões antigas) ou { n, quick, text } */
+const notaDe = (id) => {
+  const r = S.ratings[id];
+  return typeof r === 'number' ? r : r?.n || 0;
+};
+const saidaAbre = (s) => hhmm(toMin(s.end) - 20);
+const oQue = (s) => ({ mini: 'a aula', pal: 'a palestra', mesa: 'a mesa' })[tipoDe(s).g] || 'a atividade';
+
+Overlays.avaliar = (id, pre = 0) => {
+  const s = byId(id);
+  const r = S.ratings[id] && typeof S.ratings[id] === 'object' ? S.ratings[id] : { n: notaDe(id), quick: [], text: '' };
+  const n = pre || r.n || 0;
+  const chip = (t) =>
+    `<label class="av-chip"><input type="checkbox" name="quick" value="${esc(t)}" ${r.quick?.includes(t) ? 'checked' : ''}><span>${esc(t)}</span></label>`;
+  return `<form class="sheet av-sheet" data-form="avaliar" data-id="${esc(id)}" role="dialog" aria-modal="true" aria-labelledby="av-tt"><i class="grab"></i>
+      <header class="av-head">${hxBadge(`tp-${tipoDe(s).k}`)}<div><small>Você ficou até o fim</small><h2 id="av-tt">Como foi ${oQue(s)}?</h2><p>${esc(s.short)}</p></div></header>
+      <fieldset class="av-stars" data-nota="${n}"><legend class="sr">Nota de 1 a 5</legend>${[1, 2, 3, 4, 5].map((k) => `<label><input type="radio" name="n" value="${k}" ${k === n ? 'checked' : ''}><span aria-label="${k} de 5">${ic('star')}</span></label>`).join('')}</fieldset>
+      <p class="av-nota-tx" aria-live="polite">${n ? NOTA_TXT[n] : 'Toque nas estrelas'}</p>
+      <div class="av-rapidos" ${n ? '' : 'hidden'}>
+        <small class="av-rot">${n >= 4 ? 'O que você mais curtiu?' : 'O que pode melhorar?'}</small>
+        <div class="av-chips">${(n >= 4 ? [...RAPIDOS_BONS, ...RAPIDOS_RUINS] : [...RAPIDOS_RUINS, ...RAPIDOS_BONS]).map(chip).join('')}</div>
+        <label class="av-texto"><span class="sr">Comentário</span><textarea name="text" rows="2" maxlength="600" placeholder="Quer contar mais? (opcional)">${esc(r.text || '')}</textarea></label>
+      </div>
+      <button class="btn primary big" type="submit" ${n ? '' : 'disabled'}>${ic('check')}Enviar avaliação</button>
+      <p class="av-anon">${ic('lock')}A organização vê as notas e os comentários sem o seu nome.</p>
+    </form>`;
+};
+/* estrelas e chips vivos dentro da folha, sem redesenhar a folha inteira */
+document.addEventListener('change', (e) => {
+  const f = e.target.closest('[data-form="avaliar"]');
+  if (!f || e.target.name !== 'n') return;
+  const n = +e.target.value;
+  $('.av-stars', f).dataset.nota = n;
+  $('.av-nota-tx', f).textContent = NOTA_TXT[n];
+  const box = $('.av-rapidos', f);
+  const novo = box.hidden;
+  box.hidden = false;
+  $('.av-rot', f).textContent = n >= 4 ? 'O que você mais curtiu?' : 'O que pode melhorar?';
+  /* na primeira nota, ordena os chips pelo tom (bons primeiro em nota alta); depois não mexe no que já foi tocado */
+  if (novo) {
+    const chips = $('.av-chips', f);
+    const ordem = n >= 4 ? [...RAPIDOS_BONS, ...RAPIDOS_RUINS] : [...RAPIDOS_RUINS, ...RAPIDOS_BONS];
+    ordem.forEach((t) => {
+      const el = [...chips.children].find((c) => c.querySelector('input').value === t);
+      if (el) chips.appendChild(el);
+    });
+  }
+  $('[type="submit"]', f).disabled = false;
+  buzz(8);
+});
+document.addEventListener('submit', async (e) => {
+  const f = e.target;
+  if (f.dataset.form !== 'avaliar') return;
+  e.preventDefault();
+  const id = f.dataset.id;
+  const d = new FormData(f);
+  const v = {
+    n: +d.get('n') || 0,
+    quick: d.getAll('quick').slice(0, 6),
+    text: String(d.get('text') || '')
+      .trim()
+      .slice(0, 600),
+  };
+  if (!v.n) return;
+  const btn = $('[type="submit"]', f);
+  if (API) {
+    btn.disabled = true;
+    try {
+      await API.put(`/api/eu/avaliacoes/${encodeURIComponent(id)}`, {
+        nota: v.n,
+        rapidos: v.quick,
+        comentario: v.text,
+      });
+    } catch (x) {
+      btn.disabled = false;
+      toast(x.message);
+      return;
+    }
+  }
+  S.ratings[id] = v;
+  buzz(14);
+  closeOverlay(() => {
+    rerender();
+    toast(v.n >= 4 ? 'Valeu! Avaliação enviada' : 'Obrigado pela sinceridade! Avaliação enviada');
+  });
+});
+/* Cartão da saída no leitor: confirma a saída e chama para avaliar (ou mostra a nota já dada). */
+function exitResult(q, { rated }) {
+  const s = byId(q);
+  const t = tipoDe(s);
+  const n = notaDe(q);
+  return `<div class="sr-hero">${hxBadge(`tp-${t.k}`)}<div><small class="sr-kick">Saída registrada às ${S.left[q]}</small><h2>${esc(s.short)}</h2><p>${esc(s.room)} · entrada às ${S.present[q]}</p></div></div>
+      ${rated || n ? `<p class="sr-fim ok">${ic('check')}<span>Você avaliou com <b>${n} ${n === 1 ? 'estrela' : 'estrelas'}</b>. Dá para mudar até o fim do evento.</span></p>` : ''}
+      <div class="sr-actions"><button class="btn primary big" data-act="avaliar" data-id="${q}">${ic('star')}${rated || n ? 'Mudar avaliação' : `Avaliar ${oQue(s)}`}</button><button class="btn soft" data-act="scanagain">${ic('qr')}Ler outro QR</button></div>`;
+}
+ACOES['avaliar'] = (el) => {
+  const id = el.dataset.id;
+  const abrir = () => openOverlay(Overlays.avaliar(id, +el.dataset.n || 0), 'ask');
+  if (ov.classList.contains('open')) closeOverlay(abrir);
+  else abrir();
+};
+/* Bloco de avaliação na tela da aula: trancado até a saída, com a hora em que libera. */
+function rateBlock(id) {
+  const s = byId(id);
+  const n = notaDe(id);
+  if (!S.left[id])
+    return `<section class="block rate-lock"><span class="rl-ic">${ic('qr')}</span><span><b>Avalie no fim ${oQue(s) === 'a aula' ? 'da aula' : oQue(s) === 'a palestra' ? 'da palestra' : 'da atividade'}</b><small>A partir das ${saidaAbre(s)}, leia o QR da sala de novo. Isso registra a sua saída e libera a avaliação.</small></span></section>`;
+  return `<section class="block rate"><h2 class="h">${n ? 'Sua avaliação' : 'Avalie esta atividade'}</h2><div class="stars" role="group" aria-label="Nota">${[1, 2, 3, 4, 5].map((k) => `<button class="${n >= k ? 'on' : ''}" data-act="avaliar" data-id="${id}" data-n="${k}" aria-label="${k} de 5">${ic('star')}</button>`).join('')}</div>${n ? `<small class="rate-tx">${NOTA_TXT[n]}${S.ratings[id]?.quick?.length ? ` · ${esc(S.ratings[id].quick.join(', '))}` : ''}</small>` : `<small class="rate-tx">Saída às ${S.left[id]}. Toque nas estrelas.</small>`}</section>`;
+}
+
+/* ---------------- crachá para mostrar ----------------
+   O mesmo crachá da tela de entrada, com o fundo que a pessoa escolheu no perfil e o QR de verdade, grande, para o colega
+   ler. Aparece em "Meu QR" e na credencial. */
+function crachaGrande(p = D.person, c = cardGet() || {}, { qrHtml = qr(), legenda = '' } = {}) {
+  const av = p.photo
+    ? `<span class="bx-av"><img src="${esc(p.photo)}" alt=""></span>`
+    : `<span class="bx-av ini">${esc(p.initials || '?')}</span>`;
+  const nadic = c.nadic === 'bolsista' ? 'Bolsista do NADIC' : c.nadic === 'ex' ? 'Ex-bolsista do NADIC' : '';
+  const tags = [...(c.areas || []), ...(c.langs || [])].slice(0, 3);
+  return `<div class="cracha bxt-${esc(c.tema || 'etal')}">
+      <i class="bx-slot"></i>
+      <div class="bx-head"><span class="bx-ed">IFRN · Pau dos Ferros</span><span class="bx-brand">${mark('mark')}<b>etal</b></span><i class="bx-holo"></i></div>
+      <span class="bx-photo">${av}</span>
+      <div class="cr-body">
+        <b class="cr-nome">${esc(p.name)}</b>
+        <span class="cr-sub">${esc(p.course || p.role || (isGuest(p) ? 'Visitante' : ''))}</span>
+        ${nadic ? `<span class="cr-nadic"><img src="assets/nadic-logo.svg" alt="">${nadic}</span>` : ''}
+        ${tags.length ? `<span class="cr-tags">${tags.map((x) => `<i>${esc(x)}</i>`).join('')}</span>` : ''}
+        ${qrHtml ? `<span class="cr-qr">${qrHtml}</span>` : ''}
+        ${legenda ? `<small class="cr-leg">${legenda}</small>` : ''}
+      </div>
+      <div class="cr-pe"><span>${isGuest(p) ? 'Visitante' : 'Participante'}</span><span>26 a 28 nov</span></div>
+    </div>`;
+}
+
+/* ---------------- pessoas ----------------
+   Busca por nome e perfil de cada pessoa: o que ela mostrou no perfil, o que fez no ETAL (minicursos, palestras),
+   o que conduziu e como foi nos campeonatos. Com servidor, vem de /api/pessoas; sem ele, das pessoas de exemplo. */
+const pessoasCache = new Map();
+function pessoasLocais() {
+  const out = new Map();
+  const add = (p) => {
+    if (!p?.id || !p.name || out.has(String(p.id))) return;
+    out.set(String(p.id), p);
+  };
+  for (const [id, p] of Object.entries(D.demoProfiles || {})) add({ id, ...p });
+  D.peers.forEach(add);
+  communityPeople().forEach((p) => add({ ...p, ...(otherProfile(p.id) || {}), name: p.name, photo: p.photo }));
+  for (const t of D.tournaments || [])
+    for (const pl of t.players || []) if (pl?.[4]) add({ id: pl[4], name: pl[1], initials: pl[2] });
+  return [...out.values()].filter((p) => String(p.id) !== String(D.person.id));
+}
+/* Colocação de alguém num campeonato, pelo id ou pelo nome do jogador na chave. */
+function colocacao(t, pessoa) {
+  const stt = tourSt(t);
+  const pl = stt.players.find((x) => x && (String(x[4]) === String(pessoa.id) || fold(x[1]) === fold(pessoa.name)));
+  if (!pl) return null;
+  const R = window.TOUR.rounds(stt);
+  if (R.champ === pl) return { k: 'ouro', t: 'Campeão' };
+  if (R.f && R.f.w !== null && (R.f.a === pl || R.f.b === pl)) return { k: 'prata', t: 'Vice-campeão' };
+  if (R.s.some((m) => m.w !== null && (m.a === pl || m.b === pl) && m.win !== pl))
+    return { k: 'bronze', t: 'Semifinal' };
+  if (R.q.some((m) => m.w !== null && (m.a === pl || m.b === pl) && m.win !== pl))
+    return { k: '', t: 'Quartas de final' };
+  return { k: '', t: stt.open ? 'Inscrito na chave' : 'Na disputa' };
+}
+const pessoaItem = (p) => {
+  const c = p.card || {};
+  const tags = c.publish === false ? [] : [...(c.areas || []), ...(c.langs || [])].slice(0, 3);
+  return `<li class="ps-item" data-go="pessoa" data-id="${esc(p.id)}">${personAv(p)}<span><b>${esc(p.name)}</b><small>${esc(p.course || (p.source === 'visitante' ? 'Visitante' : ''))}${c.nadic === 'bolsista' ? ' · NADIC' : ''}</small>${tags.length ? `<em>${tags.map(esc).join(' · ')}</em>` : ''}</span>${ic('chev', 'i chev')}</li>`;
+};
+Screens.pessoas = () => ({
+  html: `${header('Encontrar pessoas')}<div class="pad stack pessoas">
+      <label class="ps-busca">${ic('search')}<input type="search" name="q" placeholder="Nome de quem você procura" autocomplete="off" enterkeyhint="search" aria-label="Buscar pessoa pelo nome"></label>
+      <ul class="ps-lista" aria-live="polite"></ul>
+    </div>`,
+  mount: (page) => {
+    const inp = $('.ps-busca input', page);
+    const lista = $('.ps-lista', page);
+    let t = null;
+    let pedido = 0;
+    const vazio = (titulo, sub) => `<li class="ps-vazio">${illo('people')}<b>${titulo}</b><small>${sub}</small></li>`;
+    const mostrar = (rows, q) => {
+      lista.innerHTML = rows.length
+        ? rows.map(pessoaItem).join('')
+        : q.length < 2
+          ? vazio(
+              'Procure pelo nome',
+              'Digite pelo menos duas letras para achar um colega, um ministrante ou quem jogou no campeonato.',
+            )
+          : vazio('Ninguém com esse nome', 'Confira a grafia ou tente só o primeiro nome.');
+    };
+    const buscar = async () => {
+      const q = inp.value.trim();
+      const n = ++pedido;
+      if (fold(q).length < 2) return mostrar([], q);
+      if (!API)
+        return mostrar(
+          pessoasLocais()
+            .filter((p) => fold(p.name).includes(fold(q)))
+            .slice(0, 30),
+          q,
+        );
+      try {
+        const rows = await API.get(`/api/pessoas?q=${encodeURIComponent(q)}`);
+        if (n !== pedido) return;
+        rows.forEach((p) => pessoasCache.set(String(p.id), p));
+        mostrar(
+          rows.filter((p) => String(p.id) !== String(D.person.serverId)),
+          q,
+        );
+      } catch (x) {
+        if (n === pedido) lista.innerHTML = vazio('Não foi possível buscar', x.message);
+      }
+    };
+    inp.addEventListener('input', () => {
+      clearTimeout(t);
+      t = setTimeout(buscar, API ? 280 : 60);
+    });
+    mostrar([], '');
+    setTimeout(() => inp.focus({ preventScroll: true }), 420);
+  },
+});
+function pessoaConteudo(p, extra = {}) {
+  const c = p.card || {};
+  const priv = c.publish === false;
+  const att = (extra.attended || []).map(byId).filter(Boolean);
+  const fez = att.filter((x) => ['mini'].includes(tipoDe(x).g));
+  const viu = att.filter((x) => ['pal', 'mesa'].includes(tipoDe(x).g));
+  const deu = (extra.taught || []).map(byId).filter(Boolean);
+  const camps = (D.tournaments || []).map((t) => [t, colocacao(t, p)]).filter(([, r]) => r);
+  const linha = (x) =>
+    `<li ${goOf(x)}><span class="ps-dia"><small>${dayOf(x.day)?.week || ''}</small><b>${x.day}</b></span><span><b>${esc(x.short)}</b><small>${esc(x.type)} · ${esc(x.room || '')}</small></span>${ic('chev', 'i chev')}</li>`;
+  const bloco = (titulo, icone, itens) =>
+    itens.length
+      ? `<section class="ps-bloco"><h2 class="h">${ic(icone)}${titulo}</h2><ul class="splist">${itens.join('')}</ul></section>`
+      : '';
+  const nada = !fez.length && !viu.length && !deu.length && !camps.length;
+  return `<div class="ps-cracha">${crachaGrande(p, priv ? {} : c, { qrHtml: '' })}</div>
+      ${priv ? '' : cardPreview(c, p, { own: false, taught: false })}
+      ${
+        priv
+          ? `<div class="ct-empty">${ic('eye')}<span><b>Perfil privado</b><small>Esta pessoa preferiu não mostrar o que fez no evento.</small></span></div>`
+          : `${bloco('Conduziu', 'mic', deu.map(linha))}
+      ${bloco('Minicursos que fez', 'laptop', fez.map(linha))}
+      ${bloco('Palestras e mesas', 'chat', viu.map(linha))}
+      ${bloco(
+        'Campeonatos',
+        'trophy',
+        camps.map(
+          ([t, r]) =>
+            `<li data-go="tournament" data-id="${esc(t.id)}"><span class="ps-medalha ${r.k}">${ic('trophy')}</span><span><b>${esc(t.name)}</b><small>${r.t} · ${esc(t.place || '')}</small></span>${ic('chev', 'i chev')}</li>`,
+        ),
+      )}
+      ${nada ? `<p class="note">${API ? 'Ainda sem presenças registradas no ETAL.' : 'As atividades de cada pessoa aparecem aqui quando o app está ligado ao servidor.'}</p>` : ''}`
+      }`;
+}
+Screens.pessoa = ({ id }) => {
+  const base = pessoasCache.get(String(id)) ||
+    pessoasLocais().find((p) => String(p.id) === String(id)) || { id, name: 'Participante' };
+  const local = !API
+    ? { attended: [], taught: D.sessions.filter((a) => a.speakerId === String(id)).map((a) => a.id) }
+    : null;
+  return {
+    html: `${header('Participante')}<div class="pad stack pessoa">${pessoaConteudo(base, local || {})}</div>`,
+    mount: async (page) => {
+      if (!API) return;
+      try {
+        const p = await API.get(`/api/pessoas/${encodeURIComponent(id)}`);
+        pessoasCache.set(String(id), p);
+        const box = $('.pessoa', page);
+        if (box) box.innerHTML = pessoaConteudo(p, p);
+      } catch (x) {
+        toast(x.message);
+      }
+    },
+  };
+};
+
 /* ===== app/16-sobre-e-cracha.js ===== */
 /* app/16-sobre-e-cracha.js · sobre o protótipo, SUAP, certificados, cartão, contatos, avisos e materiais.
    Parte do app.js: os arquivos de prototipo/app/ rodam juntos, na ordem dos números, no mesmo escopo
@@ -4050,36 +4388,54 @@ Screens.certificates = () => {
    Tudo opcional; na primeira entrada vem como convite, com "Pular" sempre à vista na barra de baixo. */
 const cartaoEu = () =>
   `<button type="button" class="ct-eu" data-act="profile-edit">${meAv('av')}<span><b>${esc(D.person.name)}</b><small>Foto e nome de exibição</small></span><span class="ct-eu-edit">${ic('pencil')}Alterar</span></button>`;
+/* Perfil em passos: cada passo é uma escolha rápida (toques, quase sem digitar), na ordem do que mais ajuda um colega a te
+   achar. A barra de progresso e o crachá ao vivo no topo puxam para completar; na primeira vez, "Agora não" fica pequeno
+   embaixo do botão principal, e o convite não volta depois. */
+const ctPasso = (n, parte, titulo, dica, corpo, c) =>
+  `<section class="ct-sec ct-passo ${CARD_PARTES.find(([k]) => k === parte)?.[1](c) ? 'feito' : ''}" data-parte="${parte}"><h3><span class="ct-n">${n}</span><span class="ct-tt"><b>${titulo}</b>${dica ? `<small>${dica}</small>` : ''}</span><i class="ct-ok">${ic('check')}</i></h3>${corpo}</section>`;
+const ctProg = (c) => {
+  const p = cardProgresso(c);
+  const falta = CARD_PARTES.find(([, f]) => !f(c));
+  const prox = {
+    nadic: 'Comece dizendo se você é do NADIC',
+    areas: 'Agora seus interesses: é o que mais ajuda a te achar',
+    langs: 'Marque as linguagens que você usa',
+    open: 'Conte o que você procura no evento',
+    contato: 'Deixe um jeito de falarem com você',
+    bio: 'Uma frase sobre você e pronto',
+  }[falta?.[0]];
+  return `<div class="ct-prog-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${p}"><i style="width:${p}%"></i></div><p><b>${p === 100 ? 'Perfil completo!' : `${p}% completo`}</b><small>${p === 100 ? 'Seu crachá está com a sua cara.' : prox}</small></p>`;
+};
 Screens.cartao = (pp = {}) => {
   const c = cardGet() || { publish: true, email: D.person.email || '', nadic: '', langs: [], areas: [], open: [] };
   const intro = !!pp.intro;
+  const temas = `<div class="ct-temas">${CRACHA_TEMAS.map(([v, t]) => `<label class="ct-tema"><input type="radio" name="tema" value="${v}" ${(c.tema || '') === v ? 'checked' : ''}><span class="bxt-${v || 'etal'}"><i></i>${t}</span></label>`).join('')}</div>`;
   return {
-    html: `${header(intro ? 'Seu perfil' : 'Editar perfil', { right: intro ? '<button class="ct-skip" data-act="cartao-pular">Pular</button>' : '' })}
-      <form class="ct-form pad" id="ct-form" data-form="cartao" novalidate>
-        ${intro ? `<div class="ct-hello st" ${st(0)}><small>Opcional</small><h2>Personalize seu perfil</h2><p>Interesses e contato ajudam colegas a te encontrar pelo QR do crachá. Dá para pular e preencher depois em Perfil.</p></div>` : ''}
-        <div class="st" ${st(0)}>${cartaoEu()}</div>
+    html: `${header(intro ? '' : 'Editar perfil')}
+      <form class="ct-form pad ct-guiado" id="ct-form" data-form="cartao" novalidate>
+        ${intro ? `<div class="ct-hello st" ${st(0)}><small>Leva 1 minuto</small><h2>Monte seu perfil do ETAL</h2><p>Quem ler o QR do seu crachá vê seus interesses e como falar com você. É assim que se acha dupla, estágio e grupo de estudo.</p></div>` : ''}
         <div class="ct-preview st" ${st(1)}>${cardPreview(c)}</div>
-        <label class="ct-switch st" ${st(2)}><span><b>Perfil visível</b><small>Para quem tocar no seu nome ou ler seu QR</small></span><input type="checkbox" name="publish" ${c.publish !== false ? 'checked' : ''}><i></i></label>
-
-        <section class="ct-sec st" ${st(3)}><h3>${ic('contact')}Contato</h3>
-          <label class="ct-field">${ic('phone')}<input name="phone" type="tel" inputmode="tel" maxlength="20" placeholder="WhatsApp ou telefone" value="${esc(c.phone || '')}" autocomplete="tel"></label>
+        <div class="ct-prog st" ${st(1)}>${ctProg(c)}</div>
+        ${intro ? '' : `<div class="st" ${st(2)}>${cartaoEu()}</div>`}
+        ${ctPasso(1, 'nadic', 'Você é do NADIC?', '', `<div class="ct-seg ct-seg-big">${CARD_NADIC.map(([v, t]) => `<label><input type="radio" name="nadic" value="${v}" ${c.nadic === v ? 'checked' : ''}><span>${v === 'bolsista' ? '<img src="assets/nadic-logo.svg" alt="">' : ''}${t}</span></label>`).join('')}</div>`, c)}
+        ${ctPasso(2, 'areas', 'O que te interessa?', 'Toque em quantos quiser', cardChips('areas', CARD_AREAS, c.areas), c)}
+        ${ctPasso(3, 'langs', 'Linguagens que você usa', 'Mesmo que esteja começando', cardChips('langs', CARD_LANGS, c.langs), c)}
+        ${ctPasso(4, 'open', 'Está aberto a…', '', cardChips('open', CARD_OPEN, c.open), c)}
+        ${ctPasso(
+          5,
+          'contato',
+          'Como falar com você',
+          'Só aparece para quem você deixar ver',
+          `<label class="ct-field">${ic('phone')}<input name="phone" type="tel" inputmode="tel" maxlength="20" placeholder="WhatsApp ou telefone" value="${esc(c.phone || '')}" autocomplete="tel"></label>
           <label class="ct-field">${ic('mail')}<input name="email" type="email" maxlength="80" placeholder="E-mail" value="${esc(c.email || '')}" autocomplete="email"></label>
-          <label class="ct-field">${ic('link')}<input name="link" maxlength="80" placeholder="GitHub, LinkedIn ou portfólio" value="${esc(c.link || '')}" autocomplete="url"></label>
-        </section>
-
-        <section class="ct-sec st" ${st(4)}><h3><img class="ct-nadic-logo" src="assets/nadic-logo.svg" alt="">Bolsista do NADIC?</h3>
-          <div class="ct-seg">${CARD_NADIC.map(([v, t]) => `<label><input type="radio" name="nadic" value="${v}" ${c.nadic === v ? 'checked' : ''}><span>${t}</span></label>`).join('')}</div>
-        </section>
-
-        <section class="ct-sec st" ${st(5)}><h3>${ic('code')}Linguagens</h3>${cardChips('langs', CARD_LANGS, c.langs)}</section>
-        <section class="ct-sec st" ${st(6)}><h3>${ic('sliders')}Interesses</h3>${cardChips('areas', CARD_AREAS, c.areas)}</section>
-        <section class="ct-sec st" ${st(7)}><h3>${ic('flag')}Aberto a</h3>${cardChips('open', CARD_OPEN, c.open)}</section>
-        <section class="ct-sec st" ${st(8)}><h3>${ic('text')}Sobre você</h3>
-          <label class="ct-field area"><textarea name="bio" maxlength="140" rows="2" placeholder="Ex.: Curto jogos e estou aprendendo Godot.">${esc(c.bio || '')}</textarea><em class="ct-count">${(c.bio || '').length}/140</em></label>
-        </section>
-
+          <label class="ct-field">${ic('link')}<input name="link" maxlength="80" placeholder="GitHub, LinkedIn ou portfólio" value="${esc(c.link || '')}" autocomplete="url"></label>`,
+          c,
+        )}
+        ${ctPasso(6, 'bio', 'Uma frase sobre você', '', `<label class="ct-field area"><textarea name="bio" maxlength="140" rows="2" placeholder="Ex.: Curto jogos e estou aprendendo Godot.">${esc(c.bio || '')}</textarea><em class="ct-count">${(c.bio || '').length}/140</em></label>`, c)}
+        <section class="ct-sec ct-extra st"><h3><span class="ct-n">${ic('id')}</span><span class="ct-tt"><b>Fundo do crachá</b><small>Aparece quando você mostra o crachá</small></span></h3>${temas}</section>
+        <label class="ct-switch st"><span><b>Perfil visível</b><small>Para quem buscar seu nome ou ler seu QR</small></span><input type="checkbox" name="publish" ${c.publish !== false ? 'checked' : ''}><i></i></label>
       </form>
-      <div class="cta-bar ct-barra ${intro ? 'dupla' : ''}">${intro ? '<button class="btn soft big" type="button" data-act="cartao-pular">Pular por agora</button>' : ''}<button class="btn primary big" type="submit" form="ct-form">${ic('check')}Salvar</button></div>`,
+      <div class="cta-bar ct-barra ${intro ? 'intro' : ''}"><button class="btn primary big" type="submit" form="ct-form">${ic('check')}Salvar perfil</button>${intro ? '<button class="ct-depois" type="button" data-act="cartao-pular">Agora não</button>' : ''}</div>`,
     mount: (page) => {
       const f = $('[data-form="cartao"]', page);
       if (!f) return;
@@ -4087,6 +4443,10 @@ Screens.cartao = (pp = {}) => {
         const v = cardRead(f);
         $('.ct-preview', page).innerHTML = cardPreview(v);
         $('.ct-count', page).textContent = `${v.bio.length}/140`;
+        $('.ct-prog', page).innerHTML = ctProg(v);
+        page
+          .querySelectorAll('.ct-passo')
+          .forEach((el) => el.classList.toggle('feito', !!CARD_PARTES.find(([k]) => k === el.dataset.parte)?.[1](v)));
       };
       f.addEventListener('input', live);
       f.addEventListener('change', live);
@@ -4099,15 +4459,15 @@ Screens.cartao = (pp = {}) => {
           $('[name="email"]', f).focus();
           return;
         }
-        try {
-          localStorage.setItem(cardKey(D.person.id), JSON.stringify({ ...v, at: Date.now() }));
-        } catch (_) {
+        if (!cardSave(v)) {
           toast('Não foi possível salvar neste aparelho.');
           return;
         }
-        cardDemoDone = true;
         buzz(14);
-        toast(v.publish ? 'Perfil atualizado' : 'Perfil salvo, mas oculto');
+        const p = cardProgresso(v);
+        toast(
+          !v.publish ? 'Perfil salvo, mas oculto' : p === 100 ? 'Perfil completo!' : `Perfil salvo (${p}% completo)`,
+        );
         navBack();
       });
     },
@@ -4127,7 +4487,7 @@ Screens.network = () => ({
           ? `<ul class="splist">${S.contacts.map((c, i) => `<li class="st" ${st(i)} ${c.card ? `data-go="peer" data-id="${esc(c.id)}"` : ''}>${c.photo ? `<span class="ava lg has-photo"><img src="${esc(c.photo)}" alt=""></span>` : `<span class="ava lg">${c.initials}</span>`}<span><b>${c.name}</b><small>${c.course}${c.nadic ? ' · NADIC' : ''}</small><em>${[c.interest, ...(c.langs || [])].join(' · ')}</em></span></li>`).join('')}</ul>`
           : `<div class="empty st" ${st(0)}>${illo('people')}<h3>Nenhum contato ainda</h3><p>Leia o QR do crachá de um colega para trocar contatos.</p></div>`
       }
-      <div class="net-actions st" ${st(1)}><button class="btn primary" data-act="scan" data-mode="ler">${ic('qr')}Ler QR de um colega</button><button class="btn soft" data-act="scan" data-mode="meu">Mostrar meu QR</button></div>
+      <div class="net-actions st" ${st(1)}><button class="btn primary" data-act="scan" data-mode="ler">${ic('qr')}Ler QR de um colega</button><button class="btn soft" data-act="scan" data-mode="meu">Mostrar meu crachá</button><button class="btn soft" data-go="pessoas">${ic('search')}Encontrar pelo nome</button></div>
     </div>`,
 });
 
@@ -4136,12 +4496,7 @@ Screens.credential = () => {
   return {
     html: `${header('Credencial')}
       <div class="pad stack cred">
-        <section class="passcard st ${ok ? '' : 'pending'}" ${st(0)}>
-          <div class="b-top"><span class="b-mark">etal<i></i></span><svg class="pins" viewBox="0 0 60 20" aria-hidden="true"><path d="M8 20V9M30 20V9M52 20V9"/><circle cx="8" cy="5.5" r="3.4"/><circle cx="30" cy="5.5" r="3.4"/><circle cx="52" cy="5.5" r="3.4"/></svg></div>
-          <div class="pass-id">${meAv('av xl')}<strong>${esc(D.person.name)}</strong><span>${esc(D.person.courseFull)}</span></div>
-          <div class="qrbox">${qr()}${ok ? '' : `<div class="qr-lock">${ic('lock')}</div>`}</div>
-          <div class="pass-foot"><span class="state ${ok ? 'ok' : 'pend'}">${ok ? `${ic('check')}Confirmado` : 'Pendente'}</span><span class="mono">${esc(D.person.id)}</span></div>
-        </section>
+        <section class="cred-cracha st ${ok ? '' : 'pending'}" ${st(0)}>${crachaGrande(D.person, cardGet() || {}, { qrHtml: `${qr()}${ok ? '' : `<span class="qr-lock">${ic('lock')}</span>`}`, legenda: ok ? `${ic('check')}Credenciado às ${S.credAt} · ${esc(D.person.id)}` : `Credenciamento pendente · ${esc(D.person.id)}` })}</section>
         ${
           ok
             ? `<p class="note st" ${st(1)}>Mostre este código quando a organização pedir.</p>`
@@ -4454,7 +4809,7 @@ Overlays.scan = (mode = 'ler') => {
           : ''
       }
       <div class="myqr" aria-hidden="${mode !== 'meu'}">
-        <div class="myqr-card">${meAv('av xl')}<strong>${esc(D.person.name)}</strong><span>${esc(D.person.course)}</span>${cardGet()?.publish ? `<em class="myqr-card-on">${ic('check')}Perfil público visível</em>` : ''}<div class="qrbox">${qr()}</div><small>Mostre para um colega trocar contato com você.</small></div>
+        <div class="myqr-cracha">${crachaGrande(D.person, cardGet() || {}, { legenda: 'Mostre para um colega ler e trocar contato' })}<div class="myqr-acts"><button class="btn soft sm" data-act="closeov" data-then="cartao">${ic('pencil')}Mudar fundo</button><button class="btn soft sm" data-act="closeov" data-then="pessoas">${ic('search')}Encontrar alguém</button></div></div>
       </div>
     </div>`;
 };
@@ -4509,14 +4864,18 @@ const KICK = {
   camp: 'Check-in no campeonato',
   out: 'Presença registrada',
 };
-function roomResult(q, { again, first, c }) {
+function roomResult(q, { again, first, c, exitFrom }) {
   const s = byId(q);
   const t = tipoDe(s);
   const hora = again ? `desde ${S.present[q]}` : `às ${S.present[q]}`;
   const hero = `<div class="sr-hero">${hxBadge(again ? 'muted' : `tp-${t.k}`)}<div><small class="sr-kick">${again ? 'Presença já registrada' : first ? 'Credenciado e presente' : KICK[t.g]}</small><h2>${esc(s.short)}</h2><p>${esc(s.room)} · ${floorName(s.floor)} · ${hora}</p></div></div>`;
   const outro = `<button class="btn soft" data-act="scanagain">${ic('qr')}Ler outro QR</button>`;
+  /* aula, palestra e mesa: a segunda leitura, no fim, libera a avaliação */
+  const fim = ['mini', 'pal', 'mesa'].includes(t.g)
+    ? `<p class="sr-fim">${ic('star')}<span>${exitFrom ? `A partir das <b>${exitFrom}</b>, leia este QR de novo` : 'No fim, leia este QR de novo'} para avaliar ${t.g === 'mini' ? 'a aula' : t.g === 'pal' ? 'a palestra' : 'a mesa'}.</span></p>`
+    : '';
   if (again)
-    return `${hero}<div class="sr-actions"><button class="btn primary big" data-act="scanopen" data-q="${q}">Abrir a atividade</button>${outro}</div>`;
+    return `${hero}${fim}<div class="sr-actions"><button class="btn primary big" data-act="scanopen" data-q="${q}">Abrir a atividade</button>${outro}</div>`;
   const mats = s.materials?.length
     ? `<li>${ic('file')}<span><b>${s.materials.length} ${s.materials.length === 1 ? 'material' : 'materiais'}</b><small>liberados agora</small></span></li>`
     : '';
@@ -4536,7 +4895,7 @@ function roomResult(q, { again, first, c }) {
       pal: `<button class="btn primary big" data-act="scanask" data-q="${q}">${ic('chat')}Perguntar ao palestrante</button>`,
       mesa: `<button class="btn primary big" data-act="scanask" data-q="${q}">${ic('chat')}Perguntar à mesa</button>`,
     }[t.g] || `<button class="btn primary big" data-act="scanopen" data-q="${q}">Abrir a atividade</button>`;
-  return `${hero}${corpo}${c ? combRow(c) : ''}<div class="sr-actions">${acao}${outro}</div>`;
+  return `${hero}${corpo}${fim}${c ? combRow(c) : ''}<div class="sr-actions">${acao}${outro}</div>`;
 }
 /* Campeonato: tela toda com a arte do jogo; diz se a pessoa está na chave (e contra quem joga) ou na torcida. */
 Overlays.jogo = (s, c) => {
@@ -5621,6 +5980,13 @@ function scanResult(q) {
       const first = !S.credAt;
       if (first) S.credAt = D.now.time;
       const again = !!S.present[q];
+      /* sem servidor, a segunda leitura já vale como saída (como no servidor sem a janela de horário) */
+      if (again && tipoDe(byId(q) || {}).g !== 'camp') {
+        if (!S.left[q]) S.left[q] = D.now.time;
+        rerender();
+        scanSheet(exitResult(q, { rated: !!S.ratings[q] }));
+        return;
+      }
       if (!again) S.present[q] = D.now.time;
       communityCheckin(q);
       const c = takeNewComb();
@@ -5721,10 +6087,15 @@ ACOES['ask'] = (el, e, a) => {
   setTimeout(() => $('#qtext')?.focus({ preventScroll: true }), 480);
 };
 
-ACOES['rate'] = (el, e, a) => {
-  S.ratings[el.dataset.id] = +el.dataset.n;
-  rerender();
-  toast('Avaliação enviada');
+ACOES['rate'] = (el, e, a) => ACOES['avaliar'](el, e, a);
+ACOES['rolar'] = (el) => {
+  const alvo = $(el.dataset.alvo, el.closest('.page') || document);
+  alvo?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+  if (alvo) {
+    alvo.classList.remove('pisca');
+    void alvo.offsetWidth;
+    alvo.classList.add('pisca');
+  }
 };
 
 ACOES['save'] = (el, e, a) => {
@@ -6497,14 +6868,8 @@ ACOES['profile-edit'] = (el, e, a) => {
 
 ACOES['cartao-pular'] = (el, e, a) => {
   cardSkip();
-  cardDemoDone = true;
-  if (el.closest('.ct-invite')) {
-    el.closest('.ct-invite').remove();
-    toast('Dá para personalizar depois em Perfil');
-  } else {
-    navBack();
-    toast('Dá para personalizar depois em Perfil');
-  }
+  navBack();
+  toast('Tudo bem! Dá para completar depois em Perfil.');
 };
 
 ACOES['profile-preset'] = (el, e, a) => {
@@ -7321,6 +7686,7 @@ function apiPerson(p) {
     photo: p.photo || null,
     source: p.source === 'visitante' ? 'guest' : 'suap',
     org: p.org,
+    serverId: p.id,
   };
 }
 function apiState(me) {
@@ -7331,7 +7697,16 @@ function apiState(me) {
   D.enrolled.length = 0;
   D.enrolled.push(...me.saved);
   S.present = { ...me.present };
+  S.left = { ...(me.left || {}) };
+  S.ratings = { ...(me.ratings || {}) };
   S.credAt = isoHM(me.person.credentialedAt);
+  /* perfil salvo no servidor vale neste aparelho também (e o convite para preencher não abre) */
+  if (me.card)
+    try {
+      localStorage.setItem(cardKey(D.person.id), JSON.stringify(me.card));
+    } catch (_) {
+      /* sem armazenamento local */
+    }
 }
 /* ---- presença lida sem internet ----
    Sem conexão na hora da leitura, o app guarda o QR (só se for um QR assinado do ETAL, de uma atividade da agenda ou do
@@ -7434,9 +7809,18 @@ async function apiQr(token) {
     }
     if (!S.credAt) S.credAt = r.time;
     const x = r.activity && byId(r.activity);
+    if (x && r.left) {
+      S.left[x.id] = r.left;
+      rerender();
+      if (!r.rated) setTimeout(() => openOverlay(Overlays.avaliar(x.id), 'ask'), 300);
+      else toast('Saída registrada. Sua avaliação já foi enviada.');
+      return;
+    }
     toast(
       r.alreadyPresent
-        ? 'Presença já estava registrada'
+        ? r.exitFrom
+          ? `Presença já registrada. Leia de novo a partir das ${r.exitFrom} para avaliar.`
+          : 'Presença já estava registrada'
         : x
           ? `Presença registrada: ${x.short}`
           : 'Credenciamento confirmado',
@@ -7504,9 +7888,15 @@ async function apiScan(hit) {
   const again = !!r.alreadyPresent;
   S.present[q] = S.present[q] || r.time;
   communityCheckin(q);
+  if (again) {
+    if (r.left) S.left[q] = r.left;
+    rerender();
+    scanSheet(r.left ? exitResult(q, { rated: r.rated }) : roomResult(q, { again, first, exitFrom: r.exitFrom }));
+    return;
+  }
   const c = takeNewComb();
   rerender();
-  scanSheet(roomResult(q, { again, first, c }));
+  scanSheet(roomResult(q, { again, first, c, exitFrom: r.exitFrom }));
 }
 /* Câmera de verdade no leitor. Lê com o BarcodeDetector do navegador ou, sem ele (computador, iPhone), com o jsQR.
      Com o servidor, o QR assinado vai para /api/presenca; sem ele, o app tira a atividade de dentro do QR. */
@@ -8221,6 +8611,31 @@ const setups = {
     S.tab = 'profile';
     S.tourTab = 'jogadores';
     S.stacks.profile.push({ s: 'games' }, { s: 'tournament', p: { id: 'fifa' } });
+  },
+  cartao: () => {
+    S.stacks.home.push({ s: 'cartao', p: { intro: 1 } });
+  },
+  'aula-fim': () => {
+    ok();
+    S.present['react-native'] = '14:03';
+    S.left['react-native'] = '15:52';
+    S.stacks.home.push({ s: 'activity', p: { id: 'react-native' } });
+  },
+  avaliar: () => {
+    ok();
+    S.present['react-native'] = '14:03';
+    S.left['react-native'] = '15:52';
+    S.stacks.home.push({ s: 'activity', p: { id: 'react-native' } });
+    setTimeout(() => openOverlay(Overlays.avaliar('react-native', 5), 'ask'), 500);
+  },
+  pessoas: () => {
+    S.tab = 'profile';
+    S.stacks.profile.push({ s: 'pessoas' });
+  },
+  pessoa: () => {
+    S.tab = 'profile';
+    const p = pessoasLocais()[0];
+    if (p) S.stacks.profile.push({ s: 'pessoas' }, { s: 'pessoa', p: { id: p.id } });
   },
 };
 (setups[q] || (() => {}))();

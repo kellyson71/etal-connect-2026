@@ -54,36 +54,54 @@ Screens.certificates = () => {
    Tudo opcional; na primeira entrada vem como convite, com "Pular" sempre à vista na barra de baixo. */
 const cartaoEu = () =>
   `<button type="button" class="ct-eu" data-act="profile-edit">${meAv('av')}<span><b>${esc(D.person.name)}</b><small>Foto e nome de exibição</small></span><span class="ct-eu-edit">${ic('pencil')}Alterar</span></button>`;
+/* Perfil em passos: cada passo é uma escolha rápida (toques, quase sem digitar), na ordem do que mais ajuda um colega a te
+   achar. A barra de progresso e o crachá ao vivo no topo puxam para completar; na primeira vez, "Agora não" fica pequeno
+   embaixo do botão principal, e o convite não volta depois. */
+const ctPasso = (n, parte, titulo, dica, corpo, c) =>
+  `<section class="ct-sec ct-passo ${CARD_PARTES.find(([k]) => k === parte)?.[1](c) ? 'feito' : ''}" data-parte="${parte}"><h3><span class="ct-n">${n}</span><span class="ct-tt"><b>${titulo}</b>${dica ? `<small>${dica}</small>` : ''}</span><i class="ct-ok">${ic('check')}</i></h3>${corpo}</section>`;
+const ctProg = (c) => {
+  const p = cardProgresso(c);
+  const falta = CARD_PARTES.find(([, f]) => !f(c));
+  const prox = {
+    nadic: 'Comece dizendo se você é do NADIC',
+    areas: 'Agora seus interesses: é o que mais ajuda a te achar',
+    langs: 'Marque as linguagens que você usa',
+    open: 'Conte o que você procura no evento',
+    contato: 'Deixe um jeito de falarem com você',
+    bio: 'Uma frase sobre você e pronto',
+  }[falta?.[0]];
+  return `<div class="ct-prog-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${p}"><i style="width:${p}%"></i></div><p><b>${p === 100 ? 'Perfil completo!' : `${p}% completo`}</b><small>${p === 100 ? 'Seu crachá está com a sua cara.' : prox}</small></p>`;
+};
 Screens.cartao = (pp = {}) => {
   const c = cardGet() || { publish: true, email: D.person.email || '', nadic: '', langs: [], areas: [], open: [] };
   const intro = !!pp.intro;
+  const temas = `<div class="ct-temas">${CRACHA_TEMAS.map(([v, t]) => `<label class="ct-tema"><input type="radio" name="tema" value="${v}" ${(c.tema || '') === v ? 'checked' : ''}><span class="bxt-${v || 'etal'}"><i></i>${t}</span></label>`).join('')}</div>`;
   return {
-    html: `${header(intro ? 'Seu perfil' : 'Editar perfil', { right: intro ? '<button class="ct-skip" data-act="cartao-pular">Pular</button>' : '' })}
-      <form class="ct-form pad" id="ct-form" data-form="cartao" novalidate>
-        ${intro ? `<div class="ct-hello st" ${st(0)}><small>Opcional</small><h2>Personalize seu perfil</h2><p>Interesses e contato ajudam colegas a te encontrar pelo QR do crachá. Dá para pular e preencher depois em Perfil.</p></div>` : ''}
-        <div class="st" ${st(0)}>${cartaoEu()}</div>
+    html: `${header(intro ? '' : 'Editar perfil')}
+      <form class="ct-form pad ct-guiado" id="ct-form" data-form="cartao" novalidate>
+        ${intro ? `<div class="ct-hello st" ${st(0)}><small>Leva 1 minuto</small><h2>Monte seu perfil do ETAL</h2><p>Quem ler o QR do seu crachá vê seus interesses e como falar com você. É assim que se acha dupla, estágio e grupo de estudo.</p></div>` : ''}
         <div class="ct-preview st" ${st(1)}>${cardPreview(c)}</div>
-        <label class="ct-switch st" ${st(2)}><span><b>Perfil visível</b><small>Para quem tocar no seu nome ou ler seu QR</small></span><input type="checkbox" name="publish" ${c.publish !== false ? 'checked' : ''}><i></i></label>
-
-        <section class="ct-sec st" ${st(3)}><h3>${ic('contact')}Contato</h3>
-          <label class="ct-field">${ic('phone')}<input name="phone" type="tel" inputmode="tel" maxlength="20" placeholder="WhatsApp ou telefone" value="${esc(c.phone || '')}" autocomplete="tel"></label>
+        <div class="ct-prog st" ${st(1)}>${ctProg(c)}</div>
+        ${intro ? '' : `<div class="st" ${st(2)}>${cartaoEu()}</div>`}
+        ${ctPasso(1, 'nadic', 'Você é do NADIC?', '', `<div class="ct-seg ct-seg-big">${CARD_NADIC.map(([v, t]) => `<label><input type="radio" name="nadic" value="${v}" ${c.nadic === v ? 'checked' : ''}><span>${v === 'bolsista' ? '<img src="assets/nadic-logo.svg" alt="">' : ''}${t}</span></label>`).join('')}</div>`, c)}
+        ${ctPasso(2, 'areas', 'O que te interessa?', 'Toque em quantos quiser', cardChips('areas', CARD_AREAS, c.areas), c)}
+        ${ctPasso(3, 'langs', 'Linguagens que você usa', 'Mesmo que esteja começando', cardChips('langs', CARD_LANGS, c.langs), c)}
+        ${ctPasso(4, 'open', 'Está aberto a…', '', cardChips('open', CARD_OPEN, c.open), c)}
+        ${ctPasso(
+          5,
+          'contato',
+          'Como falar com você',
+          'Só aparece para quem você deixar ver',
+          `<label class="ct-field">${ic('phone')}<input name="phone" type="tel" inputmode="tel" maxlength="20" placeholder="WhatsApp ou telefone" value="${esc(c.phone || '')}" autocomplete="tel"></label>
           <label class="ct-field">${ic('mail')}<input name="email" type="email" maxlength="80" placeholder="E-mail" value="${esc(c.email || '')}" autocomplete="email"></label>
-          <label class="ct-field">${ic('link')}<input name="link" maxlength="80" placeholder="GitHub, LinkedIn ou portfólio" value="${esc(c.link || '')}" autocomplete="url"></label>
-        </section>
-
-        <section class="ct-sec st" ${st(4)}><h3><img class="ct-nadic-logo" src="assets/nadic-logo.svg" alt="">Bolsista do NADIC?</h3>
-          <div class="ct-seg">${CARD_NADIC.map(([v, t]) => `<label><input type="radio" name="nadic" value="${v}" ${c.nadic === v ? 'checked' : ''}><span>${t}</span></label>`).join('')}</div>
-        </section>
-
-        <section class="ct-sec st" ${st(5)}><h3>${ic('code')}Linguagens</h3>${cardChips('langs', CARD_LANGS, c.langs)}</section>
-        <section class="ct-sec st" ${st(6)}><h3>${ic('sliders')}Interesses</h3>${cardChips('areas', CARD_AREAS, c.areas)}</section>
-        <section class="ct-sec st" ${st(7)}><h3>${ic('flag')}Aberto a</h3>${cardChips('open', CARD_OPEN, c.open)}</section>
-        <section class="ct-sec st" ${st(8)}><h3>${ic('text')}Sobre você</h3>
-          <label class="ct-field area"><textarea name="bio" maxlength="140" rows="2" placeholder="Ex.: Curto jogos e estou aprendendo Godot.">${esc(c.bio || '')}</textarea><em class="ct-count">${(c.bio || '').length}/140</em></label>
-        </section>
-
+          <label class="ct-field">${ic('link')}<input name="link" maxlength="80" placeholder="GitHub, LinkedIn ou portfólio" value="${esc(c.link || '')}" autocomplete="url"></label>`,
+          c,
+        )}
+        ${ctPasso(6, 'bio', 'Uma frase sobre você', '', `<label class="ct-field area"><textarea name="bio" maxlength="140" rows="2" placeholder="Ex.: Curto jogos e estou aprendendo Godot.">${esc(c.bio || '')}</textarea><em class="ct-count">${(c.bio || '').length}/140</em></label>`, c)}
+        <section class="ct-sec ct-extra st"><h3><span class="ct-n">${ic('id')}</span><span class="ct-tt"><b>Fundo do crachá</b><small>Aparece quando você mostra o crachá</small></span></h3>${temas}</section>
+        <label class="ct-switch st"><span><b>Perfil visível</b><small>Para quem buscar seu nome ou ler seu QR</small></span><input type="checkbox" name="publish" ${c.publish !== false ? 'checked' : ''}><i></i></label>
       </form>
-      <div class="cta-bar ct-barra ${intro ? 'dupla' : ''}">${intro ? '<button class="btn soft big" type="button" data-act="cartao-pular">Pular por agora</button>' : ''}<button class="btn primary big" type="submit" form="ct-form">${ic('check')}Salvar</button></div>`,
+      <div class="cta-bar ct-barra ${intro ? 'intro' : ''}"><button class="btn primary big" type="submit" form="ct-form">${ic('check')}Salvar perfil</button>${intro ? '<button class="ct-depois" type="button" data-act="cartao-pular">Agora não</button>' : ''}</div>`,
     mount: (page) => {
       const f = $('[data-form="cartao"]', page);
       if (!f) return;
@@ -91,6 +109,10 @@ Screens.cartao = (pp = {}) => {
         const v = cardRead(f);
         $('.ct-preview', page).innerHTML = cardPreview(v);
         $('.ct-count', page).textContent = `${v.bio.length}/140`;
+        $('.ct-prog', page).innerHTML = ctProg(v);
+        page
+          .querySelectorAll('.ct-passo')
+          .forEach((el) => el.classList.toggle('feito', !!CARD_PARTES.find(([k]) => k === el.dataset.parte)?.[1](v)));
       };
       f.addEventListener('input', live);
       f.addEventListener('change', live);
@@ -103,15 +125,15 @@ Screens.cartao = (pp = {}) => {
           $('[name="email"]', f).focus();
           return;
         }
-        try {
-          localStorage.setItem(cardKey(D.person.id), JSON.stringify({ ...v, at: Date.now() }));
-        } catch (_) {
+        if (!cardSave(v)) {
           toast('Não foi possível salvar neste aparelho.');
           return;
         }
-        cardDemoDone = true;
         buzz(14);
-        toast(v.publish ? 'Perfil atualizado' : 'Perfil salvo, mas oculto');
+        const p = cardProgresso(v);
+        toast(
+          !v.publish ? 'Perfil salvo, mas oculto' : p === 100 ? 'Perfil completo!' : `Perfil salvo (${p}% completo)`,
+        );
         navBack();
       });
     },
@@ -131,7 +153,7 @@ Screens.network = () => ({
           ? `<ul class="splist">${S.contacts.map((c, i) => `<li class="st" ${st(i)} ${c.card ? `data-go="peer" data-id="${esc(c.id)}"` : ''}>${c.photo ? `<span class="ava lg has-photo"><img src="${esc(c.photo)}" alt=""></span>` : `<span class="ava lg">${c.initials}</span>`}<span><b>${c.name}</b><small>${c.course}${c.nadic ? ' · NADIC' : ''}</small><em>${[c.interest, ...(c.langs || [])].join(' · ')}</em></span></li>`).join('')}</ul>`
           : `<div class="empty st" ${st(0)}>${illo('people')}<h3>Nenhum contato ainda</h3><p>Leia o QR do crachá de um colega para trocar contatos.</p></div>`
       }
-      <div class="net-actions st" ${st(1)}><button class="btn primary" data-act="scan" data-mode="ler">${ic('qr')}Ler QR de um colega</button><button class="btn soft" data-act="scan" data-mode="meu">Mostrar meu QR</button></div>
+      <div class="net-actions st" ${st(1)}><button class="btn primary" data-act="scan" data-mode="ler">${ic('qr')}Ler QR de um colega</button><button class="btn soft" data-act="scan" data-mode="meu">Mostrar meu crachá</button><button class="btn soft" data-go="pessoas">${ic('search')}Encontrar pelo nome</button></div>
     </div>`,
 });
 
@@ -140,12 +162,7 @@ Screens.credential = () => {
   return {
     html: `${header('Credencial')}
       <div class="pad stack cred">
-        <section class="passcard st ${ok ? '' : 'pending'}" ${st(0)}>
-          <div class="b-top"><span class="b-mark">etal<i></i></span><svg class="pins" viewBox="0 0 60 20" aria-hidden="true"><path d="M8 20V9M30 20V9M52 20V9"/><circle cx="8" cy="5.5" r="3.4"/><circle cx="30" cy="5.5" r="3.4"/><circle cx="52" cy="5.5" r="3.4"/></svg></div>
-          <div class="pass-id">${meAv('av xl')}<strong>${esc(D.person.name)}</strong><span>${esc(D.person.courseFull)}</span></div>
-          <div class="qrbox">${qr()}${ok ? '' : `<div class="qr-lock">${ic('lock')}</div>`}</div>
-          <div class="pass-foot"><span class="state ${ok ? 'ok' : 'pend'}">${ok ? `${ic('check')}Confirmado` : 'Pendente'}</span><span class="mono">${esc(D.person.id)}</span></div>
-        </section>
+        <section class="cred-cracha st ${ok ? '' : 'pending'}" ${st(0)}>${crachaGrande(D.person, cardGet() || {}, { qrHtml: `${qr()}${ok ? '' : `<span class="qr-lock">${ic('lock')}</span>`}`, legenda: ok ? `${ic('check')}Credenciado às ${S.credAt} · ${esc(D.person.id)}` : `Credenciamento pendente · ${esc(D.person.id)}` })}</section>
         ${
           ok
             ? `<p class="note st" ${st(1)}>Mostre este código quando a organização pedir.</p>`

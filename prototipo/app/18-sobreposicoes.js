@@ -59,7 +59,7 @@ Overlays.scan = (mode = 'ler') => {
           : ''
       }
       <div class="myqr" aria-hidden="${mode !== 'meu'}">
-        <div class="myqr-card">${meAv('av xl')}<strong>${esc(D.person.name)}</strong><span>${esc(D.person.course)}</span>${cardGet()?.publish ? `<em class="myqr-card-on">${ic('check')}Perfil público visível</em>` : ''}<div class="qrbox">${qr()}</div><small>Mostre para um colega trocar contato com você.</small></div>
+        <div class="myqr-cracha">${crachaGrande(D.person, cardGet() || {}, { legenda: 'Mostre para um colega ler e trocar contato' })}<div class="myqr-acts"><button class="btn soft sm" data-act="closeov" data-then="cartao">${ic('pencil')}Mudar fundo</button><button class="btn soft sm" data-act="closeov" data-then="pessoas">${ic('search')}Encontrar alguém</button></div></div>
       </div>
     </div>`;
 };
@@ -114,14 +114,18 @@ const KICK = {
   camp: 'Check-in no campeonato',
   out: 'Presença registrada',
 };
-function roomResult(q, { again, first, c }) {
+function roomResult(q, { again, first, c, exitFrom }) {
   const s = byId(q);
   const t = tipoDe(s);
   const hora = again ? `desde ${S.present[q]}` : `às ${S.present[q]}`;
   const hero = `<div class="sr-hero">${hxBadge(again ? 'muted' : `tp-${t.k}`)}<div><small class="sr-kick">${again ? 'Presença já registrada' : first ? 'Credenciado e presente' : KICK[t.g]}</small><h2>${esc(s.short)}</h2><p>${esc(s.room)} · ${floorName(s.floor)} · ${hora}</p></div></div>`;
   const outro = `<button class="btn soft" data-act="scanagain">${ic('qr')}Ler outro QR</button>`;
+  /* aula, palestra e mesa: a segunda leitura, no fim, libera a avaliação */
+  const fim = ['mini', 'pal', 'mesa'].includes(t.g)
+    ? `<p class="sr-fim">${ic('star')}<span>${exitFrom ? `A partir das <b>${exitFrom}</b>, leia este QR de novo` : 'No fim, leia este QR de novo'} para avaliar ${t.g === 'mini' ? 'a aula' : t.g === 'pal' ? 'a palestra' : 'a mesa'}.</span></p>`
+    : '';
   if (again)
-    return `${hero}<div class="sr-actions"><button class="btn primary big" data-act="scanopen" data-q="${q}">Abrir a atividade</button>${outro}</div>`;
+    return `${hero}${fim}<div class="sr-actions"><button class="btn primary big" data-act="scanopen" data-q="${q}">Abrir a atividade</button>${outro}</div>`;
   const mats = s.materials?.length
     ? `<li>${ic('file')}<span><b>${s.materials.length} ${s.materials.length === 1 ? 'material' : 'materiais'}</b><small>liberados agora</small></span></li>`
     : '';
@@ -141,7 +145,7 @@ function roomResult(q, { again, first, c }) {
       pal: `<button class="btn primary big" data-act="scanask" data-q="${q}">${ic('chat')}Perguntar ao palestrante</button>`,
       mesa: `<button class="btn primary big" data-act="scanask" data-q="${q}">${ic('chat')}Perguntar à mesa</button>`,
     }[t.g] || `<button class="btn primary big" data-act="scanopen" data-q="${q}">Abrir a atividade</button>`;
-  return `${hero}${corpo}${c ? combRow(c) : ''}<div class="sr-actions">${acao}${outro}</div>`;
+  return `${hero}${corpo}${fim}${c ? combRow(c) : ''}<div class="sr-actions">${acao}${outro}</div>`;
 }
 /* Campeonato: tela toda com a arte do jogo; diz se a pessoa está na chave (e contra quem joga) ou na torcida. */
 Overlays.jogo = (s, c) => {
