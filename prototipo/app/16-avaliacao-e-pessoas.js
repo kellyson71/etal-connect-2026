@@ -162,8 +162,11 @@ function crachaGrande(p = D.person, c = cardGet() || {}, { qrHtml = qr(), legend
 const pessoasCache = new Map();
 function pessoasLocais() {
   const out = new Map();
+  const nomes = new Set();
+  /* a mesma pessoa pode vir de mais de uma fonte com códigos diferentes (perfil de exemplo e chave do campeonato) */
   const add = (p) => {
-    if (!p?.id || !p.name || out.has(String(p.id))) return;
+    if (!p?.id || !p.name || out.has(String(p.id)) || nomes.has(fold(p.name))) return;
+    nomes.add(fold(p.name));
     out.set(String(p.id), p);
   };
   for (const [id, p] of Object.entries(D.demoProfiles || {})) add({ id, ...p });
