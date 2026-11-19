@@ -66,6 +66,10 @@ class Config(BaseSettings):
     # Leitura guardada sem internet: ela precisa ter sido feita durante a atividade e chegar ao servidor até estes minutos
     # depois do fim (relógio do servidor). A hora informada pelo aparelho só restringe, nunca amplia a janela.
     tolerancia_envio_min: int = 60
+    # Saída: a segunda leitura do QR da sala vale como saída (e libera a avaliação) a partir destes minutos antes do fim
+    # e até estes minutos depois do fim. Sem a janela de presença (demonstração), a segunda leitura já é a saída.
+    saida_antes_min: int = 20
+    saida_depois_min: int = 30
     fuso: str = 'America/Fortaleza'
 
     # Publicações (app/rotas/publicacoes.py). Denúncias de pessoas diferentes que tiram um conteúdo do ar até a
