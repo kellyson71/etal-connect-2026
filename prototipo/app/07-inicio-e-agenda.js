@@ -95,7 +95,6 @@ Screens.home = () => {
           ${UI.home.atalhos ? `<nav class="quick rv" aria-label="Atalhos">${actions.map(([i, t, a], n) => `<button ${a} style="--n:${n}"><span>${ic(i)}</span><em>${t}</em></button>`).join('')}</nav>` : ''}
 
           ${!standalone() && !prefs.get('etal-instalar-oculto') ? `<div class="instalar rv"><button class="inst-main" data-act="install">${ic('download')}<span><b>Instale o ETAL Connect</b><small>Lembretes no celular e mapa sem internet</small></span></button><button class="inst-x" data-act="instalar-fechar" aria-label="Agora não">${ic('x')}</button></div>` : ''}
-          ${cardAsk() ? `<div class="ct-invite rv"><button class="ct-inv-main" data-go="cartao">${ic('contact')}<span><b>Personalize seu perfil</b><small>Interesses, NADIC e contato</small></span></button><button class="ct-inv-skip" data-act="cartao-pular">Pular</button></div>` : ''}
           ${UI.home.colmeia ? combCard() : ''}
 
           ${

@@ -9,7 +9,7 @@ from .config import config
 from . import documentacao
 from .db import migrar
 from .monitor import Monitor
-from .rotas import auth, contingencia, eu, homologacao, org, publicacoes, publico, suap
+from .rotas import auth, contingencia, eu, homologacao, org, pessoas, publicacoes, publico, suap
 from .seguranca import publica
 
 
@@ -25,7 +25,7 @@ app = FastAPI(title='ETAL Connect', version='0.5.0', description=documentacao.in
 app.add_middleware(Monitor)
 app.add_middleware(CORSMiddleware, allow_origins=[o.strip() for o in config().origens.split(',') if o.strip()],
                    allow_credentials=True, allow_methods=['*'], allow_headers=['*'])
-for r in (auth.rota, eu.rota, publico.rota, publicacoes.rota, org.rota, contingencia.rota, homologacao.rota, suap.rota):
+for r in (auth.rota, eu.rota, pessoas.rota, publico.rota, publicacoes.rota, org.rota, org.planilha, contingencia.rota, homologacao.rota, suap.rota):
     documentacao.aplicar(r)
     app.include_router(r)
 

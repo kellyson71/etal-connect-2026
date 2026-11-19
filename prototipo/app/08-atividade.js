@@ -193,8 +193,9 @@ Screens.activity = ({ id }) => {
     return {
       html: `${header('', { right: `<button class="iconbtn" data-act="share" data-id="${id}" aria-label="Enviar para o computador">${ic('laptop')}</button>` })}
         <div class="pad stack class-open">
-          <div class="co-head st" ${st(0)}><span class="tag ok">${ic('check')}Presença às ${here}</span><span class="kind">${s.type} · ${s.room}</span></div>
+          <div class="co-head st" ${st(0)}><span class="tag ok">${ic('check')}${S.left[id] ? `Das ${here} às ${S.left[id]}` : `Presença às ${here}`}</span><span class="kind">${s.type} · ${s.room}</span></div>
           <h1 class="title-lg st" ${st(1)}>${s.title}</h1>
+          <div class="co-rapido st" ${st(1)}><button data-act="rolar" data-alvo=".mats">${ic('file')}Materiais${s.materials?.length ? ` <em>${s.materials.length}</em>` : ''}</button><button data-act="ask" data-id="${id}">${ic('chat')}Perguntar</button><button data-act="${S.left[id] ? 'avaliar' : 'rolar'}" data-id="${id}" data-alvo=".rate-lock">${ic('star')}${notaDe(id) ? `${notaDe(id)}/5` : 'Avaliar'}</button></div>
           <button class="teacher st" ${st(2)} data-go="speaker" data-id="${id}">${spAv(s, true)}<span><b>${s.speakerShort}</b><small>${s.role}</small></span><span class="time"><b>${s.time}–${s.end}</b><small>${d.week}, ${s.day} nov</small></span></button>
           <button class="sendpc st" ${st(3)} data-act="share" data-id="${id}"><span class="sp-ic">${ic('laptop')}</span><span><b>Abrir no computador</b><small>${s.link}</small></span>${ic('chev')}</button>
           <section class="st" ${st(4)}><h2 class="h">Materiais</h2></section>
@@ -202,7 +203,7 @@ Screens.activity = ({ id }) => {
           <section class="block st" ${st(10)}><h2 class="h">Nesta aula</h2><ul class="learn">${s.learn.map((l) => `<li>${ic('check')}<span>${l}</span></li>`).join('')}</ul></section>
           <section class="block st" ${st(11)}><h2 class="h">Leve para a sala</h2><p class="desc">${s.requirements}</p></section>
           <section class="block st" ${st(12)}><div class="sec"><h2>Perguntas</h2><button data-act="ask" data-id="${id}">Perguntar</button></div>${questionsOf(id)}</section>
-          <section class="block rate st" ${st(13)}><h2 class="h">Avalie esta atividade</h2><div class="stars" role="radiogroup" aria-label="Nota">${[1, 2, 3, 4, 5].map((n) => `<button class="${(S.ratings[id] || 0) >= n ? 'on' : ''}" data-act="rate" data-id="${id}" data-n="${n}" aria-label="${n} de 5">${ic('star')}</button>`).join('')}</div></section>
+          <div class="st" ${st(13)}>${rateBlock(id)}</div>
         </div>`,
     };
   }

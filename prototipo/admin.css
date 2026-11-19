@@ -1930,3 +1930,209 @@ table.sis code {
 .cont-res p {
   margin: 10px 0 0;
 }
+
+/* participantes por categoria */
+.filtros {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+  margin: 0 0 14px;
+}
+.filtros select:disabled {
+  opacity: 0.55;
+}
+.acts-dir {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+td small.muted {
+  color: var(--muted);
+}
+.planilha h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.planilha h2 svg {
+  width: 20px;
+  height: 20px;
+}
+.planilha .fld {
+  margin-top: 10px;
+}
+.planilha input[readonly] {
+  font:
+    500 12.5px ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  background: var(--bg);
+}
+
+/* avaliações */
+.estrelas {
+  --m: 0%;
+  display: inline-block;
+  width: 86px;
+  height: 16px;
+  background: linear-gradient(90deg, #f5a524 var(--m), #d9dfea var(--m));
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 24'%3E%3Cg%3E%3Cpath id='s' d='m12 2 2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 16.9 6.1 20l1.2-6.5L2.5 8.9 9.1 8Z'/%3E%3Cuse href='%23s' x='24'/%3E%3Cuse href='%23s' x='48'/%3E%3Cuse href='%23s' x='72'/%3E%3Cuse href='%23s' x='96'/%3E%3C/g%3E%3C/svg%3E")
+    0 0 / 100% 100%;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 24'%3E%3Cg%3E%3Cpath id='s' d='m12 2 2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 16.9 6.1 20l1.2-6.5L2.5 8.9 9.1 8Z'/%3E%3Cuse href='%23s' x='24'/%3E%3Cuse href='%23s' x='48'/%3E%3Cuse href='%23s' x='72'/%3E%3Cuse href='%23s' x='96'/%3E%3C/g%3E%3C/svg%3E")
+    0 0 / 100% 100%;
+}
+.estrelas.sm {
+  width: 60px;
+  height: 11px;
+  margin-right: 8px;
+}
+.kpi .estrelas {
+  margin-top: 6px;
+}
+.aval-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.aval {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+}
+.aval summary {
+  display: grid;
+  grid-template-columns: 32px 1fr auto auto 20px;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  cursor: pointer;
+  list-style: none;
+}
+.aval summary::-webkit-details-marker {
+  display: none;
+}
+.aval summary > svg {
+  width: 18px;
+  height: 18px;
+  color: var(--muted);
+}
+.aval-pos {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #e9eef6;
+  font: 700 13px var(--display);
+}
+.aval-tt,
+.aval-n {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.aval-tt b {
+  font: 600 15px var(--display);
+}
+.aval-tt small,
+.aval-n small {
+  font-size: 12px;
+  color: var(--muted);
+}
+.aval-nota {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.aval-nota b,
+.aval-n b {
+  font: 700 18px var(--display);
+}
+.aval-corpo {
+  display: grid;
+  grid-template-columns: minmax(180px, 240px) 1fr;
+  gap: 22px;
+  padding: 4px 16px 16px;
+  border-top: 1px solid var(--line);
+}
+.aval-corpo h3 {
+  margin: 14px 0 8px;
+  font: 600 13px var(--ui);
+  color: var(--ink-2);
+}
+.aval-dist {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 14px;
+}
+.aval-dist div {
+  display: grid;
+  grid-template-columns: 30px 1fr 26px;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+}
+.aval-dist .track {
+  height: 8px;
+  border-radius: 99px;
+  background: #e9eef6;
+  overflow: hidden;
+}
+.aval-dist .track i {
+  display: block;
+  height: 100%;
+  background: #f5a524;
+}
+.aval-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.aval-tags span {
+  padding: 5px 10px;
+  border-radius: 99px;
+  background: #e6f3dc;
+  color: #2f6f12;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.aval-tags span.ruim {
+  background: #fde9e3;
+  color: var(--full);
+}
+.aval-com {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.aval-com li {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--bg);
+  font-size: 13.5px;
+}
+@media (max-width: 720px) {
+  .aval summary {
+    grid-template-columns: 28px 1fr auto;
+  }
+  .aval-n,
+  .aval summary > svg {
+    display: none;
+  }
+  .aval-corpo {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+:root[data-theme='dark'] .aval-pos,
+:root[data-theme='dark'] .aval-dist .track {
+  background: #26345a;
+}
+:root[data-theme='dark'] .planilha input[readonly] {
+  background: #141d36;
+}

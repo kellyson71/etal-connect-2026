@@ -1,6 +1,10 @@
-"""Painel da organização: avisos, troca de sala, numeração, credenciamento manual, exportações e QRs para imprimir."""
+"""Painel da organização: avisos, troca de sala, numeração, credenciamento manual, participantes por categoria,
+dados dos perfis, avaliações, exportações (CSV e link para planilha) e QRs para imprimir."""
 import csv
+import hashlib
+import hmac
 import io
+from collections import Counter, defaultdict
 import re
 import secrets
 import unicodedata
@@ -20,7 +24,7 @@ from .. import arquivos, formatos
 from ..ao_vivo import canal
 from ..config import config
 from ..db import sessao
-from ..modelos import Agenda, Arquivo, Atividade, Aviso, NumeroSala, Pessoa, Presenca
+from ..modelos import Agenda, Arquivo, Atividade, Avaliacao, Aviso, Configuracao, NumeroSala, Pessoa, Presenca, Publicacao
 from ..seguranca import agora, organizacao, publica, token_qr
 
 rota = APIRouter(prefix='/api/org', tags=['organização'], dependencies=[Depends(organizacao)])
@@ -225,12 +229,33 @@ def numeros(mapa: dict[str, str], db: Session = Depends(sessao)):
     return salas
 
 
-@rota.get('/participantes')
-def participantes(q: str = '', db: Session = Depends(sessao)):
-    s = select(Pessoa).order_by(Pessoa.nome).limit(500)
+def _participantes(db: Session, q: str = '') -> list[dict]:
+    """Pessoas com tudo o que o painel filtra: agenda, presenças, saídas, avaliações e o resumo do perfil."""
+    s = select(Pessoa).order_by(Pessoa.nome).limit(5000)
     if q:
         s = s.where(Pessoa.nome.ilike(f'%{q}%') | Pessoa.matricula.ilike(f'%{q}%') | Pessoa.email.ilike(f'%{q}%'))
-    return [formatos.pessoa(p) for p in db.scalars(s)]
+    pessoas = list(db.scalars(s))
+    agenda, pres, saida, notas = defaultdict(list), defaultdict(list), defaultdict(list), defaultdict(list)
+    for pid, aid in db.execute(select(Agenda.pessoa_id, Agenda.atividade_id)):
+        agenda[pid].append(aid)
+    for pid, aid, sai in db.execute(select(Presenca.pessoa_id, Presenca.atividade_id, Presenca.saida_em)):
+        pres[pid].append(aid)
+        if sai:
+            saida[pid].append(aid)
+    for pid, aid in db.execute(select(Avaliacao.pessoa_id, Avaliacao.atividade_id)):
+        notas[pid].append(aid)
+    out = []
+    for p in pessoas:
+        c = p.cartao or {}
+        out.append({**formatos.pessoa(p), 'email': p.email, 'saved': agenda[p.id], 'present': pres[p.id], 'left': saida[p.id],
+                    'rated': notas[p.id], 'profile': bool(c), 'nadic': c.get('nadic') or '', 'langs': c.get('langs') or [],
+                    'areas': c.get('areas') or [], 'open': c.get('open') or []})
+    return out
+
+
+@rota.get('/participantes')
+def participantes(q: str = '', db: Session = Depends(sessao)):
+    return _participantes(db, q)
 
 
 @rota.post('/credenciar/{pessoa_id}')
@@ -346,3 +371,127 @@ def sistema(db: Session = Depends(sessao)):
         },
     }
 
+
+
+def _contagem(itens) -> list[list]:
+    return [[k, n] for k, n in Counter(itens).most_common()]
+
+
+@rota.get('/dados')
+def dados(db: Session = Depends(sessao)):
+    """Números dos perfis e da participação: NADIC, linguagens, interesses, cursos, cidades e publicações."""
+    pessoas = list(db.scalars(select(Pessoa)))
+    cards = [p.cartao for p in pessoas if p.cartao]
+    pres = Counter(db.scalars(select(Presenca.atividade_id)))
+    saidas = Counter(db.scalars(select(Presenca.atividade_id).where(Presenca.saida_em.is_not(None))))
+    tipos_pub = Counter(db.scalars(select(Publicacao.tipo).where(Publicacao.oculta.is_(False))))
+    assuntos = Counter(x for x in db.scalars(select(Publicacao.assunto).where(Publicacao.tipo == 'post', Publicacao.oculta.is_(False))) if x)
+    return {
+        'pessoas': len(pessoas),
+        'ifrn': sum(p.tipo != 'visitante' for p in pessoas),
+        'visitantes': sum(p.tipo == 'visitante' for p in pessoas),
+        'credenciados': sum(p.credenciado_em is not None for p in pessoas),
+        'perfis': len(cards),
+        'perfisPublicos': sum(c.get('publish', True) is not False for c in cards),
+        'nadic': _contagem(c.get('nadic') for c in cards if c.get('nadic')),
+        'langs': _contagem(x for c in cards for x in c.get('langs') or []),
+        'areas': _contagem(x for c in cards for x in c.get('areas') or []),
+        'open': _contagem(x for c in cards for x in c.get('open') or []),
+        'cursos': _contagem(p.curso for p in pessoas if p.curso)[:12],
+        'cidades': _contagem(p.cidade for p in pessoas if p.cidade)[:12],
+        'presencas': [[a, n, saidas.get(a, 0)] for a, n in pres.most_common()],
+        'publicacoes': {'posts': tipos_pub.get('post', 0), 'comentarios': tipos_pub.get('comentario', 0),
+                        'mensagens': tipos_pub.get('mensagem', 0), 'assuntos': [[k, n] for k, n in assuntos.most_common()]},
+    }
+
+
+@rota.get('/avaliacoes')
+def avaliacoes(db: Session = Depends(sessao)):
+    """Avaliações por atividade: média, quantidade, distribuição das notas, comentários rápidos mais escolhidos e
+    comentários abertos, sem o nome de quem avaliou. Ordenado da maior para a menor média."""
+    por = defaultdict(list)
+    for v in db.scalars(select(Avaliacao).order_by(Avaliacao.em.desc())):
+        por[v.atividade_id].append(v)
+    pres = Counter(db.scalars(select(Presenca.atividade_id)))
+    saidas = Counter(db.scalars(select(Presenca.atividade_id).where(Presenca.saida_em.is_not(None))))
+    out = []
+    for aid, vs in por.items():
+        notas = [v.nota for v in vs]
+        out.append({'activity': aid, 'count': len(vs), 'avg': round(sum(notas) / len(notas), 2),
+                    'dist': [notas.count(n) for n in range(1, 6)], 'present': pres.get(aid, 0), 'left': saidas.get(aid, 0),
+                    'quick': _contagem(r for v in vs for r in v.rapidos or []),
+                    'comments': [{'n': v.nota, 'text': v.comentario, 'at': v.em.isoformat()} for v in vs if v.comentario][:100]})
+    return sorted(out, key=lambda x: (-x['avg'], -x['count']))
+
+
+# Link para planilha: um endereço com chave, que o Google Sheets lê com =IMPORTDATA("...") e atualiza sozinho.
+# A chave sai do segredo do servidor e de uma versão guardada no banco; gerar um link novo invalida o anterior.
+def _versao_planilha(db: Session) -> str:
+    v = db.get(Configuracao, 'planilha')
+    if not v:
+        v = Configuracao(chave='planilha', valor=secrets.token_hex(8))
+        db.add(v)
+        db.commit()
+    return v.valor
+
+
+def _chave_planilha(versao: str) -> str:
+    return hmac.new(config().segredo.encode(), f'planilha:{versao}'.encode(), hashlib.sha256).hexdigest()[:32]
+
+
+def _base_api(request: Request) -> str:
+    """Endereço da API como o navegador a alcançou (atrás do Caddy ou da Vercel, pelos cabeçalhos do proxy). Não é o
+    endereço do app: no desenvolvimento, app e API ficam em portas diferentes."""
+    proto = request.headers.get('x-forwarded-proto') or request.url.scheme
+    host = request.headers.get('x-forwarded-host') or request.headers.get('host') or request.url.netloc
+    return f'{proto}://{host}'
+
+
+@rota.get('/planilha')
+def link_planilha(request: Request, db: Session = Depends(sessao)):
+    """Endereço da planilha de participantes para colar no Google Sheets (=IMPORTDATA) ou no Excel (Dados > Da Web)."""
+    return {'url': f'{_base_api(request)}/api/planilha/{_chave_planilha(_versao_planilha(db))}.csv'}
+
+
+@rota.post('/planilha/novo')
+def novo_link_planilha(request: Request, db: Session = Depends(sessao)):
+    """Gera um endereço novo para a planilha; o anterior para de funcionar na hora."""
+    v = db.get(Configuracao, 'planilha') or Configuracao(chave='planilha')
+    v.valor = secrets.token_hex(8)
+    db.add(v)
+    db.commit()
+    return link_planilha(request, db)
+
+
+CAB_PLANILHA = ['nome', 'tipo', 'curso', 'matricula', 'email', 'credenciado', 'nadic', 'linguagens', 'interesses',
+                'inscricoes', 'presencas', 'avaliou']
+
+
+def _linhas_planilha(db: Session, atividade: str = '', situacao: str = '') -> list[list]:
+    titulos = {a.id: a.curto for a in db.scalars(select(Atividade))}
+    linhas = []
+    for p in _participantes(db):
+        if atividade:
+            grupo = {'presentes': p['present'], 'avaliaram': p['rated']}.get(situacao, p['saved'] + p['present'])
+            if atividade not in grupo:
+                continue
+        linhas.append([p['name'], 'Visitante' if p['source'] == 'visitante' else 'IFRN', p['course'] or '', p['matricula'] or '',
+                       p['email'] or '', 'sim' if p['credentialedAt'] else 'não', p['nadic'], ', '.join(p['langs']), ', '.join(p['areas']),
+                       ', '.join(titulos.get(a, a) for a in p['saved']), ', '.join(titulos.get(a, a) for a in p['present']),
+                       ', '.join(titulos.get(a, a) for a in p['rated'])])
+    return linhas
+
+
+planilha = APIRouter(prefix='/api/planilha', tags=['organização'])
+
+
+@planilha.get('/{chave}.csv')
+def planilha_csv(chave: str, atividade: str = '', situacao: str = '', db: Session = Depends(sessao)):
+    """CSV separado por vírgula, sem login: quem tem o endereço lê. Filtros opcionais: ?atividade=<id>&situacao=presentes."""
+    if not hmac.compare_digest(chave, _chave_planilha(_versao_planilha(db))):
+        raise HTTPException(404, 'Planilha não encontrada.')
+    buf = io.StringIO()
+    w = csv.writer(buf)
+    w.writerow(CAB_PLANILHA)
+    w.writerows(_linhas_planilha(db, atividade, situacao))
+    return Response(buf.getvalue(), media_type='text/csv; charset=utf-8', headers={'Cache-Control': 'no-store'})

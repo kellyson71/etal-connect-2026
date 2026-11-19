@@ -58,6 +58,13 @@ function scanResult(q) {
       const first = !S.credAt;
       if (first) S.credAt = D.now.time;
       const again = !!S.present[q];
+      /* sem servidor, a segunda leitura já vale como saída (como no servidor sem a janela de horário) */
+      if (again && tipoDe(byId(q) || {}).g !== 'camp') {
+        if (!S.left[q]) S.left[q] = D.now.time;
+        rerender();
+        scanSheet(exitResult(q, { rated: !!S.ratings[q] }));
+        return;
+      }
       if (!again) S.present[q] = D.now.time;
       communityCheckin(q);
       const c = takeNewComb();

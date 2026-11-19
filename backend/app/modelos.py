@@ -22,6 +22,8 @@ class Pessoa(Base):
     cidade: Mapped[str | None] = mapped_column(String(120))
     foto_url: Mapped[str | None] = mapped_column(String(500))
     papel: Mapped[str] = mapped_column(String(16), default='participante')  # participante | organizacao
+    # perfil que a pessoa preenche no app: interesses, linguagens, NADIC, contato e fundo do crachá (formato do app)
+    cartao: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     credenciado_em: Mapped[datetime | None] = mapped_column(DateTime)
     criado_em: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
@@ -63,6 +65,29 @@ class Presenca(Base):
     atividade_id: Mapped[str] = mapped_column(ForeignKey('atividades.id', ondelete='CASCADE'))
     em: Mapped[datetime] = mapped_column(DateTime)
     via: Mapped[str] = mapped_column(String(16), default='qr')  # qr | qr-adiado (lida sem internet) | manual
+    # segunda leitura do QR da sala, no fim da atividade: libera a avaliação
+    saida_em: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+
+class Avaliacao(Base):
+    """Avaliação de uma atividade por quem esteve nela do começo ao fim (leu o QR na entrada e na saída). A
+    organização vê as notas e os comentários sem o nome de quem avaliou."""
+    __tablename__ = 'avaliacoes'
+    __table_args__ = (UniqueConstraint('pessoa_id', 'atividade_id'),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    pessoa_id: Mapped[int] = mapped_column(ForeignKey('pessoas.id', ondelete='CASCADE'))
+    atividade_id: Mapped[str] = mapped_column(ForeignKey('atividades.id', ondelete='CASCADE'), index=True)
+    nota: Mapped[int] = mapped_column(Integer)  # 1 a 5
+    rapidos: Mapped[list] = mapped_column(JSON, default=list)  # comentários rápidos escolhidos
+    comentario: Mapped[str] = mapped_column(Text, default='')
+    em: Mapped[datetime] = mapped_column(DateTime)
+
+
+class Configuracao(Base):
+    """Valores pequenos que a organização muda pelo painel (ex.: a versão do link da planilha)."""
+    __tablename__ = 'configuracoes'
+    chave: Mapped[str] = mapped_column(String(60), primary_key=True)
+    valor: Mapped[str] = mapped_column(String(200))
 
 
 class Aviso(Base):

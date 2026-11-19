@@ -19,6 +19,7 @@ function apiPerson(p) {
     photo: p.photo || null,
     source: p.source === 'visitante' ? 'guest' : 'suap',
     org: p.org,
+    serverId: p.id,
   };
 }
 function apiState(me) {
@@ -29,7 +30,16 @@ function apiState(me) {
   D.enrolled.length = 0;
   D.enrolled.push(...me.saved);
   S.present = { ...me.present };
+  S.left = { ...(me.left || {}) };
+  S.ratings = { ...(me.ratings || {}) };
   S.credAt = isoHM(me.person.credentialedAt);
+  /* perfil salvo no servidor vale neste aparelho também (e o convite para preencher não abre) */
+  if (me.card)
+    try {
+      localStorage.setItem(cardKey(D.person.id), JSON.stringify(me.card));
+    } catch (_) {
+      /* sem armazenamento local */
+    }
 }
 /* ---- presença lida sem internet ----
    Sem conexão na hora da leitura, o app guarda o QR (só se for um QR assinado do ETAL, de uma atividade da agenda ou do
@@ -132,9 +142,18 @@ async function apiQr(token) {
     }
     if (!S.credAt) S.credAt = r.time;
     const x = r.activity && byId(r.activity);
+    if (x && r.left) {
+      S.left[x.id] = r.left;
+      rerender();
+      if (!r.rated) setTimeout(() => openOverlay(Overlays.avaliar(x.id), 'ask'), 300);
+      else toast('Saída registrada. Sua avaliação já foi enviada.');
+      return;
+    }
     toast(
       r.alreadyPresent
-        ? 'Presença já estava registrada'
+        ? r.exitFrom
+          ? `Presença já registrada. Leia de novo a partir das ${r.exitFrom} para avaliar.`
+          : 'Presença já estava registrada'
         : x
           ? `Presença registrada: ${x.short}`
           : 'Credenciamento confirmado',
@@ -202,9 +221,15 @@ async function apiScan(hit) {
   const again = !!r.alreadyPresent;
   S.present[q] = S.present[q] || r.time;
   communityCheckin(q);
+  if (again) {
+    if (r.left) S.left[q] = r.left;
+    rerender();
+    scanSheet(r.left ? exitResult(q, { rated: r.rated }) : roomResult(q, { again, first, exitFrom: r.exitFrom }));
+    return;
+  }
   const c = takeNewComb();
   rerender();
-  scanSheet(roomResult(q, { again, first, c }));
+  scanSheet(roomResult(q, { again, first, c, exitFrom: r.exitFrom }));
 }
 /* Câmera de verdade no leitor. Lê com o BarcodeDetector do navegador ou, sem ele (computador, iPhone), com o jsQR.
      Com o servidor, o QR assinado vai para /api/presenca; sem ele, o app tira a atividade de dentro do QR. */

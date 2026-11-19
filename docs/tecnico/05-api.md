@@ -8,8 +8,9 @@ Aplicação em backend/app/main.py. Documentação interativa em /api/docs; cont
 |---|---|---|
 | Público | /api/saude, /programacao, /avisos, /lotacao, /ao-vivo | Sem sessão |
 | Entrada | /api/auth/suap, /suap/retorno, /suap/senha, /visitante, /link, /sair | Sem sessão prévia |
-| Participante | /api/eu, /api/eu/agenda/{id}, /api/presenca | Sessão válida |
-| Organização | /api/org/avisos, /atividades/{id}/sala, /salas, /participantes, /credenciar/{id}, /resumo, CSV e QRs | Papel organizacao |
+| Participante | /api/eu, /api/eu/agenda/{id}, /api/eu/cartao, /api/eu/avaliacoes/{id}, /api/presenca, /api/pessoas | Sessão válida |
+| Organização | /api/org/avisos, /atividades/{id}/sala, /salas, /participantes, /dados, /avaliacoes, /planilha, /credenciar/{id}, /resumo, CSV e QRs | Papel organizacao |
+| Planilha | /api/planilha/{chave}.csv | Sem sessão: a chave do endereço é a proteção |
 | Homologação | /api/auth/dev e /api/homologacao/qrs | Só com ETAL_LOGIN_DEV ligado; código opcional configurado |
 
 A lista exata de métodos e caminhos está na tabela gerada do OpenAPI, nas referências da apresentação. GET /q/{token} é um redirecionamento para o app e fica fora do esquema.
@@ -20,7 +21,14 @@ A lista exata de métodos e caminhos está na tabela gerada do OpenAPI, nas refe
 |---|---|---|
 | Verificar API e banco | GET /api/saude | ok: true |
 | Carregar programação | GET /api/programacao | sessions e rooms |
-| Recuperar sessão | GET /api/eu | person, saved e present |
+| Recuperar sessão | GET /api/eu | person, saved, present, left (saídas), ratings (avaliações) e card (perfil) |
+| Salvar o perfil do app | PUT /api/eu/cartao | O perfil guardado; listas e textos com teto (422 acima) |
+| Avaliar atividade | PUT /api/eu/avaliacoes/{atividade_id} com {nota, rapidos, comentario} | A avaliação; 409 antes da saída registrada |
+| Buscar pessoas | GET /api/pessoas?q=nome e GET /api/pessoas/{id} | Até 30 pessoas; o perfil traz attended (presenças) e taught (conduziu); perfil oculto vem só com nome e curso |
+| Participantes por categoria | GET /api/org/participantes | Cada pessoa com saved, present, left, rated e o resumo do perfil |
+| Números do público | GET /api/org/dados | Contagens de NADIC, linguagens, interesses, cursos, presenças e publicações |
+| Ranking das avaliações | GET /api/org/avaliacoes | Média, distribuição, comentários rápidos e abertos, sem nomes |
+| Link de planilha | GET /api/org/planilha e POST /api/org/planilha/novo | Endereço para =IMPORTDATA no Google Sheets; gerar um novo invalida o anterior |
 | Salvar atividade | POST /api/eu/agenda/{atividade_id} | ok; idempotente; minicurso e oficina: 409 (inscrição no SUAP) |
 | Remover atividade | DELETE /api/eu/agenda/{atividade_id} | ok; idempotente; minicurso e oficina: 409 |
 | Registrar leitura | POST /api/presenca com qr | credentialed, newCredential, activity, alreadyPresent e time |
@@ -47,7 +55,9 @@ Visitantes recebem link válido por 30 minutos e de uso único; o banco guarda S
 }
 ```
 
-A API confere assinatura, sessão, atividade e janela. QR do evento só credencia. QR da atividade também registra presença. O par pessoa / atividade não pode se repetir. Não exige atividade salva na agenda e não registra frequência automaticamente no SUAP.
+A API confere assinatura, sessão, atividade e janela. QR do evento só credencia. QR da atividade também registra presença. O par pessoa / atividade não pode se repetir.
+
+Ler o mesmo QR de novo, a partir de ETAL_SAIDA_ANTES_MIN (20) minutos antes do fim e até ETAL_SAIDA_DEPOIS_MIN (30) minutos depois, registra a saída e libera a avaliação. A resposta traz left (hora da saída ou null), exitFrom (a partir de quando a saída vale) e rated. Sem a janela de presença (demonstração), a segunda leitura já é a saída. Não exige atividade salva na agenda e não registra frequência automaticamente no SUAP.
 
 | Código | Significado principal |
 |---|---|

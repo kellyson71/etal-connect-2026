@@ -30,7 +30,10 @@ const fresh = () => ({
   tourTab: 'chave',
   reminders: new Set(remSaved()),
   votes: new Set(),
+  /* avaliações: id → { n, quick: [], text } (nota de 1 a 5, comentários rápidos e comentário aberto) */
   ratings: {},
+  /* saída: segunda leitura do QR da sala, no fim da atividade; libera a avaliação */
+  left: {},
   asked: {},
   contacts: [],
 });

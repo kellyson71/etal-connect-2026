@@ -121,7 +121,8 @@ Screens.profile = () => ({
           <li data-go="suapEvents">${ic('cal')}<span>Meus eventos no SUAP</span>${ic('chev', 'i chev')}</li>
           <li data-go="certificates">${ic('award')}<span>Certificados</span>${ic('chev', 'i chev')}</li>
           <li data-go="network">${ic('contact')}<span>Contatos</span><em>${S.contacts.length}</em>${ic('chev', 'i chev')}</li>
-          <li data-go="cartao">${ic('id')}<span>Interesses e contato</span><em>${cardGet() ? (cardGet().publish === false ? 'Oculto' : 'Visível') : 'Personalizar'}</em>${ic('chev', 'i chev')}</li>
+          <li data-go="pessoas">${ic('search')}<span>Encontrar pessoas</span><em>Busca por nome</em>${ic('chev', 'i chev')}</li>
+          <li data-go="cartao">${ic('id')}<span>Seu perfil e crachá</span><em>${cardGet() ? (cardGet().publish === false ? 'Oculto' : `${cardProgresso(cardGet())}%`) : 'Completar'}</em>${ic('chev', 'i chev')}</li>
         </ul>
         <ul class="menu st" ${st(2)}>
           <li data-go="games" class="games-row">${ic('trophy')}<span>Campeonatos</span><em>Qui 27</em>${ic('chev', 'i chev')}</li>
