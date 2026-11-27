@@ -125,7 +125,10 @@ Screens.profile = () => ({
           <li data-go="cartao">${ic('id')}<span>Seu perfil e crachá</span><em>${cardGet() ? (cardGet().publish === false ? 'Oculto' : `${cardProgresso(cardGet())}%`) : 'Completar'}</em>${ic('chev', 'i chev')}</li>
         </ul>
         <ul class="menu st" ${st(2)}>
-          <li data-go="games" class="games-row">${ic('trophy')}<span>Campeonatos</span><em>Qui 27</em>${ic('chev', 'i chev')}</li>
+          <li data-go="games" class="games-row">${ic('trophy')}<span>Campeonatos</span><em>${(() => {
+            const x = D.tournaments[0] || D.sessions.find((s) => tipoDe(s).g === 'camp');
+            return x ? `${dayOf(x.day)?.week || ''} ${x.day}` : '';
+          })()}</em>${ic('chev', 'i chev')}</li>
           <li data-go="mais">${ic('list')}<span>Mais opções</span><em>Aparência e sobre</em>${ic('chev', 'i chev')}</li>
         </ul>
         <ul class="menu danger st" ${st(5)}><li data-act="logout">${ic('logout')}<span>Sair</span></li></ul>
