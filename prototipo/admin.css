@@ -2136,3 +2136,50 @@ td small.muted {
 :root[data-theme='dark'] .planilha input[readonly] {
   background: #141d36;
 }
+
+/* importar programação */
+dialog.largo {
+  width: min(780px, 94vw);
+}
+.importar h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.importar h2 svg {
+  width: 20px;
+  height: 20px;
+}
+.importar textarea {
+  font:
+    500 12.5px ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  white-space: pre;
+}
+.imp-bts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.imp-bts label.btn {
+  cursor: pointer;
+}
+.imp-previa {
+  margin-top: 14px;
+}
+.imp-previa .tbl-wrap {
+  max-height: 42vh;
+  overflow: auto;
+}
+.imp-resumo {
+  color: var(--ink);
+}
+.imp-erro {
+  color: var(--full);
+}
+.imp-ruim td {
+  opacity: 0.75;
+}

@@ -13,10 +13,10 @@ from datetime import date
 from typing import Literal
 
 import segno
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Body, Depends, HTTPException, Request
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import HTMLResponse, Response
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -145,9 +145,13 @@ def _aplicar(a: Atividade, dados: dict):
         raise HTTPException(422, 'O fim precisa ser depois do início.')
 
 
+def _slug(titulo: str) -> str:
+    return re.sub(r'[^a-z0-9]+', '-', unicodedata.normalize('NFKD', titulo).encode('ascii', 'ignore').decode().lower()).strip('-')[:48] or 'atividade'
+
+
 @rota.post('/atividades', status_code=201)
 def nova_atividade(n: NovaAtividade, db: Session = Depends(sessao)):
-    base = re.sub(r'[^a-z0-9]+', '-', unicodedata.normalize('NFKD', n.titulo).encode('ascii', 'ignore').decode().lower()).strip('-')[:48] or 'atividade'
+    base = _slug(n.titulo)
     ident, k = base, 2
     while db.get(Atividade, ident):
         ident, k = f'{base}-{k}', k + 1
@@ -173,6 +177,55 @@ def editar_atividade(atividade_id: str, e: AtividadeEdicao, db: Session = Depend
     inscritos = db.scalar(select(func.count()).select_from(Agenda).where(Agenda.atividade_id == a.id)) or 0
     canal.publicar('atividade', formatos.atividade(a, inscritos))
     return formatos.atividade(a, inscritos)
+
+
+class LinhaImportada(NovaAtividade):
+    id: str | None = Field(default=None, max_length=64, description='Id de uma atividade existente, para atualizar em vez de criar.')
+
+
+ERRO_DA_COLUNA = {'titulo': 'Falta o título.', 'data': 'Data que não deu para ler (use 03/12/2026).', 'inicio': 'Horário de início inválido (use 14:00).',
+                  'fim': 'Horário de fim inválido (use 16:00).', 'vagas': 'Vagas precisa ser um número.', 'tipo': 'Tipo curto demais.'}
+
+
+@rota.post('/programacao')
+def importar_programacao(linhas: list[dict] = Body(max_length=400), previa: bool = False, db: Session = Depends(sessao)):
+    """Cria ou atualiza várias atividades de uma vez (planilha colada no painel). A linha vale como atualização quando traz
+    o id de uma atividade existente ou repete título e dia de uma; o resto vira atividade nova. Com `previa`, só confere e
+    diz o que aconteceria. Uma linha com erro não impede as outras: volta com a mensagem e fica de fora."""
+    resultado, novos = [], set()
+    for i, bruto in enumerate(linhas, 1):
+        try:
+            n = LinhaImportada.model_validate(bruto)
+        except ValidationError as e:
+            campo = str((e.errors()[0]['loc'] or ['linha'])[0])
+            resultado.append({'linha': i, 'erro': ERRO_DA_COLUNA.get(campo) or f'{campo}: {e.errors()[0]["msg"]}'})
+            continue
+        if n.inicio >= n.fim:
+            resultado.append({'linha': i, 'erro': 'O fim precisa ser depois do início.'})
+            continue
+        a = (n.id and db.get(Atividade, n.id)) or db.scalar(
+            select(Atividade).where(func.lower(Atividade.titulo) == n.titulo.strip().lower(), Atividade.data == n.data))
+        acao = 'atualiza' if a else 'nova'
+        if not a:
+            base = _slug(n.id or n.titulo)
+            ident, k = base, 2
+            while db.get(Atividade, ident) or ident in novos:
+                ident, k = f'{base}-{k}', k + 1
+            novos.add(ident)
+            a = Atividade(id=ident, tipo=n.tipo, titulo=n.titulo, curto='', data=n.data, inicio=n.inicio, fim=n.fim, extra={})
+            db.add(a)
+        _aplicar(a, n.model_dump(exclude_unset=True, exclude={'id'}) | {'titulo': n.titulo, 'tipo': n.tipo, 'data': n.data, 'inicio': n.inicio, 'fim': n.fim})
+        resultado.append({'linha': i, 'acao': acao, 'id': a.id, 'titulo': a.titulo})
+    if previa:
+        db.rollback()
+        return {'linhas': resultado}
+    db.commit()
+    ids = [r['id'] for r in resultado if 'id' in r]
+    inscritos = dict(db.execute(select(Agenda.atividade_id, func.count()).where(Agenda.atividade_id.in_(ids)).group_by(Agenda.atividade_id)).all())
+    atividades = [formatos.atividade(db.get(Atividade, x), inscritos.get(x, 0)) for x in ids]
+    for x in atividades:
+        canal.publicar('atividade', x)
+    return {'linhas': resultado, 'atividades': atividades}
 
 
 LIMITE_ARQUIVO = 15 * 1024 * 1024
