@@ -156,7 +156,7 @@ function communityAddMention(input, handle) {
 function communityActivityCard(p) {
   const activity = byId(p.activity);
   if (!activity) return '';
-  return `<button class="social-activity" data-go="activity" data-id="${esc(activity.id)}">${ic('cal')}<span><b>${esc(activity.short)}</b><small>${activity.day} nov · ${esc(activity.time)} · ${esc(activity.room)}</small></span>${ic('chev')}</button>`;
+  return `<button class="social-activity" data-go="activity" data-id="${esc(activity.id)}">${ic('cal')}<span><b>${esc(activity.short)}</b><small>${diaMes(activity.day)} · ${esc(activity.time)} · ${esc(activity.room)}</small></span>${ic('chev')}</button>`;
 }
 function communityToolbar(v) {
   if (communityMode === 'chat') return '';
@@ -182,8 +182,8 @@ function communityWall(v) {
       (communityActivity === 'all' || p.activity === communityActivity),
   );
   const photos = posts.flatMap((p) => communityPhotos(p).map((photo, index) => ({ p, photo, index })));
-  return `<div class="social-wall"><div class="social-wall-filters"><label>Dia<select data-community-filter="day"><option value="all">Todos os dias</option>${D.days.map((d) => `<option value="${d.day}" ${String(d.day) === communityDay ? 'selected' : ''}>${esc(d.week)} · ${d.day} nov</option>`).join('')}</select></label><label>Atividade<select data-community-filter="activity"><option value="all">Todas as atividades</option>${D.sessions.map((a) => `<option value="${esc(a.id)}" ${a.id === communityActivity ? 'selected' : ''}>${esc(a.short)}</option>`).join('')}</select></label></div>
-      ${photos.length ? `<div class="social-photo-grid">${photos.map(({ p, photo, index }) => `<button data-act="community-photo-open" data-id="${esc(p.id)}" data-index="${index}" aria-label="Ver foto ${index + 1} da publicação de ${esc(p.name)}"><img src="${esc(photo.src)}" alt="${esc(photo.alt || 'Foto no mural')}" loading="lazy"><span>${esc(p.name.split(' ')[0])} · ${p.day || '—'} nov</span></button>`).join('')}</div>` : communityEmpty('Nenhuma foto para estes filtros.')}</div>`;
+  return `<div class="social-wall"><div class="social-wall-filters"><label>Dia<select data-community-filter="day"><option value="all">Todos os dias</option>${D.days.map((d) => `<option value="${d.day}" ${String(d.day) === communityDay ? 'selected' : ''}>${esc(d.week)} · ${diaMes(d.day)}</option>`).join('')}</select></label><label>Atividade<select data-community-filter="activity"><option value="all">Todas as atividades</option>${D.sessions.map((a) => `<option value="${esc(a.id)}" ${a.id === communityActivity ? 'selected' : ''}>${esc(a.short)}</option>`).join('')}</select></label></div>
+      ${photos.length ? `<div class="social-photo-grid">${photos.map(({ p, photo, index }) => `<button data-act="community-photo-open" data-id="${esc(p.id)}" data-index="${index}" aria-label="Ver foto ${index + 1} da publicação de ${esc(p.name)}"><img src="${esc(photo.src)}" alt="${esc(photo.alt || 'Foto no mural')}" loading="lazy"><span>${esc(p.name.split(' ')[0])} · ${p.day ? diaMes(p.day) : '—'}</span></button>`).join('')}</div>` : communityEmpty('Nenhuma foto para estes filtros.')}</div>`;
 }
 function communityReportOpen(target) {
   if (!communityPode()) {
@@ -348,15 +348,15 @@ Screens.communityCompose = () => {
         communityPode()
           ? `<form id="community-post-form" class="post-editor" data-form="community-post">
         <div class="community-identity">${meAv()}<div><b>${esc(D.person.name)}</b><small>${esc(D.event?.name || 'ETAL')}</small></div></div>
-        <details class="compose-context"><summary>${ic(activity ? 'pin' : 'cal')}<span><b>${esc(activity?.short || 'Adicionar atividade')}</b><small>${activity ? `${activity.day} nov · ${esc(activity.room)}` : 'Opcional'}${activity && communityDraft.contextReason === 'qr' ? ' · Check-in realizado' : activity && communityDraft.contextReason === 'agenda' ? ' · Na sua agenda agora' : ''}</small></span>${ic('chev')}</summary>
+        <details class="compose-context"><summary>${ic(activity ? 'pin' : 'cal')}<span><b>${esc(activity?.short || 'Adicionar atividade')}</b><small>${activity ? `${diaMes(activity.day)} · ${esc(activity.room)}` : 'Opcional'}${activity && communityDraft.contextReason === 'qr' ? ' · Check-in realizado' : activity && communityDraft.contextReason === 'agenda' ? ' · Na sua agenda agora' : ''}</small></span>${ic('chev')}</summary>
           <div class="compose-context-fields"><label>Atividade<select name="activity" data-community-draft="activity"><option value="">Sem atividade vinculada</option>${D.sessions
             .filter((a) => a.type !== 'Credenciamento')
             .map(
               (a) =>
-                `<option value="${esc(a.id)}" ${communityDraft.activity === a.id ? 'selected' : ''}>${esc(a.short)} · ${a.day} nov</option>`,
+                `<option value="${esc(a.id)}" ${communityDraft.activity === a.id ? 'selected' : ''}>${esc(a.short)} · ${diaMes(a.day)}</option>`,
             )
             .join('')}</select></label>
-          <div class="compose-secondary"><label>Dia<select name="day" data-community-draft="day" ${activity ? 'disabled' : ''}>${D.days.map((d) => `<option value="${d.day}" ${+communityDraft.day === d.day ? 'selected' : ''}>${d.day} de novembro</option>`).join('')}</select></label><label>Assunto<select name="tag" data-community-draft="tag">${['No evento', 'Conexões', 'Projetos', 'Dicas'].map((t) => `<option ${communityDraft.tag === t ? 'selected' : ''}>${t}</option>`).join('')}</select></label></div></div>
+          <div class="compose-secondary"><label>Dia<select name="day" data-community-draft="day" ${activity ? 'disabled' : ''}>${D.days.map((d) => `<option value="${d.day}" ${+communityDraft.day === d.day ? 'selected' : ''}>${d.day} de ${d.mesLongo || 'novembro'}</option>`).join('')}</select></label><label>Assunto<select name="tag" data-community-draft="tag">${['No evento', 'Conexões', 'Projetos', 'Dicas'].map((t) => `<option ${communityDraft.tag === t ? 'selected' : ''}>${t}</option>`).join('')}</select></label></div></div>
         </details>
         <div class="compose-writing"><label class="sr-only" for="community-post">Texto da publicação</label><textarea id="community-post" name="text" data-community-draft="post" rows="6" maxlength="2000" placeholder="Como está sendo o seu ETAL?">${esc(communityDraft.post)}</textarea><small id="compose-count">${communityDraft.post.length}/2000</small></div>
         ${communityDraft.images.length ? `<div class="community-upload-grid">${communityDraft.images.map((img, i) => `<div class="community-upload"><img src="${esc(img.src)}" alt="Prévia da foto ${i + 1}"><button type="button" data-act="community-remove-image" data-index="${i}" aria-label="Remover foto ${i + 1}">${ic('x')}</button><details class="compose-photo-alt"><summary>Descrição da foto</summary><label class="sr-only" for="image-alt-${i}">Descrição da foto ${i + 1}</label><input id="image-alt-${i}" name="${i ? `alt-${i}` : 'alt'}" data-image-alt="${i}" maxlength="240" value="${esc(img.alt || '')}" placeholder="O que aparece nesta foto?"></details></div>`).join('')}</div>` : ''}

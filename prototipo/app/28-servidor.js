@@ -648,8 +648,14 @@ async function apiStart() {
     const prog = await API.get('/api/programacao');
     const extra = Object.fromEntries(D.sessions.map((x) => [x.id, x]));
     D.sessions.length = 0;
-    prog.sessions.forEach((x) => D.sessions.push({ ...(extra[x.id] || {}), ...x }));
+    /* complementa com o exemplo embarcado só a mesma atividade (mesmo id e mesmo dia): outra edição pode repetir ids */
+    prog.sessions.forEach((x) => D.sessions.push({ ...(extra[x.id]?.day === x.day ? extra[x.id] : {}), ...x }));
     applyRoomNumbers(prog.rooms || {});
+    const cal = !window.ETAL_CONFIG?.demo && API.calendario(D, D.sessions);
+    if (cal) {
+      D.event = { ...D.event, name: `ETAL ${cal.ano}`, year: cal.ano, dates: cal.days.map((d) => d.date), notice: '' };
+      if (!D.days.some((d) => d.day === S.agendaDay)) S.agendaDay = D.now.day;
+    }
     if (window.ETAL_CONFIG?.demo) {
       try {
         const scenario = await API.get('/api/cenario-demo');

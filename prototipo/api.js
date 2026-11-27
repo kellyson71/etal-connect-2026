@@ -76,6 +76,45 @@ window.ETAL_API = (() => {
       },
     };
   }
+  /* Dias do evento a partir das datas da programação do servidor (o app embarca os de 2025). O "agora" é o dia de hoje
+     durante o evento; antes dele, o primeiro dia às 00:00 (tudo por vir); depois, o último às 23:59 (tudo encerrado). */
+  const SEM = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  const SEM_LONGO = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+  const MESES = [
+    'janeiro',
+    'fevereiro',
+    'março',
+    'abril',
+    'maio',
+    'junho',
+    'julho',
+    'agosto',
+    'setembro',
+    'outubro',
+    'novembro',
+    'dezembro',
+  ];
+  function calendario(D, sessions) {
+    const datas = [...new Set(sessions.map((x) => x.date).filter(Boolean))].sort();
+    if (!datas.length) return null;
+    const days = datas.map((iso) => {
+      const d = new Date(`${iso}T12:00:00`);
+      const mesLongo = MESES[d.getMonth()];
+      const long = `${SEM_LONGO[d.getDay()]}, ${d.getDate()} de ${mesLongo}`;
+      return { day: d.getDate(), week: SEM[d.getDay()], long, date: iso, mes: mesLongo.slice(0, 3), mesLongo };
+    });
+    const t = new Date();
+    const hoje = [t.getFullYear(), t.getMonth() + 1, t.getDate()].map((n) => String(n).padStart(2, '0')).join('-');
+    const atual = days.find((d) => d.date === hoje);
+    const [day, fixo] = atual
+      ? [atual.day, null]
+      : hoje < datas[0]
+        ? [days[0].day, '00:00']
+        : [days[days.length - 1].day, '23:59'];
+    D.days.splice(0, D.days.length, ...days);
+    Object.assign(D.now, { day, fixo }, fixo ? { time: fixo } : {});
+    return { days, ano: +datas[0].slice(0, 4) };
+  }
   return {
     url,
     get: (p) => req(p),
@@ -99,6 +138,7 @@ window.ETAL_API = (() => {
         );
       return j;
     },
+    calendario,
     /* Avisos, trocas de sala, numeração e lotação em tempo real. O navegador reconecta sozinho. */
     live(handlers) {
       if (cfg.vivo === 'consulta') return poll(handlers);

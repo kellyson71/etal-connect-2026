@@ -48,7 +48,7 @@ function destaqueCard(s) {
             <div class="now-top"><span class="kind">${s.type}</span>${selo}</div>
             <h3>${s.title}</h3>
             ${s.speakerShort ? `<div class="now-sp">${spAv(s)}<span>${s.speakerShort}</span></div>` : ''}
-            <p class="m">${ic('clock')}${agora ? '' : `${dayOf(s.day).week}, ${s.day} nov · `}${s.time} às ${s.end}</p>
+            <p class="m">${ic('clock')}${agora ? '' : `${dayOf(s.day).week}, ${diaMes(s.day)} · `}${s.time} às ${s.end}</p>
             <p class="m">${ic('pin')}${whereOf(s)}</p>
             <div class="now-actions">${here ? `<button class="btn primary" data-go="activity" data-id="${s.id}">Abrir aula</button>` : comoChegar + segundo}</div>
           </article>`;
@@ -79,7 +79,7 @@ Screens.home = () => {
 
           ${
             d.s
-              ? `<div class="sec st" ${st(2)}><h2>${d.titulo}</h2>${d.minhas.length || S.saved.size ? '<button data-act="mine">Minha agenda</button>' : `<span>${dayOf(D.now.day).week}, ${D.now.day} nov · <span id="nowclock">${skyClock()}</span></span>`}</div>
+              ? `<div class="sec st" ${st(2)}><h2>${d.titulo}</h2>${d.minhas.length || S.saved.size ? '<button data-act="mine">Minha agenda</button>' : `<span>${dayOf(D.now.day).week}, ${diaMes(D.now.day)} · <span id="nowclock">${skyClock()}</span></span>`}</div>
           ${destaqueCard(d.s)}
           ${
             UI.home.agenda

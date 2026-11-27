@@ -684,6 +684,17 @@
   background: var(--bg);
   text-align: left;
 }
+.lugar.sem-mapa {
+  height: auto;
+  padding: 12px 14px;
+  background: var(--card);
+}
+.lugar.sem-mapa .lg-tx {
+  position: static;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+}
 .lugar canvas {
   position: absolute;
   inset: 0;

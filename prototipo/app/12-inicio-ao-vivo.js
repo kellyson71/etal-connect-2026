@@ -6,16 +6,27 @@ let liveI = 0,
   liveTimer = 0,
   liveCred = D.liveBase.credenciados;
 function liveMessages() {
-  const f = byId('fastapi');
-  const ia = byId('experiencia-ia');
+  /* sai da programação carregada: um minicurso com vaga e o que está acontecendo agora (com servidor, a do ano) */
+  const vaga = D.sessions.find((x) => comInscricao(x) && x.seats > (x.taken || 0) && !acabou(x));
+  const agora = D.sessions.find((x) => isNow(x) && !x.simple);
   const mk = D.tournaments[0];
   return [
     { i: 'users', t: `${liveCred} pessoas credenciadas`, go: 'notices' },
-    { i: 'pin', t: `${f.room} com ${f.seats - f.taken} vagas: ${f.short}`, go: 'activity', id: f.id },
-    { i: 'mic', t: `${ia.room}: ${ia.short} em andamento`, go: 'activity', id: ia.id },
-    { i: 'trophy', t: `${mk.name} começa ${dayOf(mk.day).week.toLowerCase()}, ${mk.time}`, go: 'games' },
-    { i: 'bell', t: D.notices[0].title, go: 'notices' },
-  ];
+    vaga && {
+      i: 'pin',
+      t: `${vaga.room} com ${vaga.seats - (vaga.taken || 0)} vagas: ${vaga.short}`,
+      go: 'activity',
+      id: vaga.id,
+    },
+    agora && { i: 'mic', t: `${agora.room}: ${agora.short} em andamento`, go: 'activity', id: agora.id },
+    mk &&
+      dayOf(mk.day) && {
+        i: 'trophy',
+        t: `${mk.name} começa ${dayOf(mk.day).week.toLowerCase()}, ${mk.time}`,
+        go: 'games',
+      },
+    D.notices[0] && { i: 'bell', t: D.notices[0].title, go: 'notices' },
+  ].filter(Boolean);
 }
 function mountHome(page) {
   /* o céu anda mais devagar que a página (profundidade) e as seções de baixo entram quando chegam na tela */

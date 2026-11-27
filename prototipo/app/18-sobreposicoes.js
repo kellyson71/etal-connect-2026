@@ -73,7 +73,7 @@ Overlays.welcome = (c = null) => `<div class="wl">
       <div class="w-ticket">
         <div class="wt-head">${meAv('av')}<span><b>${esc(D.person.name)}</b><small>${esc(D.person.course || '')}</small></span><span class="wt-ok">${ic('check')}Confirmado</span></div>
         <i class="wt-cut"></i>
-        <dl class="wt-facts"><div><dt>Entrada</dt><dd>${S.credAt}</dd><small>Qua, 26 nov</small></div><div><dt>Local</dt><dd>Recepção</dd><small>Térreo</small></div><div><dt>Na agenda</dt><dd>${S.saved.size}</dd><small>atividades</small></div></dl>
+        <dl class="wt-facts"><div><dt>Entrada</dt><dd>${S.credAt}</dd><small>${dayOf(D.now.day)?.week || ''}, ${diaMes(D.now.day)}</small></div><div><dt>Local</dt><dd>Recepção</dd><small>Térreo</small></div><div><dt>Na agenda</dt><dd>${S.saved.size}</dd><small>atividades</small></div></dl>
         ${c ? combRow(c) : ''}
       </div>
       <div class="w-actions"><button class="btn big w-main" data-act="closeov" data-then="credential">${ic('id')}Ver credencial</button><button class="btn ghost" data-act="closeov">Continuar</button></div>

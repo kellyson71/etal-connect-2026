@@ -22,7 +22,7 @@ function retroSlides(r) {
   const got = r.demo ? D.combs.length : combEarned().length;
   const n = r.list.length;
   return [
-    `<div class="re-c">${mark('mark re-mark')}${tag}<h1>Seu ETAL</h1><p>VII edição, 26 a 28 de novembro, em Pau dos Ferros.</p><strong>${esc(D.person.name)}</strong></div>`,
+    `<div class="re-c">${mark('mark re-mark')}${tag}<h1>Seu ETAL</h1><p>${esc(D.event?.name || 'VII ETAL')}, ${periodoEvento(true)}, em Pau dos Ferros.</p><strong>${esc(D.person.name)}</strong></div>`,
     `<div class="re-c">${tag}<small>Tempo de aprendizado</small><b class="re-num" data-to="${r.hours}">0</b><p>em ${n} ${n === 1 ? 'atividade' : 'atividades'}.</p><ul class="re-list">${r.list.map((x) => `<li>${x.short}<small>${x.type}, ${x.room}</small></li>`).join('')}</ul></div>`,
     `<div class="re-c">${tag}<small>O que você aprendeu</small><ul class="re-learn">${r.learn.map((l) => `<li>${ic('check')}<span>${l}</span></li>`).join('')}</ul></div>`,
     `<div class="re-c">${tag}<small>Quem fez parte</small><div class="re-people">${r.people.map((x) => `<span><i>${x.initials}</i>${x.speakerShort}</span>`).join('')}</div><dl class="re-stats"><div><dd>${r.questions}</dd><dt>${r.questions === 1 ? 'pergunta' : 'perguntas'}</dt></div><div><dd>${r.contacts}</dd><dt>${r.contacts === 1 ? 'contato' : 'contatos'}</dt></div><div><dd>${r.ratings}</dd><dt>${r.ratings === 1 ? 'avaliação' : 'avaliações'}</dt></div></dl></div>`,
