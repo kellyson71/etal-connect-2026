@@ -2,6 +2,11 @@
 
 O projeto segue o git flow: `main` tem só versões publicadas, `develop` junta as funcionalidades e cada uma nasce num ramo `feature/*`.
 
+## Não lançado
+
+Painel
+- Importar planilha na aba Programação: cola as linhas do Google Sheets ou escolhe um CSV, confere a prévia (novas, atualizadas e com erro) e grava tudo de uma vez (`POST /api/org/programacao`). O Exportar CSV sai nas mesmas colunas, para editar e importar de volta.
+
 ## 0.13.0 (2026-11-27)
 
 ETAL 2026

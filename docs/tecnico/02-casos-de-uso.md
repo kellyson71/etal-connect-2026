@@ -74,6 +74,16 @@ A janela padrão é de 20 minutos antes do início até o fim da atividade. A pr
 
 Troca de sala gera aviso por padrão. A numeração usa a chave andar:zona e aparece nas atividades, planta e mapa 3D. Participante comum recebe 403 nas rotas da organização.
 
+## Importar a programação de uma planilha
+
+1. Na aba Programação do painel, a organização toca em Importar planilha.
+2. Cola as linhas copiadas do Google Sheets ou do Excel, com o cabeçalho, ou escolhe um CSV.
+3. O painel lê as colunas pelos nomes que a comissão já usa (Atividade, Horário "14:00–16:00", Dia, Local, Ministrante, Vagas) e pede a prévia a `POST /api/org/programacao?previa=true`.
+4. A prévia mostra o que entra como nova, o que atualiza uma atividade existente e as linhas com erro, que ficam de fora.
+5. Ao confirmar, a API grava tudo de uma vez e publica cada atividade para o app.
+
+A linha atualiza uma atividade quando traz o `id` dela ou repete o título no mesmo dia. Coluna que não veio na planilha não muda nada. Local com o nome de uma sala da planta já entra marcado no mapa. O Exportar CSV sai nas mesmas colunas: exportar, editar na planilha e importar de volta.
+
 ## Consultar registros e imprimir QRs
 
 As rotas reais permitem listar participantes, credenciar manualmente, obter totais, baixar CSV de presenças / credenciados e imprimir QRs. O botão de CSV e os participantes do painel ainda usam dados simulados. Os arquivos reais devem ser obtidos pelas rotas /api/org correspondentes.
