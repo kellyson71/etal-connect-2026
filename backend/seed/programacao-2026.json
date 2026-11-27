@@ -52,7 +52,8 @@
       "speakerShort": "Caio Oliveira",
       "initials": "CO",
       "role": "Ministrante",
-      "room": "Lab 56"
+      "room": "Lab 56",
+      "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/10301/"
     },
     {
       "id": "react-moderno",
@@ -71,7 +72,8 @@
       "speakerShort": "Lucas Nunes",
       "initials": "LN",
       "role": "Ministrante",
-      "room": "Lab 57"
+      "room": "Lab 57",
+      "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/10301/"
     },
     {
       "id": "docker-na-pratica",
@@ -90,7 +92,8 @@
       "speakerShort": "Pedro Ferreira",
       "initials": "PF",
       "role": "Ministrante",
-      "room": "Lab 65"
+      "room": "Lab 65",
+      "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/10301/"
     },
     {
       "id": "deploy-gratuito",
@@ -109,7 +112,8 @@
       "speakerShort": "Samuel Lopes",
       "initials": "SL",
       "role": "Ministrante",
-      "room": "Lab 60"
+      "room": "Lab 60",
+      "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/10301/"
     },
     {
       "id": "apis-com-spring-mvc",
@@ -128,7 +132,8 @@
       "speakerShort": "Hian Silva",
       "initials": "HS",
       "role": "Ministrante",
-      "room": "Sala a confirmar"
+      "room": "Sala a confirmar",
+      "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/10301/"
     },
     {
       "id": "database-engineering",
@@ -147,7 +152,8 @@
       "speakerShort": "Pedro Sousa",
       "initials": "PS",
       "role": "Ministrante",
-      "room": "Lab 58"
+      "room": "Lab 58",
+      "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/10301/"
     },
     {
       "id": "tarefas-no-notion",
@@ -166,7 +172,8 @@
       "speakerShort": "Klaywin Dias",
       "initials": "KD",
       "role": "Ministrante",
-      "room": "Sala a confirmar"
+      "room": "Sala a confirmar",
+      "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/10301/"
     },
     {
       "id": "capture-the-flag",
@@ -249,7 +256,8 @@
       "speakerShort": "Heitor Duarte",
       "initials": "HD",
       "role": "Ministrante",
-      "room": "Sala a confirmar"
+      "room": "Sala a confirmar",
+      "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/10301/"
     },
     {
       "id": "arquitetura-de-sistemas",
@@ -268,7 +276,8 @@
       "speakerShort": "João Fontes",
       "initials": "JF",
       "role": "Ministrante",
-      "room": "Lab 60"
+      "room": "Lab 60",
+      "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/10301/"
     },
     {
       "id": "react-native-e-opencv",
@@ -287,7 +296,8 @@
       "speakerShort": "Adryan Leite",
       "initials": "AL",
       "role": "Ministrante",
-      "room": "Lab 65"
+      "room": "Lab 65",
+      "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/10301/"
     },
     {
       "id": "do-prompt-ao-software",
@@ -306,7 +316,8 @@
       "speakerShort": "Jilcimar Fernandes",
       "initials": "JF",
       "role": "Ministrante",
-      "room": "Lab 57"
+      "room": "Lab 57",
+      "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/10301/"
     },
     {
       "id": "agentes-de-ia",
@@ -325,7 +336,8 @@
       "speakerShort": "Kellyson Raphael",
       "initials": "KR",
       "role": "Ministrante",
-      "room": "Lab 56"
+      "room": "Lab 56",
+      "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/10301/"
     },
     {
       "id": "git-e-github-sem-medo",
@@ -344,7 +356,8 @@
       "speakerShort": "Tallys Batista",
       "initials": "TB",
       "role": "Ministrante",
-      "room": "Lab 58"
+      "room": "Lab 58",
+      "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/10301/"
     },
     {
       "id": "jogos-digitais",

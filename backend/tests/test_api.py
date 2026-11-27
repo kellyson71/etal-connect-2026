@@ -253,6 +253,7 @@ def test_programacao_inicial_so_em_banco_vazio(app_cliente):
     s = app_cliente.get('/api/programacao').json()['sessions']
     assert {x['date'] for x in s} == {'2026-12-03', '2026-12-04'}
     assert next(x for x in s if x['id'] == 'agentes-de-ia')['speaker'] == 'Kellyson Raphael'
+    assert all(x['link'].endswith('/10301/') for x in s if x['type'] == 'Minicurso')  # inscrição do ETAL 2026 no SUAP
 
 
 def test_importar_programacao_da_planilha(app_cliente):
