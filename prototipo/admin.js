@@ -1089,6 +1089,8 @@
         }</section>`;
     },
     campeonatos() {
+      if (!D.tournaments.length)
+        return '<section class="card"><h2>Campeonatos</h2><p class="sub">Ainda sem chaves para os jogos desta edição. As competições estão na programação.</p></section>';
       return D.tournaments.map(tourCard).join('');
     },
     avisos() {
@@ -1883,6 +1885,7 @@
       /* dias e "agora" pela programação do servidor */
       if (!window.ETAL_CONFIG?.demo && API.calendario(D, D.sessions)) {
         if (!D.days.some((d) => d.day === state.day)) state.day = D.now.day;
+        D.tournaments.splice(0, D.tournaments.length, ...D.tournaments.filter((t) => dayOf(t.day)));
         relogio();
       }
       ORG.rooms = prog.rooms || {};

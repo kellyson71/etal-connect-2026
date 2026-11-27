@@ -3830,7 +3830,10 @@ Screens.profile = () => ({
           <li data-go="cartao">${ic('id')}<span>Seu perfil e crachá</span><em>${cardGet() ? (cardGet().publish === false ? 'Oculto' : `${cardProgresso(cardGet())}%`) : 'Completar'}</em>${ic('chev', 'i chev')}</li>
         </ul>
         <ul class="menu st" ${st(2)}>
-          <li data-go="games" class="games-row">${ic('trophy')}<span>Campeonatos</span><em>Qui 27</em>${ic('chev', 'i chev')}</li>
+          <li data-go="games" class="games-row">${ic('trophy')}<span>Campeonatos</span><em>${(() => {
+            const x = D.tournaments[0] || D.sessions.find((s) => tipoDe(s).g === 'camp');
+            return x ? `${dayOf(x.day)?.week || ''} ${x.day}` : '';
+          })()}</em>${ic('chev', 'i chev')}</li>
           <li data-go="mais">${ic('list')}<span>Mais opções</span><em>Aparência e sobre</em>${ic('chev', 'i chev')}</li>
         </ul>
         <ul class="menu danger st" ${st(5)}><li data-act="logout">${ic('logout')}<span>Sair</span></li></ul>
@@ -4609,10 +4612,27 @@ const facesOf = (st) => {
     .join('')}${ps.length > 4 ? `<i>+${ps.length - 4}</i>` : ''}</span>`;
 };
 
+/* Sem chaves publicadas (com servidor, a programação do ano ainda sem os jogos): mostra as competições da agenda. */
+const competicoes = () => D.sessions.filter((x) => tipoDe(x).g === 'camp' && !x.tournament);
+const gamesLead = () => {
+  const t = D.tournaments[0];
+  if (t) return `${dayOf(t.day)?.long || ''}, na ${esc(t.room)}. Entre na chave ou venha torcer.`;
+  return 'As chaves e as regras aparecem aqui quando a organização publicar. Por enquanto, os horários:';
+};
 Screens.games = () => ({
   html: `${header('Campeonatos')}
       <div class="pad stack">
-        <p class="games-lead st" ${st(0)}>Quinta, 27 de novembro, na Sala 102. Entre na chave ou venha torcer.</p>
+        <p class="games-lead st" ${st(0)}>${gamesLead()}</p>
+        ${
+          D.tournaments.length
+            ? ''
+            : `<ul class="splist st" ${st(1)}>${competicoes()
+                .map(
+                  (x) =>
+                    `<li ${goOf(x)}><span class="date"><small>${dayOf(x.day)?.week || ''}</small><b>${x.day}</b></span><span><b>${esc(x.short)}</b><small>${esc(x.type)}</small><em>${x.time} às ${x.end} · ${esc(x.room || '')}</em></span>${ic('chev', 'i chev')}</li>`,
+                )
+                .join('')}</ul>`
+        }
         ${D.tournaments
           .map((t, i) => {
             const stt = tourSt(t);
@@ -8367,6 +8387,8 @@ async function apiStart() {
     if (cal) {
       D.event = { ...D.event, name: `ETAL ${cal.ano}`, year: cal.ano, dates: cal.days.map((d) => d.date), notice: '' };
       if (!D.days.some((d) => d.day === S.agendaDay)) S.agendaDay = D.now.day;
+      /* os campeonatos de exemplo são de 2025: fora dos dias desta programação, saem */
+      D.tournaments.splice(0, D.tournaments.length, ...D.tournaments.filter((t) => dayOf(t.day)));
     }
     if (window.ETAL_CONFIG?.demo) {
       try {

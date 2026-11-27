@@ -655,6 +655,8 @@ async function apiStart() {
     if (cal) {
       D.event = { ...D.event, name: `ETAL ${cal.ano}`, year: cal.ano, dates: cal.days.map((d) => d.date), notice: '' };
       if (!D.days.some((d) => d.day === S.agendaDay)) S.agendaDay = D.now.day;
+      /* os campeonatos de exemplo são de 2025: fora dos dias desta programação, saem */
+      D.tournaments.splice(0, D.tournaments.length, ...D.tournaments.filter((t) => dayOf(t.day)));
     }
     if (window.ETAL_CONFIG?.demo) {
       try {
