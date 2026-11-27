@@ -152,7 +152,7 @@ function crachaGrande(p = D.person, c = cardGet() || {}, { qrHtml = qr(), legend
         ${qrHtml ? `<span class="cr-qr">${qrHtml}</span>` : ''}
         ${legenda ? `<small class="cr-leg">${legenda}</small>` : ''}
       </div>
-      <div class="cr-pe"><span>${isGuest(p) ? 'Visitante' : 'Participante'}</span><span>26 a 28 nov</span></div>
+      <div class="cr-pe"><span>${isGuest(p) ? 'Visitante' : 'Participante'}</span><span>${periodoEvento()}</span></div>
     </div>`;
 }
 

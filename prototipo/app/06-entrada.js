@@ -73,7 +73,7 @@ function badgeFace(p) {
             : `<span class="bx-qr">${qr(7, 25)}</span><small><span>Seu código</span><b>${esc(p.id)}</b></small>`
         }</div>
       </div>
-      <div class="bx-role ${role[0]}"><b>${role[1]}</b><span>26 a 28 nov</span></div>
+      <div class="bx-role ${role[0]}"><b>${role[1]}</b><span>${periodoEvento()}</span></div>
       <i class="bx-sheen"></i>`;
 }
 const yardText = 'ETAL · CONNECT · '.repeat(16);

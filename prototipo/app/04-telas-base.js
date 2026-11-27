@@ -128,7 +128,7 @@ function taughtActivity(person) {
 function taughtActivityCard(person) {
   const activity = taughtActivity(person);
   if (!activity) return '';
-  return `<button class="speaker-offer" ${goOf(activity)}>${spAv(activity, true)}<span><small>${ic(tipoDe(activity).icon)}${esc(activity.type)} no ETAL</small><b>${esc(activity.title)}</b><em>${activity.day} nov · ${activity.time}–${activity.end} · ${esc(activity.room)}</em></span>${ic('chev')}</button>`;
+  return `<button class="speaker-offer" ${goOf(activity)}>${spAv(activity, true)}<span><small>${ic(tipoDe(activity).icon)}${esc(activity.type)} no ETAL</small><b>${esc(activity.title)}</b><em>${diaMes(activity.day)} · ${activity.time}–${activity.end} · ${esc(activity.room)}</em></span>${ic('chev')}</button>`;
 }
 function cardPreview(c = {}, p = D.person, { own = p === D.person, taught = true } = {}) {
   const priv = !own && c.publish === false;

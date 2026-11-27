@@ -50,11 +50,11 @@
     const [h, m] = t.split(':').map(Number);
     return h * 60 + m;
   };
-  const NOW = toMin(D.now.time);
+  const nowMin = () => toMin(D.now.time);
   const dayOf = (n) => D.days.find((d) => d.day === n);
   const floorLabel = (l) => P.floors[l].label;
-  const isNow = (x) => x.day === D.now.day && toMin(x.time) <= NOW && NOW < toMin(x.end);
-  const isPast = (x) => x.day < D.now.day || (x.day === D.now.day && toMin(x.end) <= NOW);
+  const isNow = (x) => x.day === D.now.day && toMin(x.time) <= nowMin() && nowMin() < toMin(x.end);
+  const isPast = (x) => x.day < D.now.day || (x.day === D.now.day && toMin(x.end) <= nowMin());
   const roomName = (z) =>
     z.name ||
     (z.kind === 'laboratory'
@@ -638,7 +638,11 @@
       );
     });
   }
-  $('#clock').textContent = `${dayOf(D.now.day).week} ${D.now.day} nov · ${D.now.time}`;
+  const relogio = () => {
+    $('#clock').textContent =
+      `${dayOf(D.now.day)?.week || ''} ${D.now.day} ${dayOf(D.now.day)?.mes || 'nov'} · ${D.now.time}`;
+  };
+  relogio();
 
   /* ---------- gráficos ---------- */
   const tip = $('#tip');
@@ -1876,6 +1880,11 @@
       const prog = await API.get('/api/programacao');
       D.sessions.length = 0;
       prog.sessions.forEach((x) => D.sessions.push(x));
+      /* dias e "agora" pela programação do servidor */
+      if (!window.ETAL_CONFIG?.demo && API.calendario(D, D.sessions)) {
+        if (!D.days.some((d) => d.day === state.day)) state.day = D.now.day;
+        relogio();
+      }
       ORG.rooms = prog.rooms || {};
       applyRooms();
       try {

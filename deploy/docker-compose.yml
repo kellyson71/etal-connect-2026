@@ -31,6 +31,8 @@ services:
       ETAL_URL_PUBLICA: https://${DOMINIO}
       ETAL_ORIGENS: https://${DOMINIO}
       ETAL_COOKIE_SEGURO: 'true'
+      # banco novo começa com a programação do ETAL 2026; depois, o painel manda
+      ETAL_PROGRAMACAO_INICIAL: seed/programacao-2026.json
       TZ: America/Fortaleza # hora dos logs
     volumes:
       - arquivos_dados:/srv/arquivos # materiais das atividades e fotos das publicações

@@ -100,9 +100,12 @@ function questionsOf(id) {
   return `<ul class="qa">${list.map((q) => `<li><button class="vote ${S.votes.has(q.id) ? 'on' : ''}" data-act="vote" data-q="${q.id}" aria-pressed="${S.votes.has(q.id)}" aria-label="Apoiar pergunta">${ic('up')}<b>${q.votes + (S.votes.has(q.id) ? 1 : 0)}</b></button><div><p>${esc(q.text)}</p><small>${esc(q.who)}</small></div></li>`).join('')}</ul>`;
 }
 
-/* Prévia em 3D: uma imagem parada do andar, com a sala em destaque. */
+/* Prévia em 3D: uma imagem parada do andar, com a sala em destaque. Lugar ainda sem marcação no mapa: sem prévia. */
+const semMapa = (x) => !x.place && x.zone == null;
 const thumb = (x, i) =>
-  `<button class="mapthumb st" ${st(i)} ${mapAct(x)} aria-label="Ver ${x.room} no mapa"><canvas class="thumb3d"></canvas><span>Ver no mapa ${ic('arrow')}</span></button>`;
+  semMapa(x)
+    ? ''
+    : `<button class="mapthumb st" ${st(i)} ${mapAct(x)} aria-label="Ver ${x.room} no mapa"><canvas class="thumb3d"></canvas><span>Ver no mapa ${ic('arrow')}</span></button>`;
 const mountThumb = (x) => (page) => {
   const cv = $('canvas.thumb3d', page);
   if (!cv) return;
@@ -196,7 +199,7 @@ Screens.activity = ({ id }) => {
           <div class="co-head st" ${st(0)}><span class="tag ok">${ic('check')}${S.left[id] ? `Das ${here} às ${S.left[id]}` : `Presença às ${here}`}</span><span class="kind">${s.type} · ${s.room}</span></div>
           <h1 class="title-lg st" ${st(1)}>${s.title}</h1>
           <div class="co-rapido st" ${st(1)}><button data-act="rolar" data-alvo=".mats">${ic('file')}Materiais${s.materials?.length ? ` <em>${s.materials.length}</em>` : ''}</button><button data-act="ask" data-id="${id}">${ic('chat')}Perguntar</button><button data-act="${S.left[id] ? 'avaliar' : 'rolar'}" data-id="${id}" data-alvo=".rate-lock">${ic('star')}${notaDe(id) ? `${notaDe(id)}/5` : 'Avaliar'}</button></div>
-          <button class="teacher st" ${st(2)} data-go="speaker" data-id="${id}">${spAv(s, true)}<span><b>${s.speakerShort}</b><small>${s.role}</small></span><span class="time"><b>${s.time}–${s.end}</b><small>${d.week}, ${s.day} nov</small></span></button>
+          <button class="teacher st" ${st(2)} data-go="speaker" data-id="${id}">${spAv(s, true)}<span><b>${s.speakerShort}</b><small>${s.role}</small></span><span class="time"><b>${s.time}–${s.end}</b><small>${d.week}, ${diaMes(s.day)}</small></span></button>
           <button class="sendpc st" ${st(3)} data-act="share" data-id="${id}"><span class="sp-ic">${ic('laptop')}</span><span><b>Abrir no computador</b><small>${s.link}</small></span>${ic('chev')}</button>
           <section class="st" ${st(4)}><h2 class="h">Materiais</h2></section>
           <ul class="mats">${s.materials.map(materialRow).join('')}</ul>
@@ -223,7 +226,7 @@ Screens.activity = ({ id }) => {
       : `<button class="teacher ${t.g === 'pal' ? 'quem-fala' : ''} st" ${st(2)} data-go="speaker" data-id="${id}">${spAv(s, t.g === 'pal')}<span><b>${s.speakerShort}</b><small>${s.role}</small></span>${ic('chev', 'i card-chev')}</button>`;
   const vagasRestam = s.seats ? Math.max(0, s.seats - s.taken) : null;
   const blocos = `<div class="glance st" ${st(3)}>
-        <div class="gl-quando"><small>${d.week} · ${s.day} nov</small><b>${s.time}</b><span>até ${s.end}${duracao(s) ? ` · ${duracao(s)}` : ''}</span></div>
+        <div class="gl-quando"><small>${d.week} · ${diaMes(s.day)}</small><b>${s.time}</b><span>até ${s.end}${duracao(s) ? ` · ${duracao(s)}` : ''}</span></div>
         ${vagasRestam == null ? '' : `<div class="gl-vagas ${vagasRestam === 0 ? 'cheio' : vagasRestam <= 5 ? 'pouca' : ''}"><small>Vagas</small><b>${vagasRestam === 0 ? 'Esgotado' : vagasRestam}</b>${vagasRestam ? `<span>de ${s.seats}</span>` : ''}${seatBar(s)}</div>`}
       </div>`;
   /* minicurso: a inscrição é no SUAP (vaga limitada); o app mostra se a pessoa já está inscrita ou leva até lá */
@@ -233,7 +236,9 @@ Screens.activity = ({ id }) => {
     : !comInscricao(s)
       ? ''
       : `<div class="inscricao st" ${st(3)}>${ic('id')}<span><b>${vagasRestam === 0 ? 'Vagas esgotadas' : 'Inscrição pelo SUAP'}</b><small>${vagasRestam === 0 ? 'Confira no SUAP se abriu alguma vaga.' : 'Vagas limitadas: a inscrição é feita no SUAP, pelo botão abaixo.'}</small></span></div>`;
-  const lugar = `<button class="lugar st" ${st(4)} ${mapAct(s)} aria-label="Ver ${s.room} no mapa"><canvas class="thumb3d"></canvas><span class="lg-tx"><b>${s.room}</b><small>${Number.isInteger(s.floor) ? floorOf(s.floor).label : ''}</small></span><span class="lg-ir">${ic('route')}Como chegar</span></button>`;
+  const lugar = semMapa(s)
+    ? `<div class="lugar sem-mapa st" ${st(4)}><span class="lg-tx"><b>${esc(s.room || 'Local a confirmar')}</b><small>Ainda sem marcação no mapa</small></span></div>`
+    : `<button class="lugar st" ${st(4)} ${mapAct(s)} aria-label="Ver ${s.room} no mapa"><canvas class="thumb3d"></canvas><span class="lg-tx"><b>${s.room}</b><small>${Number.isInteger(s.floor) ? floorOf(s.floor).label : ''}</small></span><span class="lg-ir">${ic('route')}Como chegar</span></button>`;
   const lembrar = `<button class="remindrow st ${lembrete ? 'on' : ''}" ${st(5)} data-act="remind" data-id="${id}" aria-pressed="${lembrete}">${ic('alarm')}<span>${lembrete ? `Lembrete às ${hhmm(toMin(s.time) - LEAD)}` : `Lembrar ${LEAD} min antes`}</span><i class="switch"></i></button>`;
   const fonte = '';
   const sobre = s.description
