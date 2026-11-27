@@ -315,7 +315,7 @@ document.addEventListener('submit', async (e) => {
     if (!v.city) return say('Informe a sua cidade.', $('#gcity'));
     if (!$('#gok').checked) return say('Para criar a conta, é preciso concordar com o uso dos dados.', $('#gok'));
     if (API) {
-      /* Visitante de verdade: o servidor manda um link de entrada para o e-mail. */
+      /* Visitante de verdade: com e-mail configurado, o servidor manda um link; sem, já abre a sessão. */
       const btn = $('button[type="submit"]', gf);
       btn?.classList.add('loading');
       try {
@@ -325,11 +325,15 @@ document.addEventListener('submit', async (e) => {
           instituicao: v.inst || null,
           cidade: v.city,
         });
+        if (j.entrou) {
+          /* Servidor sem e-mail: a conta de visitante já abriu a sessão. */
+          apiState(await API.get('/api/eu'));
+          lgFilled(D.person);
+          return;
+        }
         err.classList.add('ok');
         err.hidden = false;
-        err.innerHTML = j.link
-          ? `Link de teste (sem e-mail configurado): <a href="${esc(j.link)}">entrar</a>`
-          : `Pronto! Enviamos um link de entrada para <b>${esc(v.email)}</b>. Abra o e-mail neste aparelho.`;
+        err.innerHTML = `Pronto! Enviamos um link de entrada para <b>${esc(v.email)}</b>. Abra o e-mail neste aparelho.`;
       } catch (x) {
         say(x.message);
       } finally {

@@ -1,4 +1,4 @@
-"""Entrada: SUAP (OAuth2), visitante por link no e-mail e, só em desenvolvimento, entrada sem senha."""
+"""Entrada: SUAP (OAuth2), visitante (link no e-mail, ou direto sem SMTP) e, só em desenvolvimento, entrada sem senha."""
 import secrets
 import smtplib
 from datetime import timedelta
@@ -178,23 +178,32 @@ def _enviar_link(email: str, nome: str, url: str) -> bool:
 
 
 @rota.post('/visitante', status_code=202, dependencies=[Depends(limitar('visitante-ip', 300))])
-def visitante(v: Visitante, request: Request, db: Session = Depends(sessao)):
+def visitante(v: Visitante, request: Request, response: Response, db: Session = Depends(sessao)):
+    """Com SMTP, manda um link de entrada para o e-mail. Sem SMTP, o visitante entra direto, sem confirmar o e-mail:
+    por isso essa entrada nunca dá acesso à organização nem a uma conta do SUAP com o mesmo e-mail."""
     email = v.email.lower()
-    contar('visitante', email, 3, janela=600, msg='Já mandamos o link para este e-mail. Confira a caixa de entrada e o spam.')
+    smtp = bool(config().smtp_host)
+    if smtp:
+        contar('visitante', email, 3, janela=600, msg='Já mandamos o link para este e-mail. Confira a caixa de entrada e o spam.')
     p = db.scalar(select(Pessoa).where(Pessoa.email == email))
+    if not smtp and p and p.tipo != 'visitante':
+        raise HTTPException(409, 'Este e-mail é de uma conta do IFRN. Entre pelo SUAP.')
+    if not smtp and p and p.papel == 'organizacao':
+        raise HTTPException(403, 'Esta conta é da organização e não entra por aqui.')
     if not p:
-        p = Pessoa(tipo='visitante', email=email, nome=v.nome.strip(), instituicao=v.instituicao, cidade=v.cidade, papel=_papel(None, email))
+        papel = _papel(None, email) if smtp else 'participante'
+        p = Pessoa(tipo='visitante', email=email, nome=v.nome.strip(), instituicao=v.instituicao, cidade=v.cidade, papel=papel)
         db.add(p)
         db.flush()
+    if not smtp:
+        db.commit()
+        abrir_sessao(response, p)
+        return {'enviado': False, 'entrou': True}
     t, h = novo_token()
     db.add(LinkAcesso(pessoa_id=p.id, token_hash=h, expira_em=agora() + timedelta(minutes=30)))
     db.commit()
     url = f'{publica(request)}/api/auth/link?t={t}'
-    enviado = _enviar_link(email, p.nome, url)
-    if not enviado and config().login_dev:
-        return {'enviado': False, 'link': url}  # só em desenvolvimento, sem servidor de e-mail
-    if not enviado:
-        raise HTTPException(503, 'Envio de e-mail não configurado.')
+    _enviar_link(email, p.nome, url)
     return {'enviado': True}
 
 

@@ -98,16 +98,43 @@ def test_org_aviso_troca_sala_e_exportacao(app_cliente):
     assert 'svg' in app_cliente.get('/api/org/qrs').text
 
 
-def test_visitante_por_link(app_cliente):
+def test_visitante_por_link(app_cliente, monkeypatch):
+    from app.config import config
+    from app.rotas import auth
+    enviados = []
+    monkeypatch.setattr(config(), 'smtp_host', 'smtp.exemplo.com')
+    monkeypatch.setattr(auth, '_enviar_link', lambda email, nome, url: enviados.append(url) or True)
     r = app_cliente.post('/api/auth/visitante', json={'nome': 'Bia Fora', 'email': 'bia@exemplo.com'})
-    assert r.status_code == 202
-    link = r.json()['link']
+    assert r.status_code == 202 and r.json() == {'enviado': True}
+    link = enviados[0]
     r = app_cliente.get(link.replace('http://teste', ''), follow_redirects=False)
     assert r.status_code == 302 and 'login=ok' in r.headers['location']
     assert app_cliente.get('/api/eu').json()['person']['name'] == 'Bia Fora'
     # o mesmo link não serve duas vezes
     r = app_cliente.get(link.replace('http://teste', ''), follow_redirects=False)
     assert 'link-expirado' in r.headers['location']
+
+
+def test_visitante_sem_smtp_entra_direto(app_cliente, monkeypatch):
+    from app.config import config
+    from app.db import SessionLocal as Sessao
+    from app.modelos import Pessoa
+    monkeypatch.setattr(config(), 'organizacao', 'org@exemplo.com')
+    r = app_cliente.post('/api/auth/visitante', json={'nome': 'Caio Fora', 'email': 'caio@exemplo.com', 'cidade': 'Pau dos Ferros'})
+    assert r.status_code == 202 and r.json()['entrou']
+    assert app_cliente.get('/api/eu').json()['person']['name'] == 'Caio Fora'
+    # sem confirmar o e-mail, nunca vira organização
+    app_cliente.post('/api/auth/sair')
+    app_cliente.post('/api/auth/visitante', json={'nome': 'Falso Org', 'email': 'org@exemplo.com'})
+    with Sessao() as db:
+        assert db.query(Pessoa).filter_by(email='org@exemplo.com').one().papel == 'participante'
+    # e-mail de uma conta do SUAP não entra por aqui
+    with Sessao() as db:
+        db.add(Pessoa(tipo='suap', matricula='2020123', nome='Ana', email='ana@ifrn.edu.br', papel='participante'))
+        db.commit()
+    app_cliente.post('/api/auth/sair')
+    r = app_cliente.post('/api/auth/visitante', json={'nome': 'Ana Falsa', 'email': 'ana@ifrn.edu.br'})
+    assert r.status_code == 409
 
 
 def test_qr_aberto_na_camera(app_cliente):

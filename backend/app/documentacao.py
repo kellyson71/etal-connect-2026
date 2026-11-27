@@ -32,7 +32,7 @@ Para testar login com matrícula e senha diretamente no Swagger, use **POST /api
 '/api/auth/suap/senha': ('post', 'Entrar com matrícula e senha do SUAP', '''Autentica com matrícula e senha do SUAP e grava o cookie HttpOnly `etal_sessao`.
 
 As rotas protegidas (como `/api/eu`) usam o cookie automaticamente sem necessidade de copiar token. Limite: 8 tentativas/min por IP.'''),
-'/api/auth/visitante': ('post', 'Solicitar um link de acesso para visitante', '''Envia um link de acesso de uso único para o e-mail informado (válido por 30 minutos). Requer SMTP configurado.'''),
+'/api/auth/visitante': ('post', 'Entrar como visitante', '''Com SMTP configurado, envia um link de acesso de uso único para o e-mail informado (válido por 30 minutos). Sem SMTP, cria a conta de visitante e já grava o cookie de sessão `etal_sessao`, sem confirmar o e-mail (nunca com acesso de organização; e-mails de contas do SUAP são recusados).'''),
 '/api/auth/link': ('get', 'Entrar pelo link recebido por e-mail', '''Valida o token de acesso temporário recebido por e-mail, cria a sessão e redireciona ao app.'''),
 '/api/auth/dev': ('post', 'Entrar sem SUAP — somente em ambiente de teste', '''Cria sessão de teste local. Ativo somente com `ETAL_LOGIN_DEV=1`; caso contrário, retorna 404.'''),
 '/api/auth/sair': ('post', 'Sair e remover os cookies de acesso', '''Encerra a sessão e remove os cookies `etal_sessao` e `etal_suap_portal` deste navegador.'''),
@@ -119,7 +119,8 @@ def aplicar(app):
             responses[404] = erro('Login de teste desabilitado neste servidor.', 'Not Found')
             responses[403] = erro('Código de homologação errado.')
         if route.path == '/api/auth/visitante':
-            responses[503] = erro('Envio de e-mail não configurado.')
+            responses[409] = erro('Este e-mail é de uma conta do IFRN. Entre pelo SUAP.')
+            responses[403] = erro('Esta conta é da organização e não entra por aqui.')
             responses[429] = erro('Limite de solicitações atingido.')
         if route.path in ['/api/cenario-demo', '/api/org/debug/qrs', '/api/homologacao/qrs']:
             responses[404] = erro('Recurso indisponível neste modo ou cenário não preparado.', 'Not Found')
