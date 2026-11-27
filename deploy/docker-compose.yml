@@ -33,6 +33,8 @@ services:
       ETAL_COOKIE_SEGURO: 'true'
       # banco novo começa com a programação do ETAL 2026; depois, o painel manda
       ETAL_PROGRAMACAO_INICIAL: seed/programacao-2026.json
+      # inscrições do ETAL 2026 no SUAP (vagas dos minicursos e quem está inscrito); vale mais que o .env
+      ETAL_SUAP_INSCRICOES_URL: https://suap.ifrn.edu.br/eventos/inscricao/1/10301/
       TZ: America/Fortaleza # hora dos logs
     volumes:
       - arquivos_dados:/srv/arquivos # materiais das atividades e fotos das publicações

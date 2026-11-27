@@ -4,6 +4,9 @@ O projeto segue o git flow: `main` tem só versões publicadas, `develop` junta 
 
 ## Não lançado
 
+ETAL 2026
+- Inscrições abertas no SUAP (evento 10301): os 13 minicursos da programação de 2026 ganham o botão Inscrever-se com o link do evento. O `docker-compose.yml` passa a apontar `ETAL_SUAP_INSCRICOES_URL` para 2026, valendo mais que o `.env` do servidor.
+
 Painel
 - Importar planilha na aba Programação: cola as linhas do Google Sheets ou escolhe um CSV, confere a prévia (novas, atualizadas e com erro) e grava tudo de uma vez (`POST /api/org/programacao`). O Exportar CSV sai nas mesmas colunas, para editar e importar de volta.
 
