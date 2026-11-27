@@ -22,7 +22,7 @@ class Config(BaseSettings):
     suap_portal: bool = False
     # Página pública de inscrição do evento no SUAP: vagas reais dos minicursos e quem está inscrito em cada um
     # (app/suap_inscricoes.py). Vazio desliga.
-    suap_inscricoes_url: str = 'https://suap.ifrn.edu.br/eventos/inscricao/1/8528/'
+    suap_inscricoes_url: str = 'https://suap.ifrn.edu.br/eventos/inscricao/1/10301/'
     # Programação carregada na primeira subida, só se o banco ainda não tem atividades (app/importar.py). Vazio desliga.
     programacao_inicial: str = ''
     suap_client_id: str = ''
