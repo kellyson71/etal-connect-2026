@@ -612,11 +612,37 @@ async function camStart() {
     if (btn) btn.hidden = false;
   }
 }
+/* Página que pediu entrada (o painel, por exemplo): ela manda para cá com ?voltar=/caminho e, depois de entrar,
+   a pessoa volta direto para ela, sem a abertura do crachá. Fica na sessionStorage para sobreviver à ida ao SUAP. */
+const VOLTAR = 'etal-voltar';
+function guardarDestino(v) {
+  try {
+    const u = new URL(v, location.origin);
+    if (u.origin === location.origin && u.pathname !== location.pathname)
+      sessionStorage.setItem(VOLTAR, u.pathname + u.search + u.hash);
+  } catch (_) {
+    /* endereço inválido: fica no app */
+  }
+}
+function irParaDestino() {
+  let d = null;
+  try {
+    d = sessionStorage.getItem(VOLTAR);
+    sessionStorage.removeItem(VOLTAR);
+  } catch (_) {
+    /* sem sessionStorage: fica no app */
+  }
+  if (!d) return false;
+  location.replace(d);
+  return true;
+}
 async function apiStart() {
   const qs0 = new URLSearchParams(location.search);
   const qr = qs0.get('qr');
   const login = qs0.get('login');
-  if (qr || login) history.replaceState(history.state, '', location.pathname);
+  const voltar = qs0.get('voltar');
+  if (voltar) guardarDestino(voltar);
+  if (qr || login || voltar) history.replaceState(history.state, '', location.pathname);
   if (qr) sessionStorage.setItem('etal-qr', qr);
   try {
     const prog = await API.get('/api/programacao');
@@ -691,6 +717,7 @@ async function apiStart() {
     show(build({ s: 'login' }), 'fade');
     return;
   }
+  if (irParaDestino()) return;
   apiState(me);
   S.auth = true;
   show(build(top()), 'fade');

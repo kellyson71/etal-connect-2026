@@ -101,7 +101,7 @@ Screens.login = () => {
           <div class="lx-done" role="status">
             <h2 class="lx-q" data-live="hello">Tudo certo!</h2>
             <button class="btn ghost badge-edit" data-act="profile-edit" type="button">${ic('pencil')}Editar nome e foto</button>
-            <button class="btn primary big" data-act="lgenter" type="button">Abrir o app</button>
+            <button class="btn primary big" data-act="lgenter" type="button">Entrar no ETAL</button>
             <button class="btn ghost" data-act="lgredo" type="button">Não sou eu</button>
           </div>
         </div>
@@ -396,6 +396,7 @@ function mountBadgeLogin(el) {
 }
 /* Entrou: o cartão vira e mostra o crachá preenchido. */
 function lgFilled(prof) {
+  if (API && irParaDestino()) return;
   prof.officialName = prof.officialName || prof.name;
   Object.assign(prof, profileLocal(prof.id));
   applyProfile(prof);
