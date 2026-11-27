@@ -7,11 +7,12 @@ let liveI = 0,
   liveCred = D.liveBase.credenciados;
 function liveMessages() {
   /* sai da programação carregada: um minicurso com vaga e o que está acontecendo agora (com servidor, a do ano) */
-  const vaga = D.sessions.find((x) => comInscricao(x) && x.seats > (x.taken || 0) && !acabou(x));
+  const vaga = D.sessions.find((x) => comInscricao(x) && contagemReal(x) && x.seats > (x.taken || 0) && !acabou(x));
   const agora = D.sessions.find((x) => isNow(x) && !x.simple);
   const mk = D.tournaments[0];
   return [
-    { i: 'users', t: `${liveCred} pessoas credenciadas`, go: 'notices' },
+    /* a contagem de credenciados é do exemplo; com servidor ela não é pública */
+    (!API || window.ETAL_CONFIG?.demo) && { i: 'users', t: `${liveCred} pessoas credenciadas`, go: 'notices' },
     vaga && {
       i: 'pin',
       t: `${vaga.room} com ${vaga.seats - (vaga.taken || 0)} vagas: ${vaga.short}`,
