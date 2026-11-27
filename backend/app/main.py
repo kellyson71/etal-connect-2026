@@ -18,6 +18,9 @@ async def ciclo(_app: FastAPI):
     import anyio.to_thread
     anyio.to_thread.current_default_thread_limiter().total_tokens = config().threads
     migrar()
+    if config().programacao_inicial:
+        from .importar import programacao_inicial
+        programacao_inicial(config().programacao_inicial)
     yield
 
 

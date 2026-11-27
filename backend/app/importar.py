@@ -13,7 +13,7 @@ import sys
 from datetime import date
 from pathlib import Path
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from .db import SessionLocal, migrar
 from .modelos import Agenda, Atividade, Pessoa
@@ -40,6 +40,15 @@ def programacao(arquivo: str) -> int:
         db.commit()
     return n
 
+
+
+def programacao_inicial(arquivo: str) -> int:
+    """Carrega a programação só num banco sem atividades (a primeira subida do servidor); depois disso, quem manda é
+    o painel ou um `importar programacao` à mão, e nada do que a organização mudou é sobrescrito."""
+    with SessionLocal() as db:
+        if db.scalar(select(func.count()).select_from(Atividade)):
+            return 0
+    return programacao(arquivo)
 
 def inscritos(arquivo: str) -> tuple[int, int]:
     """Devolve (pessoas novas, inscrições novas em minicursos)."""

@@ -232,3 +232,24 @@ def test_programacao_e_avisos_com_etag(app_cliente):
     assert r2.status_code == 304 and r2.content == b''
     a = app_cliente.get('/api/avisos')
     assert app_cliente.get('/api/avisos', headers={'If-None-Match': a.headers['etag']}).status_code == 304
+
+
+def test_programacao_inicial_so_em_banco_vazio(app_cliente):
+    from pathlib import Path
+
+    from sqlalchemy import delete
+
+    from app import importar
+    from app.db import SessionLocal as Sessao
+    from app.modelos import Atividade
+    arquivo = str(Path(__file__).resolve().parents[1] / 'seed/programacao-2026.json')
+    # banco com a programação de antes: nada muda
+    assert importar.programacao_inicial(arquivo) == 0
+    with Sessao() as db:
+        db.execute(delete(Atividade))
+        db.commit()
+    n = importar.programacao_inicial(arquivo)
+    assert n > 20
+    s = app_cliente.get('/api/programacao').json()['sessions']
+    assert {x['date'] for x in s} == {'2026-12-03', '2026-12-04'}
+    assert next(x for x in s if x['id'] == 'agentes-de-ia')['speaker'] == 'Kellyson Raphael'
