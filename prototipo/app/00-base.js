@@ -8,6 +8,17 @@ const osReduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 let reduce = osReduce;
 const byId = (id) => D.sessions.find((s) => s.id === id);
 const dayOf = (n) => D.days.find((d) => d.day === n);
+/* "3 dez", "26 a 28 nov", "3 e 4 de dezembro de 2026": os dias vêm de D.days (com servidor, da programação). */
+const diaMes = (n) => `${n} ${dayOf(n)?.mes || 'nov'}`;
+const periodoEvento = (longo) => {
+  const ds = D.days;
+  if (!ds.length) return '';
+  const a = ds[0];
+  const b = ds[ds.length - 1];
+  const mes = longo ? `de ${a.mesLongo || 'novembro'}` : a.mes || 'nov';
+  const ano = longo ? ` de ${(a.date || '2025').slice(0, 4)}` : '';
+  return ds.length === 1 ? `${a.day} ${mes}${ano}` : `${a.day} ${ds.length === 2 ? 'e' : 'a'} ${b.day} ${mes}${ano}`;
+};
 
 /* ---------------- ícones ---------------- */
 const ICONS = {
@@ -113,8 +124,9 @@ const TINTS = [
 const spAv = (s, big = false) => {
   const photo = s.speakerPhoto || (s.self && D.person.photo);
   if (photo) return `<span class="ava${big ? ' lg' : ''} has-photo"><img src="${esc(assetUrl(photo))}" alt=""></span>`;
-  const [bg, fg] = TINTS[(s.initials.charCodeAt(0) + s.initials.charCodeAt(1)) % TINTS.length].split(',');
-  return `<span class="ava${big ? ' lg' : ''}" style="background:${bg};color:${fg}">${s.initials}</span>`;
+  const ini = s.initials || (s.speakerShort || '?').slice(0, 2).toUpperCase();
+  const [bg, fg] = TINTS[(ini.charCodeAt(0) + (ini.charCodeAt(1) || 0)) % TINTS.length].split(',');
+  return `<span class="ava${big ? ' lg' : ''}" style="background:${bg};color:${fg}">${esc(ini)}</span>`;
 };
 const goOf = (x) =>
   x.tournament ? `data-go="tournament" data-id="${x.tournament}"` : `data-go="activity" data-id="${x.id}"`;
@@ -141,6 +153,15 @@ const TIPOS = {
   Apresentação: { k: 'mesa', g: 'out', icon: 'star', formato: 'Apresentação cultural' },
   Encerramento: { k: 'mesa', g: 'out', icon: 'award', formato: 'Encerramento e premiações' },
   Credenciamento: { k: 'mini', g: 'out', icon: 'id', formato: 'Recepção dos participantes' },
+  Competição: { k: 'camp', g: 'camp', icon: 'trophy', plural: 'Competições', formato: 'Desafio com placar' },
+  'Roda de conversa': {
+    k: 'mesa',
+    g: 'mesa',
+    icon: 'chat',
+    plural: 'Rodas de conversa',
+    formato: 'Conversa aberta em grupos',
+  },
+  Confraternização: { k: 'mesa', g: 'out', icon: 'star', formato: 'Encontro de fim de evento' },
 };
 const TIPOS_G = new Set(['pal', 'mesa', 'mini', 'camp']);
 const tipoDe = (x) => TIPOS[x.type] || { k: 'out', g: 'out', icon: 'cal', formato: '' };

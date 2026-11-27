@@ -12,9 +12,9 @@ window.DATA = {
   },
   now: { day: 26, time: '14:02' },
   days: [
-    { day: 26, week: 'Qua', long: 'Quarta, 26 de novembro' },
-    { day: 27, week: 'Qui', long: 'Quinta, 27 de novembro' },
-    { day: 28, week: 'Sex', long: 'Sexta, 28 de novembro' },
+    { day: 26, week: 'Qua', long: 'Quarta, 26 de novembro', date: '2025-11-26', mes: 'nov', mesLongo: 'novembro' },
+    { day: 27, week: 'Qui', long: 'Quinta, 27 de novembro', date: '2025-11-27', mes: 'nov', mesLongo: 'novembro' },
+    { day: 28, week: 'Sex', long: 'Sexta, 28 de novembro', date: '2025-11-28', mes: 'nov', mesLongo: 'novembro' },
   ],
   sessions: [
     {

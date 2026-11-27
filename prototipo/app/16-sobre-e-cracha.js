@@ -4,7 +4,7 @@
 /* ---- o que é real e o que é exemplo neste protótipo ---- */
 Screens.sobre = () => ({
   html: `${header('Sobre o aplicativo')}<div class="pad stack sobre">
-    <section class="sb-card"><h2>ETAL Connect</h2><p>Programação, caminhos pelo campus e encontros em um só lugar.</p><p>VII ETAL · IFRN Campus Pau dos Ferros<br>26 a 28 de novembro de 2025</p></section>
+    <section class="sb-card"><h2>ETAL Connect</h2><p>Programação, caminhos pelo campus e encontros em um só lugar.</p><p>${esc(D.event?.name || 'VII ETAL')} · IFRN Campus Pau dos Ferros<br>${periodoEvento(true)}</p></section>
     <ul class="menu"><li data-go="etal">${ic('cal')}<span>Conheça o ETAL</span>${ic('chev')}</li><li data-go="nadic">${ic('building')}<span>NADIC</span>${ic('chev')}</li></ul>
     <p class="note">Seu nome e sua foto podem ser personalizados no Perfil. As alterações não modificam sua conta do SUAP.</p>
     <a class="btn soft" href="https://portal.ifrn.edu.br/eventos/8528/" target="_blank" rel="noopener">Página do evento ${ic('open')}</a>

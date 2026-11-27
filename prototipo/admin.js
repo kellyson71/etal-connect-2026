@@ -50,11 +50,11 @@
     const [h, m] = t.split(':').map(Number);
     return h * 60 + m;
   };
-  const NOW = toMin(D.now.time);
+  const nowMin = () => toMin(D.now.time);
   const dayOf = (n) => D.days.find((d) => d.day === n);
   const floorLabel = (l) => P.floors[l].label;
-  const isNow = (x) => x.day === D.now.day && toMin(x.time) <= NOW && NOW < toMin(x.end);
-  const isPast = (x) => x.day < D.now.day || (x.day === D.now.day && toMin(x.end) <= NOW);
+  const isNow = (x) => x.day === D.now.day && toMin(x.time) <= nowMin() && nowMin() < toMin(x.end);
+  const isPast = (x) => x.day < D.now.day || (x.day === D.now.day && toMin(x.end) <= nowMin());
   const roomName = (z) =>
     z.name ||
     (z.kind === 'laboratory'
@@ -638,7 +638,11 @@
       );
     });
   }
-  $('#clock').textContent = `${dayOf(D.now.day).week} ${D.now.day} nov · ${D.now.time}`;
+  const relogio = () => {
+    $('#clock').textContent =
+      `${dayOf(D.now.day)?.week || ''} ${D.now.day} ${dayOf(D.now.day)?.mes || 'nov'} · ${D.now.time}`;
+  };
+  relogio();
 
   /* ---------- gráficos ---------- */
   const tip = $('#tip');
@@ -1085,6 +1089,8 @@
         }</section>`;
     },
     campeonatos() {
+      if (!D.tournaments.length)
+        return '<section class="card"><h2>Campeonatos</h2><p class="sub">Ainda sem chaves para os jogos desta edição. As competições estão na programação.</p></section>';
       return D.tournaments.map(tourCard).join('');
     },
     avisos() {
@@ -1861,16 +1867,27 @@
     } catch (_) {
       /* não entrou */
     }
-    if (!me || !me.person.org) {
+    if (!me) {
+      /* Sem entrar: vai para a entrada do ETAL e volta para cá depois. */
+      location.replace(`./?voltar=${encodeURIComponent(location.pathname + location.search + location.hash)}`);
+      return;
+    }
+    if (!me.person.org) {
       $('#nav').innerHTML = '';
       $('#title').textContent = 'Painel da organização';
-      view.innerHTML = `<section class="card"><h2>Só para a organização do ETAL</h2><p class="sub">${me ? `Você entrou como ${esc(me.person.name)}, que não está na lista da organização.` : 'Entre pelo app com a sua conta do SUAP e volte para esta página.'}</p><a class="btn primary" href="./">Abrir o app</a></section>`;
+      view.innerHTML = `<section class="card"><h2>Só para a organização do ETAL</h2><p class="sub">Você entrou como ${esc(me.person.name)}, que não está na lista da organização. Se deveria estar, peça para incluírem a sua matrícula ou o seu e-mail e entre de novo.</p><a class="btn primary" href="./">Voltar ao ETAL</a></section>`;
       return;
     }
     const sync = async () => {
       const prog = await API.get('/api/programacao');
       D.sessions.length = 0;
       prog.sessions.forEach((x) => D.sessions.push(x));
+      /* dias e "agora" pela programação do servidor */
+      if (!window.ETAL_CONFIG?.demo && API.calendario(D, D.sessions)) {
+        if (!D.days.some((d) => d.day === state.day)) state.day = D.now.day;
+        D.tournaments.splice(0, D.tournaments.length, ...D.tournaments.filter((t) => dayOf(t.day)));
+        relogio();
+      }
       ORG.rooms = prog.rooms || {};
       applyRooms();
       try {

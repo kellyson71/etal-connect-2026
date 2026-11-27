@@ -73,7 +73,7 @@ function badgeFace(p) {
             : `<span class="bx-qr">${qr(7, 25)}</span><small><span>Seu código</span><b>${esc(p.id)}</b></small>`
         }</div>
       </div>
-      <div class="bx-role ${role[0]}"><b>${role[1]}</b><span>26 a 28 nov</span></div>
+      <div class="bx-role ${role[0]}"><b>${role[1]}</b><span>${periodoEvento()}</span></div>
       <i class="bx-sheen"></i>`;
 }
 const yardText = 'ETAL · CONNECT · '.repeat(16);
@@ -101,7 +101,7 @@ Screens.login = () => {
           <div class="lx-done" role="status">
             <h2 class="lx-q" data-live="hello">Tudo certo!</h2>
             <button class="btn ghost badge-edit" data-act="profile-edit" type="button">${ic('pencil')}Editar nome e foto</button>
-            <button class="btn primary big" data-act="lgenter" type="button">Abrir o app</button>
+            <button class="btn primary big" data-act="lgenter" type="button">Entrar no ETAL</button>
             <button class="btn ghost" data-act="lgredo" type="button">Não sou eu</button>
           </div>
         </div>
@@ -396,6 +396,7 @@ function mountBadgeLogin(el) {
 }
 /* Entrou: o cartão vira e mostra o crachá preenchido. */
 function lgFilled(prof) {
+  if (API && irParaDestino()) return;
   prof.officialName = prof.officialName || prof.name;
   Object.assign(prof, profileLocal(prof.id));
   applyProfile(prof);

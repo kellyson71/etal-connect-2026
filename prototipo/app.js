@@ -14,6 +14,17 @@ const osReduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 let reduce = osReduce;
 const byId = (id) => D.sessions.find((s) => s.id === id);
 const dayOf = (n) => D.days.find((d) => d.day === n);
+/* "3 dez", "26 a 28 nov", "3 e 4 de dezembro de 2026": os dias vêm de D.days (com servidor, da programação). */
+const diaMes = (n) => `${n} ${dayOf(n)?.mes || 'nov'}`;
+const periodoEvento = (longo) => {
+  const ds = D.days;
+  if (!ds.length) return '';
+  const a = ds[0];
+  const b = ds[ds.length - 1];
+  const mes = longo ? `de ${a.mesLongo || 'novembro'}` : a.mes || 'nov';
+  const ano = longo ? ` de ${(a.date || '2025').slice(0, 4)}` : '';
+  return ds.length === 1 ? `${a.day} ${mes}${ano}` : `${a.day} ${ds.length === 2 ? 'e' : 'a'} ${b.day} ${mes}${ano}`;
+};
 
 /* ---------------- ícones ---------------- */
 const ICONS = {
@@ -119,8 +130,9 @@ const TINTS = [
 const spAv = (s, big = false) => {
   const photo = s.speakerPhoto || (s.self && D.person.photo);
   if (photo) return `<span class="ava${big ? ' lg' : ''} has-photo"><img src="${esc(assetUrl(photo))}" alt=""></span>`;
-  const [bg, fg] = TINTS[(s.initials.charCodeAt(0) + s.initials.charCodeAt(1)) % TINTS.length].split(',');
-  return `<span class="ava${big ? ' lg' : ''}" style="background:${bg};color:${fg}">${s.initials}</span>`;
+  const ini = s.initials || (s.speakerShort || '?').slice(0, 2).toUpperCase();
+  const [bg, fg] = TINTS[(ini.charCodeAt(0) + (ini.charCodeAt(1) || 0)) % TINTS.length].split(',');
+  return `<span class="ava${big ? ' lg' : ''}" style="background:${bg};color:${fg}">${esc(ini)}</span>`;
 };
 const goOf = (x) =>
   x.tournament ? `data-go="tournament" data-id="${x.tournament}"` : `data-go="activity" data-id="${x.id}"`;
@@ -147,6 +159,15 @@ const TIPOS = {
   Apresentação: { k: 'mesa', g: 'out', icon: 'star', formato: 'Apresentação cultural' },
   Encerramento: { k: 'mesa', g: 'out', icon: 'award', formato: 'Encerramento e premiações' },
   Credenciamento: { k: 'mini', g: 'out', icon: 'id', formato: 'Recepção dos participantes' },
+  Competição: { k: 'camp', g: 'camp', icon: 'trophy', plural: 'Competições', formato: 'Desafio com placar' },
+  'Roda de conversa': {
+    k: 'mesa',
+    g: 'mesa',
+    icon: 'chat',
+    plural: 'Rodas de conversa',
+    formato: 'Conversa aberta em grupos',
+  },
+  Confraternização: { k: 'mesa', g: 'out', icon: 'star', formato: 'Encontro de fim de evento' },
 };
 const TIPOS_G = new Set(['pal', 'mesa', 'mini', 'camp']);
 const tipoDe = (x) => TIPOS[x.type] || { k: 'out', g: 'out', icon: 'cal', formato: '' };
@@ -769,7 +790,7 @@ function taughtActivity(person) {
 function taughtActivityCard(person) {
   const activity = taughtActivity(person);
   if (!activity) return '';
-  return `<button class="speaker-offer" ${goOf(activity)}>${spAv(activity, true)}<span><small>${ic(tipoDe(activity).icon)}${esc(activity.type)} no ETAL</small><b>${esc(activity.title)}</b><em>${activity.day} nov · ${activity.time}–${activity.end} · ${esc(activity.room)}</em></span>${ic('chev')}</button>`;
+  return `<button class="speaker-offer" ${goOf(activity)}>${spAv(activity, true)}<span><small>${ic(tipoDe(activity).icon)}${esc(activity.type)} no ETAL</small><b>${esc(activity.title)}</b><em>${diaMes(activity.day)} · ${activity.time}–${activity.end} · ${esc(activity.room)}</em></span>${ic('chev')}</button>`;
 }
 function cardPreview(c = {}, p = D.person, { own = p === D.person, taught = true } = {}) {
   const priv = !own && c.publish === false;
@@ -1100,7 +1121,7 @@ function communityAddMention(input, handle) {
 function communityActivityCard(p) {
   const activity = byId(p.activity);
   if (!activity) return '';
-  return `<button class="social-activity" data-go="activity" data-id="${esc(activity.id)}">${ic('cal')}<span><b>${esc(activity.short)}</b><small>${activity.day} nov · ${esc(activity.time)} · ${esc(activity.room)}</small></span>${ic('chev')}</button>`;
+  return `<button class="social-activity" data-go="activity" data-id="${esc(activity.id)}">${ic('cal')}<span><b>${esc(activity.short)}</b><small>${diaMes(activity.day)} · ${esc(activity.time)} · ${esc(activity.room)}</small></span>${ic('chev')}</button>`;
 }
 function communityToolbar(v) {
   if (communityMode === 'chat') return '';
@@ -1126,8 +1147,8 @@ function communityWall(v) {
       (communityActivity === 'all' || p.activity === communityActivity),
   );
   const photos = posts.flatMap((p) => communityPhotos(p).map((photo, index) => ({ p, photo, index })));
-  return `<div class="social-wall"><div class="social-wall-filters"><label>Dia<select data-community-filter="day"><option value="all">Todos os dias</option>${D.days.map((d) => `<option value="${d.day}" ${String(d.day) === communityDay ? 'selected' : ''}>${esc(d.week)} · ${d.day} nov</option>`).join('')}</select></label><label>Atividade<select data-community-filter="activity"><option value="all">Todas as atividades</option>${D.sessions.map((a) => `<option value="${esc(a.id)}" ${a.id === communityActivity ? 'selected' : ''}>${esc(a.short)}</option>`).join('')}</select></label></div>
-      ${photos.length ? `<div class="social-photo-grid">${photos.map(({ p, photo, index }) => `<button data-act="community-photo-open" data-id="${esc(p.id)}" data-index="${index}" aria-label="Ver foto ${index + 1} da publicação de ${esc(p.name)}"><img src="${esc(photo.src)}" alt="${esc(photo.alt || 'Foto no mural')}" loading="lazy"><span>${esc(p.name.split(' ')[0])} · ${p.day || '—'} nov</span></button>`).join('')}</div>` : communityEmpty('Nenhuma foto para estes filtros.')}</div>`;
+  return `<div class="social-wall"><div class="social-wall-filters"><label>Dia<select data-community-filter="day"><option value="all">Todos os dias</option>${D.days.map((d) => `<option value="${d.day}" ${String(d.day) === communityDay ? 'selected' : ''}>${esc(d.week)} · ${diaMes(d.day)}</option>`).join('')}</select></label><label>Atividade<select data-community-filter="activity"><option value="all">Todas as atividades</option>${D.sessions.map((a) => `<option value="${esc(a.id)}" ${a.id === communityActivity ? 'selected' : ''}>${esc(a.short)}</option>`).join('')}</select></label></div>
+      ${photos.length ? `<div class="social-photo-grid">${photos.map(({ p, photo, index }) => `<button data-act="community-photo-open" data-id="${esc(p.id)}" data-index="${index}" aria-label="Ver foto ${index + 1} da publicação de ${esc(p.name)}"><img src="${esc(photo.src)}" alt="${esc(photo.alt || 'Foto no mural')}" loading="lazy"><span>${esc(p.name.split(' ')[0])} · ${p.day ? diaMes(p.day) : '—'}</span></button>`).join('')}</div>` : communityEmpty('Nenhuma foto para estes filtros.')}</div>`;
 }
 function communityReportOpen(target) {
   if (!communityPode()) {
@@ -1292,15 +1313,15 @@ Screens.communityCompose = () => {
         communityPode()
           ? `<form id="community-post-form" class="post-editor" data-form="community-post">
         <div class="community-identity">${meAv()}<div><b>${esc(D.person.name)}</b><small>${esc(D.event?.name || 'ETAL')}</small></div></div>
-        <details class="compose-context"><summary>${ic(activity ? 'pin' : 'cal')}<span><b>${esc(activity?.short || 'Adicionar atividade')}</b><small>${activity ? `${activity.day} nov · ${esc(activity.room)}` : 'Opcional'}${activity && communityDraft.contextReason === 'qr' ? ' · Check-in realizado' : activity && communityDraft.contextReason === 'agenda' ? ' · Na sua agenda agora' : ''}</small></span>${ic('chev')}</summary>
+        <details class="compose-context"><summary>${ic(activity ? 'pin' : 'cal')}<span><b>${esc(activity?.short || 'Adicionar atividade')}</b><small>${activity ? `${diaMes(activity.day)} · ${esc(activity.room)}` : 'Opcional'}${activity && communityDraft.contextReason === 'qr' ? ' · Check-in realizado' : activity && communityDraft.contextReason === 'agenda' ? ' · Na sua agenda agora' : ''}</small></span>${ic('chev')}</summary>
           <div class="compose-context-fields"><label>Atividade<select name="activity" data-community-draft="activity"><option value="">Sem atividade vinculada</option>${D.sessions
             .filter((a) => a.type !== 'Credenciamento')
             .map(
               (a) =>
-                `<option value="${esc(a.id)}" ${communityDraft.activity === a.id ? 'selected' : ''}>${esc(a.short)} · ${a.day} nov</option>`,
+                `<option value="${esc(a.id)}" ${communityDraft.activity === a.id ? 'selected' : ''}>${esc(a.short)} · ${diaMes(a.day)}</option>`,
             )
             .join('')}</select></label>
-          <div class="compose-secondary"><label>Dia<select name="day" data-community-draft="day" ${activity ? 'disabled' : ''}>${D.days.map((d) => `<option value="${d.day}" ${+communityDraft.day === d.day ? 'selected' : ''}>${d.day} de novembro</option>`).join('')}</select></label><label>Assunto<select name="tag" data-community-draft="tag">${['No evento', 'Conexões', 'Projetos', 'Dicas'].map((t) => `<option ${communityDraft.tag === t ? 'selected' : ''}>${t}</option>`).join('')}</select></label></div></div>
+          <div class="compose-secondary"><label>Dia<select name="day" data-community-draft="day" ${activity ? 'disabled' : ''}>${D.days.map((d) => `<option value="${d.day}" ${+communityDraft.day === d.day ? 'selected' : ''}>${d.day} de ${d.mesLongo || 'novembro'}</option>`).join('')}</select></label><label>Assunto<select name="tag" data-community-draft="tag">${['No evento', 'Conexões', 'Projetos', 'Dicas'].map((t) => `<option ${communityDraft.tag === t ? 'selected' : ''}>${t}</option>`).join('')}</select></label></div></div>
         </details>
         <div class="compose-writing"><label class="sr-only" for="community-post">Texto da publicação</label><textarea id="community-post" name="text" data-community-draft="post" rows="6" maxlength="2000" placeholder="Como está sendo o seu ETAL?">${esc(communityDraft.post)}</textarea><small id="compose-count">${communityDraft.post.length}/2000</small></div>
         ${communityDraft.images.length ? `<div class="community-upload-grid">${communityDraft.images.map((img, i) => `<div class="community-upload"><img src="${esc(img.src)}" alt="Prévia da foto ${i + 1}"><button type="button" data-act="community-remove-image" data-index="${i}" aria-label="Remover foto ${i + 1}">${ic('x')}</button><details class="compose-photo-alt"><summary>Descrição da foto</summary><label class="sr-only" for="image-alt-${i}">Descrição da foto ${i + 1}</label><input id="image-alt-${i}" name="${i ? `alt-${i}` : 'alt'}" data-image-alt="${i}" maxlength="240" value="${esc(img.alt || '')}" placeholder="O que aparece nesta foto?"></details></div>`).join('')}</div>` : ''}
@@ -1769,7 +1790,7 @@ function badgeFace(p) {
             : `<span class="bx-qr">${qr(7, 25)}</span><small><span>Seu código</span><b>${esc(p.id)}</b></small>`
         }</div>
       </div>
-      <div class="bx-role ${role[0]}"><b>${role[1]}</b><span>26 a 28 nov</span></div>
+      <div class="bx-role ${role[0]}"><b>${role[1]}</b><span>${periodoEvento()}</span></div>
       <i class="bx-sheen"></i>`;
 }
 const yardText = 'ETAL · CONNECT · '.repeat(16);
@@ -1797,7 +1818,7 @@ Screens.login = () => {
           <div class="lx-done" role="status">
             <h2 class="lx-q" data-live="hello">Tudo certo!</h2>
             <button class="btn ghost badge-edit" data-act="profile-edit" type="button">${ic('pencil')}Editar nome e foto</button>
-            <button class="btn primary big" data-act="lgenter" type="button">Abrir o app</button>
+            <button class="btn primary big" data-act="lgenter" type="button">Entrar no ETAL</button>
             <button class="btn ghost" data-act="lgredo" type="button">Não sou eu</button>
           </div>
         </div>
@@ -2092,6 +2113,7 @@ function mountBadgeLogin(el) {
 }
 /* Entrou: o cartão vira e mostra o crachá preenchido. */
 function lgFilled(prof) {
+  if (API && irParaDestino()) return;
   prof.officialName = prof.officialName || prof.name;
   Object.assign(prof, profileLocal(prof.id));
   applyProfile(prof);
@@ -2220,7 +2242,7 @@ function destaqueCard(s) {
             <div class="now-top"><span class="kind">${s.type}</span>${selo}</div>
             <h3>${s.title}</h3>
             ${s.speakerShort ? `<div class="now-sp">${spAv(s)}<span>${s.speakerShort}</span></div>` : ''}
-            <p class="m">${ic('clock')}${agora ? '' : `${dayOf(s.day).week}, ${s.day} nov · `}${s.time} às ${s.end}</p>
+            <p class="m">${ic('clock')}${agora ? '' : `${dayOf(s.day).week}, ${diaMes(s.day)} · `}${s.time} às ${s.end}</p>
             <p class="m">${ic('pin')}${whereOf(s)}</p>
             <div class="now-actions">${here ? `<button class="btn primary" data-go="activity" data-id="${s.id}">Abrir aula</button>` : comoChegar + segundo}</div>
           </article>`;
@@ -2251,7 +2273,7 @@ Screens.home = () => {
 
           ${
             d.s
-              ? `<div class="sec st" ${st(2)}><h2>${d.titulo}</h2>${d.minhas.length || S.saved.size ? '<button data-act="mine">Minha agenda</button>' : `<span>${dayOf(D.now.day).week}, ${D.now.day} nov · <span id="nowclock">${skyClock()}</span></span>`}</div>
+              ? `<div class="sec st" ${st(2)}><h2>${d.titulo}</h2>${d.minhas.length || S.saved.size ? '<button data-act="mine">Minha agenda</button>' : `<span>${dayOf(D.now.day).week}, ${diaMes(D.now.day)} · <span id="nowclock">${skyClock()}</span></span>`}</div>
           ${destaqueCard(d.s)}
           ${
             UI.home.agenda
@@ -2516,9 +2538,12 @@ function questionsOf(id) {
   return `<ul class="qa">${list.map((q) => `<li><button class="vote ${S.votes.has(q.id) ? 'on' : ''}" data-act="vote" data-q="${q.id}" aria-pressed="${S.votes.has(q.id)}" aria-label="Apoiar pergunta">${ic('up')}<b>${q.votes + (S.votes.has(q.id) ? 1 : 0)}</b></button><div><p>${esc(q.text)}</p><small>${esc(q.who)}</small></div></li>`).join('')}</ul>`;
 }
 
-/* Prévia em 3D: uma imagem parada do andar, com a sala em destaque. */
+/* Prévia em 3D: uma imagem parada do andar, com a sala em destaque. Lugar ainda sem marcação no mapa: sem prévia. */
+const semMapa = (x) => !x.place && x.zone == null;
 const thumb = (x, i) =>
-  `<button class="mapthumb st" ${st(i)} ${mapAct(x)} aria-label="Ver ${x.room} no mapa"><canvas class="thumb3d"></canvas><span>Ver no mapa ${ic('arrow')}</span></button>`;
+  semMapa(x)
+    ? ''
+    : `<button class="mapthumb st" ${st(i)} ${mapAct(x)} aria-label="Ver ${x.room} no mapa"><canvas class="thumb3d"></canvas><span>Ver no mapa ${ic('arrow')}</span></button>`;
 const mountThumb = (x) => (page) => {
   const cv = $('canvas.thumb3d', page);
   if (!cv) return;
@@ -2612,7 +2637,7 @@ Screens.activity = ({ id }) => {
           <div class="co-head st" ${st(0)}><span class="tag ok">${ic('check')}${S.left[id] ? `Das ${here} às ${S.left[id]}` : `Presença às ${here}`}</span><span class="kind">${s.type} · ${s.room}</span></div>
           <h1 class="title-lg st" ${st(1)}>${s.title}</h1>
           <div class="co-rapido st" ${st(1)}><button data-act="rolar" data-alvo=".mats">${ic('file')}Materiais${s.materials?.length ? ` <em>${s.materials.length}</em>` : ''}</button><button data-act="ask" data-id="${id}">${ic('chat')}Perguntar</button><button data-act="${S.left[id] ? 'avaliar' : 'rolar'}" data-id="${id}" data-alvo=".rate-lock">${ic('star')}${notaDe(id) ? `${notaDe(id)}/5` : 'Avaliar'}</button></div>
-          <button class="teacher st" ${st(2)} data-go="speaker" data-id="${id}">${spAv(s, true)}<span><b>${s.speakerShort}</b><small>${s.role}</small></span><span class="time"><b>${s.time}–${s.end}</b><small>${d.week}, ${s.day} nov</small></span></button>
+          <button class="teacher st" ${st(2)} data-go="speaker" data-id="${id}">${spAv(s, true)}<span><b>${s.speakerShort}</b><small>${s.role}</small></span><span class="time"><b>${s.time}–${s.end}</b><small>${d.week}, ${diaMes(s.day)}</small></span></button>
           <button class="sendpc st" ${st(3)} data-act="share" data-id="${id}"><span class="sp-ic">${ic('laptop')}</span><span><b>Abrir no computador</b><small>${s.link}</small></span>${ic('chev')}</button>
           <section class="st" ${st(4)}><h2 class="h">Materiais</h2></section>
           <ul class="mats">${s.materials.map(materialRow).join('')}</ul>
@@ -2639,7 +2664,7 @@ Screens.activity = ({ id }) => {
       : `<button class="teacher ${t.g === 'pal' ? 'quem-fala' : ''} st" ${st(2)} data-go="speaker" data-id="${id}">${spAv(s, t.g === 'pal')}<span><b>${s.speakerShort}</b><small>${s.role}</small></span>${ic('chev', 'i card-chev')}</button>`;
   const vagasRestam = s.seats ? Math.max(0, s.seats - s.taken) : null;
   const blocos = `<div class="glance st" ${st(3)}>
-        <div class="gl-quando"><small>${d.week} · ${s.day} nov</small><b>${s.time}</b><span>até ${s.end}${duracao(s) ? ` · ${duracao(s)}` : ''}</span></div>
+        <div class="gl-quando"><small>${d.week} · ${diaMes(s.day)}</small><b>${s.time}</b><span>até ${s.end}${duracao(s) ? ` · ${duracao(s)}` : ''}</span></div>
         ${vagasRestam == null ? '' : `<div class="gl-vagas ${vagasRestam === 0 ? 'cheio' : vagasRestam <= 5 ? 'pouca' : ''}"><small>Vagas</small><b>${vagasRestam === 0 ? 'Esgotado' : vagasRestam}</b>${vagasRestam ? `<span>de ${s.seats}</span>` : ''}${seatBar(s)}</div>`}
       </div>`;
   /* minicurso: a inscrição é no SUAP (vaga limitada); o app mostra se a pessoa já está inscrita ou leva até lá */
@@ -2649,7 +2674,9 @@ Screens.activity = ({ id }) => {
     : !comInscricao(s)
       ? ''
       : `<div class="inscricao st" ${st(3)}>${ic('id')}<span><b>${vagasRestam === 0 ? 'Vagas esgotadas' : 'Inscrição pelo SUAP'}</b><small>${vagasRestam === 0 ? 'Confira no SUAP se abriu alguma vaga.' : 'Vagas limitadas: a inscrição é feita no SUAP, pelo botão abaixo.'}</small></span></div>`;
-  const lugar = `<button class="lugar st" ${st(4)} ${mapAct(s)} aria-label="Ver ${s.room} no mapa"><canvas class="thumb3d"></canvas><span class="lg-tx"><b>${s.room}</b><small>${Number.isInteger(s.floor) ? floorOf(s.floor).label : ''}</small></span><span class="lg-ir">${ic('route')}Como chegar</span></button>`;
+  const lugar = semMapa(s)
+    ? `<div class="lugar sem-mapa st" ${st(4)}><span class="lg-tx"><b>${esc(s.room || 'Local a confirmar')}</b><small>Ainda sem marcação no mapa</small></span></div>`
+    : `<button class="lugar st" ${st(4)} ${mapAct(s)} aria-label="Ver ${s.room} no mapa"><canvas class="thumb3d"></canvas><span class="lg-tx"><b>${s.room}</b><small>${Number.isInteger(s.floor) ? floorOf(s.floor).label : ''}</small></span><span class="lg-ir">${ic('route')}Como chegar</span></button>`;
   const lembrar = `<button class="remindrow st ${lembrete ? 'on' : ''}" ${st(5)} data-act="remind" data-id="${id}" aria-pressed="${lembrete}">${ic('alarm')}<span>${lembrete ? `Lembrete às ${hhmm(toMin(s.time) - LEAD)}` : `Lembrar ${LEAD} min antes`}</span><i class="switch"></i></button>`;
   const fonte = '';
   const sobre = s.description
@@ -3140,8 +3167,8 @@ const SKY_KEYS = [
 const hex2 = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
 const mixC = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
 const css = (c) => `rgb(${c.join(',')})`;
-/* Relógio do app: segue a hora do aparelho, minuto a minuto (céu, luz do mapa, "agora" da agenda e lembretes). O dia
-     continua o do evento de exemplo (26 a 28/11), porque a programação é a de 2025. ?ceu=<hora>, mexer no horário do céu
+/* Relógio do app: segue a hora do aparelho, minuto a minuto (céu, luz do mapa, "agora" da agenda e lembretes). Com
+     servidor, os dias vêm da programação (ETAL_API.calendario); sem ele, continuam os do exemplo de 2025. ?ceu=<hora>, mexer no horário do céu
      ou no botão do sol fixa uma hora para demonstrar, até recarregar. */
 const horaAparelho = () => {
   const d = new Date();
@@ -3194,7 +3221,7 @@ function applySky() {
   st_.setProperty('--moon-x', `${14 + Math.max(0, Math.min(1, m)) * 56}%`);
   st_.setProperty('--moon-y', `${56 - Math.sin(Math.max(0, Math.min(1, m)) * 2.2) * 40}%`);
   const clock = skyClock();
-  D.now.time = clock; // o "agora" da agenda segue o mesmo relógio
+  D.now.time = D.now.fixo || clock; // o "agora" da agenda segue o mesmo relógio (fixo antes e depois do evento)
   const ck = $('#clock');
   if (ck) ck.textContent = clock;
   const nc = $('#nowclock');
@@ -3298,16 +3325,27 @@ let liveI = 0,
   liveTimer = 0,
   liveCred = D.liveBase.credenciados;
 function liveMessages() {
-  const f = byId('fastapi');
-  const ia = byId('experiencia-ia');
+  /* sai da programação carregada: um minicurso com vaga e o que está acontecendo agora (com servidor, a do ano) */
+  const vaga = D.sessions.find((x) => comInscricao(x) && x.seats > (x.taken || 0) && !acabou(x));
+  const agora = D.sessions.find((x) => isNow(x) && !x.simple);
   const mk = D.tournaments[0];
   return [
     { i: 'users', t: `${liveCred} pessoas credenciadas`, go: 'notices' },
-    { i: 'pin', t: `${f.room} com ${f.seats - f.taken} vagas: ${f.short}`, go: 'activity', id: f.id },
-    { i: 'mic', t: `${ia.room}: ${ia.short} em andamento`, go: 'activity', id: ia.id },
-    { i: 'trophy', t: `${mk.name} começa ${dayOf(mk.day).week.toLowerCase()}, ${mk.time}`, go: 'games' },
-    { i: 'bell', t: D.notices[0].title, go: 'notices' },
-  ];
+    vaga && {
+      i: 'pin',
+      t: `${vaga.room} com ${vaga.seats - (vaga.taken || 0)} vagas: ${vaga.short}`,
+      go: 'activity',
+      id: vaga.id,
+    },
+    agora && { i: 'mic', t: `${agora.room}: ${agora.short} em andamento`, go: 'activity', id: agora.id },
+    mk &&
+      dayOf(mk.day) && {
+        i: 'trophy',
+        t: `${mk.name} começa ${dayOf(mk.day).week.toLowerCase()}, ${mk.time}`,
+        go: 'games',
+      },
+    D.notices[0] && { i: 'bell', t: D.notices[0].title, go: 'notices' },
+  ].filter(Boolean);
 }
 function mountHome(page) {
   /* o céu anda mais devagar que a página (profundidade) e as seções de baixo entram quando chegam na tela */
@@ -3689,7 +3727,7 @@ function retroSlides(r) {
   const got = r.demo ? D.combs.length : combEarned().length;
   const n = r.list.length;
   return [
-    `<div class="re-c">${mark('mark re-mark')}${tag}<h1>Seu ETAL</h1><p>VII edição, 26 a 28 de novembro, em Pau dos Ferros.</p><strong>${esc(D.person.name)}</strong></div>`,
+    `<div class="re-c">${mark('mark re-mark')}${tag}<h1>Seu ETAL</h1><p>${esc(D.event?.name || 'VII ETAL')}, ${periodoEvento(true)}, em Pau dos Ferros.</p><strong>${esc(D.person.name)}</strong></div>`,
     `<div class="re-c">${tag}<small>Tempo de aprendizado</small><b class="re-num" data-to="${r.hours}">0</b><p>em ${n} ${n === 1 ? 'atividade' : 'atividades'}.</p><ul class="re-list">${r.list.map((x) => `<li>${x.short}<small>${x.type}, ${x.room}</small></li>`).join('')}</ul></div>`,
     `<div class="re-c">${tag}<small>O que você aprendeu</small><ul class="re-learn">${r.learn.map((l) => `<li>${ic('check')}<span>${l}</span></li>`).join('')}</ul></div>`,
     `<div class="re-c">${tag}<small>Quem fez parte</small><div class="re-people">${r.people.map((x) => `<span><i>${x.initials}</i>${x.speakerShort}</span>`).join('')}</div><dl class="re-stats"><div><dd>${r.questions}</dd><dt>${r.questions === 1 ? 'pergunta' : 'perguntas'}</dt></div><div><dd>${r.contacts}</dd><dt>${r.contacts === 1 ? 'contato' : 'contatos'}</dt></div><div><dd>${r.ratings}</dd><dt>${r.ratings === 1 ? 'avaliação' : 'avaliações'}</dt></div></dl></div>`,
@@ -3792,7 +3830,10 @@ Screens.profile = () => ({
           <li data-go="cartao">${ic('id')}<span>Seu perfil e crachá</span><em>${cardGet() ? (cardGet().publish === false ? 'Oculto' : `${cardProgresso(cardGet())}%`) : 'Completar'}</em>${ic('chev', 'i chev')}</li>
         </ul>
         <ul class="menu st" ${st(2)}>
-          <li data-go="games" class="games-row">${ic('trophy')}<span>Campeonatos</span><em>Qui 27</em>${ic('chev', 'i chev')}</li>
+          <li data-go="games" class="games-row">${ic('trophy')}<span>Campeonatos</span><em>${(() => {
+            const x = D.tournaments[0] || D.sessions.find((s) => tipoDe(s).g === 'camp');
+            return x ? `${dayOf(x.day)?.week || ''} ${x.day}` : '';
+          })()}</em>${ic('chev', 'i chev')}</li>
           <li data-go="mais">${ic('list')}<span>Mais opções</span><em>Aparência e sobre</em>${ic('chev', 'i chev')}</li>
         </ul>
         <ul class="menu danger st" ${st(5)}><li data-act="logout">${ic('logout')}<span>Sair</span></li></ul>
@@ -4183,7 +4224,7 @@ function crachaGrande(p = D.person, c = cardGet() || {}, { qrHtml = qr(), legend
         ${qrHtml ? `<span class="cr-qr">${qrHtml}</span>` : ''}
         ${legenda ? `<small class="cr-leg">${legenda}</small>` : ''}
       </div>
-      <div class="cr-pe"><span>${isGuest(p) ? 'Visitante' : 'Participante'}</span><span>26 a 28 nov</span></div>
+      <div class="cr-pe"><span>${isGuest(p) ? 'Visitante' : 'Participante'}</span><span>${periodoEvento()}</span></div>
     </div>`;
 }
 
@@ -4341,7 +4382,7 @@ Screens.pessoa = ({ id }) => {
 /* ---- o que é real e o que é exemplo neste protótipo ---- */
 Screens.sobre = () => ({
   html: `${header('Sobre o aplicativo')}<div class="pad stack sobre">
-    <section class="sb-card"><h2>ETAL Connect</h2><p>Programação, caminhos pelo campus e encontros em um só lugar.</p><p>VII ETAL · IFRN Campus Pau dos Ferros<br>26 a 28 de novembro de 2025</p></section>
+    <section class="sb-card"><h2>ETAL Connect</h2><p>Programação, caminhos pelo campus e encontros em um só lugar.</p><p>${esc(D.event?.name || 'VII ETAL')} · IFRN Campus Pau dos Ferros<br>${periodoEvento(true)}</p></section>
     <ul class="menu"><li data-go="etal">${ic('cal')}<span>Conheça o ETAL</span>${ic('chev')}</li><li data-go="nadic">${ic('building')}<span>NADIC</span>${ic('chev')}</li></ul>
     <p class="note">Seu nome e sua foto podem ser personalizados no Perfil. As alterações não modificam sua conta do SUAP.</p>
     <a class="btn soft" href="https://portal.ifrn.edu.br/eventos/8528/" target="_blank" rel="noopener">Página do evento ${ic('open')}</a>
@@ -4571,10 +4612,27 @@ const facesOf = (st) => {
     .join('')}${ps.length > 4 ? `<i>+${ps.length - 4}</i>` : ''}</span>`;
 };
 
+/* Sem chaves publicadas (com servidor, a programação do ano ainda sem os jogos): mostra as competições da agenda. */
+const competicoes = () => D.sessions.filter((x) => tipoDe(x).g === 'camp' && !x.tournament);
+const gamesLead = () => {
+  const t = D.tournaments[0];
+  if (t) return `${dayOf(t.day)?.long || ''}, na ${esc(t.room)}. Entre na chave ou venha torcer.`;
+  return 'As chaves e as regras aparecem aqui quando a organização publicar. Por enquanto, os horários:';
+};
 Screens.games = () => ({
   html: `${header('Campeonatos')}
       <div class="pad stack">
-        <p class="games-lead st" ${st(0)}>Quinta, 27 de novembro, na Sala 102. Entre na chave ou venha torcer.</p>
+        <p class="games-lead st" ${st(0)}>${gamesLead()}</p>
+        ${
+          D.tournaments.length
+            ? ''
+            : `<ul class="splist st" ${st(1)}>${competicoes()
+                .map(
+                  (x) =>
+                    `<li ${goOf(x)}><span class="date"><small>${dayOf(x.day)?.week || ''}</small><b>${x.day}</b></span><span><b>${esc(x.short)}</b><small>${esc(x.type)}</small><em>${x.time} às ${x.end} · ${esc(x.room || '')}</em></span>${ic('chev', 'i chev')}</li>`,
+                )
+                .join('')}</ul>`
+        }
         ${D.tournaments
           .map((t, i) => {
             const stt = tourSt(t);
@@ -4826,7 +4884,7 @@ Overlays.welcome = (c = null) => `<div class="wl">
       <div class="w-ticket">
         <div class="wt-head">${meAv('av')}<span><b>${esc(D.person.name)}</b><small>${esc(D.person.course || '')}</small></span><span class="wt-ok">${ic('check')}Confirmado</span></div>
         <i class="wt-cut"></i>
-        <dl class="wt-facts"><div><dt>Entrada</dt><dd>${S.credAt}</dd><small>Qua, 26 nov</small></div><div><dt>Local</dt><dd>Recepção</dd><small>Térreo</small></div><div><dt>Na agenda</dt><dd>${S.saved.size}</dd><small>atividades</small></div></dl>
+        <dl class="wt-facts"><div><dt>Entrada</dt><dd>${S.credAt}</dd><small>${dayOf(D.now.day)?.week || ''}, ${diaMes(D.now.day)}</small></div><div><dt>Local</dt><dd>Recepção</dd><small>Térreo</small></div><div><dt>Na agenda</dt><dd>${S.saved.size}</dd><small>atividades</small></div></dl>
         ${c ? combRow(c) : ''}
       </div>
       <div class="w-actions"><button class="btn big w-main" data-act="closeov" data-then="credential">${ic('id')}Ver credencial</button><button class="btn ghost" data-act="closeov">Continuar</button></div>
@@ -8286,18 +8344,52 @@ async function camStart() {
     if (btn) btn.hidden = false;
   }
 }
+/* Página que pediu entrada (o painel, por exemplo): ela manda para cá com ?voltar=/caminho e, depois de entrar,
+   a pessoa volta direto para ela, sem a abertura do crachá. Fica na sessionStorage para sobreviver à ida ao SUAP. */
+const VOLTAR = 'etal-voltar';
+function guardarDestino(v) {
+  try {
+    const u = new URL(v, location.origin);
+    if (u.origin === location.origin && u.pathname !== location.pathname)
+      sessionStorage.setItem(VOLTAR, u.pathname + u.search + u.hash);
+  } catch (_) {
+    /* endereço inválido: fica no app */
+  }
+}
+function irParaDestino() {
+  let d = null;
+  try {
+    d = sessionStorage.getItem(VOLTAR);
+    sessionStorage.removeItem(VOLTAR);
+  } catch (_) {
+    /* sem sessionStorage: fica no app */
+  }
+  if (!d) return false;
+  location.replace(d);
+  return true;
+}
 async function apiStart() {
   const qs0 = new URLSearchParams(location.search);
   const qr = qs0.get('qr');
   const login = qs0.get('login');
-  if (qr || login) history.replaceState(history.state, '', location.pathname);
+  const voltar = qs0.get('voltar');
+  if (voltar) guardarDestino(voltar);
+  if (qr || login || voltar) history.replaceState(history.state, '', location.pathname);
   if (qr) sessionStorage.setItem('etal-qr', qr);
   try {
     const prog = await API.get('/api/programacao');
     const extra = Object.fromEntries(D.sessions.map((x) => [x.id, x]));
     D.sessions.length = 0;
-    prog.sessions.forEach((x) => D.sessions.push({ ...(extra[x.id] || {}), ...x }));
+    /* complementa com o exemplo embarcado só a mesma atividade (mesmo id e mesmo dia): outra edição pode repetir ids */
+    prog.sessions.forEach((x) => D.sessions.push({ ...(extra[x.id]?.day === x.day ? extra[x.id] : {}), ...x }));
     applyRoomNumbers(prog.rooms || {});
+    const cal = !window.ETAL_CONFIG?.demo && API.calendario(D, D.sessions);
+    if (cal) {
+      D.event = { ...D.event, name: `ETAL ${cal.ano}`, year: cal.ano, dates: cal.days.map((d) => d.date), notice: '' };
+      if (!D.days.some((d) => d.day === S.agendaDay)) S.agendaDay = D.now.day;
+      /* os campeonatos de exemplo são de 2025: fora dos dias desta programação, saem */
+      D.tournaments.splice(0, D.tournaments.length, ...D.tournaments.filter((t) => dayOf(t.day)));
+    }
     if (window.ETAL_CONFIG?.demo) {
       try {
         const scenario = await API.get('/api/cenario-demo');
@@ -8365,6 +8457,7 @@ async function apiStart() {
     show(build({ s: 'login' }), 'fade');
     return;
   }
+  if (irParaDestino()) return;
   apiState(me);
   S.auth = true;
   show(build(top()), 'fade');

@@ -15,8 +15,8 @@ const SKY_KEYS = [
 const hex2 = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
 const mixC = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
 const css = (c) => `rgb(${c.join(',')})`;
-/* Relógio do app: segue a hora do aparelho, minuto a minuto (céu, luz do mapa, "agora" da agenda e lembretes). O dia
-     continua o do evento de exemplo (26 a 28/11), porque a programação é a de 2025. ?ceu=<hora>, mexer no horário do céu
+/* Relógio do app: segue a hora do aparelho, minuto a minuto (céu, luz do mapa, "agora" da agenda e lembretes). Com
+     servidor, os dias vêm da programação (ETAL_API.calendario); sem ele, continuam os do exemplo de 2025. ?ceu=<hora>, mexer no horário do céu
      ou no botão do sol fixa uma hora para demonstrar, até recarregar. */
 const horaAparelho = () => {
   const d = new Date();
@@ -69,7 +69,7 @@ function applySky() {
   st_.setProperty('--moon-x', `${14 + Math.max(0, Math.min(1, m)) * 56}%`);
   st_.setProperty('--moon-y', `${56 - Math.sin(Math.max(0, Math.min(1, m)) * 2.2) * 40}%`);
   const clock = skyClock();
-  D.now.time = clock; // o "agora" da agenda segue o mesmo relógio
+  D.now.time = D.now.fixo || clock; // o "agora" da agenda segue o mesmo relógio (fixo antes e depois do evento)
   const ck = $('#clock');
   if (ck) ck.textContent = clock;
   const nc = $('#nowclock');
