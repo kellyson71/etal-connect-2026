@@ -2,7 +2,27 @@
 
 O projeto segue o git flow: `main` tem só versões publicadas, `develop` junta as funcionalidades e cada uma nasce num ramo `feature/*`.
 
-## Em desenvolvimento
+## 0.12.0 (2026-11-27)
+
+Perfil, avaliações e pessoas
+- Perfil em passos, com progresso e crachá ao vivo, guardado também no servidor; fundo do crachá escolhido no perfil.
+- Segunda leitura do QR da sala, perto do fim, vale como saída e libera a avaliação da atividade (estrelas, comentários rápidos e comentário aberto).
+- Busca de pessoas pelo nome, com o perfil público: o que a pessoa fez, conduziu e a colocação nos campeonatos. A mesma pessoa não aparece duas vezes.
+- Painel: participantes por categoria (inscritos, presentes, até o fim, avaliaram, faltaram), NADIC, curso e interesse; planilha CSV do filtro atual e link para o Google Sheets (`=IMPORTDATA`); dados do público; ranking e comentários das avaliações, sem nomes.
+
+Inscrições do SUAP
+- O servidor lê a página pública de inscrição do evento no SUAP e põe na agenda de cada pessoa as atividades em que ela está inscrita; os minicursos mostram as vagas reais.
+- Minicurso não se salva no app: mostra as vagas, o selo Inscrito e leva à inscrição no SUAP. A importação de inscritos ganha a coluna de atividades.
+- Programação sempre completa, com Minha agenda como filtro; o início junta o destaque e a agenda da pessoa num bloco só; edição de perfil unificada.
+
+Entrada e publicações
+- Visitante sem servidor de e-mail entra direto, sem confirmar o e-mail; por isso essa entrada nunca dá acesso à organização e recusa e-mails de contas do SUAP. Com SMTP, continua o link de uso único.
+- Antes do evento, quem entrou já publica, comenta e usa o chat; durante o evento, continua valendo o QR da recepção.
+
+Correções
+- Mapa 3D reabre sozinho quando o navegador derruba o contexto WebGL, com a câmera guardada; a planta de reserva ganhou Tentar de novo.
+- Horas dos certificados sem resto de ponto flutuante e com vírgula (1,5 h).
+- Vercel: deploy de produção pelo GitHub Actions a cada push no `develop`.
 
 Preparo para o evento
 - Banco com migrações (Alembic): a API aplica as que faltam ao iniciar, e um banco antigo é atualizado sem perder dados.
