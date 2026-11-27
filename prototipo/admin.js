@@ -1861,10 +1861,15 @@
     } catch (_) {
       /* não entrou */
     }
-    if (!me || !me.person.org) {
+    if (!me) {
+      /* Sem entrar: vai para a entrada do ETAL e volta para cá depois. */
+      location.replace(`./?voltar=${encodeURIComponent(location.pathname + location.search + location.hash)}`);
+      return;
+    }
+    if (!me.person.org) {
       $('#nav').innerHTML = '';
       $('#title').textContent = 'Painel da organização';
-      view.innerHTML = `<section class="card"><h2>Só para a organização do ETAL</h2><p class="sub">${me ? `Você entrou como ${esc(me.person.name)}, que não está na lista da organização.` : 'Entre pelo app com a sua conta do SUAP e volte para esta página.'}</p><a class="btn primary" href="./">Abrir o app</a></section>`;
+      view.innerHTML = `<section class="card"><h2>Só para a organização do ETAL</h2><p class="sub">Você entrou como ${esc(me.person.name)}, que não está na lista da organização. Se deveria estar, peça para incluírem a sua matrícula ou o seu e-mail e entre de novo.</p><a class="btn primary" href="./">Voltar ao ETAL</a></section>`;
       return;
     }
     const sync = async () => {

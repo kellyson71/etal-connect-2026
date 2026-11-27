@@ -1797,7 +1797,7 @@ Screens.login = () => {
           <div class="lx-done" role="status">
             <h2 class="lx-q" data-live="hello">Tudo certo!</h2>
             <button class="btn ghost badge-edit" data-act="profile-edit" type="button">${ic('pencil')}Editar nome e foto</button>
-            <button class="btn primary big" data-act="lgenter" type="button">Abrir o app</button>
+            <button class="btn primary big" data-act="lgenter" type="button">Entrar no ETAL</button>
             <button class="btn ghost" data-act="lgredo" type="button">Não sou eu</button>
           </div>
         </div>
@@ -2092,6 +2092,7 @@ function mountBadgeLogin(el) {
 }
 /* Entrou: o cartão vira e mostra o crachá preenchido. */
 function lgFilled(prof) {
+  if (API && irParaDestino()) return;
   prof.officialName = prof.officialName || prof.name;
   Object.assign(prof, profileLocal(prof.id));
   applyProfile(prof);
@@ -8286,11 +8287,37 @@ async function camStart() {
     if (btn) btn.hidden = false;
   }
 }
+/* Página que pediu entrada (o painel, por exemplo): ela manda para cá com ?voltar=/caminho e, depois de entrar,
+   a pessoa volta direto para ela, sem a abertura do crachá. Fica na sessionStorage para sobreviver à ida ao SUAP. */
+const VOLTAR = 'etal-voltar';
+function guardarDestino(v) {
+  try {
+    const u = new URL(v, location.origin);
+    if (u.origin === location.origin && u.pathname !== location.pathname)
+      sessionStorage.setItem(VOLTAR, u.pathname + u.search + u.hash);
+  } catch (_) {
+    /* endereço inválido: fica no app */
+  }
+}
+function irParaDestino() {
+  let d = null;
+  try {
+    d = sessionStorage.getItem(VOLTAR);
+    sessionStorage.removeItem(VOLTAR);
+  } catch (_) {
+    /* sem sessionStorage: fica no app */
+  }
+  if (!d) return false;
+  location.replace(d);
+  return true;
+}
 async function apiStart() {
   const qs0 = new URLSearchParams(location.search);
   const qr = qs0.get('qr');
   const login = qs0.get('login');
-  if (qr || login) history.replaceState(history.state, '', location.pathname);
+  const voltar = qs0.get('voltar');
+  if (voltar) guardarDestino(voltar);
+  if (qr || login || voltar) history.replaceState(history.state, '', location.pathname);
   if (qr) sessionStorage.setItem('etal-qr', qr);
   try {
     const prog = await API.get('/api/programacao');
@@ -8365,6 +8392,7 @@ async function apiStart() {
     show(build({ s: 'login' }), 'fade');
     return;
   }
+  if (irParaDestino()) return;
   apiState(me);
   S.auth = true;
   show(build(top()), 'fade');
