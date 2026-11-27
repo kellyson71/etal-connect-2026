@@ -172,11 +172,17 @@ const comInscricao = (x) => tipoDe(x).g === 'mini';
 const inscrito = (x) => !!x && (S.inscricoes.has(x.id) || (comInscricao(x) && S.saved.has(x.id)));
 const linkInscricao = (x) => x.inscricao || x.link || '';
 const vagasLivres = (x) => (x.seats ? Math.max(0, x.seats - (x.taken || 0)) : null);
+/* Com servidor, as vagas preenchidas de um minicurso vêm da página do SUAP (vagasSuap) ou da lista de inscritos
+   importada; sem nenhuma das duas, o app só sabe o total e não diz quantas restam. */
+const contagemReal = (x) =>
+  !API || !!window.ETAL_CONFIG?.demo || !comInscricao(x) || !!x.vagasSuap || (x.taken || 0) > 0;
 /* vagas preenchidas, discreto: barrinha e "26 de 30" (cheio vira "Esgotado") */
 const vagasLinha = (x) =>
   !x.seats
     ? ''
-    : `<span class="vagas-linha ${vagasLivres(x) === 0 ? 'cheio' : vagasLivres(x) <= 5 ? 'pouca' : ''}">${seatBar(x)}<small>${vagasLivres(x) === 0 ? 'Esgotado' : `${Math.min(x.taken || 0, x.seats)} de ${x.seats} vagas`}</small></span>`;
+    : !contagemReal(x)
+      ? `<span class="vagas-linha"><small>${x.seats} vagas</small></span>`
+      : `<span class="vagas-linha ${vagasLivres(x) === 0 ? 'cheio' : vagasLivres(x) <= 5 ? 'pouca' : ''}">${seatBar(x)}<small>${vagasLivres(x) === 0 ? 'Esgotado' : `${Math.min(x.taken || 0, x.seats)} de ${x.seats} vagas`}</small></span>`;
 const duracao = (x) => {
   if (!x.end) return '';
   const [a, b] = [x.time, x.end].map((t) => {

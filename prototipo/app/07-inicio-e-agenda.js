@@ -24,6 +24,16 @@ function destaqueHome() {
   const titulo = isNow(s) ? (minha ? 'Agora' : 'Agora no ETAL') : minha ? 'Sua próxima atividade' : 'A seguir no ETAL';
   return { s, titulo, minhas: minhas.filter((x) => x !== s) };
 }
+/* Ao lado do título do Início: antes do evento, quanto falta; durante, o dia e a hora; depois, encerrado. */
+function quandoAgora() {
+  if (D.now.fixo === '00:00' && D.days[0]?.date) {
+    const hoje = new Date(new Date().toDateString());
+    const n = Math.round((new Date(`${D.days[0].date}T00:00`) - hoje) / 864e5);
+    return n <= 1 ? 'Começa amanhã' : `Começa em ${n} dias`;
+  }
+  if (D.now.fixo) return 'Evento encerrado';
+  return `${dayOf(D.now.day).week}, ${diaMes(D.now.day)} · <span id="nowclock">${skyClock()}</span>`;
+}
 function destaqueCard(s) {
   const here = S.present[s.id];
   const agora = isNow(s);
@@ -36,7 +46,9 @@ function destaqueCard(s) {
         : comInscricao(s)
           ? `<span class="tag">Inscrição no SUAP</span>`
           : `<span class="tag aberta">Aberto a todos</span>`;
-  const comoChegar = `<button class="btn primary" data-act="openmap" data-floor="${s.floor}" data-zone="${s.zone}">Como chegar</button>`;
+  const comoChegar = semMapa(s)
+    ? ''
+    : `<button class="btn primary" data-act="openmap" data-floor="${s.floor}" data-zone="${s.zone}">Como chegar</button>`;
   const segundo = agora
     ? `<button class="btn soft" data-act="scan">${ic('qr')}Presença</button>`
     : comInscricao(s) && !inscrito(s) && linkInscricao(s)
@@ -71,15 +83,15 @@ Screens.home = () => {
     html: `<section class="${UI.sky ? 'hm-sky' : 'hm-plain'}">${UI.sky ? skyArt() : ''}
           <header class="apphead"><span class="wm ${UI.sky ? 'on-sky' : ''}">${mark('mark xs')}<b>etal</b><span>connect</span></span>
           <span class="hd-acts"><button class="iconbtn ${UI.sky ? 'on-sky' : ''}" data-act="tema" aria-label="${isDark() ? 'Usar o tema claro' : 'Usar o tema escuro'}">${ic(isDark() ? 'sun' : 'moon')}</button>
-          <button class="iconbtn ${UI.sky ? 'on-sky' : ''}" data-go="notices" aria-label="Avisos, ${D.notices.filter((n) => n.fresh).length} novos">${ic('bell')}<u class="badge-num">${D.notices.filter((n) => n.fresh).length}</u></button>${profileShortcut()}</span></header>
+          <button class="iconbtn ${UI.sky ? 'on-sky' : ''}" data-go="notices" aria-label="Avisos, ${D.notices.filter((n) => n.fresh).length} novos">${ic('bell')}${D.notices.some((n) => n.fresh) ? `<u class="badge-num">${D.notices.filter((n) => n.fresh).length}</u>` : ''}</button>${profileShortcut()}</span></header>
         </section>
         <div class="pad stack home">
           ${badge()}
-          ${UI.home.live ? `<button class="hm-live st" ${st(1)} aria-live="polite"><span class="hm-live-tag"><i></i>Ao vivo</span><span class="hm-live-row"><span class="hm-live-msg"></span></span>${ic('chev')}</button>` : ''}
+          ${UI.home.live ? `<button class="hm-live st" ${st(1)} aria-live="polite"><span class="hm-live-tag"><i></i>${D.now.fixo === '00:00' ? 'Em breve' : D.now.fixo ? 'Encerrado' : 'Ao vivo'}</span><span class="hm-live-row"><span class="hm-live-msg"></span></span>${ic('chev')}</button>` : ''}
 
           ${
             d.s
-              ? `<div class="sec st" ${st(2)}><h2>${d.titulo}</h2>${d.minhas.length || S.saved.size ? '<button data-act="mine">Minha agenda</button>' : `<span>${dayOf(D.now.day).week}, ${diaMes(D.now.day)} · <span id="nowclock">${skyClock()}</span></span>`}</div>
+              ? `<div class="sec st" ${st(2)}><h2>${d.titulo}</h2>${d.minhas.length || S.saved.size ? '<button data-act="mine">Minha agenda</button>' : `<span>${quandoAgora()}</span>`}</div>
           ${destaqueCard(d.s)}
           ${
             UI.home.agenda

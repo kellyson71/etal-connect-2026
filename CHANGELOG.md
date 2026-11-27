@@ -4,6 +4,15 @@ O projeto segue o git flow: `main` tem só versões publicadas, `develop` junta 
 
 ## Não lançado
 
+Revisão antes do evento (produção com servidor)
+- Vagas dos minicursos vindas do SUAP: a página de inscrição do ETAL 2026 já lista os 13 minicursos e todos casam com a programação (título com aspas retas no SUAP e curvas no app agora casa). Sem o número do SUAP, o app mostra só o total, sem dizer quantas restam.
+- Inscrição: o minicurso avisa que cada pessoa se inscreve em um só, como pede a página do SUAP.
+- Início antes do evento: "Em breve" e "Começa em N dias" no lugar de "Ao vivo" e da hora; sem a contagem de credenciados de exemplo; sem "Como chegar" em lugar ainda sem marcação no mapa; o sino não mostra zero.
+- Avisos: com servidor, só os da organização (os de exemplo de 2025 saíam no app e no painel), com estado vazio.
+- Painel: a Visão geral usa os participantes, credenciamentos e avisos reais; o cabeçalho diz quanto falta para o evento.
+- Painel da organização no app: com servidor, quem é da organização diz a API; números reais e só as ferramentas que falam com o servidor (QR Codes e moderação), o resto no painel completo.
+- Marca e links de 2026: logo do VIII ETAL, edição 2026 na linha do tempo, página do evento e inscrições do SUAP de 2026.
+
 ETAL 2026
 - Inscrições abertas no SUAP (evento 10301): os 13 minicursos da programação de 2026 ganham o botão Inscrever-se com o link do evento. O `docker-compose.yml` passa a apontar `ETAL_SUAP_INSCRICOES_URL` para 2026, valendo mais que o `.env` do servidor.
 

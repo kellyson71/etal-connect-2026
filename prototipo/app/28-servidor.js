@@ -669,7 +669,7 @@ async function apiStart() {
       }
     }
     const av = await API.get('/api/avisos');
-    if (av.length) {
+    if (av.length || !window.ETAL_CONFIG?.demo) {
       D.notices.length = 0;
       av.forEach((n) => D.notices.push({ time: n.time, title: n.title, text: n.text, org: true }));
     }

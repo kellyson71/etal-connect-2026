@@ -17,7 +17,14 @@ const organizadores = () => {
   const extra = orgRead().organizadores || [];
   return [...D.organizadores, ...extra.filter((o) => !D.organizadores.some((d) => d.matricula === o.matricula))];
 };
-const orgDe = () => organizadores().find((o) => o.matricula === String(D.person.id || '')) || null;
+/* Com servidor, quem é da organização diz a API (ETAL_ORGANIZACAO); a lista de matrículas é a do exemplo. */
+const orgComServidor = () => API && !window.ETAL_CONFIG?.demo;
+const orgDe = () =>
+  orgComServidor()
+    ? D.person.org
+      ? { matricula: String(D.person.id || ''), papel: 'Organização' }
+      : null
+    : organizadores().find((o) => o.matricula === String(D.person.id || '')) || null;
 const semAcesso = () => ({
   html: `${header('Painel da organização')}<div class="pad stack"><div class="empty st" ${st(0)}>${illo('mark')}<h3>Só para a organização</h3><p>O painel abre para as matrículas cadastradas como organizadoras do ETAL.</p></div></div>`,
 });
@@ -91,15 +98,30 @@ Screens.orgQrs = () => {
     },
   };
 };
+/* Com servidor, os números do painel são os reais (/api/org/resumo e /api/lotacao); sem ele, os do exemplo. */
+let orgReal = null;
+async function orgRealCarregar() {
+  if (orgReal && Date.now() - orgReal.em < 30000) return;
+  try {
+    const [resumo, lotacao] = await Promise.all([API.get('/api/org/resumo'), API.get('/api/lotacao')]);
+    orgReal = { resumo, lotacao, em: Date.now() };
+    if (top().s === 'org') rerender();
+  } catch (_) {
+    /* fica o que já havia */
+  }
+}
 Screens.org = () => {
   const eu = orgDe();
   if (!eu) return semAcesso();
   const now = D.sessions.filter((x) => isNow(x) && x.seats);
-  const present = (x) => Math.min(x.seats, Math.round(x.taken * 0.86 + 1));
+  const present = (x) =>
+    orgComServidor() ? orgReal?.lotacao?.[x.id] || 0 : Math.min(x.seats, Math.round(x.taken * 0.86 + 1));
   const inRooms = now.reduce((n, x) => n + present(x), 0);
   const o = orgRead();
   const manuais = Object.keys(o.manuais || {}).length;
-  const ferramentas = [
+  /* aviso, sala, campeonatos, credenciamento e equipe aqui gravam só neste aparelho: com servidor, ficam no painel
+     completo (admin.html), que fala com a API */
+  const todas = [
     ['bell', 'Enviar aviso', 'Para todo mundo, na hora', 'orgAviso'],
     ['route', 'Trocar sala', 'E avisar os inscritos', 'orgSala'],
     ['trophy', 'Campeonatos', 'Resultados, regras e chave', 'orgJogos'],
@@ -108,11 +130,16 @@ Screens.org = () => {
     ['flag', 'Moderação', 'Denúncias e conteúdo da comunidade', 'orgCommunity'],
     ['qr', 'QR Codes das salas', 'Para quando o impresso rasga ou não lê', 'orgQrs'],
   ];
+  const ferramentas = orgComServidor() ? todas.filter(([, , , go]) => ['orgCommunity', 'orgQrs'].includes(go)) : todas;
   return {
     html: `${header('Painel da organização')}<div class="pad stack org">
         <div class="org-eu st" ${st(0)}>${meAv('av')}<span><b>${esc(D.person.first || D.person.name)}</b><small>${esc(eu.papel)} · matrícula ${esc(eu.matricula)}</small></span></div>
         <div class="org-kpis st" ${st(1)}>
-          <div><b>${liveCred + manuais}</b><small>credenciados</small><em>de ${D.org.inscritos} inscritos</em></div>
+          ${
+            orgComServidor()
+              ? `<div><b>${orgReal ? orgReal.resumo.credenciados : '…'}</b><small>credenciados</small><em>de ${orgReal ? orgReal.resumo.pessoas : '…'} no app</em></div>`
+              : `<div><b>${liveCred + manuais}</b><small>credenciados</small><em>de ${D.org.inscritos} inscritos</em></div>`
+          }
           <div><b>${inRooms}</b><small>pessoas em sala</small><em>${now.length} atividades agora</em></div>
         </div>
         <div class="org-ferr st" ${st(2)}>${ferramentas.map(([i, t, sub, go]) => `<button data-go="${go}">${ic(i)}<b>${t}</b><small>${sub}</small></button>`).join('')}</div>
@@ -130,6 +157,9 @@ Screens.org = () => {
         <a class="org-desk st" ${st(4)} href="admin.html" target="_blank" rel="noopener">${ic('laptop')}<span><b>Painel completo no computador</b><small>Planta ao vivo, participantes e CSV</small></span>${ic('open')}</a>
 
       </div>`,
+    mount: () => {
+      if (orgComServidor()) orgRealCarregar();
+    },
   };
 };
 Screens.orgAviso = () =>

@@ -49,7 +49,7 @@ def programacao(request: Request, db: Session = Depends(sessao)):
         for s in sessoes:
             achada = mapa.get(s['id'])
             if achada and achada.restantes is not None:
-                s['seats'], s['taken'] = achada.participantes + achada.restantes, achada.participantes
+                s['seats'], s['taken'], s['vagasSuap'] = achada.participantes + achada.restantes, achada.participantes, True
     return _json_com_etag(request, {'sessions': sessoes, 'rooms': salas})
 
 

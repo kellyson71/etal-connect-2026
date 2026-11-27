@@ -1055,9 +1055,11 @@ window.DATA.etal = {
     ['2023', 'V ETAL', '29 de novembro a 1º de dezembro'],
     ['2024', 'VI ETAL', '27 a 29 de novembro'],
     ['2025', 'VII ETAL', '26 a 28 de novembro'],
+    ['2026', 'VIII ETAL', '3 e 4 de dezembro'],
   ],
   site: 'https://etal.nadic.com.br/',
-  portal: 'https://portal.ifrn.edu.br/eventos/8528/',
+  portal: 'https://portal.ifrn.edu.br/eventos/10301/',
+  inscricao: 'https://suap.ifrn.edu.br/eventos/inscricao/1/10301/',
   source: 'Fonte: eventos registrados no SUAP. A lista traz só as edições encontradas lá.',
 };
 window.DATA.ifrnUrl = 'https://portal.ifrn.edu.br/campus/paudosferros/';

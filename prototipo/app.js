@@ -178,11 +178,17 @@ const comInscricao = (x) => tipoDe(x).g === 'mini';
 const inscrito = (x) => !!x && (S.inscricoes.has(x.id) || (comInscricao(x) && S.saved.has(x.id)));
 const linkInscricao = (x) => x.inscricao || x.link || '';
 const vagasLivres = (x) => (x.seats ? Math.max(0, x.seats - (x.taken || 0)) : null);
+/* Com servidor, as vagas preenchidas de um minicurso vêm da página do SUAP (vagasSuap) ou da lista de inscritos
+   importada; sem nenhuma das duas, o app só sabe o total e não diz quantas restam. */
+const contagemReal = (x) =>
+  !API || !!window.ETAL_CONFIG?.demo || !comInscricao(x) || !!x.vagasSuap || (x.taken || 0) > 0;
 /* vagas preenchidas, discreto: barrinha e "26 de 30" (cheio vira "Esgotado") */
 const vagasLinha = (x) =>
   !x.seats
     ? ''
-    : `<span class="vagas-linha ${vagasLivres(x) === 0 ? 'cheio' : vagasLivres(x) <= 5 ? 'pouca' : ''}">${seatBar(x)}<small>${vagasLivres(x) === 0 ? 'Esgotado' : `${Math.min(x.taken || 0, x.seats)} de ${x.seats} vagas`}</small></span>`;
+    : !contagemReal(x)
+      ? `<span class="vagas-linha"><small>${x.seats} vagas</small></span>`
+      : `<span class="vagas-linha ${vagasLivres(x) === 0 ? 'cheio' : vagasLivres(x) <= 5 ? 'pouca' : ''}">${seatBar(x)}<small>${vagasLivres(x) === 0 ? 'Esgotado' : `${Math.min(x.taken || 0, x.seats)} de ${x.seats} vagas`}</small></span>`;
 const duracao = (x) => {
   if (!x.end) return '';
   const [a, b] = [x.time, x.end].map((t) => {
@@ -2218,6 +2224,16 @@ function destaqueHome() {
   const titulo = isNow(s) ? (minha ? 'Agora' : 'Agora no ETAL') : minha ? 'Sua próxima atividade' : 'A seguir no ETAL';
   return { s, titulo, minhas: minhas.filter((x) => x !== s) };
 }
+/* Ao lado do título do Início: antes do evento, quanto falta; durante, o dia e a hora; depois, encerrado. */
+function quandoAgora() {
+  if (D.now.fixo === '00:00' && D.days[0]?.date) {
+    const hoje = new Date(new Date().toDateString());
+    const n = Math.round((new Date(`${D.days[0].date}T00:00`) - hoje) / 864e5);
+    return n <= 1 ? 'Começa amanhã' : `Começa em ${n} dias`;
+  }
+  if (D.now.fixo) return 'Evento encerrado';
+  return `${dayOf(D.now.day).week}, ${diaMes(D.now.day)} · <span id="nowclock">${skyClock()}</span>`;
+}
 function destaqueCard(s) {
   const here = S.present[s.id];
   const agora = isNow(s);
@@ -2230,7 +2246,9 @@ function destaqueCard(s) {
         : comInscricao(s)
           ? `<span class="tag">Inscrição no SUAP</span>`
           : `<span class="tag aberta">Aberto a todos</span>`;
-  const comoChegar = `<button class="btn primary" data-act="openmap" data-floor="${s.floor}" data-zone="${s.zone}">Como chegar</button>`;
+  const comoChegar = semMapa(s)
+    ? ''
+    : `<button class="btn primary" data-act="openmap" data-floor="${s.floor}" data-zone="${s.zone}">Como chegar</button>`;
   const segundo = agora
     ? `<button class="btn soft" data-act="scan">${ic('qr')}Presença</button>`
     : comInscricao(s) && !inscrito(s) && linkInscricao(s)
@@ -2265,15 +2283,15 @@ Screens.home = () => {
     html: `<section class="${UI.sky ? 'hm-sky' : 'hm-plain'}">${UI.sky ? skyArt() : ''}
           <header class="apphead"><span class="wm ${UI.sky ? 'on-sky' : ''}">${mark('mark xs')}<b>etal</b><span>connect</span></span>
           <span class="hd-acts"><button class="iconbtn ${UI.sky ? 'on-sky' : ''}" data-act="tema" aria-label="${isDark() ? 'Usar o tema claro' : 'Usar o tema escuro'}">${ic(isDark() ? 'sun' : 'moon')}</button>
-          <button class="iconbtn ${UI.sky ? 'on-sky' : ''}" data-go="notices" aria-label="Avisos, ${D.notices.filter((n) => n.fresh).length} novos">${ic('bell')}<u class="badge-num">${D.notices.filter((n) => n.fresh).length}</u></button>${profileShortcut()}</span></header>
+          <button class="iconbtn ${UI.sky ? 'on-sky' : ''}" data-go="notices" aria-label="Avisos, ${D.notices.filter((n) => n.fresh).length} novos">${ic('bell')}${D.notices.some((n) => n.fresh) ? `<u class="badge-num">${D.notices.filter((n) => n.fresh).length}</u>` : ''}</button>${profileShortcut()}</span></header>
         </section>
         <div class="pad stack home">
           ${badge()}
-          ${UI.home.live ? `<button class="hm-live st" ${st(1)} aria-live="polite"><span class="hm-live-tag"><i></i>Ao vivo</span><span class="hm-live-row"><span class="hm-live-msg"></span></span>${ic('chev')}</button>` : ''}
+          ${UI.home.live ? `<button class="hm-live st" ${st(1)} aria-live="polite"><span class="hm-live-tag"><i></i>${D.now.fixo === '00:00' ? 'Em breve' : D.now.fixo ? 'Encerrado' : 'Ao vivo'}</span><span class="hm-live-row"><span class="hm-live-msg"></span></span>${ic('chev')}</button>` : ''}
 
           ${
             d.s
-              ? `<div class="sec st" ${st(2)}><h2>${d.titulo}</h2>${d.minhas.length || S.saved.size ? '<button data-act="mine">Minha agenda</button>' : `<span>${dayOf(D.now.day).week}, ${diaMes(D.now.day)} · <span id="nowclock">${skyClock()}</span></span>`}</div>
+              ? `<div class="sec st" ${st(2)}><h2>${d.titulo}</h2>${d.minhas.length || S.saved.size ? '<button data-act="mine">Minha agenda</button>' : `<span>${quandoAgora()}</span>`}</div>
           ${destaqueCard(d.s)}
           ${
             UI.home.agenda
@@ -2559,12 +2577,12 @@ const mountThumb = (x) => (page) => {
 function taughtShow(x) {
   const d = dayOf(x.day);
   const req = x.prerequisites || (x.requirements ? [x.requirements] : []);
-  const vagas = x.seats ? Math.max(0, x.seats - (x.taken || 0)) : null;
+  const vagas = x.seats && contagemReal(x) ? Math.max(0, x.seats - (x.taken || 0)) : null;
   return `<h2 class="h st" ${st(1)}>Ministrando no ETAL</h2>
       <article class="mc-show st" ${st(2)}>
         <div class="mc-photo">${x.speakerPhoto ? `<img src="${esc(x.speakerPhoto)}" alt="${esc(x.speaker)}">` : spAv(x, true)}<span class="mc-kind">${ic(tipoDe(x).icon)}${esc(x.type)}</span></div>
         <div class="mc-body"><h3>${esc(x.title)}</h3>
-          <ul class="mc-meta"><li>${ic('cal')}${d.long} · ${x.time} às ${x.end}</li><li>${ic('pin')}${esc(whereOf(x))}</li>${vagas !== null ? `<li>${ic('users')}${vagas} de ${x.seats} vagas</li>` : ''}</ul>
+          <ul class="mc-meta"><li>${ic('cal')}${d.long} · ${x.time} às ${x.end}</li><li>${ic('pin')}${esc(whereOf(x))}</li>${vagas !== null ? `<li>${ic('users')}${vagas} de ${x.seats} vagas</li>` : x.seats ? `<li>${ic('users')}${x.seats} vagas</li>` : ''}</ul>
           <p class="mc-desc">${esc(x.description)}</p>
           ${req.length ? `<h4>Pré-requisitos</h4><ul class="mc-req">${req.map((r) => `<li>${ic('check')}<span>${esc(r)}</span></li>`).join('')}</ul>` : ''}
           ${x.learn?.length ? `<h4>O que você vai fazer</h4><ol class="mc-learn">${x.learn.map((l, i) => `<li><b>${i + 1}</b><span>${esc(l)}</span></li>`).join('')}</ol>` : ''}
@@ -2662,9 +2680,10 @@ Screens.activity = ({ id }) => {
           )
           .join('')}</ul></section>`
       : `<button class="teacher ${t.g === 'pal' ? 'quem-fala' : ''} st" ${st(2)} data-go="speaker" data-id="${id}">${spAv(s, t.g === 'pal')}<span><b>${s.speakerShort}</b><small>${s.role}</small></span>${ic('chev', 'i card-chev')}</button>`;
-  const vagasRestam = s.seats ? Math.max(0, s.seats - s.taken) : null;
+  const vagasRestam = s.seats && contagemReal(s) ? Math.max(0, s.seats - (s.taken || 0)) : null;
   const blocos = `<div class="glance st" ${st(3)}>
         <div class="gl-quando"><small>${d.week} · ${diaMes(s.day)}</small><b>${s.time}</b><span>até ${s.end}${duracao(s) ? ` · ${duracao(s)}` : ''}</span></div>
+        ${s.seats && vagasRestam == null ? `<div class="gl-vagas"><small>Vagas</small><b>${s.seats}</b><span>no total</span></div>` : ''}
         ${vagasRestam == null ? '' : `<div class="gl-vagas ${vagasRestam === 0 ? 'cheio' : vagasRestam <= 5 ? 'pouca' : ''}"><small>Vagas</small><b>${vagasRestam === 0 ? 'Esgotado' : vagasRestam}</b>${vagasRestam ? `<span>de ${s.seats}</span>` : ''}${seatBar(s)}</div>`}
       </div>`;
   /* minicurso: a inscrição é no SUAP (vaga limitada); o app mostra se a pessoa já está inscrita ou leva até lá */
@@ -2673,7 +2692,7 @@ Screens.activity = ({ id }) => {
     ? `<div class="inscricao ok st" ${st(3)}>${ic('check')}<span><b>Inscrição feita</b><small>Você se inscreveu pelo SUAP. Chegue no horário para registrar a presença.</small></span></div>`
     : !comInscricao(s)
       ? ''
-      : `<div class="inscricao st" ${st(3)}>${ic('id')}<span><b>${vagasRestam === 0 ? 'Vagas esgotadas' : 'Inscrição pelo SUAP'}</b><small>${vagasRestam === 0 ? 'Confira no SUAP se abriu alguma vaga.' : 'Vagas limitadas: a inscrição é feita no SUAP, pelo botão abaixo.'}</small></span></div>`;
+      : `<div class="inscricao st" ${st(3)}>${ic('id')}<span><b>${vagasRestam === 0 ? 'Vagas esgotadas' : 'Inscrição pelo SUAP'}</b><small>${vagasRestam === 0 ? 'Confira no SUAP se abriu alguma vaga.' : 'Vagas limitadas: a inscrição é feita no SUAP, pelo botão abaixo. Cada pessoa se inscreve em um minicurso só.'}</small></span></div>`;
   const lugar = semMapa(s)
     ? `<div class="lugar sem-mapa st" ${st(4)}><span class="lg-tx"><b>${esc(s.room || 'Local a confirmar')}</b><small>Ainda sem marcação no mapa</small></span></div>`
     : `<button class="lugar st" ${st(4)} ${mapAct(s)} aria-label="Ver ${s.room} no mapa"><canvas class="thumb3d"></canvas><span class="lg-tx"><b>${s.room}</b><small>${Number.isInteger(s.floor) ? floorOf(s.floor).label : ''}</small></span><span class="lg-ir">${ic('route')}Como chegar</span></button>`;
@@ -3326,11 +3345,12 @@ let liveI = 0,
   liveCred = D.liveBase.credenciados;
 function liveMessages() {
   /* sai da programação carregada: um minicurso com vaga e o que está acontecendo agora (com servidor, a do ano) */
-  const vaga = D.sessions.find((x) => comInscricao(x) && x.seats > (x.taken || 0) && !acabou(x));
+  const vaga = D.sessions.find((x) => comInscricao(x) && contagemReal(x) && x.seats > (x.taken || 0) && !acabou(x));
   const agora = D.sessions.find((x) => isNow(x) && !x.simple);
   const mk = D.tournaments[0];
   return [
-    { i: 'users', t: `${liveCred} pessoas credenciadas`, go: 'notices' },
+    /* a contagem de credenciados é do exemplo; com servidor ela não é pública */
+    (!API || window.ETAL_CONFIG?.demo) && { i: 'users', t: `${liveCred} pessoas credenciadas`, go: 'notices' },
     vaga && {
       i: 'pin',
       t: `${vaga.room} com ${vaga.seats - (vaga.taken || 0)} vagas: ${vaga.short}`,
@@ -3732,7 +3752,7 @@ function retroSlides(r) {
     `<div class="re-c">${tag}<small>O que você aprendeu</small><ul class="re-learn">${r.learn.map((l) => `<li>${ic('check')}<span>${l}</span></li>`).join('')}</ul></div>`,
     `<div class="re-c">${tag}<small>Quem fez parte</small><div class="re-people">${r.people.map((x) => `<span><i>${x.initials}</i>${x.speakerShort}</span>`).join('')}</div><dl class="re-stats"><div><dd>${r.questions}</dd><dt>${r.questions === 1 ? 'pergunta' : 'perguntas'}</dt></div><div><dd>${r.contacts}</dd><dt>${r.contacts === 1 ? 'contato' : 'contatos'}</dt></div><div><dd>${r.ratings}</dd><dt>${r.ratings === 1 ? 'avaliação' : 'avaliações'}</dt></div></dl></div>`,
     `<div class="re-c">${tag}<small>Sua colmeia</small><div class="re-comb">${comb('big', r.demo)}</div><p>${got} de ${D.combs.length} favos.</p></div>`,
-    `<div class="re-c">${tag}<small>O que é o ETAL</small><p class="re-long">${D.etal.about}</p><ol class="re-time">${D.etal.editions.map(([y, nm]) => `<li class="${y === '2025' ? 'on' : ''}"><time>${y}</time>${nm}</li>`).join('')}</ol></div>`,
+    `<div class="re-c">${tag}<small>O que é o ETAL</small><p class="re-long">${D.etal.about}</p><ol class="re-time">${D.etal.editions.map(([y, nm]) => `<li class="${y === String(D.event?.year || 2025) ? 'on' : ''}"><time>${y}</time>${nm}</li>`).join('')}</ol></div>`,
     `<div class="re-c re-end">${mark('mark re-mark')}${tag}<h1>Até o próximo ETAL</h1><p>${horasTxt(r.hours)} ${r.hours === 1 ? 'hora' : 'horas'}, ${n} ${n === 1 ? 'atividade' : 'atividades'} e ${got} ${got === 1 ? 'favo' : 'favos'}.</p><div class="re-actions"><button class="btn big re-primary" data-act="retroshare">${ic('share')}Compartilhar</button><button class="btn big re-ghost" data-act="retroclose">Fechar</button></div></div>`,
   ];
 }
@@ -3860,7 +3880,14 @@ const organizadores = () => {
   const extra = orgRead().organizadores || [];
   return [...D.organizadores, ...extra.filter((o) => !D.organizadores.some((d) => d.matricula === o.matricula))];
 };
-const orgDe = () => organizadores().find((o) => o.matricula === String(D.person.id || '')) || null;
+/* Com servidor, quem é da organização diz a API (ETAL_ORGANIZACAO); a lista de matrículas é a do exemplo. */
+const orgComServidor = () => API && !window.ETAL_CONFIG?.demo;
+const orgDe = () =>
+  orgComServidor()
+    ? D.person.org
+      ? { matricula: String(D.person.id || ''), papel: 'Organização' }
+      : null
+    : organizadores().find((o) => o.matricula === String(D.person.id || '')) || null;
 const semAcesso = () => ({
   html: `${header('Painel da organização')}<div class="pad stack"><div class="empty st" ${st(0)}>${illo('mark')}<h3>Só para a organização</h3><p>O painel abre para as matrículas cadastradas como organizadoras do ETAL.</p></div></div>`,
 });
@@ -3934,15 +3961,30 @@ Screens.orgQrs = () => {
     },
   };
 };
+/* Com servidor, os números do painel são os reais (/api/org/resumo e /api/lotacao); sem ele, os do exemplo. */
+let orgReal = null;
+async function orgRealCarregar() {
+  if (orgReal && Date.now() - orgReal.em < 30000) return;
+  try {
+    const [resumo, lotacao] = await Promise.all([API.get('/api/org/resumo'), API.get('/api/lotacao')]);
+    orgReal = { resumo, lotacao, em: Date.now() };
+    if (top().s === 'org') rerender();
+  } catch (_) {
+    /* fica o que já havia */
+  }
+}
 Screens.org = () => {
   const eu = orgDe();
   if (!eu) return semAcesso();
   const now = D.sessions.filter((x) => isNow(x) && x.seats);
-  const present = (x) => Math.min(x.seats, Math.round(x.taken * 0.86 + 1));
+  const present = (x) =>
+    orgComServidor() ? orgReal?.lotacao?.[x.id] || 0 : Math.min(x.seats, Math.round(x.taken * 0.86 + 1));
   const inRooms = now.reduce((n, x) => n + present(x), 0);
   const o = orgRead();
   const manuais = Object.keys(o.manuais || {}).length;
-  const ferramentas = [
+  /* aviso, sala, campeonatos, credenciamento e equipe aqui gravam só neste aparelho: com servidor, ficam no painel
+     completo (admin.html), que fala com a API */
+  const todas = [
     ['bell', 'Enviar aviso', 'Para todo mundo, na hora', 'orgAviso'],
     ['route', 'Trocar sala', 'E avisar os inscritos', 'orgSala'],
     ['trophy', 'Campeonatos', 'Resultados, regras e chave', 'orgJogos'],
@@ -3951,11 +3993,16 @@ Screens.org = () => {
     ['flag', 'Moderação', 'Denúncias e conteúdo da comunidade', 'orgCommunity'],
     ['qr', 'QR Codes das salas', 'Para quando o impresso rasga ou não lê', 'orgQrs'],
   ];
+  const ferramentas = orgComServidor() ? todas.filter(([, , , go]) => ['orgCommunity', 'orgQrs'].includes(go)) : todas;
   return {
     html: `${header('Painel da organização')}<div class="pad stack org">
         <div class="org-eu st" ${st(0)}>${meAv('av')}<span><b>${esc(D.person.first || D.person.name)}</b><small>${esc(eu.papel)} · matrícula ${esc(eu.matricula)}</small></span></div>
         <div class="org-kpis st" ${st(1)}>
-          <div><b>${liveCred + manuais}</b><small>credenciados</small><em>de ${D.org.inscritos} inscritos</em></div>
+          ${
+            orgComServidor()
+              ? `<div><b>${orgReal ? orgReal.resumo.credenciados : '…'}</b><small>credenciados</small><em>de ${orgReal ? orgReal.resumo.pessoas : '…'} no app</em></div>`
+              : `<div><b>${liveCred + manuais}</b><small>credenciados</small><em>de ${D.org.inscritos} inscritos</em></div>`
+          }
           <div><b>${inRooms}</b><small>pessoas em sala</small><em>${now.length} atividades agora</em></div>
         </div>
         <div class="org-ferr st" ${st(2)}>${ferramentas.map(([i, t, sub, go]) => `<button data-go="${go}">${ic(i)}<b>${t}</b><small>${sub}</small></button>`).join('')}</div>
@@ -3973,6 +4020,9 @@ Screens.org = () => {
         <a class="org-desk st" ${st(4)} href="admin.html" target="_blank" rel="noopener">${ic('laptop')}<span><b>Painel completo no computador</b><small>Planta ao vivo, participantes e CSV</small></span>${ic('open')}</a>
 
       </div>`,
+    mount: () => {
+      if (orgComServidor()) orgRealCarregar();
+    },
   };
 };
 Screens.orgAviso = () =>
@@ -4408,7 +4458,7 @@ Screens.suapEvents = () => ({
       <p class="note">Eventos e certificados da sua conta. A inscrição é concluída no portal oficial do SUAP.</p>
       ${API && !suapSummary ? '<p role="status">Consultando sua sessão…</p>' : suapSummary?.connected ? `<ul class="ab-list">${suapSummary.events.map((e) => `<li><b>${esc(e.name)}</b><a href="${esc(e.url)}" target="_blank" rel="noopener">Abrir no SUAP ${ic('open')}</a></li>`).join('') || '<li>Nenhum evento encontrado nesta sessão.</li>'}</ul><h2 class="h">Certificados disponíveis</h2><ul class="ab-list">${suapSummary.certificates.map((c) => `<li><b>${esc(c.name)}</b><a class="btn soft" href="${esc(API.url('/api/eu/suap/certificados/' + encodeURIComponent(c.id)))}" target="_blank" rel="noopener">${ic('download')}Baixar PDF</a></li>`).join('') || '<li>O SUAP não disponibilizou certificados nesta sessão.</li>'}</ul>` : `<p class="note">${esc(suapSummary?.message || 'Entre com sua matrícula e senha para consultar seus eventos e certificados.')}</p>`}
       <a class="btn primary" href="https://suap.ifrn.edu.br/admin/eventos/evento/?tab=tab_participante" target="_blank" rel="noopener">Abrir meus eventos no SUAP ${ic('open')}</a>
-      <a class="btn soft" href="https://suap.ifrn.edu.br/eventos/inscricao/1/8528/" target="_blank" rel="noopener">Programação original do VII ETAL ${ic('open')}</a>
+      <a class="btn soft" href="${esc(D.etal.inscricao)}" target="_blank" rel="noopener">Inscrições do VIII ETAL no SUAP ${ic('open')}</a>
     </div>`,
   mount: () => {
     if (API && !suapSummary) loadSuapSummary();
@@ -4552,7 +4602,7 @@ Screens.credential = () => {
 
 Screens.notices = () => ({
   html: `${header('Avisos')}
-      <div class="pad stack"><ul class="notes">${D.notices.map((n, i) => `<li class="st ${n.fresh ? 'fresh' : ''}" ${st(i)}><time>${n.time}</time><h4>${esc(n.title)}${n.org ? '<em class="org-tag">Organização</em>' : ''}</h4><p>${esc(n.text)}</p></li>`).join('')}</ul></div>`,
+      <div class="pad stack">${D.notices.length ? '' : `<div class="empty st" ${st(0)}>${illo('mark')}<h3>Nenhum aviso ainda</h3><p>Quando a organização mandar um recado, ele aparece aqui e no sino.</p></div>`}<ul class="notes">${D.notices.map((n, i) => `<li class="st ${n.fresh ? 'fresh' : ''}" ${st(i)}><time>${n.time}</time><h4>${esc(n.title)}${n.org ? '<em class="org-tag">Organização</em>' : ''}</h4><p>${esc(n.text)}</p></li>`).join('')}</ul></div>`,
 });
 
 Screens.materials = () => {
@@ -4787,7 +4837,7 @@ Screens.tournament = ({ id }) => {
             ${
               ses
                 ? `<button class="btn t-ghost ${watching ? 'on' : ''}" data-act="tourwatch" data-id="${ses.id}" aria-pressed="${!!watching}">${ic(watching ? 'check' : 'cal')}${watching ? 'Na sua agenda' : 'Vou assistir'}</button>
-            <button class="btn t-ghost" data-act="openmap" data-floor="${ses.floor}" data-zone="${ses.zone}">${ic('pin')}Como chegar</button>`
+            ${semMapa(ses) ? '' : `<button class="btn t-ghost" data-act="openmap" data-floor="${ses.floor}" data-zone="${ses.zone}">${ic('pin')}Como chegar</button>`}`
                 : ''
             }
           </div>
@@ -8401,7 +8451,7 @@ async function apiStart() {
       }
     }
     const av = await API.get('/api/avisos');
-    if (av.length) {
+    if (av.length || !window.ETAL_CONFIG?.demo) {
       D.notices.length = 0;
       av.forEach((n) => D.notices.push({ time: n.time, title: n.title, text: n.text, org: true }));
     }

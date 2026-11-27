@@ -270,7 +270,7 @@
     return out;
   })();
   const credOf = (p) => ORG.creds[p.id] || p.cred || null;
-  const credCount = () => PEOPLE.filter(credOf).length;
+  const credCount = () => pessoas().filter(credOf).length;
   /* Demonstração: agenda, presenças, saídas, avaliações e perfil simulados (sempre os mesmos), para os filtros, os
      números do público e o ranking das avaliações funcionarem sem servidor. */
   const SIM_LANGS = ['Python', 'JavaScript', 'Java', 'C', 'PHP', 'TypeScript', 'C#', 'Kotlin', 'SQL', 'GDScript'];
@@ -353,7 +353,7 @@
         areas: p.areas,
         open: p.open,
       }));
-      if (['participantes', 'dados'].includes(current())) render();
+      if (['participantes', 'dados', 'visao'].includes(current())) render();
     } catch (x) {
       toast(x.message);
     } finally {
@@ -858,9 +858,15 @@
       );
     });
   }
+  /* antes do evento, quanto falta; depois, encerrado; durante, o dia e a hora */
   const relogio = () => {
-    $('#clock').textContent =
-      `${dayOf(D.now.day)?.week || ''} ${D.now.day} ${dayOf(D.now.day)?.mes || 'nov'} · ${D.now.time}`;
+    const dia = `${dayOf(D.now.day)?.week || ''} ${D.now.day} ${dayOf(D.now.day)?.mes || 'nov'}`;
+    let txt = `${dia} · ${D.now.time}`;
+    if (D.now.fixo === '00:00' && D.days[0]?.date) {
+      const n = Math.round((new Date(`${D.days[0].date}T00:00`) - new Date(new Date().toDateString())) / 864e5);
+      txt = `${n <= 1 ? 'Começa amanhã' : `Começa em ${n} dias`} · ${dia}`;
+    } else if (D.now.fixo) txt = 'Evento encerrado';
+    $('#clock').textContent = txt;
   };
   relogio();
 
@@ -890,7 +896,16 @@
 
   /* Credenciamentos por hora: os simulados mais os feitos neste painel. */
   function hourRows() {
-    const rows = D.org.porHora.map(([h, v]) => [h, v]);
+    /* com servidor, só os credenciamentos de verdade; sem ele, a curva de exemplo */
+    const rows = API ? [] : D.org.porHora.map(([h, v]) => [h, v]);
+    if (API)
+      pessoas().forEach((p) => {
+        if (!p.cred) return;
+        const h = +p.cred.split(':')[0];
+        const r = rows.find((q) => q[0] === h);
+        if (r) r[1] += 1;
+        else rows.push([h, 1]);
+      });
     Object.values(ORG.creds).forEach((t) => {
       const h = +t.split(':')[0];
       const r = rows.find((q) => q[0] === h);
@@ -901,6 +916,8 @@
   }
   /* Barras verticais, uma série: credenciamento por hora. Valor só no pico; o resto vem na dica. */
   function hourChart(rows) {
+    if (!rows.length)
+      return '<p class="empty">Ninguém credenciado ainda. O gráfico aparece com os primeiros credenciamentos.</p>';
     const W = 560,
       H = 230,
       L = 34,
@@ -930,7 +947,9 @@
   }
   /* Composição em duas categorias: IFRN e visitantes, com rótulo direto em cada parte. */
   function originRows() {
+    if (!pessoas().length) return '<p class="empty">Ainda sem participantes no app.</p>';
     const row = (label, list) => {
+      if (!list.length) return `<div class="stack-row"><span>${label}</span><small>nenhum ainda</small></div>`;
       const a = list.filter((p) => p.ifrn).length,
         b = list.length - a;
       const pa = Math.round((a / list.length) * 100);
@@ -939,17 +958,20 @@
         <div style="flex:${b};background:var(--s-vis)" data-tip="${label} visitantes: ${b} (${100 - pa}%)" tabindex="0">${b}</div></div></div>`;
     };
     return `<ul class="legend"><li><i style="background:var(--s-ifrn)"></i>IFRN</li><li><i style="background:var(--s-vis)"></i>Visitantes</li></ul>
-      ${row('Inscritos', PEOPLE)}${row('Credenciados', PEOPLE.filter(credOf))}`;
+      ${row(API ? 'No app' : 'Inscritos', pessoas())}${row('Credenciados', pessoas().filter(credOf))}`;
   }
   function cityBars() {
     const n = {};
-    PEOPLE.filter((p) => !p.ifrn).forEach((p) => {
-      n[p.city] = (n[p.city] || 0) + 1;
-    });
+    pessoas()
+      .filter((p) => !p.ifrn && p.city)
+      .forEach((p) => {
+        n[p.city] = (n[p.city] || 0) + 1;
+      });
     const list = Object.entries(n)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 6);
     const max = list[0]?.[1] || 1;
+    if (!list.length) return '<p class="empty">Nenhum visitante ainda.</p>';
     return `<ul class="hbars">${list.map(([c, v]) => `<li data-tip="${c}: ${v} visitantes"><span>${esc(c)}</span><span class="track"><i style="width:${(v / max) * 100}%"></i></span><b>${v}</b></li>`).join('')}</ul>`;
   }
   const meter = (x) => {
@@ -1090,12 +1112,14 @@
       return window.COMMUNITY.moderationHTML(socialV, socialModFilter);
     },
     visao() {
+      if (API && !REAIS) pessoasCarregar();
       const now = D.sessions.filter((x) => isNow(x) && x.seats);
       const inRooms = now.reduce((n, x) => n + present(x), 0);
       const cred = credCount();
-      const vis = PEOPLE.filter((p) => !p.ifrn).length;
+      const todos = pessoas().length;
+      const vis = pessoas().filter((p) => !p.ifrn).length;
       return `<div class="grid g-kpi">
-          <section class="card kpi"><b>${cred}</b><span>credenciados de ${PEOPLE.length}</span><span class="bar"><i style="width:${(cred / PEOPLE.length) * 100}%"></i></span></section>
+          <section class="card kpi"><b>${cred}</b><span>credenciados de ${todos}${API ? ' no app' : ''}</span><span class="bar"><i style="width:${todos ? (cred / todos) * 100 : 0}%"></i></span></section>
           <section class="card kpi"><b>${inRooms}</b><span>em sala agora</span></section>
           <section class="card kpi"><b>${vis}</b><span>visitantes</span></section>
           <section class="card kpi"><b>${ORG.notices.length}</b><span>avisos enviados</span></section>
@@ -1401,7 +1425,9 @@
       .join('')}</tbody></table></div>`;
   }
   function feed(limit) {
-    const list = [...ORG.notices.map((n) => ({ ...n, org: true })), ...D.notices].slice(0, limit || 99);
+    /* com servidor, só os avisos enviados (os de D.notices são do exemplo de 2025) */
+    const list = [...ORG.notices.map((n) => ({ ...n, org: true })), ...(API ? [] : D.notices)].slice(0, limit || 99);
+    if (!list.length) return '<p class="empty">Nenhum aviso enviado ainda.</p>';
     return `<ul class="feed">${list.map((n) => `<li class="${n.org ? 'org' : ''}"><time>${n.time}</time><span><b>${esc(n.title)}</b><small>${esc(n.text)}${n.to ? ` · para ${esc(n.to)}` : ''}</small></span></li>`).join('')}</ul>`;
   }
 
