@@ -150,6 +150,18 @@ const TIPOS = {
 };
 const TIPOS_G = new Set(['pal', 'mesa', 'mini', 'camp']);
 const tipoDe = (x) => TIPOS[x.type] || { k: 'out', g: 'out', icon: 'cal', formato: '' };
+/* Minicurso e oficina têm vaga limitada e a inscrição é feita no SUAP: no app não se salvam. No SUAP a inscrição é por
+   atividade (minicurso, palestra, mesa...), feita antes do evento; o servidor acha a pessoa nas listas de inscritos e
+   manda essas atividades em S.inscricoes. Sem servidor, os minicursos da agenda de exemplo contam como inscritos. */
+const comInscricao = (x) => tipoDe(x).g === 'mini';
+const inscrito = (x) => !!x && (S.inscricoes.has(x.id) || (comInscricao(x) && S.saved.has(x.id)));
+const linkInscricao = (x) => x.inscricao || x.link || '';
+const vagasLivres = (x) => (x.seats ? Math.max(0, x.seats - (x.taken || 0)) : null);
+/* vagas preenchidas, discreto: barrinha e "26 de 30" (cheio vira "Esgotado") */
+const vagasLinha = (x) =>
+  !x.seats
+    ? ''
+    : `<span class="vagas-linha ${vagasLivres(x) === 0 ? 'cheio' : vagasLivres(x) <= 5 ? 'pouca' : ''}">${seatBar(x)}<small>${vagasLivres(x) === 0 ? 'Esgotado' : `${Math.min(x.taken || 0, x.seats)} de ${x.seats} vagas`}</small></span>`;
 const duracao = (x) => {
   if (!x.end) return '';
   const [a, b] = [x.time, x.end].map((t) => {
@@ -196,13 +208,15 @@ const speakersList = () => {
   const seen = new Set();
   return D.sessions.filter((x) => x.speakerShort && !seen.has(x.speakerShort) && seen.add(x.speakerShort));
 };
+/* Em minutos, para a soma não acumular resto de ponto flutuante (1,5 h virava 1.4999999999999982). */
 const hoursOf = (s) => {
   const [a, b] = [s.time, s.end].map((t) => {
     const [h, m] = t.split(':').map(Number);
-    return h + m / 60;
+    return h * 60 + m;
   });
-  return b - a;
+  return (b - a) / 60;
 };
+const horasTxt = (h) => (Math.round(h * 10) / 10).toLocaleString('pt-BR');
 const seatBar = (s) =>
   !s.seats
     ? ''
@@ -534,6 +548,8 @@ const fresh = () => ({
   credAt: null,
   present: {},
   saved: new Set(D.enrolled),
+  /* atividades em que a pessoa está inscrita no SUAP (vem do servidor; ficam na agenda e não saem pelo app) */
+  inscricoes: new Set(),
   tab: 'home',
   stacks: {
     community: [{ s: 'community' }],
@@ -555,7 +571,10 @@ const fresh = () => ({
   tourTab: 'chave',
   reminders: new Set(remSaved()),
   votes: new Set(),
+  /* avaliações: id → { n, quick: [], text } (nota de 1 a 5, comentários rápidos e comentário aberto) */
   ratings: {},
+  /* saída: segunda leitura do QR da sala, no fim da atividade; libera a avaliação */
+  left: {},
   asked: {},
   contacts: [],
 });
@@ -696,16 +715,46 @@ const cardGet = (id = D.person.id) => {
     return null;
   }
 };
+/* O convite para preencher o perfil abre uma vez por pessoa neste aparelho: preencheu, pulou ou só fechou, não volta.
+   Dá para completar depois em Perfil. Com servidor, o perfil salvo lá também conta como preenchido. */
 const cardSkipped = (id = D.person.id) => prefs.get(`etal-cartao-pulado:${id}`) === '1';
 const cardSkip = (id = D.person.id) => prefs.set(`etal-cartao-pulado:${id}`, '1');
-/* Homologação/demo: o convite volta a cada entrada e a cada recarga, mesmo já preenchido ou pulado. */
-let cardDemoDone = false;
-const cardAsk = () => S.auth && D.person.id && (DEMO ? !cardDemoDone : !cardGet() && !cardSkipped());
+const cardAsk = () => S.auth && D.person.id && !cardGet() && !cardSkipped();
 const cardIntro = (ms) =>
   setTimeout(() => {
-    if (cardAsk() && !ov.classList.contains('open') && S.tab === 'home' && top().s !== 'cartao')
+    if (cardAsk() && !ov.classList.contains('open') && S.tab === 'home' && top().s !== 'cartao') {
+      cardSkip();
       push('cartao', { intro: 1 });
+    }
   }, ms);
+function cardSave(v) {
+  try {
+    localStorage.setItem(cardKey(D.person.id), JSON.stringify({ ...v, at: Date.now() }));
+  } catch (_) {
+    return false;
+  }
+  if (API) API.put('/api/eu/cartao', v).catch(() => toast('Perfil salvo neste aparelho; o servidor não respondeu.'));
+  return true;
+}
+/* Quanto do perfil está preenchido: o convite mostra o progresso para dar vontade de completar. */
+const CARD_PARTES = [
+  ['nadic', (c) => !!c.nadic],
+  ['areas', (c) => !!c.areas?.length],
+  ['langs', (c) => !!c.langs?.length],
+  ['open', (c) => !!c.open?.length],
+  ['contato', (c) => !!(c.phone || c.email || c.link)],
+  ['bio', (c) => !!c.bio],
+];
+const cardProgresso = (c) => Math.round((CARD_PARTES.filter(([, f]) => f(c)).length / CARD_PARTES.length) * 100);
+/* Fundos do crachá: o participante escolhe um e ele aparece quando mostra o crachá a alguém. */
+const CRACHA_TEMAS = [
+  ['', 'ETAL'],
+  ['noite', 'Noite'],
+  ['favo', 'Favo'],
+  ['codigo', 'Código'],
+  ['por-do-sol', 'Pôr do sol'],
+  ['mata', 'Caatinga'],
+];
 const personAv = (p) =>
   p.photo
     ? `<span class="av has-photo"><img src="${esc(p.photo)}" alt=""></span>`
@@ -785,6 +834,7 @@ function cardRead(f) {
     areas: d.getAll('areas'),
     open: d.getAll('open'),
     bio: t('bio', 140),
+    tema: t('tema', 20),
   };
 }
 
@@ -792,7 +842,7 @@ function profileEditOpen() {
   if (!S.auth && !lgPending) return;
   profileEditDraft = { name: D.person.name, photo: D.person.photo || null };
   openOverlay(
-    `<form class="sheet profile-editor" data-form="profile-edit" role="dialog" aria-modal="true" aria-labelledby="profile-edit-title"><i class="grab"></i><header><h2 id="profile-edit-title">Editar perfil</h2><button type="button" class="iconbtn" data-act="closeov" aria-label="Fechar edição">${ic('x')}</button></header>
+    `<form class="sheet profile-editor" data-form="profile-edit" role="dialog" aria-modal="true" aria-labelledby="profile-edit-title"><i class="grab"></i><header><h2 id="profile-edit-title">Foto e nome</h2><button type="button" class="iconbtn" data-act="closeov" aria-label="Fechar edição">${ic('x')}</button></header>
       <div class="profile-edit-photo"></div><label class="btn soft community-file">${ic('image')}Escolher foto<input id="profile-photo" type="file" accept="image/jpeg,image/png,image/webp"></label>
       <div class="profile-presets" aria-label="Avatares ilustrados">${PROFILE_AVATARS.map((src, i) => `<button type="button" data-act="profile-preset" data-index="${i}" aria-label="Usar avatar ilustrado ${i + 1}"><img src="${esc(src)}" alt=""></button>`).join('')}</div>
       <button class="profile-remove" type="button" data-act="profile-remove-photo">Remover foto</button>
@@ -895,11 +945,22 @@ const profileShortcut = () =>
 /* app/05-comunidade.js · publicações, comentários, menções, chat e moderação.
    Parte do app.js: os arquivos de prototipo/app/ rodam juntos, na ordem dos números, no mesmo escopo
    (scripts/app/montar-app.mjs). */
-/* ---------------- comunidade (demonstração local) ---------------- */
+/* ---------------- comunidade (no aparelho, ou no servidor: 05-publicacoes-servidor.js) ---------------- */
 const SOCIAL = window.COMMUNITY;
 const COMMUNITY_KEY = SOCIAL.key;
-const communityRead = SOCIAL.read;
+const communityRead = () => (API ? pubEstado() : SOCIAL.read());
+/* Com servidor, só o que é do aparelho passa por aqui (menções já vistas); o resto vira chamada à API. */
 const communityWrite = (change) => {
+  if (API) {
+    try {
+      change(pubEstado());
+      pubGuardarVistas();
+      return true;
+    } catch (error) {
+      toast(error.message);
+      return false;
+    }
+  }
   try {
     SOCIAL.write(change);
     return true;
@@ -908,6 +969,9 @@ const communityWrite = (change) => {
     return false;
   }
 };
+/* Publicar, comentar, curtir e denunciar: com o QR da recepção ou, com servidor, fora do horário do evento (antes do
+   primeiro dia a conversa já pode começar). O chat geral é aberto a quem entrou. */
+const communityPode = () => S.auth && (!!S.credAt || (API && !!PUB.v?.semCredencial));
 const canModerateCommunity = () => S.auth && (API ? !!D.person.org : !!orgDe());
 const communitySeeds = window.COMMUNITY.seeds;
 let communityMode = 'feed';
@@ -1066,7 +1130,7 @@ function communityWall(v) {
       ${photos.length ? `<div class="social-photo-grid">${photos.map(({ p, photo, index }) => `<button data-act="community-photo-open" data-id="${esc(p.id)}" data-index="${index}" aria-label="Ver foto ${index + 1} da publicação de ${esc(p.name)}"><img src="${esc(photo.src)}" alt="${esc(photo.alt || 'Foto no mural')}" loading="lazy"><span>${esc(p.name.split(' ')[0])} · ${p.day || '—'} nov</span></button>`).join('')}</div>` : communityEmpty('Nenhuma foto para estes filtros.')}</div>`;
 }
 function communityReportOpen(target) {
-  if (!S.credAt) {
+  if (!communityPode()) {
     toast('Leia o QR Code da recepção para participar.');
     return;
   }
@@ -1076,7 +1140,7 @@ function communityReportOpen(target) {
     return;
   }
   openOverlay(
-    `<form class="sheet social-report" data-form="community-report" data-target="${esc(target)}" role="dialog" aria-modal="true" aria-labelledby="social-report-title"><i class="grab"></i><header><h2 id="social-report-title">Denunciar conteúdo</h2><button class="iconbtn" type="button" data-act="closeov" aria-label="Fechar denúncia">${ic('x')}</button></header><label class="field">Motivo<select name="reason" required><option value="">Selecione o motivo</option>${SOCIAL.reasons.map((r) => `<option>${esc(r)}</option>`).join('')}</select></label><label class="field">Detalhes<textarea name="detail" rows="3" maxlength="500" placeholder="Conte o que a equipe precisa saber (opcional)"></textarea></label><p class="community-muted">A denúncia fica neste navegador para revisão da organização.</p><button class="btn primary big" type="submit">Enviar denúncia</button></form>`,
+    `<form class="sheet social-report" data-form="community-report" data-target="${esc(target)}" role="dialog" aria-modal="true" aria-labelledby="social-report-title"><i class="grab"></i><header><h2 id="social-report-title">Denunciar conteúdo</h2><button class="iconbtn" type="button" data-act="closeov" aria-label="Fechar denúncia">${ic('x')}</button></header><label class="field">Motivo<select name="reason" required><option value="">Selecione o motivo</option>${SOCIAL.reasons.map((r) => `<option>${esc(r)}</option>`).join('')}</select></label><label class="field">Detalhes<textarea name="detail" rows="3" maxlength="500" placeholder="Conte o que a equipe precisa saber (opcional)"></textarea></label><p class="community-muted">${API ? 'A denúncia vai para a organização revisar. Quem publicou não fica sabendo quem denunciou.' : 'A denúncia fica neste navegador para revisão da organização.'}</p><button class="btn primary big" type="submit">Enviar denúncia</button></form>`,
     'ask',
   );
 }
@@ -1090,7 +1154,7 @@ Screens.communityPerson = ({ id }) => {
   const card = own ? cardGet() || {} : prof?.card || {};
   const who = own ? D.person : { ...person, ...(prof || {}), name: person.name, photo: person.photo };
   return {
-    html: `${header(own ? 'Seu perfil' : 'Participante')}<div class="pad social-card">${cardPreview(card, who, { own })}<div class="social-card-acts">${own ? `<button class="btn soft" data-go="cartao">${ic('pencil')}Editar perfil</button>` : S.credAt ? `<button class="btn soft" data-act="community-mention-person" data-id="${esc(person.id)}">${ic('contact')}Marcar na publicação</button>` : ''}</div></div><div class="community-feed">${posts.map((p) => communityPost(p, v)).join('') || communityEmpty('Ainda não há publicações.')}</div>`,
+    html: `${header(own ? 'Seu perfil' : 'Participante')}<div class="pad social-card">${cardPreview(card, who, { own })}<div class="social-card-acts">${own ? `<button class="btn soft" data-go="cartao">${ic('pencil')}Editar perfil</button>` : communityPode() ? `<button class="btn soft" data-act="community-mention-person" data-id="${esc(person.id)}">${ic('contact')}Marcar na publicação</button>` : ''}</div></div><div class="community-feed">${posts.map((p) => communityPost(p, v)).join('') || communityEmpty('Ainda não há publicações.')}</div>`,
   };
 };
 Screens.orgCommunity = () =>
@@ -1113,7 +1177,7 @@ function communityPost(p, v, detail = false) {
       ${
         detail
           ? `<section class="community-comments"><h2>Comentários</h2>${comments.length ? comments.map((c) => `<div class="community-comment"><button class="social-who" data-go="communityPerson" data-id="${esc(String(c.author))}" aria-label="Ver perfil">${communityAvatar(c)}</button><div><b data-go="communityPerson" data-id="${esc(String(c.author))}">${esc(c.author === String(D.person.id) ? D.person.name : c.name)}</b><p class="community-text">${communityText(c.text, v)}</p></div><button class="iconbtn social-report-button" data-act="community-report" data-target="${esc(SOCIAL.commentKey(p.id, c.id))}" aria-label="Denunciar comentário">${ic('flag')}</button></div>`).join('') : '<p class="community-muted">Comece essa conversa.</p>'}
-      ${S.credAt ? `<form data-form="community-comment" data-id="${esc(p.id)}" class="community-reply"><label class="sr-only" for="community-reply">Seu comentário</label><textarea id="community-reply" name="text" data-community-draft="comment" data-id="${esc(p.id)}" maxlength="1000" rows="2" placeholder="Escreva um comentário…" required>${esc(communityDraft.comments[p.id] || '')}</textarea><button class="iconbtn" type="submit" aria-label="Enviar comentário">${ic('arrow')}</button></form>` : communityGate()}</section>`
+      ${communityPode() ? `<form data-form="community-comment" data-id="${esc(p.id)}" class="community-reply"><label class="sr-only" for="community-reply">Seu comentário</label><textarea id="community-reply" name="text" data-community-draft="comment" data-id="${esc(p.id)}" maxlength="1000" rows="2" placeholder="Escreva um comentário…" required>${esc(communityDraft.comments[p.id] || '')}</textarea><button class="iconbtn" type="submit" aria-label="Enviar comentário">${ic('arrow')}</button></form>` : communityGate()}</section>`
           : ''
       }
     </article>`;
@@ -1135,7 +1199,7 @@ Screens.community = () => {
                   `<div class="community-message ${m.author === String(D.person.id) ? 'mine' : ''}"><div class="community-chat-author"><button class="social-who" data-go="communityPerson" data-id="${esc(String(m.author))}" aria-label="Ver perfil">${communityAvatar(m)}</button><b data-go="communityPerson" data-id="${esc(String(m.author))}">${esc(m.author === String(D.person.id) ? D.person.name : m.name)}</b><button class="iconbtn social-report-button" data-act="community-report" data-target="${esc(SOCIAL.messageKey(m.id))}" aria-label="Denunciar mensagem">${ic('flag')}</button></div><p class="community-text">${communityText(m.text, v)}</p><time>${esc(communityTime(m))}</time></div>`,
               )
               .join('')}</div>
-      ${S.credAt ? `<form data-form="community-message" class="community-reply community-chat-form"><label class="sr-only" for="community-message">Sua mensagem</label><textarea id="community-message" data-community-draft="message" name="text" rows="2" maxlength="1000" placeholder="Mande um oi para a galera…" required>${esc(communityDraft.message)}</textarea><button class="iconbtn" type="submit" aria-label="Enviar mensagem">${ic('arrow')}</button></form>` : communityGate()}</div>`
+      ${S.auth ? `<form data-form="community-message" class="community-reply community-chat-form"><label class="sr-only" for="community-message">Sua mensagem</label><textarea id="community-message" data-community-draft="message" name="text" rows="2" maxlength="1000" placeholder="Mande um oi para a galera…" required>${esc(communityDraft.message)}</textarea><button class="iconbtn" type="submit" aria-label="Enviar mensagem">${ic('arrow')}</button></form>` : communityGate()}</div>`
           : communityMode === 'wall'
             ? communityWall(v)
             : communityMode === 'mentions'
@@ -1147,7 +1211,7 @@ Screens.community = () => {
                     )
                     .join('') || communityEmpty('Quando alguém marcar você, a menção aparece aqui.')
                 }</div>`
-              : `<div class="community-feed">${communityMode === 'feed' && S.credAt ? `<div class="community-start"><button class="community-start-text" data-act="community-compose">${meAv()}<span>Compartilhe algo do evento…</span></button><div class="community-start-actions"><button data-act="community-compose" data-photo="1">${ic('image')}Foto / imagem</button><button data-act="community-compose">${ic('plus')}Publicar</button></div></div>` : communityMode === 'feed' ? communityGate() : ''}${(() => {
+              : `<div class="community-feed">${communityMode === 'feed' && communityPode() ? `<div class="community-start"><button class="community-start-text" data-act="community-compose">${meAv()}<span>Compartilhe algo do evento…</span></button><div class="community-start-actions"><button data-act="community-compose" data-photo="1">${ic('image')}Foto / imagem</button><button data-act="community-compose">${ic('plus')}Publicar</button></div></div>` : communityMode === 'feed' ? communityGate() : ''}${(() => {
                   const posts = communityPosts(v).filter(
                     (p) => communityMode !== 'saved' || (v.bookmarks[String(D.person.id)] || []).includes(p.id),
                   );
@@ -1173,6 +1237,26 @@ Screens.communityPost = ({ id }) => {
     html: `${header('Publicação')}<div class="community-feed">${p ? communityPost(p, v, true) : '<p class="community-muted">Esta publicação foi excluída.</p>'}</div>`,
   };
 };
+/* depois de publicar, comentar ou mandar mensagem: limpa o rascunho e volta */
+function communityLimparRascunho(kind, postId, aviso) {
+  if (kind === 'community-post') {
+    communityDraft.post = '';
+    communityDraft.cursor = 0;
+    communityDraft.images = [];
+    communityDraft.activity = '';
+    communityDraft.day = D.now.day;
+    communityDraft.tag = 'No evento';
+    communityDraft.contextReady = false;
+    communityDraft.activityManual = false;
+    communityMode = 'feed';
+    navBack();
+    toast(aviso);
+  } else {
+    if (kind === 'community-message') communityDraft.message = '';
+    else delete communityDraft.comments[postId];
+    rerender();
+  }
+}
 const communityCheckinKey = () => `etal-atividade-atual:${D.person.id}`;
 function communityCheckin(id) {
   if (byId(id)?.type !== 'Credenciamento') store.set(communityCheckinKey(), { id, at: Date.now() });
@@ -1203,9 +1287,9 @@ Screens.communityCompose = () => {
   const activity = byId(communityDraft.activity);
   const canPost = !communityImageBusy && (communityDraft.post.trim() || communityDraft.images.length);
   return {
-    html: `${header('Nova publicação', { right: S.credAt ? `<button class="compose-submit" type="submit" form="community-post-form" ${canPost ? '' : 'disabled'}>Publicar</button>` : '' })}
+    html: `${header('Nova publicação', { right: communityPode() ? `<button class="compose-submit" type="submit" form="community-post-form" ${canPost ? '' : 'disabled'}>Publicar</button>` : '' })}
       <div class="community-compose">${
-        S.credAt
+        communityPode()
           ? `<form id="community-post-form" class="post-editor" data-form="community-post">
         <div class="community-identity">${meAv()}<div><b>${esc(D.person.name)}</b><small>${esc(D.event?.name || 'ETAL')}</small></div></div>
         <details class="compose-context"><summary>${ic(activity ? 'pin' : 'cal')}<span><b>${esc(activity?.short || 'Adicionar atividade')}</b><small>${activity ? `${activity.day} nov · ${esc(activity.room)}` : 'Opcional'}${activity && communityDraft.contextReason === 'qr' ? ' · Check-in realizado' : activity && communityDraft.contextReason === 'agenda' ? ' · Na sua agenda agora' : ''}</small></span>${ic('chev')}</summary>
@@ -1346,6 +1430,268 @@ document.addEventListener('change', async (e) => {
 window.addEventListener('storage', (e) => {
   if (e.key === COMMUNITY_KEY && S.auth && (S.tab === 'community' || top().s === 'orgCommunity')) rerender();
 });
+
+/* ===== app/05-publicacoes-servidor.js ===== */
+/* app/05-publicacoes-servidor.js · publicações com servidor.
+   Parte do app.js: os arquivos de prototipo/app/ rodam juntos, na ordem dos números, no mesmo escopo
+   (scripts/app/montar-app.mjs). */
+/* Com API, as publicações vêm de /api/publicacoes no mesmo formato do community.js (as telas não mudam) e cada ação
+   vira uma chamada ao servidor. Sem API, nada daqui roda: tudo fica no aparelho, como na demonstração.
+   Ao vivo: o servidor avisa só o número da versão; o app busca de novo apenas se a versão mudou e se a tela de
+   publicações estiver aberta (senão, quando ela abrir), com um atraso aleatório para os celulares não pedirem juntos. */
+const PUB = { v: null, dono: null, buscando: null, deNovo: false, velho: false, timer: 0, em: 0 };
+if (API) SOCIAL.usarServidor({ exemplos: DEMO });
+/* /demo com servidor: as publicações e a mensagem de exemplo aparecem junto com as de verdade. Elas não existem no
+   servidor, então curtir, salvar, comentar, denunciar e moderar nelas fica neste aparelho. */
+const PUB_EXEMPLOS = 'etal-exemplos-demo';
+const pubExemplo = (id) => DEMO && SOCIAL.seeds.some((p) => p.id === id);
+function pubAlvoExemplo(alvo) {
+  const [tipo, id] = String(alvo).split(':');
+  return tipo === 'message' ? DEMO && SOCIAL.seedMessages.some((m) => m.id === id) : pubExemplo(id);
+}
+function pubExemplos() {
+  try {
+    return {
+      likes: {},
+      bookmarks: {},
+      comments: {},
+      moderation: {},
+      ...JSON.parse(localStorage.getItem(PUB_EXEMPLOS)),
+    };
+  } catch (_) {
+    return { likes: {}, bookmarks: {}, comments: {}, moderation: {} };
+  }
+}
+function pubExemplosAplicar(v) {
+  if (!DEMO || !v) return;
+  const ex = pubExemplos();
+  const me = String(D.person.id);
+  for (const p of SOCIAL.seeds) {
+    v.likes[p.id] = ex.likes[p.id] || [];
+    v.comments[p.id] = ex.comments[p.id] || [];
+  }
+  v.bookmarks[me] = [...(v.bookmarks[me] || []).filter((id) => !pubExemplo(id)), ...(ex.bookmarks[me] || [])];
+  for (const [alvo, m] of Object.entries(ex.moderation)) if (pubAlvoExemplo(alvo)) v.moderation[alvo] = m;
+}
+function pubExemplosMudar(change) {
+  const ex = pubExemplos();
+  change(ex, String(D.person.id));
+  try {
+    localStorage.setItem(PUB_EXEMPLOS, JSON.stringify(ex));
+  } catch (_) {
+    /* sem armazenamento: vale até recarregar */
+  }
+  pubExemplosAplicar(PUB.v);
+  rerender();
+}
+const PUB_TELAS = ['communityPost', 'communityPerson', 'orgCommunity', 'communityCompose'];
+const pubNaTela = () => S.auth && (S.tab === 'community' || PUB_TELAS.includes(top().s));
+const pubVistasKey = () => `etal-mencoes-vistas:${D.person.id}`;
+const pubVazio = () => ({
+  versao: 0,
+  posts: [],
+  messages: [],
+  comments: {},
+  likes: {},
+  bookmarks: {},
+  reports: [],
+  moderation: {},
+  audit: [],
+  mentionSeen: {},
+});
+/* o que a tela lê (communityRead): o último estado do servidor, e busca se ainda não tem ou se ficou velho */
+function pubEstado() {
+  if (PUB.dono !== D.person.id) {
+    PUB.v = null;
+    PUB.dono = D.person.id;
+  }
+  /* também confere com a tela aberta, caso um aviso ao vivo se perca: a cada 20 s, ou a cada 60 s sem conexão
+     contínua (Vercel). Com a mesma versão, o servidor responde só "igual" */
+  if (!PUB.v || PUB.velho || Date.now() - PUB.em > (window.ETAL_CONFIG?.vivo === 'consulta' ? 60000 : 20000)) {
+    PUB.velho = false;
+    pubCarregar();
+  }
+  return PUB.v || pubVazio();
+}
+/* menções já vistas ficam no aparelho (não precisam ir ao servidor) */
+function pubGuardarVistas() {
+  try {
+    localStorage.setItem(pubVistasKey(), JSON.stringify(PUB.v?.mentionSeen[String(D.person.id)] || []));
+  } catch (_) {
+    /* opcional */
+  }
+}
+const pubDigitando = () => document.activeElement?.matches?.('textarea, input, select');
+function pubCarregar() {
+  if (!API || !S.auth) return Promise.resolve();
+  if (PUB.buscando) {
+    PUB.deNovo = true;
+    return PUB.buscando;
+  }
+  PUB.em = Date.now();
+  const versao = PUB.v ? `?versao=${PUB.v.versao}` : '';
+  PUB.buscando = API.get('/api/publicacoes' + versao)
+    .then((v) => {
+      if (v.igual) {
+        if (PUB.v && PUB.v.semCredencial !== v.semCredencial) {
+          PUB.v.semCredencial = v.semCredencial;
+          if (pubNaTela() && !pubDigitando() && !ov.classList.contains('open')) rerender();
+        }
+        return;
+      }
+      for (const p of v.posts) for (const img of p.images || []) img.src = API.url(img.src);
+      let vistas = [];
+      try {
+        vistas = JSON.parse(localStorage.getItem(pubVistasKey())) || [];
+      } catch (_) {
+        /* sem armazenamento */
+      }
+      v.mentionSeen = { [String(D.person.id)]: vistas };
+      pubExemplosAplicar(v);
+      PUB.v = v;
+      if (pubNaTela() && !pubDigitando() && !ov.classList.contains('open')) rerender();
+    })
+    .catch((e) => {
+      if (pubNaTela()) toast(e.status ? e.message : 'Sem internet: as publicações aparecem quando a conexão voltar.');
+    })
+    .finally(() => {
+      PUB.buscando = null;
+      if (PUB.deNovo) {
+        PUB.deNovo = false;
+        pubCarregar();
+      }
+    });
+  return PUB.buscando;
+}
+/* aviso ao vivo do servidor: { versao } */
+function pubAviso(d) {
+  if (!PUB.v || d.versao === PUB.v.versao) return;
+  if (!pubNaTela()) {
+    PUB.velho = true;
+    return;
+  }
+  clearTimeout(PUB.timer);
+  PUB.timer = setTimeout(pubCarregar, 500 + Math.random() * 2500);
+}
+/* uma ação no servidor: avisa o erro; depois busca o estado novo (a resposta do servidor é quem manda) */
+async function pubFazer(promessa) {
+  try {
+    const r = await promessa;
+    await pubCarregar();
+    return r || true;
+  } catch (e) {
+    toast(e.message);
+    await pubCarregar();
+    return null;
+  }
+}
+const pubIdDoAlvo = (alvo) => String(alvo).split(':').pop();
+/* curtir e salvar mudam na hora na tela; se o servidor recusar, o estado volta na próxima busca */
+function pubAlternar(lista, id) {
+  return lista.includes(id) ? lista.filter((x) => x !== id) : [...lista, id];
+}
+function pubCurtir(id) {
+  const me = String(D.person.id);
+  if (pubExemplo(id)) {
+    pubExemplosMudar((ex) => (ex.likes[id] = pubAlternar(ex.likes[id] || [], me)));
+    return;
+  }
+  if (PUB.v) PUB.v.likes[id] = pubAlternar(PUB.v.likes[id] || [], me);
+  rerender();
+  pubFazer(API.post(`/api/publicacoes/${encodeURIComponent(id)}/curtir`));
+}
+function pubSalvar(id) {
+  const me = String(D.person.id);
+  let salvou = false;
+  if (pubExemplo(id)) {
+    pubExemplosMudar((ex) => {
+      salvou = !(ex.bookmarks[me] || []).includes(id);
+      ex.bookmarks[me] = pubAlternar(ex.bookmarks[me] || [], id);
+    });
+    toast(salvou ? 'Publicação salva' : 'Removida dos salvos');
+    return;
+  }
+  if (PUB.v) {
+    const antes = PUB.v.bookmarks[me] || [];
+    salvou = !antes.includes(id);
+    PUB.v.bookmarks[me] = pubAlternar(antes, id);
+  }
+  rerender();
+  toast(salvou ? 'Publicação salva' : 'Removida dos salvos');
+  pubFazer(API.post(`/api/publicacoes/${encodeURIComponent(id)}/salvar`));
+}
+async function pubApagar(id) {
+  if (pubExemplo(id)) {
+    pubExemplosMudar((ex) => (ex.moderation[SOCIAL.postKey(id)] = { hidden: true }));
+    if (top().s === 'communityPost') navBack();
+    toast('Publicação tirada do ar (fica no histórico da moderação)');
+    return;
+  }
+  const r = await pubFazer(API.del(`/api/publicacoes/${encodeURIComponent(id)}`));
+  if (!r) return;
+  if (top().s === 'communityPost') navBack();
+  else rerender();
+  toast(r.resultado === 'oculta' ? 'Publicação tirada do ar (fica no histórico da moderação)' : 'Publicação excluída');
+}
+async function pubModerar(alvo, acao, nota) {
+  if (pubAlvoExemplo(alvo)) {
+    if (acao !== 'dismiss') pubExemplosMudar((ex) => (ex.moderation[alvo] = { hidden: acao === 'hide' }));
+    toast('Revisão salva');
+    return;
+  }
+  if (await pubFazer(API.post('/api/publicacoes/moderar', { alvo, acao, nota }))) {
+    rerender();
+    toast('Revisão salva');
+  }
+}
+async function pubDenunciar(alvo, motivo, detalhe) {
+  if (pubAlvoExemplo(alvo)) {
+    closeOverlay(() => toast('Denúncia registrada para revisão'));
+    return;
+  }
+  const r = await pubFazer(
+    API.post(`/api/publicacoes/${encodeURIComponent(pubIdDoAlvo(alvo))}/denunciar`, { motivo, detalhe }),
+  );
+  if (r)
+    closeOverlay(() =>
+      toast(
+        r.oculta ? 'Denúncia enviada. O conteúdo saiu do ar até a revisão.' : 'Denúncia enviada para a organização',
+      ),
+    );
+}
+/* publicação, comentário ou mensagem; devolve true se o servidor aceitou */
+let pubEnviando = false;
+async function pubEnviar(kind, text, postId) {
+  if (pubEnviando) return false;
+  const mencoes = communityMentions(text).map((p) => p.id);
+  if (kind === 'community-comment' && pubExemplo(postId)) {
+    const novo = { ...communityAuthor(), id: SOCIAL.uid(), created: Date.now(), text, mentions: mencoes };
+    pubExemplosMudar((ex) => (ex.comments[postId] = [...(ex.comments[postId] || []), novo]));
+    return true;
+  }
+  pubEnviando = true;
+  const botao = $('.page:not(.leaving) .compose-submit');
+  if (botao) botao.disabled = true;
+  try {
+    const pedido =
+      kind === 'community-post'
+        ? API.post('/api/publicacoes', {
+            texto: text,
+            atividade: byId(communityDraft.activity)?.id || null,
+            dia: byId(communityDraft.activity)?.day || +communityDraft.day || D.now.day,
+            assunto: communityDraft.tag,
+            mencoes,
+            fotos: communityDraft.images.map((img) => ({ dados: img.src, alt: img.alt || '' })),
+          })
+        : kind === 'community-message'
+          ? API.post('/api/publicacoes/mensagens', { texto: text, mencoes })
+          : API.post(`/api/publicacoes/${encodeURIComponent(postId)}/comentarios`, { texto: text, mencoes });
+    return !!(await pubFazer(pedido));
+  } finally {
+    pubEnviando = false;
+    if (botao) botao.disabled = false;
+  }
+}
 
 /* ===== app/06-entrada.js ===== */
 /* app/06-entrada.js · entrada pelo crachá: SUAP, visitante e abertura do app.
@@ -1827,14 +2173,64 @@ function badge() {
 /* app/07-inicio-e-agenda.js · início e agenda.
    Parte do app.js: os arquivos de prototipo/app/ rodam juntos, na ordem dos números, no mesmo escopo
    (scripts/app/montar-app.mjs). */
-Screens.home = () => {
-  const s = byId('react-native');
+/* linha da agenda na home: minicurso inscrito ganha o selo "Inscrito" (a inscrição é no SUAP) */
+const nextRow = (n) =>
+  `<li data-go="activity" data-id="${n.id}"><span class="date"><small>${dayOf(n.day).week}</small><b>${n.day}</b></span><span class="next-tx"><b>${n.short}</b><small>${n.time} · ${n.room}</small>${inscrito(n) ? `<em class="selo-inscrito">${ic('check')}Inscrito</em>` : ''}</span>
+            <button class="remind ${S.reminders.has(n.id) ? 'on' : ''}" data-act="remind" data-id="${n.id}" aria-pressed="${S.reminders.has(n.id)}" aria-label="Lembrar 10 minutos antes">${ic('alarm')}</button></li>`;
+/* Destaque da home, junto com a agenda: a atividade da pessoa (minicurso em que está inscrita ou atividade que salvou)
+   que está acontecendo; senão, a próxima dela; sem nada dela, o que acontece agora (ou a seguir) aberto a todos. */
+const acabou = (x) => x.day < D.now.day || (x.day === D.now.day && x.end <= D.now.time);
+const emOrdem = (a, b) => a.day - b.day || a.time.localeCompare(b.time);
+function destaqueHome() {
+  const validas = D.sessions.filter((x) => !x.simple && !acabou(x)).sort(emOrdem);
+  const minhas = validas.filter((x) => S.saved.has(x.id) || S.present[x.id]);
+  const s =
+    minhas.find((x) => S.present[x.id] && isNow(x)) ||
+    minhas.find(isNow) ||
+    minhas[0] ||
+    validas.find((x) => isNow(x) && !comInscricao(x)) ||
+    validas.find((x) => !comInscricao(x)) ||
+    validas[0];
+  if (!s) return { s: null, titulo: '', minhas };
+  const minha = minhas.includes(s);
+  const titulo = isNow(s) ? (minha ? 'Agora' : 'Agora no ETAL') : minha ? 'Sua próxima atividade' : 'A seguir no ETAL';
+  return { s, titulo, minhas: minhas.filter((x) => x !== s) };
+}
+function destaqueCard(s) {
   const here = S.present[s.id];
-  const next = D.enrolled.map(byId).filter((x) => x.id !== s.id);
+  const agora = isNow(s);
+  const selo = here
+    ? `<span class="tag ok">${ic('check')}Presente</span>`
+    : inscrito(s)
+      ? `<span class="tag ok">${ic('check')}Inscrito</span>`
+      : S.saved.has(s.id)
+        ? `<span class="tag salva">${ic('bookmark')}Na sua agenda</span>`
+        : comInscricao(s)
+          ? `<span class="tag">Inscrição no SUAP</span>`
+          : `<span class="tag aberta">Aberto a todos</span>`;
+  const comoChegar = `<button class="btn primary" data-act="openmap" data-floor="${s.floor}" data-zone="${s.zone}">Como chegar</button>`;
+  const segundo = agora
+    ? `<button class="btn soft" data-act="scan">${ic('qr')}Presença</button>`
+    : comInscricao(s) && !inscrito(s) && linkInscricao(s)
+      ? `<a class="btn soft" href="${esc(linkInscricao(s))}" target="_blank" rel="noopener">${ic('open')}Inscrever-se</a>`
+      : !comInscricao(s) && !S.saved.has(s.id)
+        ? `<button class="btn soft" data-act="save" data-id="${s.id}">${ic('bookmark')}Salvar</button>`
+        : `<button class="btn soft remind-btn ${S.reminders.has(s.id) ? 'on' : ''}" data-act="remind" data-id="${s.id}" aria-pressed="${S.reminders.has(s.id)}">${ic('alarm')}${S.reminders.has(s.id) ? 'Lembrete ligado' : 'Lembrar'}</button>`;
+  return `<article class="now st" ${st(3)} data-go="activity" data-id="${s.id}">
+            <div class="now-top"><span class="kind">${s.type}</span>${selo}</div>
+            <h3>${s.title}</h3>
+            ${s.speakerShort ? `<div class="now-sp">${spAv(s)}<span>${s.speakerShort}</span></div>` : ''}
+            <p class="m">${ic('clock')}${agora ? '' : `${dayOf(s.day).week}, ${s.day} nov · `}${s.time} às ${s.end}</p>
+            <p class="m">${ic('pin')}${whereOf(s)}</p>
+            <div class="now-actions">${here ? `<button class="btn primary" data-go="activity" data-id="${s.id}">Abrir aula</button>` : comoChegar + segundo}</div>
+          </article>`;
+}
+Screens.home = () => {
+  const d = destaqueHome();
   const speakers = speakersList();
   /* atalhos numa fileira só; Mapa e Avisos já estão na barra de baixo e no sino */
   const actions = [
-    ['cal', 'Programação', 'data-act="tab" data-tab="agenda"'],
+    ['cal', 'Programação', 'data-act="programacao"'],
     ['mic', 'Palestrantes', 'data-go="speakers"'],
     ['file', 'Materiais', 'data-go="materials"'],
     ['award', 'Certificados', 'data-go="certificates"'],
@@ -1853,40 +2249,25 @@ Screens.home = () => {
           ${badge()}
           ${UI.home.live ? `<button class="hm-live st" ${st(1)} aria-live="polite"><span class="hm-live-tag"><i></i>Ao vivo</span><span class="hm-live-row"><span class="hm-live-msg"></span></span>${ic('chev')}</button>` : ''}
 
-          <div class="sec st" ${st(2)}><h2>Agora</h2><span>Qua, 26 nov · <span id="nowclock">${skyClock()}</span></span></div>
-          <article class="now st" ${st(3)} data-go="activity" data-id="${s.id}">
-            <div class="now-top"><span class="kind">${s.type}${S.saved.has(s.id) ? ' · sua inscrição' : ''}</span>${here ? `<span class="tag ok">${ic('check')}Presente</span>` : ic('chev', 'i now-chev')}</div>
-            <h3>${s.title}</h3>
-            <div class="now-sp">${spAv(s)}<span>${s.speakerShort}</span></div>
-            <p class="m">${ic('clock')}${s.time} às ${s.end}</p>
-            <p class="m">${ic('pin')}${whereOf(s)}</p>
-            <div class="now-actions">
-              ${
-                here
-                  ? `<button class="btn primary" data-go="activity" data-id="${s.id}">Abrir aula</button>`
-                  : `<button class="btn primary" data-act="openmap" data-floor="${s.floor}" data-zone="${s.zone}">Como chegar</button><button class="btn soft" data-act="scan">${ic('qr')}Presença</button>`
-              }
-            </div>
-          </article>
+          ${
+            d.s
+              ? `<div class="sec st" ${st(2)}><h2>${d.titulo}</h2>${d.minhas.length || S.saved.size ? '<button data-act="mine">Minha agenda</button>' : `<span>${dayOf(D.now.day).week}, ${D.now.day} nov · <span id="nowclock">${skyClock()}</span></span>`}</div>
+          ${destaqueCard(d.s)}
+          ${
+            UI.home.agenda
+              ? d.minhas.length
+                ? `<p class="next-cap rv">Depois, na sua agenda</p><ul class="next rv">${d.minhas.map(nextRow).join('')}</ul>`
+                : S.saved.size
+                  ? ''
+                  : `<button class="next-vazio rv" data-act="programacao">${ic('bookmark')}<span><b>Monte sua agenda</b><small>Na programação, salve palestras e mesas. Minicursos entram quando você se inscreve no SUAP.</small></span>${ic('chev')}</button>`
+              : ''
+          }`
+              : ''
+          }
           ${UI.home.atalhos ? `<nav class="quick rv" aria-label="Atalhos">${actions.map(([i, t, a], n) => `<button ${a} style="--n:${n}"><span>${ic(i)}</span><em>${t}</em></button>`).join('')}</nav>` : ''}
 
           ${!standalone() && !prefs.get('etal-instalar-oculto') ? `<div class="instalar rv"><button class="inst-main" data-act="install">${ic('download')}<span><b>Instale o ETAL Connect</b><small>Lembretes no celular e mapa sem internet</small></span></button><button class="inst-x" data-act="instalar-fechar" aria-label="Agora não">${ic('x')}</button></div>` : ''}
-          ${cardAsk() ? `<div class="ct-invite rv"><button class="ct-inv-main" data-go="cartao">${ic('contact')}<span><b>Personalize seu perfil</b><small>Interesses, NADIC e contato</small></span></button><button class="ct-inv-skip" data-act="cartao-pular">Pular</button></div>` : ''}
           ${UI.home.colmeia ? combCard() : ''}
-
-          ${
-            UI.home.agenda
-              ? `<div class="sec rv"><h2>Sua agenda</h2><button data-act="mine">Ver tudo</button></div>
-          <ul class="next rv">${next
-            .map(
-              (
-                n,
-              ) => `<li data-go="activity" data-id="${n.id}"><span class="date"><small>${dayOf(n.day).week}</small><b>${n.day}</b></span><span class="next-tx"><b>${n.short}</b><small>${n.time} · ${n.room}</small></span>
-            <button class="remind ${S.reminders.has(n.id) ? 'on' : ''}" data-act="remind" data-id="${n.id}" aria-pressed="${S.reminders.has(n.id)}" aria-label="Lembrar 10 minutos antes">${ic('alarm')}</button></li>`,
-            )
-            .join('')}</ul>`
-              : ''
-          }
 
           ${
             UI.home.palestrantes
@@ -1911,11 +2292,11 @@ function savedEmpty(day) {
     .filter((x) => x.day !== day)
     .map((x) => [x, D.sessions.filter((q) => q.day === x.day && S.saved.has(q.id)).length])
     .filter(([, n]) => n);
-  const ideas = D.sessions.filter((q) => q.day === day && !q.simple).slice(0, 3);
+  const ideas = D.sessions.filter((q) => q.day === day && !q.simple && !comInscricao(q)).slice(0, 3);
   return `<div class="empty-saved">
       ${illo('mark')}
       <h3 class="st" ${st(1)}>Nada salvo na ${week}</h3>
-      <p class="st" ${st(2)}>Toque no marcador de uma atividade e ela entra na sua agenda.</p>
+      <p class="st" ${st(2)}>Toque no marcador de uma palestra ou mesa e ela entra na sua agenda. Atividades em que você se inscreveu no SUAP aparecem aqui sozinhas.</p>
       ${others.length ? `<div class="es-days st" ${st(3)}>${others.map(([x, n]) => `<button data-act="day" data-day="${x.day}">${x.week} ${x.day}<b>${n} ${n === 1 ? 'salva' : 'salvas'}</b></button>`).join('')}</div>` : ''}
       ${ideas.length ? `<section class="es-ideas st" ${st(4)}><h4>Sugestões para esse dia</h4><ul>${ideas.map((q) => `<li ${goOf(q)}><time>${q.time}</time><span><b>${q.short}</b><small>${q.type} · ${q.room}</small></span><button class="bm" data-act="save" data-id="${q.id}" aria-label="Salvar ${q.short}">${ic('bookmark')}</button></li>`).join('')}</ul></section>` : ''}
       <button class="btn soft st" ${st(5)} data-act="filter" data-f="all">Ver toda a programação</button>
@@ -1934,7 +2315,7 @@ Screens.agenda = () => {
   const idx = D.days.findIndex((d) => d.day === day);
   const filters = [
     ['all', 'Tudo'],
-    ['saved', 'Minhas'],
+    ['saved', 'Minha agenda'],
     ['pal', 'Palestras'],
     ['mesa', 'Mesas'],
     ['mini', 'Minicursos'],
@@ -1946,10 +2327,15 @@ Screens.agenda = () => {
        marcador à direita. O tipo aparece no hexágono colorido (as cores são as dos hexágonos do logo do ETAL), não em
        texto; a legenda das cores são os filtros logo acima. Vagas só aparecem quando acabando ou esgotadas. */
   const bm = (s) =>
-    `<button class="bm ${S.saved.has(s.id) ? 'on' : ''}" data-act="save" data-id="${s.id}" aria-label="${S.saved.has(s.id) ? 'Remover dos salvos' : 'Salvar'}">${ic('bookmark')}</button>`;
+    comInscricao(s) || inscrito(s)
+      ? ''
+      : `<button class="bm ${S.saved.has(s.id) ? 'on' : ''}" data-act="save" data-id="${s.id}" aria-label="${S.saved.has(s.id) ? 'Remover dos salvos' : 'Salvar'}">${ic('bookmark')}</button>`;
   const hexa = (s) =>
     `<span class="ses-hex" role="img" aria-label="${s.type}"><svg viewBox="-20 -20 40 40" aria-hidden="true"><path d="M0-18.5 16-9.25v18.5L0 18.5-16 9.25v-18.5Z"/></svg>${ic(tipoDe(s).icon)}</span>`;
   const selo = (s) => {
+    /* minicurso: inscrito no SUAP, ou as vagas preenchidas (discreto) */
+    if (inscrito(s)) return `<span class="ses-selo inscrito">${ic('check')}Inscrito</span>`;
+    if (comInscricao(s)) return vagasLinha(s);
     /* "agora" já aparece na linha do tempo */ if (!s.seats) return '';
     const n = s.seats - s.taken;
     return n <= 0
@@ -1995,7 +2381,7 @@ Screens.agenda = () => {
   const meus = D.sessions.filter((x) => x.day === day && S.saved.has(x.id)).length;
   const dia = dayOf(day);
   return {
-    html: `<header class="apphead"><h1 class="title">Agenda</h1><button class="iconbtn" data-act="finder" aria-label="Buscar">${ic('search')}</button></header>
+    html: `<header class="apphead"><h1 class="title">${f === 'saved' ? 'Minha agenda' : 'Programação'}</h1><button class="iconbtn" data-act="finder" aria-label="Buscar">${ic('search')}</button></header>
       <div class="pad stack agenda">
         <div class="days st" style="--i:0;--k:${idx}"><i class="days-ind"></i>${D.days.map((d) => `<button class="${d.day === day ? 'on' : ''}" data-act="day" data-day="${d.day}">${d.week}<b>${d.day}</b></button>`).join('')}</div>
         <p class="ag-resumo st" ${st(1)}><b>${dia.long ? dia.long.split(',')[0] : dia.week}</b><span>${list.length} ${list.length === 1 ? 'atividade' : 'atividades'}${agora ? ` · <em>${agora} agora</em>` : ''}${meus ? ` · ${meus} ${meus === 1 ? 'sua' : 'suas'}` : ''}</span></p>
@@ -2223,8 +2609,9 @@ Screens.activity = ({ id }) => {
     return {
       html: `${header('', { right: `<button class="iconbtn" data-act="share" data-id="${id}" aria-label="Enviar para o computador">${ic('laptop')}</button>` })}
         <div class="pad stack class-open">
-          <div class="co-head st" ${st(0)}><span class="tag ok">${ic('check')}Presença às ${here}</span><span class="kind">${s.type} · ${s.room}</span></div>
+          <div class="co-head st" ${st(0)}><span class="tag ok">${ic('check')}${S.left[id] ? `Das ${here} às ${S.left[id]}` : `Presença às ${here}`}</span><span class="kind">${s.type} · ${s.room}</span></div>
           <h1 class="title-lg st" ${st(1)}>${s.title}</h1>
+          <div class="co-rapido st" ${st(1)}><button data-act="rolar" data-alvo=".mats">${ic('file')}Materiais${s.materials?.length ? ` <em>${s.materials.length}</em>` : ''}</button><button data-act="ask" data-id="${id}">${ic('chat')}Perguntar</button><button data-act="${S.left[id] ? 'avaliar' : 'rolar'}" data-id="${id}" data-alvo=".rate-lock">${ic('star')}${notaDe(id) ? `${notaDe(id)}/5` : 'Avaliar'}</button></div>
           <button class="teacher st" ${st(2)} data-go="speaker" data-id="${id}">${spAv(s, true)}<span><b>${s.speakerShort}</b><small>${s.role}</small></span><span class="time"><b>${s.time}–${s.end}</b><small>${d.week}, ${s.day} nov</small></span></button>
           <button class="sendpc st" ${st(3)} data-act="share" data-id="${id}"><span class="sp-ic">${ic('laptop')}</span><span><b>Abrir no computador</b><small>${s.link}</small></span>${ic('chev')}</button>
           <section class="st" ${st(4)}><h2 class="h">Materiais</h2></section>
@@ -2232,7 +2619,7 @@ Screens.activity = ({ id }) => {
           <section class="block st" ${st(10)}><h2 class="h">Nesta aula</h2><ul class="learn">${s.learn.map((l) => `<li>${ic('check')}<span>${l}</span></li>`).join('')}</ul></section>
           <section class="block st" ${st(11)}><h2 class="h">Leve para a sala</h2><p class="desc">${s.requirements}</p></section>
           <section class="block st" ${st(12)}><div class="sec"><h2>Perguntas</h2><button data-act="ask" data-id="${id}">Perguntar</button></div>${questionsOf(id)}</section>
-          <section class="block rate st" ${st(13)}><h2 class="h">Avalie esta atividade</h2><div class="stars" role="radiogroup" aria-label="Nota">${[1, 2, 3, 4, 5].map((n) => `<button class="${(S.ratings[id] || 0) >= n ? 'on' : ''}" data-act="rate" data-id="${id}" data-n="${n}" aria-label="${n} de 5">${ic('star')}</button>`).join('')}</div></section>
+          <div class="st" ${st(13)}>${rateBlock(id)}</div>
         </div>`,
     };
   }
@@ -2255,6 +2642,13 @@ Screens.activity = ({ id }) => {
         <div class="gl-quando"><small>${d.week} · ${s.day} nov</small><b>${s.time}</b><span>até ${s.end}${duracao(s) ? ` · ${duracao(s)}` : ''}</span></div>
         ${vagasRestam == null ? '' : `<div class="gl-vagas ${vagasRestam === 0 ? 'cheio' : vagasRestam <= 5 ? 'pouca' : ''}"><small>Vagas</small><b>${vagasRestam === 0 ? 'Esgotado' : vagasRestam}</b>${vagasRestam ? `<span>de ${s.seats}</span>` : ''}${seatBar(s)}</div>`}
       </div>`;
+  /* minicurso: a inscrição é no SUAP (vaga limitada); o app mostra se a pessoa já está inscrita ou leva até lá */
+  const link = linkInscricao(s);
+  const inscricao = inscrito(s)
+    ? `<div class="inscricao ok st" ${st(3)}>${ic('check')}<span><b>Inscrição feita</b><small>Você se inscreveu pelo SUAP. Chegue no horário para registrar a presença.</small></span></div>`
+    : !comInscricao(s)
+      ? ''
+      : `<div class="inscricao st" ${st(3)}>${ic('id')}<span><b>${vagasRestam === 0 ? 'Vagas esgotadas' : 'Inscrição pelo SUAP'}</b><small>${vagasRestam === 0 ? 'Confira no SUAP se abriu alguma vaga.' : 'Vagas limitadas: a inscrição é feita no SUAP, pelo botão abaixo.'}</small></span></div>`;
   const lugar = `<button class="lugar st" ${st(4)} ${mapAct(s)} aria-label="Ver ${s.room} no mapa"><canvas class="thumb3d"></canvas><span class="lg-tx"><b>${s.room}</b><small>${Number.isInteger(s.floor) ? floorOf(s.floor).label : ''}</small></span><span class="lg-ir">${ic('route')}Como chegar</span></button>`;
   const lembrar = `<button class="remindrow st ${lembrete ? 'on' : ''}" ${st(5)} data-act="remind" data-id="${id}" aria-pressed="${lembrete}">${ic('alarm')}<span>${lembrete ? `Lembrete às ${hhmm(toMin(s.time) - LEAD)}` : `Lembrar ${LEAD} min antes`}</span><i class="switch"></i></button>`;
   const fonte = '';
@@ -2276,12 +2670,14 @@ Screens.activity = ({ id }) => {
         : '';
   return {
     mount: mountThumb(s),
-    html: `${header('', { right: `<button class="iconbtn bm ${S.saved.has(id) ? 'on' : ''}" data-act="save" data-id="${id}" aria-label="Salvar">${ic('bookmark')}</button>` })}
+    html: `${header('', { right: comInscricao(s) || inscrito(s) ? '' : `<button class="iconbtn bm ${S.saved.has(id) ? 'on' : ''}" data-act="save" data-id="${id}" aria-label="${S.saved.has(id) ? 'Remover da agenda' : 'Salvar na agenda'}">${ic('bookmark')}</button>` })}
       <div class="pad stack detail detalhe-v2">
         <span class="kind kind-tp tp-${t.k} st" ${st(0)}>${ic(t.icon)}${s.type}</span>
         <h1 class="title-lg st" ${st(1)}>${s.title}</h1>
+        ${API && pendenteDe(id) ? `<p class="leitura-pendente st" ${st(1)}>${ic('qr')}<span><b>Leitura guardada, ainda sem valer.</b> O app envia a presença quando a internet voltar.</span></p>` : ''}
         ${t.g === 'mesa' ? '' : quem}
         ${blocos}
+        ${inscricao}
         ${lugar}
         ${t.g === 'mesa' ? quem.replace('<ul>', '<h2 class="h">Quem conversa</h2><ul>') : ''}
         ${lembrar}
@@ -2290,7 +2686,11 @@ Screens.activity = ({ id }) => {
         ${extra}
         ${s.materials.length ? `<p class="locked st" ${st(9)}>${ic('lock')}${s.materials.length} ${s.materials.length === 1 ? 'material' : 'materiais'} depois da presença</p>` : ''}
       </div>
-      <div class="cta-bar"><button class="btn primary big" data-act="scan">${ic('qr')}Registrar presença</button></div>`,
+      <div class="cta-bar">${
+        comInscricao(s) && !inscrito(s) && link
+          ? `<a class="btn ${vagasRestam === 0 ? 'soft' : 'primary'} big" href="${esc(link)}" target="_blank" rel="noopener">${ic('open')}${vagasRestam === 0 ? 'Ver no SUAP' : 'Inscrever-se no SUAP'}</a>`
+          : `<button class="btn primary big" data-act="scan">${ic('qr')}Registrar presença</button>`
+      }</div>`,
   };
 };
 
@@ -3295,7 +3695,7 @@ function retroSlides(r) {
     `<div class="re-c">${tag}<small>Quem fez parte</small><div class="re-people">${r.people.map((x) => `<span><i>${x.initials}</i>${x.speakerShort}</span>`).join('')}</div><dl class="re-stats"><div><dd>${r.questions}</dd><dt>${r.questions === 1 ? 'pergunta' : 'perguntas'}</dt></div><div><dd>${r.contacts}</dd><dt>${r.contacts === 1 ? 'contato' : 'contatos'}</dt></div><div><dd>${r.ratings}</dd><dt>${r.ratings === 1 ? 'avaliação' : 'avaliações'}</dt></div></dl></div>`,
     `<div class="re-c">${tag}<small>Sua colmeia</small><div class="re-comb">${comb('big', r.demo)}</div><p>${got} de ${D.combs.length} favos.</p></div>`,
     `<div class="re-c">${tag}<small>O que é o ETAL</small><p class="re-long">${D.etal.about}</p><ol class="re-time">${D.etal.editions.map(([y, nm]) => `<li class="${y === '2025' ? 'on' : ''}"><time>${y}</time>${nm}</li>`).join('')}</ol></div>`,
-    `<div class="re-c re-end">${mark('mark re-mark')}${tag}<h1>Até o próximo ETAL</h1><p>${r.hours} ${r.hours === 1 ? 'hora' : 'horas'}, ${n} ${n === 1 ? 'atividade' : 'atividades'} e ${got} ${got === 1 ? 'favo' : 'favos'}.</p><div class="re-actions"><button class="btn big re-primary" data-act="retroshare">${ic('share')}Compartilhar</button><button class="btn big re-ghost" data-act="retroclose">Fechar</button></div></div>`,
+    `<div class="re-c re-end">${mark('mark re-mark')}${tag}<h1>Até o próximo ETAL</h1><p>${horasTxt(r.hours)} ${r.hours === 1 ? 'hora' : 'horas'}, ${n} ${n === 1 ? 'atividade' : 'atividades'} e ${got} ${got === 1 ? 'favo' : 'favos'}.</p><div class="re-actions"><button class="btn big re-primary" data-act="retroshare">${ic('share')}Compartilhar</button><button class="btn big re-ghost" data-act="retroclose">Fechar</button></div></div>`,
   ];
 }
 let retro = null;
@@ -3315,7 +3715,7 @@ function retroShow(i) {
     const t0 = performance.now();
     const tick = (n) => {
       const k = reduce ? 1 : Math.min(1, (n - t0) / 900);
-      num.textContent = `${Math.round(to * (1 - (1 - k) ** 3))}h`;
+      num.textContent = `${k < 1 ? Math.round(to * (1 - (1 - k) ** 3)) : horasTxt(to)}h`;
       if (k < 1 && num.isConnected) requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
@@ -3343,7 +3743,7 @@ function retroOpen(demo) {
     i: 0,
     slides: retroSlides(data),
     t: 0,
-    text: `Meu ETAL: ${data.hours} horas em ${data.list.length} atividades e ${demo ? D.combs.length : combEarned().length} favos na colmeia.`,
+    text: `Meu ETAL: ${horasTxt(data.hours)} horas em ${data.list.length} atividades e ${demo ? D.combs.length : combEarned().length} favos na colmeia.`,
   };
   openOverlay(Overlays.retro(retro.slides.length), 'retro');
   retroShow(0);
@@ -3377,18 +3777,19 @@ Screens.mais = () => ({
 Screens.profile = () => ({
   html: `${header('Perfil')}
       <div class="pad stack">
-        <section class="profile-hero st" ${st(0)}><button class="profile-portrait" data-act="profile-edit" aria-label="Editar foto e nome">${meAv('av')}<span class="profile-pencil">${ic('pencil')}</span></button><h2>${esc(D.person.name)}</h2><div class="profile-link">${linkLine()}</div><p>${esc(D.person.courseFull || D.person.course || '')}</p><small>${esc([D.person.year, D.person.campus].filter(Boolean).join(' · '))}</small><button class="profile-edit-link" data-act="profile-edit">${ic('pencil')}Editar perfil</button></section>
+        <section class="profile-hero st" ${st(0)}><button class="profile-portrait" data-act="profile-edit" aria-label="Editar foto e nome">${meAv('av')}<span class="profile-pencil">${ic('pencil')}</span></button><h2>${esc(D.person.name)}</h2><div class="profile-link">${linkLine()}</div><p>${esc(D.person.courseFull || D.person.course || '')}</p><small>${esc([D.person.year, D.person.campus].filter(Boolean).join(' · '))}</small><button class="profile-edit-link" data-go="cartao">${ic('pencil')}Editar perfil</button></section>
         ${taughtActivityCard(D.person)}
         ${orgDe() ? `<button class="org-cta st" ${st(1)} data-go="org">${ic('building')}<span><small>Você é da organização · ${esc(orgDe().papel)}</small><b>Painel da organização</b></span>${ic('chev')}</button>` : ''}
         <button class="retro-cta st" ${st(1)} data-act="retro">${comb('tiny')}<span><b>Minha retrospectiva</b><small>O que você fez e aprendeu no ETAL</small></span>${ic('chev')}</button>
         <ul class="menu st" ${st(1)}>
           <li data-go="credential">${ic('id')}<span>Minha credencial</span><em>${S.credAt ? 'Ativa' : 'Pendente'}</em>${ic('chev', 'i chev')}</li>
-          <li data-act="mine">${ic('list')}<span>Minhas atividades</span><em>${S.saved.size}</em>${ic('chev', 'i chev')}</li>
+          <li data-act="mine">${ic('list')}<span>Minha agenda</span><em>${S.saved.size}</em>${ic('chev', 'i chev')}</li>
           <li data-go="materials">${ic('file')}<span>Materiais</span><em>${Object.keys(S.present).reduce((n, k) => n + byId(k).materials.length, 0)}</em>${ic('chev', 'i chev')}</li>
           <li data-go="suapEvents">${ic('cal')}<span>Meus eventos no SUAP</span>${ic('chev', 'i chev')}</li>
           <li data-go="certificates">${ic('award')}<span>Certificados</span>${ic('chev', 'i chev')}</li>
           <li data-go="network">${ic('contact')}<span>Contatos</span><em>${S.contacts.length}</em>${ic('chev', 'i chev')}</li>
-          <li data-go="cartao">${ic('id')}<span>Perfil público</span><em>${cardGet() ? (cardGet().publish === false ? 'Oculto' : 'Visível') : 'Personalizar'}</em>${ic('chev', 'i chev')}</li>
+          <li data-go="pessoas">${ic('search')}<span>Encontrar pessoas</span><em>Busca por nome</em>${ic('chev', 'i chev')}</li>
+          <li data-go="cartao">${ic('id')}<span>Seu perfil e crachá</span><em>${cardGet() ? (cardGet().publish === false ? 'Oculto' : `${cardProgresso(cardGet())}%`) : 'Completar'}</em>${ic('chev', 'i chev')}</li>
         </ul>
         <ul class="menu st" ${st(2)}>
           <li data-go="games" class="games-row">${ic('trophy')}<span>Campeonatos</span><em>Qui 27</em>${ic('chev', 'i chev')}</li>
@@ -3627,6 +4028,312 @@ Screens.orgEquipe = () =>
       }
     : semAcesso();
 
+/* ===== app/16-avaliacao-e-pessoas.js ===== */
+/* app/16-avaliacao-e-pessoas.js · avaliação no fim da atividade, crachá para mostrar e busca de pessoas.
+   Parte do app.js: os arquivos de prototipo/app/ rodam juntos, na ordem dos números, no mesmo escopo
+   (scripts/app/montar-app.mjs). */
+
+/* ---------------- avaliação ----------------
+   Fluxo: a pessoa lê o QR da sala na entrada (presença) e de novo no fim (saída). A saída libera uma folha curta: nota
+   em estrelas, comentários rápidos de um toque e um comentário aberto opcional. A organização vê tudo sem o nome. */
+const RAPIDOS_BONS = [
+  'Didática clara',
+  'Conteúdo prático',
+  'Bom ritmo',
+  'Material útil',
+  'Tirou minhas dúvidas',
+  'Quero mais',
+];
+const RAPIDOS_RUINS = [
+  'Rápido demais',
+  'Faltou prática',
+  'Difícil de acompanhar',
+  'Problema técnico',
+  'Sala desconfortável',
+];
+const NOTA_TXT = ['', 'Não gostei', 'Poderia ser melhor', 'Foi ok', 'Gostei', 'Amei'];
+/* nota guardada: número (versões antigas) ou { n, quick, text } */
+const notaDe = (id) => {
+  const r = S.ratings[id];
+  return typeof r === 'number' ? r : r?.n || 0;
+};
+const saidaAbre = (s) => hhmm(toMin(s.end) - 20);
+const oQue = (s) => ({ mini: 'a aula', pal: 'a palestra', mesa: 'a mesa' })[tipoDe(s).g] || 'a atividade';
+
+Overlays.avaliar = (id, pre = 0) => {
+  const s = byId(id);
+  const r = S.ratings[id] && typeof S.ratings[id] === 'object' ? S.ratings[id] : { n: notaDe(id), quick: [], text: '' };
+  const n = pre || r.n || 0;
+  const chip = (t) =>
+    `<label class="av-chip"><input type="checkbox" name="quick" value="${esc(t)}" ${r.quick?.includes(t) ? 'checked' : ''}><span>${esc(t)}</span></label>`;
+  return `<form class="sheet av-sheet" data-form="avaliar" data-id="${esc(id)}" role="dialog" aria-modal="true" aria-labelledby="av-tt"><i class="grab"></i>
+      <header class="av-head">${hxBadge(`tp-${tipoDe(s).k}`)}<div><small>Você ficou até o fim</small><h2 id="av-tt">Como foi ${oQue(s)}?</h2><p>${esc(s.short)}</p></div></header>
+      <fieldset class="av-stars" data-nota="${n}"><legend class="sr">Nota de 1 a 5</legend>${[1, 2, 3, 4, 5].map((k) => `<label><input type="radio" name="n" value="${k}" ${k === n ? 'checked' : ''}><span aria-label="${k} de 5">${ic('star')}</span></label>`).join('')}</fieldset>
+      <p class="av-nota-tx" aria-live="polite">${n ? NOTA_TXT[n] : 'Toque nas estrelas'}</p>
+      <div class="av-rapidos" ${n ? '' : 'hidden'}>
+        <small class="av-rot">${n >= 4 ? 'O que você mais curtiu?' : 'O que pode melhorar?'}</small>
+        <div class="av-chips">${(n >= 4 ? [...RAPIDOS_BONS, ...RAPIDOS_RUINS] : [...RAPIDOS_RUINS, ...RAPIDOS_BONS]).map(chip).join('')}</div>
+        <label class="av-texto"><span class="sr">Comentário</span><textarea name="text" rows="2" maxlength="600" placeholder="Quer contar mais? (opcional)">${esc(r.text || '')}</textarea></label>
+      </div>
+      <button class="btn primary big" type="submit" ${n ? '' : 'disabled'}>${ic('check')}Enviar avaliação</button>
+      <p class="av-anon">${ic('lock')}A organização vê as notas e os comentários sem o seu nome.</p>
+    </form>`;
+};
+/* estrelas e chips vivos dentro da folha, sem redesenhar a folha inteira */
+document.addEventListener('change', (e) => {
+  const f = e.target.closest('[data-form="avaliar"]');
+  if (!f || e.target.name !== 'n') return;
+  const n = +e.target.value;
+  $('.av-stars', f).dataset.nota = n;
+  $('.av-nota-tx', f).textContent = NOTA_TXT[n];
+  const box = $('.av-rapidos', f);
+  const novo = box.hidden;
+  box.hidden = false;
+  $('.av-rot', f).textContent = n >= 4 ? 'O que você mais curtiu?' : 'O que pode melhorar?';
+  /* na primeira nota, ordena os chips pelo tom (bons primeiro em nota alta); depois não mexe no que já foi tocado */
+  if (novo) {
+    const chips = $('.av-chips', f);
+    const ordem = n >= 4 ? [...RAPIDOS_BONS, ...RAPIDOS_RUINS] : [...RAPIDOS_RUINS, ...RAPIDOS_BONS];
+    ordem.forEach((t) => {
+      const el = [...chips.children].find((c) => c.querySelector('input').value === t);
+      if (el) chips.appendChild(el);
+    });
+  }
+  $('[type="submit"]', f).disabled = false;
+  buzz(8);
+});
+document.addEventListener('submit', async (e) => {
+  const f = e.target;
+  if (f.dataset.form !== 'avaliar') return;
+  e.preventDefault();
+  const id = f.dataset.id;
+  const d = new FormData(f);
+  const v = {
+    n: +d.get('n') || 0,
+    quick: d.getAll('quick').slice(0, 6),
+    text: String(d.get('text') || '')
+      .trim()
+      .slice(0, 600),
+  };
+  if (!v.n) return;
+  const btn = $('[type="submit"]', f);
+  if (API) {
+    btn.disabled = true;
+    try {
+      await API.put(`/api/eu/avaliacoes/${encodeURIComponent(id)}`, {
+        nota: v.n,
+        rapidos: v.quick,
+        comentario: v.text,
+      });
+    } catch (x) {
+      btn.disabled = false;
+      toast(x.message);
+      return;
+    }
+  }
+  S.ratings[id] = v;
+  buzz(14);
+  closeOverlay(() => {
+    rerender();
+    toast(v.n >= 4 ? 'Valeu! Avaliação enviada' : 'Obrigado pela sinceridade! Avaliação enviada');
+  });
+});
+/* Cartão da saída no leitor: confirma a saída e chama para avaliar (ou mostra a nota já dada). */
+function exitResult(q, { rated }) {
+  const s = byId(q);
+  const t = tipoDe(s);
+  const n = notaDe(q);
+  return `<div class="sr-hero">${hxBadge(`tp-${t.k}`)}<div><small class="sr-kick">Saída registrada às ${S.left[q]}</small><h2>${esc(s.short)}</h2><p>${esc(s.room)} · entrada às ${S.present[q]}</p></div></div>
+      ${rated || n ? `<p class="sr-fim ok">${ic('check')}<span>Você avaliou com <b>${n} ${n === 1 ? 'estrela' : 'estrelas'}</b>. Dá para mudar até o fim do evento.</span></p>` : ''}
+      <div class="sr-actions"><button class="btn primary big" data-act="avaliar" data-id="${q}">${ic('star')}${rated || n ? 'Mudar avaliação' : `Avaliar ${oQue(s)}`}</button><button class="btn soft" data-act="scanagain">${ic('qr')}Ler outro QR</button></div>`;
+}
+ACOES['avaliar'] = (el) => {
+  const id = el.dataset.id;
+  const abrir = () => openOverlay(Overlays.avaliar(id, +el.dataset.n || 0), 'ask');
+  if (ov.classList.contains('open')) closeOverlay(abrir);
+  else abrir();
+};
+/* Bloco de avaliação na tela da aula: trancado até a saída, com a hora em que libera. */
+function rateBlock(id) {
+  const s = byId(id);
+  const n = notaDe(id);
+  if (!S.left[id])
+    return `<section class="block rate-lock"><span class="rl-ic">${ic('qr')}</span><span><b>Avalie no fim ${oQue(s) === 'a aula' ? 'da aula' : oQue(s) === 'a palestra' ? 'da palestra' : 'da atividade'}</b><small>A partir das ${saidaAbre(s)}, leia o QR da sala de novo. Isso registra a sua saída e libera a avaliação.</small></span></section>`;
+  return `<section class="block rate"><h2 class="h">${n ? 'Sua avaliação' : 'Avalie esta atividade'}</h2><div class="stars" role="group" aria-label="Nota">${[1, 2, 3, 4, 5].map((k) => `<button class="${n >= k ? 'on' : ''}" data-act="avaliar" data-id="${id}" data-n="${k}" aria-label="${k} de 5">${ic('star')}</button>`).join('')}</div>${n ? `<small class="rate-tx">${NOTA_TXT[n]}${S.ratings[id]?.quick?.length ? ` · ${esc(S.ratings[id].quick.join(', '))}` : ''}</small>` : `<small class="rate-tx">Saída às ${S.left[id]}. Toque nas estrelas.</small>`}</section>`;
+}
+
+/* ---------------- crachá para mostrar ----------------
+   O mesmo crachá da tela de entrada, com o fundo que a pessoa escolheu no perfil e o QR de verdade, grande, para o colega
+   ler. Aparece em "Meu QR" e na credencial. */
+function crachaGrande(p = D.person, c = cardGet() || {}, { qrHtml = qr(), legenda = '' } = {}) {
+  const av = p.photo
+    ? `<span class="bx-av"><img src="${esc(p.photo)}" alt=""></span>`
+    : `<span class="bx-av ini">${esc(p.initials || '?')}</span>`;
+  const nadic = c.nadic === 'bolsista' ? 'Bolsista do NADIC' : c.nadic === 'ex' ? 'Ex-bolsista do NADIC' : '';
+  const tags = [...(c.areas || []), ...(c.langs || [])].slice(0, 3);
+  return `<div class="cracha bxt-${esc(c.tema || 'etal')}">
+      <i class="bx-slot"></i>
+      <div class="bx-head"><span class="bx-ed">IFRN · Pau dos Ferros</span><span class="bx-brand">${mark('mark')}<b>etal</b></span><i class="bx-holo"></i></div>
+      <span class="bx-photo">${av}</span>
+      <div class="cr-body">
+        <b class="cr-nome">${esc(p.name)}</b>
+        <span class="cr-sub">${esc(p.course || p.role || (isGuest(p) ? 'Visitante' : ''))}</span>
+        ${nadic ? `<span class="cr-nadic"><img src="assets/nadic-logo.svg" alt="">${nadic}</span>` : ''}
+        ${tags.length ? `<span class="cr-tags">${tags.map((x) => `<i>${esc(x)}</i>`).join('')}</span>` : ''}
+        ${qrHtml ? `<span class="cr-qr">${qrHtml}</span>` : ''}
+        ${legenda ? `<small class="cr-leg">${legenda}</small>` : ''}
+      </div>
+      <div class="cr-pe"><span>${isGuest(p) ? 'Visitante' : 'Participante'}</span><span>26 a 28 nov</span></div>
+    </div>`;
+}
+
+/* ---------------- pessoas ----------------
+   Busca por nome e perfil de cada pessoa: o que ela mostrou no perfil, o que fez no ETAL (minicursos, palestras),
+   o que conduziu e como foi nos campeonatos. Com servidor, vem de /api/pessoas; sem ele, das pessoas de exemplo. */
+const pessoasCache = new Map();
+function pessoasLocais() {
+  const out = new Map();
+  const nomes = new Set();
+  /* a mesma pessoa pode vir de mais de uma fonte com códigos diferentes (perfil de exemplo e chave do campeonato) */
+  const add = (p) => {
+    if (!p?.id || !p.name || out.has(String(p.id)) || nomes.has(fold(p.name))) return;
+    nomes.add(fold(p.name));
+    out.set(String(p.id), p);
+  };
+  for (const [id, p] of Object.entries(D.demoProfiles || {})) add({ id, ...p });
+  D.peers.forEach(add);
+  communityPeople().forEach((p) => add({ ...p, ...(otherProfile(p.id) || {}), name: p.name, photo: p.photo }));
+  for (const t of D.tournaments || [])
+    for (const pl of t.players || []) if (pl?.[4]) add({ id: pl[4], name: pl[1], initials: pl[2] });
+  return [...out.values()].filter((p) => String(p.id) !== String(D.person.id));
+}
+/* Colocação de alguém num campeonato, pelo id ou pelo nome do jogador na chave. */
+function colocacao(t, pessoa) {
+  const stt = tourSt(t);
+  const pl = stt.players.find((x) => x && (String(x[4]) === String(pessoa.id) || fold(x[1]) === fold(pessoa.name)));
+  if (!pl) return null;
+  const R = window.TOUR.rounds(stt);
+  if (R.champ === pl) return { k: 'ouro', t: 'Campeão' };
+  if (R.f && R.f.w !== null && (R.f.a === pl || R.f.b === pl)) return { k: 'prata', t: 'Vice-campeão' };
+  if (R.s.some((m) => m.w !== null && (m.a === pl || m.b === pl) && m.win !== pl))
+    return { k: 'bronze', t: 'Semifinal' };
+  if (R.q.some((m) => m.w !== null && (m.a === pl || m.b === pl) && m.win !== pl))
+    return { k: '', t: 'Quartas de final' };
+  return { k: '', t: stt.open ? 'Inscrito na chave' : 'Na disputa' };
+}
+const pessoaItem = (p) => {
+  const c = p.card || {};
+  const tags = c.publish === false ? [] : [...(c.areas || []), ...(c.langs || [])].slice(0, 3);
+  return `<li class="ps-item" data-go="pessoa" data-id="${esc(p.id)}">${personAv(p)}<span><b>${esc(p.name)}</b><small>${esc(p.course || (p.source === 'visitante' ? 'Visitante' : ''))}${c.nadic === 'bolsista' ? ' · NADIC' : ''}</small>${tags.length ? `<em>${tags.map(esc).join(' · ')}</em>` : ''}</span>${ic('chev', 'i chev')}</li>`;
+};
+Screens.pessoas = () => ({
+  html: `${header('Encontrar pessoas')}<div class="pad stack pessoas">
+      <label class="ps-busca">${ic('search')}<input type="search" name="q" placeholder="Nome de quem você procura" autocomplete="off" enterkeyhint="search" aria-label="Buscar pessoa pelo nome"></label>
+      <ul class="ps-lista" aria-live="polite"></ul>
+    </div>`,
+  mount: (page) => {
+    const inp = $('.ps-busca input', page);
+    const lista = $('.ps-lista', page);
+    let t = null;
+    let pedido = 0;
+    const vazio = (titulo, sub) => `<li class="ps-vazio">${illo('people')}<b>${titulo}</b><small>${sub}</small></li>`;
+    const mostrar = (rows, q) => {
+      lista.innerHTML = rows.length
+        ? rows.map(pessoaItem).join('')
+        : q.length < 2
+          ? vazio(
+              'Procure pelo nome',
+              'Digite pelo menos duas letras para achar um colega, um ministrante ou quem jogou no campeonato.',
+            )
+          : vazio('Ninguém com esse nome', 'Confira a grafia ou tente só o primeiro nome.');
+    };
+    const buscar = async () => {
+      const q = inp.value.trim();
+      const n = ++pedido;
+      if (fold(q).length < 2) return mostrar([], q);
+      if (!API)
+        return mostrar(
+          pessoasLocais()
+            .filter((p) => fold(p.name).includes(fold(q)))
+            .slice(0, 30),
+          q,
+        );
+      try {
+        const rows = await API.get(`/api/pessoas?q=${encodeURIComponent(q)}`);
+        if (n !== pedido) return;
+        rows.forEach((p) => pessoasCache.set(String(p.id), p));
+        mostrar(
+          rows.filter((p) => String(p.id) !== String(D.person.serverId)),
+          q,
+        );
+      } catch (x) {
+        if (n === pedido) lista.innerHTML = vazio('Não foi possível buscar', x.message);
+      }
+    };
+    inp.addEventListener('input', () => {
+      clearTimeout(t);
+      t = setTimeout(buscar, API ? 280 : 60);
+    });
+    mostrar([], '');
+    setTimeout(() => inp.focus({ preventScroll: true }), 420);
+  },
+});
+function pessoaConteudo(p, extra = {}) {
+  const c = p.card || {};
+  const priv = c.publish === false;
+  const att = (extra.attended || []).map(byId).filter(Boolean);
+  const fez = att.filter((x) => ['mini'].includes(tipoDe(x).g));
+  const viu = att.filter((x) => ['pal', 'mesa'].includes(tipoDe(x).g));
+  const deu = (extra.taught || []).map(byId).filter(Boolean);
+  const camps = (D.tournaments || []).map((t) => [t, colocacao(t, p)]).filter(([, r]) => r);
+  const linha = (x) =>
+    `<li ${goOf(x)}><span class="ps-dia"><small>${dayOf(x.day)?.week || ''}</small><b>${x.day}</b></span><span><b>${esc(x.short)}</b><small>${esc(x.type)} · ${esc(x.room || '')}</small></span>${ic('chev', 'i chev')}</li>`;
+  const bloco = (titulo, icone, itens) =>
+    itens.length
+      ? `<section class="ps-bloco"><h2 class="h">${ic(icone)}${titulo}</h2><ul class="splist">${itens.join('')}</ul></section>`
+      : '';
+  const nada = !fez.length && !viu.length && !deu.length && !camps.length;
+  return `<div class="ps-cracha">${crachaGrande(p, priv ? {} : c, { qrHtml: '' })}</div>
+      ${priv ? '' : cardPreview(c, p, { own: false, taught: false })}
+      ${
+        priv
+          ? `<div class="ct-empty">${ic('eye')}<span><b>Perfil privado</b><small>Esta pessoa preferiu não mostrar o que fez no evento.</small></span></div>`
+          : `${bloco('Conduziu', 'mic', deu.map(linha))}
+      ${bloco('Minicursos que fez', 'laptop', fez.map(linha))}
+      ${bloco('Palestras e mesas', 'chat', viu.map(linha))}
+      ${bloco(
+        'Campeonatos',
+        'trophy',
+        camps.map(
+          ([t, r]) =>
+            `<li data-go="tournament" data-id="${esc(t.id)}"><span class="ps-medalha ${r.k}">${ic('trophy')}</span><span><b>${esc(t.name)}</b><small>${r.t} · ${esc(t.place || '')}</small></span>${ic('chev', 'i chev')}</li>`,
+        ),
+      )}
+      ${nada ? `<p class="note">${API ? 'Ainda sem presenças registradas no ETAL.' : 'As atividades de cada pessoa aparecem aqui quando o app está ligado ao servidor.'}</p>` : ''}`
+      }`;
+}
+Screens.pessoa = ({ id }) => {
+  const base = pessoasCache.get(String(id)) ||
+    pessoasLocais().find((p) => String(p.id) === String(id)) || { id, name: 'Participante' };
+  const local = !API
+    ? { attended: [], taught: D.sessions.filter((a) => a.speakerId === String(id)).map((a) => a.id) }
+    : null;
+  return {
+    html: `${header('Participante')}<div class="pad stack pessoa">${pessoaConteudo(base, local || {})}</div>`,
+    mount: async (page) => {
+      if (!API) return;
+      try {
+        const p = await API.get(`/api/pessoas/${encodeURIComponent(id)}`);
+        pessoasCache.set(String(id), p);
+        const box = $('.pessoa', page);
+        if (box) box.innerHTML = pessoaConteudo(p, p);
+      } catch (x) {
+        toast(x.message);
+      }
+    },
+  };
+};
+
 /* ===== app/16-sobre-e-cracha.js ===== */
 /* app/16-sobre-e-cracha.js · sobre o protótipo, SUAP, certificados, cartão, contatos, avisos e materiais.
    Parte do app.js: os arquivos de prototipo/app/ rodam juntos, na ordem dos números, no mesmo escopo
@@ -3674,42 +4381,64 @@ Screens.certificates = () => {
   const total = rows.reduce((n, s) => n + hoursOf(s), 0);
   return {
     html: `${header('Certificados')}<div class="pad stack"><button class="btn soft" data-go="suapEvents">Consultar certificados no SUAP ${ic('open')}</button>
-        <section class="cert-top st" ${st(0)}><span class="ring big" style="--p:${Math.round((hours / total) * 100)}"><b>${hours}h</b></span><div><strong>${hours} de ${total} horas</strong><span>Acompanhe suas horas de participação e consulte os certificados no SUAP.</span></div></section>
-        <ul class="certs st" ${st(1)}>${rows.map((s) => `<li class="${S.present[s.id] ? 'done' : ''}" data-go="activity" data-id="${s.id}"><i>${ic(S.present[s.id] ? 'check' : 'clock')}</i><span><b>${s.short}</b><small>${S.present[s.id] ? `Presença às ${S.present[s.id]} · ${hoursOf(s)}h` : `${dayOf(s.day).week} ${s.day}, ${s.time} · ${hoursOf(s)}h`}</small></span></li>`).join('')}</ul>
+        <section class="cert-top st" ${st(0)}><span class="ring big" style="--p:${total ? Math.round((hours / total) * 100) : 0}"><b>${horasTxt(hours)}h</b></span><div><strong>${horasTxt(hours)} de ${horasTxt(total)} horas</strong><span>Acompanhe suas horas de participação e consulte os certificados no SUAP.</span></div></section>
+        <ul class="certs st" ${st(1)}>${rows.map((s) => `<li class="${S.present[s.id] ? 'done' : ''}" data-go="activity" data-id="${s.id}"><i>${ic(S.present[s.id] ? 'check' : 'clock')}</i><span><b>${s.short}</b><small>${S.present[s.id] ? `Presença às ${S.present[s.id]} · ${horasTxt(hoursOf(s))}h` : `${dayOf(s.day).week} ${s.day}, ${s.time} · ${horasTxt(hoursOf(s))}h`}</small></span></li>`).join('')}</ul>
       </div>`,
   };
 };
 
-/* Cartão de contato: o que aparece para quem ler o QR do seu crachá. Tudo opcional; na primeira entrada vem com "Pular". */
+/* Editar perfil: foto e nome de exibição, mais o cartão de contato (o que aparece para quem ler o QR do seu crachá).
+   Tudo opcional; na primeira entrada vem como convite, com "Pular" sempre à vista na barra de baixo. */
+const cartaoEu = () =>
+  `<button type="button" class="ct-eu" data-act="profile-edit">${meAv('av')}<span><b>${esc(D.person.name)}</b><small>Foto e nome de exibição</small></span><span class="ct-eu-edit">${ic('pencil')}Alterar</span></button>`;
+/* Perfil em passos: cada passo é uma escolha rápida (toques, quase sem digitar), na ordem do que mais ajuda um colega a te
+   achar. A barra de progresso e o crachá ao vivo no topo puxam para completar; na primeira vez, "Agora não" fica pequeno
+   embaixo do botão principal, e o convite não volta depois. */
+const ctPasso = (n, parte, titulo, dica, corpo, c) =>
+  `<section class="ct-sec ct-passo ${CARD_PARTES.find(([k]) => k === parte)?.[1](c) ? 'feito' : ''}" data-parte="${parte}"><h3><span class="ct-n">${n}</span><span class="ct-tt"><b>${titulo}</b>${dica ? `<small>${dica}</small>` : ''}</span><i class="ct-ok">${ic('check')}</i></h3>${corpo}</section>`;
+const ctProg = (c) => {
+  const p = cardProgresso(c);
+  const falta = CARD_PARTES.find(([, f]) => !f(c));
+  const prox = {
+    nadic: 'Comece dizendo se você é do NADIC',
+    areas: 'Agora seus interesses: é o que mais ajuda a te achar',
+    langs: 'Marque as linguagens que você usa',
+    open: 'Conte o que você procura no evento',
+    contato: 'Deixe um jeito de falarem com você',
+    bio: 'Uma frase sobre você e pronto',
+  }[falta?.[0]];
+  return `<div class="ct-prog-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${p}"><i style="width:${p}%"></i></div><p><b>${p === 100 ? 'Perfil completo!' : `${p}% completo`}</b><small>${p === 100 ? 'Seu crachá está com a sua cara.' : prox}</small></p>`;
+};
 Screens.cartao = (pp = {}) => {
   const c = cardGet() || { publish: true, email: D.person.email || '', nadic: '', langs: [], areas: [], open: [] };
   const intro = !!pp.intro;
+  const temas = `<div class="ct-temas">${CRACHA_TEMAS.map(([v, t]) => `<label class="ct-tema"><input type="radio" name="tema" value="${v}" ${(c.tema || '') === v ? 'checked' : ''}><span class="bxt-${v || 'etal'}"><i></i>${t}</span></label>`).join('')}</div>`;
   return {
-    html: `${header(intro ? 'Seu perfil' : 'Perfil público', { right: intro ? '<button class="ct-skip" data-act="cartao-pular">Pular</button>' : '' })}
-      <form class="ct-form pad" data-form="cartao" novalidate>
-        ${intro ? `<div class="ct-hello st" ${st(0)}><small>Opcional</small><h2>Personalize seu perfil</h2></div>` : ''}
+    html: `${header(intro ? '' : 'Editar perfil')}
+      <form class="ct-form pad ct-guiado" id="ct-form" data-form="cartao" novalidate>
+        ${intro ? `<div class="ct-hello st" ${st(0)}><small>Leva 1 minuto</small><h2>Monte seu perfil do ETAL</h2><p>Quem ler o QR do seu crachá vê seus interesses e como falar com você. É assim que se acha dupla, estágio e grupo de estudo.</p></div>` : ''}
         <div class="ct-preview st" ${st(1)}>${cardPreview(c)}</div>
-        <label class="ct-switch st" ${st(2)}><span><b>Perfil visível</b><small>Para quem tocar no seu nome ou ler seu QR</small></span><input type="checkbox" name="publish" ${c.publish !== false ? 'checked' : ''}><i></i></label>
-
-        <section class="ct-sec st" ${st(3)}><h3>${ic('contact')}Contato</h3>
-          <label class="ct-field">${ic('phone')}<input name="phone" type="tel" inputmode="tel" maxlength="20" placeholder="WhatsApp ou telefone" value="${esc(c.phone || '')}" autocomplete="tel"></label>
+        <div class="ct-prog st" ${st(1)}>${ctProg(c)}</div>
+        ${intro ? '' : `<div class="st" ${st(2)}>${cartaoEu()}</div>`}
+        ${ctPasso(1, 'nadic', 'Você é do NADIC?', '', `<div class="ct-seg ct-seg-big">${CARD_NADIC.map(([v, t]) => `<label><input type="radio" name="nadic" value="${v}" ${c.nadic === v ? 'checked' : ''}><span>${v === 'bolsista' ? '<img src="assets/nadic-logo.svg" alt="">' : ''}${t}</span></label>`).join('')}</div>`, c)}
+        ${ctPasso(2, 'areas', 'O que te interessa?', 'Toque em quantos quiser', cardChips('areas', CARD_AREAS, c.areas), c)}
+        ${ctPasso(3, 'langs', 'Linguagens que você usa', 'Mesmo que esteja começando', cardChips('langs', CARD_LANGS, c.langs), c)}
+        ${ctPasso(4, 'open', 'Está aberto a…', '', cardChips('open', CARD_OPEN, c.open), c)}
+        ${ctPasso(
+          5,
+          'contato',
+          'Como falar com você',
+          'Só aparece para quem você deixar ver',
+          `<label class="ct-field">${ic('phone')}<input name="phone" type="tel" inputmode="tel" maxlength="20" placeholder="WhatsApp ou telefone" value="${esc(c.phone || '')}" autocomplete="tel"></label>
           <label class="ct-field">${ic('mail')}<input name="email" type="email" maxlength="80" placeholder="E-mail" value="${esc(c.email || '')}" autocomplete="email"></label>
-          <label class="ct-field">${ic('link')}<input name="link" maxlength="80" placeholder="GitHub, LinkedIn ou portfólio" value="${esc(c.link || '')}" autocomplete="url"></label>
-        </section>
-
-        <section class="ct-sec st" ${st(4)}><h3><img class="ct-nadic-logo" src="assets/nadic-logo.svg" alt="">Bolsista do NADIC?</h3>
-          <div class="ct-seg">${CARD_NADIC.map(([v, t]) => `<label><input type="radio" name="nadic" value="${v}" ${c.nadic === v ? 'checked' : ''}><span>${t}</span></label>`).join('')}</div>
-        </section>
-
-        <section class="ct-sec st" ${st(5)}><h3>${ic('code')}Linguagens</h3>${cardChips('langs', CARD_LANGS, c.langs)}</section>
-        <section class="ct-sec st" ${st(6)}><h3>${ic('sliders')}Interesses</h3>${cardChips('areas', CARD_AREAS, c.areas)}</section>
-        <section class="ct-sec st" ${st(7)}><h3>${ic('flag')}Aberto a</h3>${cardChips('open', CARD_OPEN, c.open)}</section>
-        <section class="ct-sec st" ${st(8)}><h3>${ic('text')}Sobre você</h3>
-          <label class="ct-field area"><textarea name="bio" maxlength="140" rows="2" placeholder="Ex.: Curto jogos e estou aprendendo Godot.">${esc(c.bio || '')}</textarea><em class="ct-count">${(c.bio || '').length}/140</em></label>
-        </section>
-
-        <div class="ct-actions"><button class="btn primary big" type="submit">${ic('check')}Salvar</button>${intro ? '<button class="btn ghost" type="button" data-act="cartao-pular">Pular por enquanto</button>' : ''}</div>
-      </form>`,
+          <label class="ct-field">${ic('link')}<input name="link" maxlength="80" placeholder="GitHub, LinkedIn ou portfólio" value="${esc(c.link || '')}" autocomplete="url"></label>`,
+          c,
+        )}
+        ${ctPasso(6, 'bio', 'Uma frase sobre você', '', `<label class="ct-field area"><textarea name="bio" maxlength="140" rows="2" placeholder="Ex.: Curto jogos e estou aprendendo Godot.">${esc(c.bio || '')}</textarea><em class="ct-count">${(c.bio || '').length}/140</em></label>`, c)}
+        <section class="ct-sec ct-extra st"><h3><span class="ct-n">${ic('id')}</span><span class="ct-tt"><b>Fundo do crachá</b><small>Aparece quando você mostra o crachá</small></span></h3>${temas}</section>
+        <label class="ct-switch st"><span><b>Perfil visível</b><small>Para quem buscar seu nome ou ler seu QR</small></span><input type="checkbox" name="publish" ${c.publish !== false ? 'checked' : ''}><i></i></label>
+      </form>
+      <div class="cta-bar ct-barra ${intro ? 'intro' : ''}"><button class="btn primary big" type="submit" form="ct-form">${ic('check')}Salvar perfil</button>${intro ? '<button class="ct-depois" type="button" data-act="cartao-pular">Agora não</button>' : ''}</div>`,
     mount: (page) => {
       const f = $('[data-form="cartao"]', page);
       if (!f) return;
@@ -3717,6 +4446,10 @@ Screens.cartao = (pp = {}) => {
         const v = cardRead(f);
         $('.ct-preview', page).innerHTML = cardPreview(v);
         $('.ct-count', page).textContent = `${v.bio.length}/140`;
+        $('.ct-prog', page).innerHTML = ctProg(v);
+        page
+          .querySelectorAll('.ct-passo')
+          .forEach((el) => el.classList.toggle('feito', !!CARD_PARTES.find(([k]) => k === el.dataset.parte)?.[1](v)));
       };
       f.addEventListener('input', live);
       f.addEventListener('change', live);
@@ -3729,15 +4462,15 @@ Screens.cartao = (pp = {}) => {
           $('[name="email"]', f).focus();
           return;
         }
-        try {
-          localStorage.setItem(cardKey(D.person.id), JSON.stringify({ ...v, at: Date.now() }));
-        } catch (_) {
+        if (!cardSave(v)) {
           toast('Não foi possível salvar neste aparelho.');
           return;
         }
-        cardDemoDone = true;
         buzz(14);
-        toast(v.publish ? 'Perfil atualizado' : 'Perfil salvo, mas oculto');
+        const p = cardProgresso(v);
+        toast(
+          !v.publish ? 'Perfil salvo, mas oculto' : p === 100 ? 'Perfil completo!' : `Perfil salvo (${p}% completo)`,
+        );
         navBack();
       });
     },
@@ -3757,7 +4490,7 @@ Screens.network = () => ({
           ? `<ul class="splist">${S.contacts.map((c, i) => `<li class="st" ${st(i)} ${c.card ? `data-go="peer" data-id="${esc(c.id)}"` : ''}>${c.photo ? `<span class="ava lg has-photo"><img src="${esc(c.photo)}" alt=""></span>` : `<span class="ava lg">${c.initials}</span>`}<span><b>${c.name}</b><small>${c.course}${c.nadic ? ' · NADIC' : ''}</small><em>${[c.interest, ...(c.langs || [])].join(' · ')}</em></span></li>`).join('')}</ul>`
           : `<div class="empty st" ${st(0)}>${illo('people')}<h3>Nenhum contato ainda</h3><p>Leia o QR do crachá de um colega para trocar contatos.</p></div>`
       }
-      <div class="net-actions st" ${st(1)}><button class="btn primary" data-act="scan" data-mode="ler">${ic('qr')}Ler QR de um colega</button><button class="btn soft" data-act="scan" data-mode="meu">Mostrar meu QR</button></div>
+      <div class="net-actions st" ${st(1)}><button class="btn primary" data-act="scan" data-mode="ler">${ic('qr')}Ler QR de um colega</button><button class="btn soft" data-act="scan" data-mode="meu">Mostrar meu crachá</button><button class="btn soft" data-go="pessoas">${ic('search')}Encontrar pelo nome</button></div>
     </div>`,
 });
 
@@ -3766,12 +4499,7 @@ Screens.credential = () => {
   return {
     html: `${header('Credencial')}
       <div class="pad stack cred">
-        <section class="passcard st ${ok ? '' : 'pending'}" ${st(0)}>
-          <div class="b-top"><span class="b-mark">etal<i></i></span><svg class="pins" viewBox="0 0 60 20" aria-hidden="true"><path d="M8 20V9M30 20V9M52 20V9"/><circle cx="8" cy="5.5" r="3.4"/><circle cx="30" cy="5.5" r="3.4"/><circle cx="52" cy="5.5" r="3.4"/></svg></div>
-          <div class="pass-id">${meAv('av xl')}<strong>${esc(D.person.name)}</strong><span>${esc(D.person.courseFull)}</span></div>
-          <div class="qrbox">${qr()}${ok ? '' : `<div class="qr-lock">${ic('lock')}</div>`}</div>
-          <div class="pass-foot"><span class="state ${ok ? 'ok' : 'pend'}">${ok ? `${ic('check')}Confirmado` : 'Pendente'}</span><span class="mono">${esc(D.person.id)}</span></div>
-        </section>
+        <section class="cred-cracha st ${ok ? '' : 'pending'}" ${st(0)}>${crachaGrande(D.person, cardGet() || {}, { qrHtml: `${qr()}${ok ? '' : `<span class="qr-lock">${ic('lock')}</span>`}`, legenda: ok ? `${ic('check')}Credenciado às ${S.credAt} · ${esc(D.person.id)}` : `Credenciamento pendente · ${esc(D.person.id)}` })}</section>
         ${
           ok
             ? `<p class="note st" ${st(1)}>Mostre este código quando a organização pedir.</p>`
@@ -4084,7 +4812,7 @@ Overlays.scan = (mode = 'ler') => {
           : ''
       }
       <div class="myqr" aria-hidden="${mode !== 'meu'}">
-        <div class="myqr-card">${meAv('av xl')}<strong>${esc(D.person.name)}</strong><span>${esc(D.person.course)}</span>${cardGet()?.publish ? `<em class="myqr-card-on">${ic('check')}Perfil público visível</em>` : ''}<div class="qrbox">${qr()}</div><small>Mostre para um colega trocar contato com você.</small></div>
+        <div class="myqr-cracha">${crachaGrande(D.person, cardGet() || {}, { legenda: 'Mostre para um colega ler e trocar contato' })}<div class="myqr-acts"><button class="btn soft sm" data-act="closeov" data-then="cartao">${ic('pencil')}Mudar fundo</button><button class="btn soft sm" data-act="closeov" data-then="pessoas">${ic('search')}Encontrar alguém</button></div></div>
       </div>
     </div>`;
 };
@@ -4139,14 +4867,18 @@ const KICK = {
   camp: 'Check-in no campeonato',
   out: 'Presença registrada',
 };
-function roomResult(q, { again, first, c }) {
+function roomResult(q, { again, first, c, exitFrom }) {
   const s = byId(q);
   const t = tipoDe(s);
   const hora = again ? `desde ${S.present[q]}` : `às ${S.present[q]}`;
   const hero = `<div class="sr-hero">${hxBadge(again ? 'muted' : `tp-${t.k}`)}<div><small class="sr-kick">${again ? 'Presença já registrada' : first ? 'Credenciado e presente' : KICK[t.g]}</small><h2>${esc(s.short)}</h2><p>${esc(s.room)} · ${floorName(s.floor)} · ${hora}</p></div></div>`;
   const outro = `<button class="btn soft" data-act="scanagain">${ic('qr')}Ler outro QR</button>`;
+  /* aula, palestra e mesa: a segunda leitura, no fim, libera a avaliação */
+  const fim = ['mini', 'pal', 'mesa'].includes(t.g)
+    ? `<p class="sr-fim">${ic('star')}<span>${exitFrom ? `A partir das <b>${exitFrom}</b>, leia este QR de novo` : 'No fim, leia este QR de novo'} para avaliar ${t.g === 'mini' ? 'a aula' : t.g === 'pal' ? 'a palestra' : 'a mesa'}.</span></p>`
+    : '';
   if (again)
-    return `${hero}<div class="sr-actions"><button class="btn primary big" data-act="scanopen" data-q="${q}">Abrir a atividade</button>${outro}</div>`;
+    return `${hero}${fim}<div class="sr-actions"><button class="btn primary big" data-act="scanopen" data-q="${q}">Abrir a atividade</button>${outro}</div>`;
   const mats = s.materials?.length
     ? `<li>${ic('file')}<span><b>${s.materials.length} ${s.materials.length === 1 ? 'material' : 'materiais'}</b><small>liberados agora</small></span></li>`
     : '';
@@ -4166,7 +4898,7 @@ function roomResult(q, { again, first, c }) {
       pal: `<button class="btn primary big" data-act="scanask" data-q="${q}">${ic('chat')}Perguntar ao palestrante</button>`,
       mesa: `<button class="btn primary big" data-act="scanask" data-q="${q}">${ic('chat')}Perguntar à mesa</button>`,
     }[t.g] || `<button class="btn primary big" data-act="scanopen" data-q="${q}">Abrir a atividade</button>`;
-  return `${hero}${corpo}${c ? combRow(c) : ''}<div class="sr-actions">${acao}${outro}</div>`;
+  return `${hero}${corpo}${fim}${c ? combRow(c) : ''}<div class="sr-actions">${acao}${outro}</div>`;
 }
 /* Campeonato: tela toda com a arte do jogo; diz se a pessoa está na chave (e contra quem joga) ou na torcida. */
 Overlays.jogo = (s, c) => {
@@ -4431,7 +5163,7 @@ function switchTab(t, reset = false) {
 function renderTabbar() {
   const tabs = [
     ['home', 'home', 'Início'],
-    ['agenda', 'cal', 'Agenda'],
+    ['agenda', 'cal', 'Programação'],
     null,
     ['map', 'map', 'Mapa'],
     ['community', 'image', 'Publicações'],
@@ -4696,7 +5428,10 @@ function netState() {
     return;
   }
   bar.classList.remove('ok');
-  bar.textContent = PWA.ready ? 'Sem internet · usando a cópia salva no aparelho' : 'Sem internet';
+  const n = S.auth && API ? pendentes().length : 0;
+  bar.textContent =
+    (PWA.ready ? 'Sem internet · usando a cópia salva no aparelho' : 'Sem internet') +
+    (n ? ` · ${n} ${n === 1 ? 'leitura' : 'leituras'} para enviar` : '');
   bar.classList.add('show');
 }
 window.addEventListener('online', netState);
@@ -5248,6 +5983,13 @@ function scanResult(q) {
       const first = !S.credAt;
       if (first) S.credAt = D.now.time;
       const again = !!S.present[q];
+      /* sem servidor, a segunda leitura já vale como saída (como no servidor sem a janela de horário) */
+      if (again && tipoDe(byId(q) || {}).g !== 'camp') {
+        if (!S.left[q]) S.left[q] = D.now.time;
+        rerender();
+        scanSheet(exitResult(q, { rated: !!S.ratings[q] }));
+        return;
+      }
       if (!again) S.present[q] = D.now.time;
       communityCheckin(q);
       const c = takeNewComb();
@@ -5311,6 +6053,12 @@ ACOES['today'] = (el, e, a) => {
   el.closest('.today').classList.toggle('open', S.todayOpen);
 };
 
+/* "Programação" (atalho da home e aba de baixo) é sempre a lista completa; "Minha agenda" é o filtro de "Ver tudo" */
+ACOES['programacao'] = (el, e, a) => {
+  S.agendaFilter = 'all';
+  switchTab('agenda', true);
+};
+
 /* ===== app/25-acoes-atividade.js ===== */
 /* app/25-acoes-atividade.js · ações de atividade.
    Parte do app.js: os arquivos de prototipo/app/ rodam juntos, na ordem dos números, no mesmo escopo
@@ -5342,14 +6090,27 @@ ACOES['ask'] = (el, e, a) => {
   setTimeout(() => $('#qtext')?.focus({ preventScroll: true }), 480);
 };
 
-ACOES['rate'] = (el, e, a) => {
-  S.ratings[el.dataset.id] = +el.dataset.n;
-  rerender();
-  toast('Avaliação enviada');
+ACOES['rate'] = (el, e, a) => ACOES['avaliar'](el, e, a);
+ACOES['rolar'] = (el) => {
+  const alvo = $(el.dataset.alvo, el.closest('.page') || document);
+  alvo?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+  if (alvo) {
+    alvo.classList.remove('pisca');
+    void alvo.offsetWidth;
+    alvo.classList.add('pisca');
+  }
 };
 
 ACOES['save'] = (el, e, a) => {
   const id = el.dataset.id;
+  if (inscrito(byId(id))) {
+    toast('Você está inscrito nesta atividade no SUAP');
+    return;
+  }
+  if (comInscricao(byId(id))) {
+    toast('A inscrição em minicurso é feita no SUAP');
+    return;
+  }
   if (API && S.auth)
     API[S.saved.has(id) ? 'del' : 'post'](`/api/eu/agenda/${encodeURIComponent(id)}`).catch((x) => {
       toast(x.message);
@@ -5537,6 +6298,10 @@ ACOES['community-mode'] = (el, e, a) => {
 ACOES['community-save'] = (el, e, a) => {
   if (!S.auth) return;
   const id = el.dataset.id;
+  if (API) {
+    pubSalvar(id);
+    return;
+  }
   const me = String(D.person.id);
   let adding = false;
   if (
@@ -5567,7 +6332,7 @@ ACOES['community-insert-mention'] = (el, e, a) => {
 };
 
 ACOES['community-mention-person'] = (el, e, a) => {
-  if (!S.credAt) return;
+  if (!communityPode()) return;
   const person = communityPeople().find((p) => p.id === el.dataset.id);
   if (!person) return;
   communityDraft.post += `${communityDraft.post && !communityDraft.post.endsWith(' ') ? ' ' : ''}@${person.handle} `;
@@ -5596,6 +6361,10 @@ ACOES['social-mod'] = (el, e, a) => {
     return;
   }
   const note = el.closest('[data-mod-target]')?.querySelector('[data-mod-note]')?.value || '';
+  if (API) {
+    pubModerar(el.dataset.target, el.dataset.action, note);
+    return;
+  }
   if (communityWrite((v) => SOCIAL.moderate(v, el.dataset.target, el.dataset.action, D.person.name, note))) {
     rerender();
     toast('Revisão salva neste navegador');
@@ -5603,7 +6372,7 @@ ACOES['social-mod'] = (el, e, a) => {
 };
 
 ACOES['community-compose'] = (el, e, a) => {
-  if (!S.credAt) {
+  if (!communityPode()) {
     toast('Leia o QR da recepção para participar.');
     return;
   }
@@ -5619,11 +6388,15 @@ ACOES['community-remove-image'] = (el, e, a) => {
 };
 
 ACOES['community-like'] = (el, e, a) => {
-  if (!S.credAt) {
+  if (!communityPode()) {
     toast('Leia o QR da recepção para participar.');
     return;
   }
   const id = el.dataset.id;
+  if (API) {
+    pubCurtir(id);
+    return;
+  }
   const me = String(D.person.id);
   if (
     communityWrite((v) => {
@@ -5637,6 +6410,10 @@ ACOES['community-like'] = (el, e, a) => {
 
 ACOES['community-delete'] = (el, e, a) => {
   if (!S.auth) return;
+  if (API) {
+    pubApagar(el.dataset.id);
+    return;
+  }
   if (communityWrite((v) => SOCIAL.removePost(v, el.dataset.id, communityAuthor(), canModerateCommunity()))) {
     if (top().s === 'communityPost') navBack();
     else rerender();
@@ -5983,6 +6760,7 @@ ACOES['back'] = (el, e, a) => {
 
 ACOES['tab'] = (el, e, a) => {
   if (el.dataset.tab === 'map' && S.tab !== 'map' && soonRoute()) return;
+  if (el.dataset.tab === 'agenda' && S.tab !== 'agenda') S.agendaFilter = 'all';
   switchTab(el.dataset.tab);
 };
 
@@ -6093,14 +6871,8 @@ ACOES['profile-edit'] = (el, e, a) => {
 
 ACOES['cartao-pular'] = (el, e, a) => {
   cardSkip();
-  cardDemoDone = true;
-  if (el.closest('.ct-invite')) {
-    el.closest('.ct-invite').remove();
-    toast('Dá para personalizar depois em Perfil');
-  } else {
-    navBack();
-    toast('Dá para personalizar depois em Perfil');
-  }
+  navBack();
+  toast('Tudo bem! Dá para completar depois em Perfil.');
 };
 
 ACOES['profile-preset'] = (el, e, a) => {
@@ -6339,12 +7111,16 @@ document.addEventListener('click', (e) => {
 document.addEventListener('submit', async (e) => {
   if (e.target.dataset.form === 'community-report') {
     e.preventDefault();
-    if (!S.auth || !S.credAt) {
+    if (!communityPode()) {
       toast('Leia o QR Code da recepção para participar.');
       return;
     }
     const data = new FormData(e.target);
     const target = e.target.dataset.target;
+    if (API) {
+      pubDenunciar(target, String(data.get('reason') || ''), String(data.get('detail') || ''));
+      return;
+    }
     if (
       communityWrite((v) =>
         SOCIAL.report(v, target, communityAuthor(), String(data.get('reason') || ''), String(data.get('detail') || '')),
@@ -6391,6 +7167,13 @@ document.addEventListener('submit', async (e) => {
       if (onBadge) {
         $('.bx-face.filled', $('.login')).innerHTML = badgeFace(lgPending);
         $('[data-live="hello"]').textContent = `Tudo certo, ${D.person.first}!`;
+      } else if (top().s === 'cartao') {
+        /* na edição do perfil: troca só a foto e o nome, sem perder o que foi digitado no resto do formulário */
+        const pg = vp.querySelector('.page:not(.leaving)');
+        const eu = $('.ct-eu', pg);
+        if (eu) eu.outerHTML = cartaoEu();
+        $('[data-form="cartao"]', pg)?.dispatchEvent(new Event('input'));
+        mapaFixoEnviar('etal:mapa:sincronizar', {});
       } else {
         rerender();
         mapaFixoEnviar('etal:mapa:sincronizar', {});
@@ -6402,7 +7185,7 @@ document.addEventListener('submit', async (e) => {
 
   if (['community-post', 'community-message', 'community-comment'].includes(e.target.dataset.form)) {
     e.preventDefault();
-    if (!S.auth || !S.credAt) {
+    if (!S.auth || (e.target.dataset.form !== 'community-message' && !communityPode())) {
       toast('Leia o QR da recepção para participar.');
       return;
     }
@@ -6418,6 +7201,12 @@ document.addEventListener('submit', async (e) => {
       .slice(0, kind === 'community-post' ? 2000 : 1000);
     if (!text && !(kind === 'community-post' && communityDraft.images.length)) {
       toast('Escreva algo para compartilhar.');
+      return;
+    }
+    if (API) {
+      pubEnviar(kind, text, f.dataset.id).then((ok) => {
+        if (ok) communityLimparRascunho(kind, f.dataset.id, 'Publicado');
+      });
       return;
     }
     const item = {
@@ -6446,24 +7235,7 @@ document.addEventListener('submit', async (e) => {
         (v.comments[f.dataset.id] ||= []).push(item);
       }
     });
-    if (!saved) return;
-    if (kind === 'community-post') {
-      communityDraft.post = '';
-      communityDraft.cursor = 0;
-      communityDraft.images = [];
-      communityDraft.activity = '';
-      communityDraft.day = D.now.day;
-      communityDraft.tag = 'No evento';
-      communityDraft.contextReady = false;
-      communityDraft.activityManual = false;
-      communityMode = 'feed';
-      navBack();
-      toast('Publicação salva neste aparelho');
-    } else {
-      if (kind === 'community-message') communityDraft.message = '';
-      else delete communityDraft.comments[f.dataset.id];
-      rerender();
-    }
+    if (saved) communityLimparRascunho(kind, f.dataset.id, 'Publicação salva neste aparelho');
     return;
   }
   if (e.target.dataset.form === 'tourjoin') {
@@ -6649,7 +7421,7 @@ document.addEventListener('submit', async (e) => {
     if (!v.city) return say('Informe a sua cidade.', $('#gcity'));
     if (!$('#gok').checked) return say('Para criar a conta, é preciso concordar com o uso dos dados.', $('#gok'));
     if (API) {
-      /* Visitante de verdade: o servidor manda um link de entrada para o e-mail. */
+      /* Visitante de verdade: com e-mail configurado, o servidor manda um link; sem, já abre a sessão. */
       const btn = $('button[type="submit"]', gf);
       btn?.classList.add('loading');
       try {
@@ -6659,11 +7431,15 @@ document.addEventListener('submit', async (e) => {
           instituicao: v.inst || null,
           cidade: v.city,
         });
+        if (j.entrou) {
+          /* Servidor sem e-mail: a conta de visitante já abriu a sessão. */
+          apiState(await API.get('/api/eu'));
+          lgFilled(D.person);
+          return;
+        }
         err.classList.add('ok');
         err.hidden = false;
-        err.innerHTML = j.link
-          ? `Link de teste (sem e-mail configurado): <a href="${esc(j.link)}">entrar</a>`
-          : `Pronto! Enviamos um link de entrada para <b>${esc(v.email)}</b>. Abra o e-mail neste aparelho.`;
+        err.innerHTML = `Pronto! Enviamos um link de entrada para <b>${esc(v.email)}</b>. Abra o e-mail neste aparelho.`;
       } catch (x) {
         say(x.message);
       } finally {
@@ -6704,11 +7480,26 @@ document.addEventListener('submit', async (e) => {
   try {
     if (API) {
       /* Servidor do ETAL: pede o token JWT ao SUAP, lê o perfil e abre a sessão. A senha não fica guardada. */
-      try {
-        await API.post('/api/auth/suap/senha', { matricula: mat, senha: pwd });
-      } catch (x) {
-        say(x.message);
-        return;
+      /* Na abertura do evento muita gente entra junto: se a fila do SUAP estiver cheia, o servidor responde 503 com
+         Retry-After e o app espera esses segundos (contando na tela) e tenta de novo, sem a pessoa fazer nada, por até
+         4 minutos (no teste de carga com 700 pessoas e o SUAP lento, a última entrou em pouco mais de 2). */
+      const desde = Date.now();
+      for (;;) {
+        try {
+          await API.post('/api/auth/suap/senha', { matricula: mat, senha: pwd });
+          break;
+        } catch (x) {
+          if (x.status === 503 && x.retryAfter && Date.now() - desde < 240000) {
+            for (let s = x.retryAfter; s > 0; s--) {
+              if (state) state.textContent = `Muita gente entrando agora. Tentando de novo em ${s} s…`;
+              await new Promise((ok) => setTimeout(ok, 1000));
+            }
+            if (state) state.textContent = 'Consultando o SUAP…';
+            continue;
+          }
+          say(x.message);
+          return;
+        }
       }
       const me = await API.get('/api/eu');
       apiState(me);
@@ -6902,17 +7693,120 @@ function apiPerson(p) {
     photo: p.photo || null,
     source: p.source === 'visitante' ? 'guest' : 'suap',
     org: p.org,
+    serverId: p.id,
   };
 }
 function apiState(me) {
   Object.keys(D.person).forEach((k) => delete D.person[k]);
   applyProfile(apiPerson(me.person));
   S.saved = new Set(me.saved);
+  S.inscricoes = new Set(me.inscricoes || []);
   D.enrolled.length = 0;
   D.enrolled.push(...me.saved);
   S.present = { ...me.present };
+  S.left = { ...(me.left || {}) };
+  S.ratings = { ...(me.ratings || {}) };
   S.credAt = isoHM(me.person.credentialedAt);
+  /* perfil salvo no servidor vale neste aparelho também (e o convite para preencher não abre) */
+  if (me.card)
+    try {
+      localStorage.setItem(cardKey(D.person.id), JSON.stringify(me.card));
+    } catch (_) {
+      /* sem armazenamento local */
+    }
 }
+/* ---- presença lida sem internet ----
+   Sem conexão na hora da leitura, o app guarda o QR (só se for um QR assinado do ETAL, de uma atividade da agenda ou do
+   credenciamento) e mostra "Leitura guardada": a presença ainda NÃO está registrada. Quando a internet volta, o app
+   envia sozinho com a hora da leitura, e o servidor decide com as regras de sempre (QR assinado, leitura durante a
+   atividade, envio até pouco depois do fim). O resultado aparece numa notificação; o que for recusado não volta. */
+const PEND_PREFIXO = 'etal-presencas-pendentes:';
+const pendKey = () => PEND_PREFIXO + (D.person.id || 'anon');
+/* localStorage, e não o store da sessão: a leitura guardada tem que sobreviver a fechar o app e abrir depois */
+function pendentes() {
+  try {
+    return JSON.parse(localStorage.getItem(pendKey())) || [];
+  } catch (_) {
+    return [];
+  }
+}
+function gravarPendentes(lista) {
+  try {
+    if (lista.length) localStorage.setItem(pendKey(), JSON.stringify(lista));
+    else localStorage.removeItem(pendKey());
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+function pendenteDe(id) {
+  return pendentes().find((p) => p.q === id);
+}
+/* QR assinado do ETAL (link /q/<token> ou o token): a atividade vai dentro, sem precisar do servidor para ler */
+function qrAssinado(texto) {
+  const t = (/\/q\/([\w.-]+)/.exec(texto) || [])[1] || (/^[\w-]+\.[\w-]+$/.test(texto) ? texto : null);
+  if (!t) return undefined;
+  const q = qrActivity(t);
+  if (q === undefined) return undefined;
+  return q === 'recepcao' || byId(q) ? q : undefined;
+}
+const falhaDeRede = (x) => !x.status;
+function guardarPendente(qr, q) {
+  const lista = pendentes().filter((p) => p.q !== q);
+  lista.push({ qr, q, lidoEm: new Date().toISOString() });
+  const ok = gravarPendentes(lista);
+  netState();
+  return ok;
+}
+function tirarPendente(q) {
+  gravarPendentes(pendentes().filter((p) => p.q !== q));
+  netState();
+}
+function pendenteResult(q) {
+  const x = byId(q);
+  const onde = x ? `a presença em <b>${esc(x.short)}</b>` : 'o credenciamento';
+  return `<div class="sr-hero">${hxBadge('muted')}<div><small class="sr-kick">Sem internet</small><h2>Leitura guardada</h2><p>Ainda não vale: ${onde} só fica registrada quando o app conseguir enviar. Ele envia sozinho quando a conexão voltar e avisa aqui.</p></div></div>
+      <div class="sr-actions"><button class="btn primary big" data-act="closeov">Entendi</button></div>`;
+}
+let enviandoPendentes = false;
+async function enviarPendentes() {
+  if (!API || !S.auth || enviandoPendentes || !navigator.onLine) return;
+  const lista = pendentes();
+  if (!lista.length) return;
+  enviandoPendentes = true;
+  try {
+    for (const p of lista) {
+      const x = byId(p.q);
+      const nome = x ? x.short : 'credenciamento';
+      try {
+        const r = await API.post('/api/presenca', { qr: p.qr, lidoEm: p.lidoEm });
+        tirarPendente(p.q);
+        if (r.activity) {
+          S.present[r.activity] = S.present[r.activity] || r.time;
+          communityCheckin(r.activity);
+        }
+        if (!S.credAt) S.credAt = r.time;
+        notify(
+          x ? 'Presença registrada' : 'Credenciamento confirmado',
+          x ? `${nome}: a leitura guardada foi enviada.` : 'A leitura guardada foi enviada.',
+          x ? p.q : undefined,
+        );
+      } catch (e) {
+        /* sem rede, sessão expirada, servidor ocupado ou fora do ar: tenta de novo depois */
+        if (falhaDeRede(e) || e.status === 401 || e.status === 429 || e.status >= 500) break;
+        tirarPendente(p.q); // recusada pelas regras (QR inválido, leitura fora da atividade, envio tarde): não volta
+        notify('Leitura não valeu', `${nome}: ${e.message}`);
+      }
+    }
+  } finally {
+    enviandoPendentes = false;
+    if (S.auth && vp.querySelector('.page')) rerender();
+  }
+}
+window.addEventListener('online', () => setTimeout(enviarPendentes, 1500));
+document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && enviarPendentes());
+setInterval(() => pendentes().length && enviarPendentes(), 30000);
+
 async function apiQr(token) {
   try {
     const r = await API.post('/api/presenca', { qr: token });
@@ -6922,15 +7816,29 @@ async function apiQr(token) {
     }
     if (!S.credAt) S.credAt = r.time;
     const x = r.activity && byId(r.activity);
+    if (x && r.left) {
+      S.left[x.id] = r.left;
+      rerender();
+      if (!r.rated) setTimeout(() => openOverlay(Overlays.avaliar(x.id), 'ask'), 300);
+      else toast('Saída registrada. Sua avaliação já foi enviada.');
+      return;
+    }
     toast(
       r.alreadyPresent
-        ? 'Presença já estava registrada'
+        ? r.exitFrom
+          ? `Presença já registrada. Leia de novo a partir das ${r.exitFrom} para avaliar.`
+          : 'Presença já estava registrada'
         : x
           ? `Presença registrada: ${x.short}`
           : 'Credenciamento confirmado',
     );
     rerender();
   } catch (x) {
+    const q = falhaDeRede(x) && qrAssinado(token);
+    if (q && guardarPendente(token, q)) {
+      toast('Sem internet: leitura guardada. A presença vale quando o app enviar.');
+      return;
+    }
     toast(x.message);
   }
 }
@@ -6966,7 +7874,12 @@ async function apiScan(hit) {
     r = await API.post('/api/presenca', { qr: hit });
   } catch (x) {
     camStop();
-    closeOverlay(() => toast(x.message));
+    const q = falhaDeRede(x) && qrAssinado(hit);
+    if (q && guardarPendente(hit, q)) {
+      scanSheet(pendenteResult(q));
+      return;
+    }
+    closeOverlay(() => toast(falhaDeRede(x) ? 'Sem internet, e esse QR não é do ETAL.' : x.message));
     return;
   }
   const first = !S.credAt;
@@ -6982,9 +7895,15 @@ async function apiScan(hit) {
   const again = !!r.alreadyPresent;
   S.present[q] = S.present[q] || r.time;
   communityCheckin(q);
+  if (again) {
+    if (r.left) S.left[q] = r.left;
+    rerender();
+    scanSheet(r.left ? exitResult(q, { rated: r.rated }) : roomResult(q, { again, first, exitFrom: r.exitFrom }));
+    return;
+  }
   const c = takeNewComb();
   rerender();
-  scanSheet(roomResult(q, { again, first, c }));
+  scanSheet(roomResult(q, { again, first, c, exitFrom: r.exitFrom }));
 }
 /* Câmera de verdade no leitor. Lê com o BarcodeDetector do navegador ou, sem ele (computador, iPhone), com o jsQR.
      Com o servidor, o QR assinado vai para /api/presenca; sem ele, o app tira a atividade de dentro do QR. */
@@ -7404,6 +8323,7 @@ async function apiStart() {
     /* não entrou */
   }
   API.live({
+    publicacoes: pubAviso,
     aviso: (n) => {
       D.notices.unshift({ time: n.time, title: n.title, text: n.text, fresh: true, org: true });
       notify(n.title, n.text, n.activity);
@@ -7437,6 +8357,7 @@ async function apiStart() {
       {
         erro: 'Não foi possível entrar. Tente de novo.',
         'suap-indisponivel': 'O SUAP não respondeu. Tente de novo.',
+        'suap-ocupado': 'Muita gente entrando agora. Toque em entrar de novo em instantes.',
         'link-expirado': 'Esse link expirou. Peça outro.',
       }[login] || 'Não foi possível entrar.',
     );
@@ -7447,6 +8368,7 @@ async function apiStart() {
   apiState(me);
   S.auth = true;
   show(build(top()), 'fade');
+  setTimeout(enviarPendentes, 2500);
   const pend = sessionStorage.getItem('etal-qr');
   if (pend) {
     sessionStorage.removeItem('etal-qr');
@@ -7696,6 +8618,31 @@ const setups = {
     S.tab = 'profile';
     S.tourTab = 'jogadores';
     S.stacks.profile.push({ s: 'games' }, { s: 'tournament', p: { id: 'fifa' } });
+  },
+  cartao: () => {
+    S.stacks.home.push({ s: 'cartao', p: { intro: 1 } });
+  },
+  'aula-fim': () => {
+    ok();
+    S.present['react-native'] = '14:03';
+    S.left['react-native'] = '15:52';
+    S.stacks.home.push({ s: 'activity', p: { id: 'react-native' } });
+  },
+  avaliar: () => {
+    ok();
+    S.present['react-native'] = '14:03';
+    S.left['react-native'] = '15:52';
+    S.stacks.home.push({ s: 'activity', p: { id: 'react-native' } });
+    setTimeout(() => openOverlay(Overlays.avaliar('react-native', 5), 'ask'), 500);
+  },
+  pessoas: () => {
+    S.tab = 'profile';
+    S.stacks.profile.push({ s: 'pessoas' });
+  },
+  pessoa: () => {
+    S.tab = 'profile';
+    const p = pessoasLocais()[0];
+    if (p) S.stacks.profile.push({ s: 'pessoas' }, { s: 'pessoa', p: { id: p.id } });
   },
 };
 (setups[q] || (() => {}))();

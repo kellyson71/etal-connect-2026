@@ -74,16 +74,46 @@ const cardGet = (id = D.person.id) => {
     return null;
   }
 };
+/* O convite para preencher o perfil abre uma vez por pessoa neste aparelho: preencheu, pulou ou só fechou, não volta.
+   Dá para completar depois em Perfil. Com servidor, o perfil salvo lá também conta como preenchido. */
 const cardSkipped = (id = D.person.id) => prefs.get(`etal-cartao-pulado:${id}`) === '1';
 const cardSkip = (id = D.person.id) => prefs.set(`etal-cartao-pulado:${id}`, '1');
-/* Homologação/demo: o convite volta a cada entrada e a cada recarga, mesmo já preenchido ou pulado. */
-let cardDemoDone = false;
-const cardAsk = () => S.auth && D.person.id && (DEMO ? !cardDemoDone : !cardGet() && !cardSkipped());
+const cardAsk = () => S.auth && D.person.id && !cardGet() && !cardSkipped();
 const cardIntro = (ms) =>
   setTimeout(() => {
-    if (cardAsk() && !ov.classList.contains('open') && S.tab === 'home' && top().s !== 'cartao')
+    if (cardAsk() && !ov.classList.contains('open') && S.tab === 'home' && top().s !== 'cartao') {
+      cardSkip();
       push('cartao', { intro: 1 });
+    }
   }, ms);
+function cardSave(v) {
+  try {
+    localStorage.setItem(cardKey(D.person.id), JSON.stringify({ ...v, at: Date.now() }));
+  } catch (_) {
+    return false;
+  }
+  if (API) API.put('/api/eu/cartao', v).catch(() => toast('Perfil salvo neste aparelho; o servidor não respondeu.'));
+  return true;
+}
+/* Quanto do perfil está preenchido: o convite mostra o progresso para dar vontade de completar. */
+const CARD_PARTES = [
+  ['nadic', (c) => !!c.nadic],
+  ['areas', (c) => !!c.areas?.length],
+  ['langs', (c) => !!c.langs?.length],
+  ['open', (c) => !!c.open?.length],
+  ['contato', (c) => !!(c.phone || c.email || c.link)],
+  ['bio', (c) => !!c.bio],
+];
+const cardProgresso = (c) => Math.round((CARD_PARTES.filter(([, f]) => f(c)).length / CARD_PARTES.length) * 100);
+/* Fundos do crachá: o participante escolhe um e ele aparece quando mostra o crachá a alguém. */
+const CRACHA_TEMAS = [
+  ['', 'ETAL'],
+  ['noite', 'Noite'],
+  ['favo', 'Favo'],
+  ['codigo', 'Código'],
+  ['por-do-sol', 'Pôr do sol'],
+  ['mata', 'Caatinga'],
+];
 const personAv = (p) =>
   p.photo
     ? `<span class="av has-photo"><img src="${esc(p.photo)}" alt=""></span>`
@@ -163,6 +193,7 @@ function cardRead(f) {
     areas: d.getAll('areas'),
     open: d.getAll('open'),
     bio: t('bio', 140),
+    tema: t('tema', 20),
   };
 }
 
@@ -170,7 +201,7 @@ function profileEditOpen() {
   if (!S.auth && !lgPending) return;
   profileEditDraft = { name: D.person.name, photo: D.person.photo || null };
   openOverlay(
-    `<form class="sheet profile-editor" data-form="profile-edit" role="dialog" aria-modal="true" aria-labelledby="profile-edit-title"><i class="grab"></i><header><h2 id="profile-edit-title">Editar perfil</h2><button type="button" class="iconbtn" data-act="closeov" aria-label="Fechar edição">${ic('x')}</button></header>
+    `<form class="sheet profile-editor" data-form="profile-edit" role="dialog" aria-modal="true" aria-labelledby="profile-edit-title"><i class="grab"></i><header><h2 id="profile-edit-title">Foto e nome</h2><button type="button" class="iconbtn" data-act="closeov" aria-label="Fechar edição">${ic('x')}</button></header>
       <div class="profile-edit-photo"></div><label class="btn soft community-file">${ic('image')}Escolher foto<input id="profile-photo" type="file" accept="image/jpeg,image/png,image/webp"></label>
       <div class="profile-presets" aria-label="Avatares ilustrados">${PROFILE_AVATARS.map((src, i) => `<button type="button" data-act="profile-preset" data-index="${i}" aria-label="Usar avatar ilustrado ${i + 1}"><img src="${esc(src)}" alt=""></button>`).join('')}</div>
       <button class="profile-remove" type="button" data-act="profile-remove-photo">Remover foto</button>

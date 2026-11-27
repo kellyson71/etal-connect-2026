@@ -1,4 +1,4 @@
-"""Entrada: SUAP (OAuth2), visitante por link no e-mail e, só em desenvolvimento, entrada sem senha."""
+"""Entrada: SUAP (OAuth2), visitante (link no e-mail, ou direto sem SMTP) e, só em desenvolvimento, entrada sem senha."""
 import secrets
 import smtplib
 from datetime import timedelta
@@ -7,6 +7,7 @@ from urllib.parse import urlencode
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, Query
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import select
@@ -15,7 +16,8 @@ from sqlalchemy.orm import Session
 from .. import suap_portal
 from ..config import config
 from ..db import sessao
-from ..limite import limitar
+from ..limite import anotar, barrar_se_passou, contar, ip_de, limitar
+from ..suap_fila import vez_no_suap
 from ..modelos import LinkAcesso, Pessoa
 from ..seguranca import abrir_sessao, agora, eh_organizacao, fechar_sessao, hash_token, novo_token, publica
 
@@ -59,6 +61,7 @@ def _pessoa_suap(d: dict, db: Session) -> Pessoa | None:
         p = Pessoa(tipo='suap', matricula=matricula)
         db.add(p)
     p.nome = _nome_bonito(d.get('nome_usual') or d.get('nome') or matricula)
+    p.nome_completo = d.get('nome_social') or d.get('nome_registro') or d.get('nome') or p.nome_completo
     p.email = p.email or (email if email and not db.scalar(select(Pessoa).where(Pessoa.email == email, Pessoa.id != p.id)) else None)
     p.campus = d.get('campus') or p.campus
     foto = d.get('foto') or d.get('url_foto_150x200') or ''
@@ -71,26 +74,28 @@ def _pessoa_suap(d: dict, db: Session) -> Pessoa | None:
 
 
 @rota.get('/suap/retorno')
-def suap_retorno(request: Request, code: str = Query('', description='Código fornecido pelo SUAP após autorizar. Não preencher manualmente.'), state: str = Query('', description='Estado fornecido pelo SUAP; precisa coincidir com o cookie temporário do início do fluxo.'), db: Session = Depends(sessao)):
+async def suap_retorno(request: Request, code: str = Query('', description='Código fornecido pelo SUAP após autorizar. Não preencher manualmente.'), state: str = Query('', description='Estado fornecido pelo SUAP; precisa coincidir com o cookie temporário do início do fluxo.'), db: Session = Depends(sessao)):
     c = config()
     if not code or not state or state != request.cookies.get(ESTADO):
         return RedirectResponse(f'{publica(request)}/?login=erro', 302)
     try:
-        with httpx.Client(timeout=15) as h:
-            tok = h.post(c.suap_token_url, data={'grant_type': 'authorization_code', 'code': code,
+        async with vez_no_suap(), httpx.AsyncClient(timeout=15) as h:
+            tok = await h.post(c.suap_token_url, data={'grant_type': 'authorization_code', 'code': code,
                                                  'redirect_uri': f'{publica(request)}/api/auth/suap/retorno',
                                                  'client_id': c.suap_client_id, 'client_secret': c.suap_client_secret})
             tok.raise_for_status()
             cab = {'Authorization': f'Bearer {tok.json()["access_token"]}'}
-            eu = h.get(c.suap_userinfo_url, headers=cab)
+            eu = await h.get(c.suap_userinfo_url, headers=cab)
             if eu.status_code == 404:  # versões novas do SUAP: /api/rh/eu/
-                eu = h.get(f'{c.suap_api_url.rstrip("/")}/api/rh/eu/', headers=cab)
+                eu = await h.get(f'{c.suap_api_url.rstrip("/")}/api/rh/eu/', headers=cab)
             eu.raise_for_status()
             d = eu.json()
+    except HTTPException:  # fila do SUAP cheia
+        return RedirectResponse(f'{publica(request)}/?login=suap-ocupado', 302)
     except (httpx.HTTPError, KeyError, ValueError) as erro:
         print(f'login SUAP falhou: {erro!r}', flush=True)  # aparece nos logs da hospedagem
         return RedirectResponse(f'{publica(request)}/?login=suap-indisponivel', 302)
-    p = _pessoa_suap(d, db)
+    p = await run_in_threadpool(_pessoa_suap, d, db)
     if not p:
         return RedirectResponse(f'{publica(request)}/?login=erro', 302)
     resp = RedirectResponse(f'{publica(request)}/?login=ok', 302)
@@ -104,18 +109,27 @@ class LoginSuap(BaseModel):
     senha: str = Field(min_length=1, max_length=200, description='Senha atual do SUAP. Usada apenas durante a autenticação; não é gravada no banco.', examples=['SUA_SENHA'], json_schema_extra={'format':'password'})
 
 
-@rota.post('/suap/senha', dependencies=[Depends(limitar('suap-senha', 8))])
-def suap_senha(l: LoginSuap, response: Response, db: Session = Depends(sessao)):
+@rota.post('/suap/senha', dependencies=[Depends(limitar('suap-senha-ip'))])
+async def suap_senha(l: LoginSuap, request: Request, response: Response, db: Session = Depends(sessao)):
     """Entrada direta com matrícula e senha: pede o token JWT à API do SUAP e lê o perfil.
-    A senha e os tokens só passam por aqui; nada é guardado."""
+    A senha e os tokens só passam por aqui; nada é guardado. Limite de tentativas por matrícula; as chamadas ao SUAP
+    esperam a vez numa fila curta (app/suap_fila.py). Os limites contam as senhas erradas: 6 por matrícula e
+    ETAL_TETO_REDE_SENHA_ERRADA por rede, por minuto; quem esperou na fila e tenta de novo não gasta tentativa."""
+    matricula = l.matricula.strip()
+    ip = ip_de(request)
+    barrar_se_passou('suap-senha', matricula.lower(), 6, msg='Muitas tentativas com esta matrícula. Espere um minuto.')
+    barrar_se_passou('suap-senha-errada-ip', ip, config().teto_rede_senha_errada,
+                     msg='Muitas senhas erradas a partir desta rede. Espere um minuto.')
     base = config().suap_api_url.rstrip('/')
     try:
-        with httpx.Client(timeout=20) as h:
-            tok = h.post(f'{base}/api/token/pair', json={'username': l.matricula.strip(), 'password': l.senha})
+        async with vez_no_suap(), httpx.AsyncClient(timeout=20) as h:
+            tok = await h.post(f'{base}/api/token/pair', json={'username': matricula, 'password': l.senha})
             if tok.status_code in (400, 401, 403):
+                anotar('suap-senha', matricula.lower())
+                anotar('suap-senha-errada-ip', ip)
                 raise HTTPException(401, 'Matrícula ou senha incorreta.')
             tok.raise_for_status()
-            eu = h.get(f'{base}/api/rh/eu/', headers={'Authorization': f'Bearer {tok.json()["access"]}'})
+            eu = await h.get(f'{base}/api/rh/eu/', headers={'Authorization': f'Bearer {tok.json()["access"]}'})
             eu.raise_for_status()
             d = eu.json()
     except HTTPException:
@@ -123,13 +137,18 @@ def suap_senha(l: LoginSuap, response: Response, db: Session = Depends(sessao)):
     except (httpx.HTTPError, KeyError, ValueError) as erro:
         print(f'login SUAP (senha) falhou: {erro!r}', flush=True)
         raise HTTPException(503, 'O SUAP não respondeu. Tente de novo em instantes.') from None
-    p = _pessoa_suap(d, db)
+    p = await run_in_threadpool(_pessoa_suap, d, db)
     if not p:
         raise HTTPException(502, 'O SUAP não informou a matrícula.')
     abrir_sessao(response, p)
     if config().suap_portal:
         portal_token = secrets.token_urlsafe(32)
-        if suap_portal.connect(f'{p.id}:{portal_token}', base, l.matricula.strip(), l.senha):
+        try:
+            async with vez_no_suap():
+                ok = await run_in_threadpool(suap_portal.connect, f'{p.id}:{portal_token}', base, matricula, l.senha)
+        except HTTPException:
+            ok = False  # fila cheia: o login vale; só o portal fica para depois
+        if ok:
             response.set_cookie('etal_suap_portal', portal_token, max_age=1200, httponly=True, secure=config().cookie_seguro, samesite='lax', path='/api')
     return {'ok': True}
 
@@ -158,23 +177,33 @@ def _enviar_link(email: str, nome: str, url: str) -> bool:
     return True
 
 
-@rota.post('/visitante', status_code=202, dependencies=[Depends(limitar('visitante', 5))])
-def visitante(v: Visitante, request: Request, db: Session = Depends(sessao)):
+@rota.post('/visitante', status_code=202, dependencies=[Depends(limitar('visitante-ip', 300))])
+def visitante(v: Visitante, request: Request, response: Response, db: Session = Depends(sessao)):
+    """Com SMTP, manda um link de entrada para o e-mail. Sem SMTP, o visitante entra direto, sem confirmar o e-mail:
+    por isso essa entrada nunca dá acesso à organização nem a uma conta do SUAP com o mesmo e-mail."""
     email = v.email.lower()
+    smtp = bool(config().smtp_host)
+    if smtp:
+        contar('visitante', email, 3, janela=600, msg='Já mandamos o link para este e-mail. Confira a caixa de entrada e o spam.')
     p = db.scalar(select(Pessoa).where(Pessoa.email == email))
+    if not smtp and p and p.tipo != 'visitante':
+        raise HTTPException(409, 'Este e-mail é de uma conta do IFRN. Entre pelo SUAP.')
+    if not smtp and p and p.papel == 'organizacao':
+        raise HTTPException(403, 'Esta conta é da organização e não entra por aqui.')
     if not p:
-        p = Pessoa(tipo='visitante', email=email, nome=v.nome.strip(), instituicao=v.instituicao, cidade=v.cidade, papel=_papel(None, email))
+        papel = _papel(None, email) if smtp else 'participante'
+        p = Pessoa(tipo='visitante', email=email, nome=v.nome.strip(), instituicao=v.instituicao, cidade=v.cidade, papel=papel)
         db.add(p)
         db.flush()
+    if not smtp:
+        db.commit()
+        abrir_sessao(response, p)
+        return {'enviado': False, 'entrou': True}
     t, h = novo_token()
     db.add(LinkAcesso(pessoa_id=p.id, token_hash=h, expira_em=agora() + timedelta(minutes=30)))
     db.commit()
     url = f'{publica(request)}/api/auth/link?t={t}'
-    enviado = _enviar_link(email, p.nome, url)
-    if not enviado and config().login_dev:
-        return {'enviado': False, 'link': url}  # só em desenvolvimento, sem servidor de e-mail
-    if not enviado:
-        raise HTTPException(503, 'Envio de e-mail não configurado.')
+    _enviar_link(email, p.nome, url)
     return {'enviado': True}
 
 

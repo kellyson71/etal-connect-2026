@@ -17,9 +17,10 @@
   display: flex;
   flex: none;
   gap: 4px;
-  padding: 0 18px 10px;
-  margin-bottom: 2px;
-  border-bottom: 1px solid var(--line, #dce2ec);
+  margin: 6px 16px 12px;
+  padding: 4px;
+  border-radius: 14px;
+  background: var(--seg, #e9eef6);
 }
 .social-tabs button {
   flex: 1;
@@ -32,7 +33,8 @@
 }
 .social-tabs button[aria-pressed='true'] {
   color: var(--accent-ink, #22386f);
-  background: var(--blue-50, #e8eef9);
+  background: var(--card, #fff);
+  box-shadow: 0 1px 3px rgb(20 35 70 / 0.12);
   font-weight: 700;
 }
 .social-save {

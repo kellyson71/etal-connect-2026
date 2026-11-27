@@ -34,7 +34,7 @@ Resultado: a pessoa está autenticada. O campo de credenciamento pode continuar 
 3. Salvar na agenda pessoal.
 4. Abrir a localização; o mapa usa andar e zona para desenhar a rota.
 
-No modo API, salvar envia POST /api/eu/agenda/{atividade_id}. Repetir não duplica. Atividade inexistente retorna 404; vagas esgotadas retornam 409. Remover usa DELETE na mesma rota. Salvar não registra presença.
+No modo API, salvar envia POST /api/eu/agenda/{atividade_id}. Repetir não duplica. Atividade inexistente retorna 404; vagas esgotadas retornam 409. Remover usa DELETE na mesma rota. Salvar não registra presença. Minicurso e oficina retornam 409 nas duas operações: a inscrição é feita no SUAP e chega pela lista importada (`python -m app.importar inscritos`, coluna `atividades`).
 
 ## Achar um lugar e traçar a rota
 
@@ -70,7 +70,7 @@ A janela padrão é de 20 minutos antes do início até o fim da atividade. A pr
 1. Organização entra no painel com a API ligada.
 2. Envia aviso ou muda a sala de uma atividade.
 3. A API grava a mudança e publica a atualização.
-4. O app recebe por SSE; na configuração Vercel, consulta a cada 12 segundos.
+4. O app recebe por SSE; na configuração Vercel, consulta a cada minuto, só com a aba visível.
 
 Troca de sala gera aviso por padrão. A numeração usa a chave andar:zona e aparece nas atividades, planta e mapa 3D. Participante comum recebe 403 nas rotas da organização.
 

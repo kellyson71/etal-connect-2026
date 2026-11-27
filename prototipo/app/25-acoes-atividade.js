@@ -28,14 +28,27 @@ ACOES['ask'] = (el, e, a) => {
   setTimeout(() => $('#qtext')?.focus({ preventScroll: true }), 480);
 };
 
-ACOES['rate'] = (el, e, a) => {
-  S.ratings[el.dataset.id] = +el.dataset.n;
-  rerender();
-  toast('Avaliação enviada');
+ACOES['rate'] = (el, e, a) => ACOES['avaliar'](el, e, a);
+ACOES['rolar'] = (el) => {
+  const alvo = $(el.dataset.alvo, el.closest('.page') || document);
+  alvo?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+  if (alvo) {
+    alvo.classList.remove('pisca');
+    void alvo.offsetWidth;
+    alvo.classList.add('pisca');
+  }
 };
 
 ACOES['save'] = (el, e, a) => {
   const id = el.dataset.id;
+  if (inscrito(byId(id))) {
+    toast('Você está inscrito nesta atividade no SUAP');
+    return;
+  }
+  if (comInscricao(byId(id))) {
+    toast('A inscrição em minicurso é feita no SUAP');
+    return;
+  }
   if (API && S.auth)
     API[S.saved.has(id) ? 'del' : 'post'](`/api/eu/agenda/${encodeURIComponent(id)}`).catch((x) => {
       toast(x.message);

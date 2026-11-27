@@ -1,5 +1,5 @@
 """Formato das respostas: o mesmo das atividades do protótipo (prototipo/data.js), para o app trocar os dados de exemplo pelos reais."""
-from .modelos import Atividade, Aviso, Pessoa
+from .modelos import Atividade, Avaliacao, Aviso, Pessoa
 
 
 def atividade(a: Atividade, inscritos: int = 0) -> dict:
@@ -20,3 +20,7 @@ def pessoa(p: Pessoa) -> dict:
             'source': p.tipo, 'matricula': p.matricula, 'course': p.curso, 'campus': p.campus, 'institution': p.instituicao,
             'city': p.cidade, 'photo': p.foto_url, 'org': p.papel == 'organizacao',
             'credentialedAt': p.credenciado_em.isoformat() if p.credenciado_em else None}
+
+
+def avaliacao(v: Avaliacao) -> dict:
+    return {'n': v.nota, 'quick': v.rapidos or [], 'text': v.comentario or '', 'at': v.em.isoformat() if v.em else None}

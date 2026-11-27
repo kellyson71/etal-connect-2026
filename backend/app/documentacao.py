@@ -7,6 +7,7 @@ TAGS = [
     {'name': 'participante', 'description': 'Perfil, agenda e presença do usuário autenticado.'},
     {'name': 'SUAP do participante', 'description': 'Consulta de eventos e certificados do SUAP.'},
     {'name': 'público', 'description': 'Programação e avisos do evento.'},
+    {'name': 'publicações', 'description': 'Feed, comentários, chat geral, denúncias e moderação.'},
     {'name': 'organização', 'description': 'Gestão do evento, salas, participantes e relatórios.'},
     {'name': 'homologação', 'description': 'Rotas auxiliares de desenvolvimento e homologação.'},
 ]
@@ -31,7 +32,7 @@ Para testar login com matrícula e senha diretamente no Swagger, use **POST /api
 '/api/auth/suap/senha': ('post', 'Entrar com matrícula e senha do SUAP', '''Autentica com matrícula e senha do SUAP e grava o cookie HttpOnly `etal_sessao`.
 
 As rotas protegidas (como `/api/eu`) usam o cookie automaticamente sem necessidade de copiar token. Limite: 8 tentativas/min por IP.'''),
-'/api/auth/visitante': ('post', 'Solicitar um link de acesso para visitante', '''Envia um link de acesso de uso único para o e-mail informado (válido por 30 minutos). Requer SMTP configurado.'''),
+'/api/auth/visitante': ('post', 'Entrar como visitante', '''Com SMTP configurado, envia um link de acesso de uso único para o e-mail informado (válido por 30 minutos). Sem SMTP, cria a conta de visitante e já grava o cookie de sessão `etal_sessao`, sem confirmar o e-mail (nunca com acesso de organização; e-mails de contas do SUAP são recusados).'''),
 '/api/auth/link': ('get', 'Entrar pelo link recebido por e-mail', '''Valida o token de acesso temporário recebido por e-mail, cria a sessão e redireciona ao app.'''),
 '/api/auth/dev': ('post', 'Entrar sem SUAP — somente em ambiente de teste', '''Cria sessão de teste local. Ativo somente com `ETAL_LOGIN_DEV=1`; caso contrário, retorna 404.'''),
 '/api/auth/sair': ('post', 'Sair e remover os cookies de acesso', '''Encerra a sessão e remove os cookies `etal_sessao` e `etal_suap_portal` deste navegador.'''),
@@ -54,7 +55,16 @@ As rotas protegidas (como `/api/eu`) usam o cookie automaticamente sem necessida
 '/api/org/atividades/{atividade_id}': ('patch', 'Editar uma atividade e seus materiais', 'Altera só os campos enviados: título, tipo, dia, horário, sala, quem conduz, descrição, o que levar, vagas e a lista de materiais (PDF, link ou ZIP). Os apps abertos recebem a atividade atualizada pelo canal ao vivo. Exige papel de organização.'),
 '/api/org/atividades/{atividade_id}/sala': ('patch', 'Trocar a sala de uma atividade', 'Atualiza a sala e zona de uma atividade na programação. Exige papel de organização.'),
 '/api/org/salas': ('put', 'Alterar a numeração visível das salas', 'Personaliza a numeração visível das salas no mapa. Exige papel de organização.'),
-'/api/org/participantes': ('get', 'Listar os participantes cadastrados no ETAL', 'Lista os participantes cadastrados e a situação de credenciamento. Exige papel de organização.'),
+'/api/org/participantes': ('get', 'Listar os participantes com as categorias do painel', 'Lista os participantes com credenciamento, agenda, presenças, saídas, avaliações feitas e o resumo do perfil (NADIC, linguagens e interesses), para filtrar por atividade e categoria. Exige papel de organização.'),
+'/api/org/dados': ('get', 'Ver os números dos perfis e da participação', 'Contagens dos perfis preenchidos no app (NADIC, linguagens, interesses, o que a pessoa busca), cursos, cidades dos visitantes, presenças por atividade e publicações. Exige papel de organização.'),
+'/api/org/avaliacoes': ('get', 'Ver as avaliações das atividades', 'Média, quantidade, distribuição das notas, comentários rápidos e comentários abertos de cada atividade, sem o nome de quem avaliou, da maior para a menor média. Exige papel de organização.'),
+'/api/org/planilha': ('get', 'Obter o endereço da planilha de participantes', 'Devolve o endereço com chave para colar no Google Sheets (=IMPORTDATA) ou no Excel. A planilha se atualiza sozinha a partir dele. Exige papel de organização.'),
+'/api/org/planilha/novo': ('post', 'Gerar um novo endereço de planilha', 'Troca a chave do endereço da planilha: o link anterior para de funcionar na hora. Use se o endereço vazou. Exige papel de organização.'),
+'/api/planilha/{chave}.csv': ('get', 'Ler a planilha de participantes pelo endereço com chave', 'CSV separado por vírgula para o Google Sheets ler com =IMPORTDATA. Não pede login: a chave do endereço é a proteção. Filtros opcionais: ?atividade=<id> e ?situacao=presentes ou avaliaram.'),
+'/api/eu/avaliacoes/{atividade_id}': ('put', 'Avaliar uma atividade', 'Nota de 1 a 5, comentários rápidos e um comentário aberto. Libera depois da leitura do QR da sala no fim da atividade; avaliar de novo substitui a anterior.'),
+'/api/eu/cartao': ('put', 'Salvar meu perfil do app', 'Guarda o perfil preenchido no app (interesses, linguagens, NADIC, contato e fundo do crachá). É o que colegas veem ao buscar a pessoa, se o perfil estiver visível.'),
+'/api/pessoas': ('get', 'Buscar participantes pelo nome', 'Até 30 participantes cujo nome contém o texto (sem diferenciar acentos), com o perfil público de cada um. Perfis ocultos aparecem só com nome e curso. Exige sessão ativa.'),
+'/api/pessoas/{pessoa_id}': ('get', 'Ver o perfil público de um participante', 'Perfil público com as atividades em que a pessoa registrou presença e as que conduziu. Perfil oculto não lista atividades. Exige sessão ativa.'),
 '/api/org/credenciar/{pessoa_id}': ('post', 'Credenciar manualmente um participante', 'Credencia manualmente um participante pelo ID interno. Exige papel de organização.'),
 '/api/org/resumo': ('get', 'Consultar os totais para o painel da organização', 'Retorna estatísticas gerais do evento (participantes, credenciados e presenças). Exige papel de organização.'),
 '/api/org/presencas.csv': ('get', 'Exportar as presenças em CSV', 'Gera download em CSV dos registros de presença. Exige papel de organização.'),
@@ -109,7 +119,8 @@ def aplicar(app):
             responses[404] = erro('Login de teste desabilitado neste servidor.', 'Not Found')
             responses[403] = erro('Código de homologação errado.')
         if route.path == '/api/auth/visitante':
-            responses[503] = erro('Envio de e-mail não configurado.')
+            responses[409] = erro('Este e-mail é de uma conta do IFRN. Entre pelo SUAP.')
+            responses[403] = erro('Esta conta é da organização e não entra por aqui.')
             responses[429] = erro('Limite de solicitações atingido.')
         if route.path in ['/api/cenario-demo', '/api/org/debug/qrs', '/api/homologacao/qrs']:
             responses[404] = erro('Recurso indisponível neste modo ou cenário não preparado.', 'Not Found')

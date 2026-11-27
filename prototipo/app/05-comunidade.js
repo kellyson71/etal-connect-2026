@@ -1,11 +1,22 @@
 /* app/05-comunidade.js · publicações, comentários, menções, chat e moderação.
    Parte do app.js: os arquivos de prototipo/app/ rodam juntos, na ordem dos números, no mesmo escopo
    (scripts/app/montar-app.mjs). */
-/* ---------------- comunidade (demonstração local) ---------------- */
+/* ---------------- comunidade (no aparelho, ou no servidor: 05-publicacoes-servidor.js) ---------------- */
 const SOCIAL = window.COMMUNITY;
 const COMMUNITY_KEY = SOCIAL.key;
-const communityRead = SOCIAL.read;
+const communityRead = () => (API ? pubEstado() : SOCIAL.read());
+/* Com servidor, só o que é do aparelho passa por aqui (menções já vistas); o resto vira chamada à API. */
 const communityWrite = (change) => {
+  if (API) {
+    try {
+      change(pubEstado());
+      pubGuardarVistas();
+      return true;
+    } catch (error) {
+      toast(error.message);
+      return false;
+    }
+  }
   try {
     SOCIAL.write(change);
     return true;
@@ -14,6 +25,9 @@ const communityWrite = (change) => {
     return false;
   }
 };
+/* Publicar, comentar, curtir e denunciar: com o QR da recepção ou, com servidor, fora do horário do evento (antes do
+   primeiro dia a conversa já pode começar). O chat geral é aberto a quem entrou. */
+const communityPode = () => S.auth && (!!S.credAt || (API && !!PUB.v?.semCredencial));
 const canModerateCommunity = () => S.auth && (API ? !!D.person.org : !!orgDe());
 const communitySeeds = window.COMMUNITY.seeds;
 let communityMode = 'feed';
@@ -172,7 +186,7 @@ function communityWall(v) {
       ${photos.length ? `<div class="social-photo-grid">${photos.map(({ p, photo, index }) => `<button data-act="community-photo-open" data-id="${esc(p.id)}" data-index="${index}" aria-label="Ver foto ${index + 1} da publicação de ${esc(p.name)}"><img src="${esc(photo.src)}" alt="${esc(photo.alt || 'Foto no mural')}" loading="lazy"><span>${esc(p.name.split(' ')[0])} · ${p.day || '—'} nov</span></button>`).join('')}</div>` : communityEmpty('Nenhuma foto para estes filtros.')}</div>`;
 }
 function communityReportOpen(target) {
-  if (!S.credAt) {
+  if (!communityPode()) {
     toast('Leia o QR Code da recepção para participar.');
     return;
   }
@@ -182,7 +196,7 @@ function communityReportOpen(target) {
     return;
   }
   openOverlay(
-    `<form class="sheet social-report" data-form="community-report" data-target="${esc(target)}" role="dialog" aria-modal="true" aria-labelledby="social-report-title"><i class="grab"></i><header><h2 id="social-report-title">Denunciar conteúdo</h2><button class="iconbtn" type="button" data-act="closeov" aria-label="Fechar denúncia">${ic('x')}</button></header><label class="field">Motivo<select name="reason" required><option value="">Selecione o motivo</option>${SOCIAL.reasons.map((r) => `<option>${esc(r)}</option>`).join('')}</select></label><label class="field">Detalhes<textarea name="detail" rows="3" maxlength="500" placeholder="Conte o que a equipe precisa saber (opcional)"></textarea></label><p class="community-muted">A denúncia fica neste navegador para revisão da organização.</p><button class="btn primary big" type="submit">Enviar denúncia</button></form>`,
+    `<form class="sheet social-report" data-form="community-report" data-target="${esc(target)}" role="dialog" aria-modal="true" aria-labelledby="social-report-title"><i class="grab"></i><header><h2 id="social-report-title">Denunciar conteúdo</h2><button class="iconbtn" type="button" data-act="closeov" aria-label="Fechar denúncia">${ic('x')}</button></header><label class="field">Motivo<select name="reason" required><option value="">Selecione o motivo</option>${SOCIAL.reasons.map((r) => `<option>${esc(r)}</option>`).join('')}</select></label><label class="field">Detalhes<textarea name="detail" rows="3" maxlength="500" placeholder="Conte o que a equipe precisa saber (opcional)"></textarea></label><p class="community-muted">${API ? 'A denúncia vai para a organização revisar. Quem publicou não fica sabendo quem denunciou.' : 'A denúncia fica neste navegador para revisão da organização.'}</p><button class="btn primary big" type="submit">Enviar denúncia</button></form>`,
     'ask',
   );
 }
@@ -196,7 +210,7 @@ Screens.communityPerson = ({ id }) => {
   const card = own ? cardGet() || {} : prof?.card || {};
   const who = own ? D.person : { ...person, ...(prof || {}), name: person.name, photo: person.photo };
   return {
-    html: `${header(own ? 'Seu perfil' : 'Participante')}<div class="pad social-card">${cardPreview(card, who, { own })}<div class="social-card-acts">${own ? `<button class="btn soft" data-go="cartao">${ic('pencil')}Editar perfil</button>` : S.credAt ? `<button class="btn soft" data-act="community-mention-person" data-id="${esc(person.id)}">${ic('contact')}Marcar na publicação</button>` : ''}</div></div><div class="community-feed">${posts.map((p) => communityPost(p, v)).join('') || communityEmpty('Ainda não há publicações.')}</div>`,
+    html: `${header(own ? 'Seu perfil' : 'Participante')}<div class="pad social-card">${cardPreview(card, who, { own })}<div class="social-card-acts">${own ? `<button class="btn soft" data-go="cartao">${ic('pencil')}Editar perfil</button>` : communityPode() ? `<button class="btn soft" data-act="community-mention-person" data-id="${esc(person.id)}">${ic('contact')}Marcar na publicação</button>` : ''}</div></div><div class="community-feed">${posts.map((p) => communityPost(p, v)).join('') || communityEmpty('Ainda não há publicações.')}</div>`,
   };
 };
 Screens.orgCommunity = () =>
@@ -219,7 +233,7 @@ function communityPost(p, v, detail = false) {
       ${
         detail
           ? `<section class="community-comments"><h2>Comentários</h2>${comments.length ? comments.map((c) => `<div class="community-comment"><button class="social-who" data-go="communityPerson" data-id="${esc(String(c.author))}" aria-label="Ver perfil">${communityAvatar(c)}</button><div><b data-go="communityPerson" data-id="${esc(String(c.author))}">${esc(c.author === String(D.person.id) ? D.person.name : c.name)}</b><p class="community-text">${communityText(c.text, v)}</p></div><button class="iconbtn social-report-button" data-act="community-report" data-target="${esc(SOCIAL.commentKey(p.id, c.id))}" aria-label="Denunciar comentário">${ic('flag')}</button></div>`).join('') : '<p class="community-muted">Comece essa conversa.</p>'}
-      ${S.credAt ? `<form data-form="community-comment" data-id="${esc(p.id)}" class="community-reply"><label class="sr-only" for="community-reply">Seu comentário</label><textarea id="community-reply" name="text" data-community-draft="comment" data-id="${esc(p.id)}" maxlength="1000" rows="2" placeholder="Escreva um comentário…" required>${esc(communityDraft.comments[p.id] || '')}</textarea><button class="iconbtn" type="submit" aria-label="Enviar comentário">${ic('arrow')}</button></form>` : communityGate()}</section>`
+      ${communityPode() ? `<form data-form="community-comment" data-id="${esc(p.id)}" class="community-reply"><label class="sr-only" for="community-reply">Seu comentário</label><textarea id="community-reply" name="text" data-community-draft="comment" data-id="${esc(p.id)}" maxlength="1000" rows="2" placeholder="Escreva um comentário…" required>${esc(communityDraft.comments[p.id] || '')}</textarea><button class="iconbtn" type="submit" aria-label="Enviar comentário">${ic('arrow')}</button></form>` : communityGate()}</section>`
           : ''
       }
     </article>`;
@@ -241,7 +255,7 @@ Screens.community = () => {
                   `<div class="community-message ${m.author === String(D.person.id) ? 'mine' : ''}"><div class="community-chat-author"><button class="social-who" data-go="communityPerson" data-id="${esc(String(m.author))}" aria-label="Ver perfil">${communityAvatar(m)}</button><b data-go="communityPerson" data-id="${esc(String(m.author))}">${esc(m.author === String(D.person.id) ? D.person.name : m.name)}</b><button class="iconbtn social-report-button" data-act="community-report" data-target="${esc(SOCIAL.messageKey(m.id))}" aria-label="Denunciar mensagem">${ic('flag')}</button></div><p class="community-text">${communityText(m.text, v)}</p><time>${esc(communityTime(m))}</time></div>`,
               )
               .join('')}</div>
-      ${S.credAt ? `<form data-form="community-message" class="community-reply community-chat-form"><label class="sr-only" for="community-message">Sua mensagem</label><textarea id="community-message" data-community-draft="message" name="text" rows="2" maxlength="1000" placeholder="Mande um oi para a galera…" required>${esc(communityDraft.message)}</textarea><button class="iconbtn" type="submit" aria-label="Enviar mensagem">${ic('arrow')}</button></form>` : communityGate()}</div>`
+      ${S.auth ? `<form data-form="community-message" class="community-reply community-chat-form"><label class="sr-only" for="community-message">Sua mensagem</label><textarea id="community-message" data-community-draft="message" name="text" rows="2" maxlength="1000" placeholder="Mande um oi para a galera…" required>${esc(communityDraft.message)}</textarea><button class="iconbtn" type="submit" aria-label="Enviar mensagem">${ic('arrow')}</button></form>` : communityGate()}</div>`
           : communityMode === 'wall'
             ? communityWall(v)
             : communityMode === 'mentions'
@@ -253,7 +267,7 @@ Screens.community = () => {
                     )
                     .join('') || communityEmpty('Quando alguém marcar você, a menção aparece aqui.')
                 }</div>`
-              : `<div class="community-feed">${communityMode === 'feed' && S.credAt ? `<div class="community-start"><button class="community-start-text" data-act="community-compose">${meAv()}<span>Compartilhe algo do evento…</span></button><div class="community-start-actions"><button data-act="community-compose" data-photo="1">${ic('image')}Foto / imagem</button><button data-act="community-compose">${ic('plus')}Publicar</button></div></div>` : communityMode === 'feed' ? communityGate() : ''}${(() => {
+              : `<div class="community-feed">${communityMode === 'feed' && communityPode() ? `<div class="community-start"><button class="community-start-text" data-act="community-compose">${meAv()}<span>Compartilhe algo do evento…</span></button><div class="community-start-actions"><button data-act="community-compose" data-photo="1">${ic('image')}Foto / imagem</button><button data-act="community-compose">${ic('plus')}Publicar</button></div></div>` : communityMode === 'feed' ? communityGate() : ''}${(() => {
                   const posts = communityPosts(v).filter(
                     (p) => communityMode !== 'saved' || (v.bookmarks[String(D.person.id)] || []).includes(p.id),
                   );
@@ -279,6 +293,26 @@ Screens.communityPost = ({ id }) => {
     html: `${header('Publicação')}<div class="community-feed">${p ? communityPost(p, v, true) : '<p class="community-muted">Esta publicação foi excluída.</p>'}</div>`,
   };
 };
+/* depois de publicar, comentar ou mandar mensagem: limpa o rascunho e volta */
+function communityLimparRascunho(kind, postId, aviso) {
+  if (kind === 'community-post') {
+    communityDraft.post = '';
+    communityDraft.cursor = 0;
+    communityDraft.images = [];
+    communityDraft.activity = '';
+    communityDraft.day = D.now.day;
+    communityDraft.tag = 'No evento';
+    communityDraft.contextReady = false;
+    communityDraft.activityManual = false;
+    communityMode = 'feed';
+    navBack();
+    toast(aviso);
+  } else {
+    if (kind === 'community-message') communityDraft.message = '';
+    else delete communityDraft.comments[postId];
+    rerender();
+  }
+}
 const communityCheckinKey = () => `etal-atividade-atual:${D.person.id}`;
 function communityCheckin(id) {
   if (byId(id)?.type !== 'Credenciamento') store.set(communityCheckinKey(), { id, at: Date.now() });
@@ -309,9 +343,9 @@ Screens.communityCompose = () => {
   const activity = byId(communityDraft.activity);
   const canPost = !communityImageBusy && (communityDraft.post.trim() || communityDraft.images.length);
   return {
-    html: `${header('Nova publicação', { right: S.credAt ? `<button class="compose-submit" type="submit" form="community-post-form" ${canPost ? '' : 'disabled'}>Publicar</button>` : '' })}
+    html: `${header('Nova publicação', { right: communityPode() ? `<button class="compose-submit" type="submit" form="community-post-form" ${canPost ? '' : 'disabled'}>Publicar</button>` : '' })}
       <div class="community-compose">${
-        S.credAt
+        communityPode()
           ? `<form id="community-post-form" class="post-editor" data-form="community-post">
         <div class="community-identity">${meAv()}<div><b>${esc(D.person.name)}</b><small>${esc(D.event?.name || 'ETAL')}</small></div></div>
         <details class="compose-context"><summary>${ic(activity ? 'pin' : 'cal')}<span><b>${esc(activity?.short || 'Adicionar atividade')}</b><small>${activity ? `${activity.day} nov · ${esc(activity.room)}` : 'Opcional'}${activity && communityDraft.contextReason === 'qr' ? ' · Check-in realizado' : activity && communityDraft.contextReason === 'agenda' ? ' · Na sua agenda agora' : ''}</small></span>${ic('chev')}</summary>

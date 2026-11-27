@@ -1,30 +1,42 @@
-# Produção: Caddy (HTTPS automático) serve o app e encaminha /api e /q para a API; PostgreSQL guarda os dados.
-# Uso, na pasta deploy/:  cp .env.example .env  (editar)  &&  docker compose up -d --build
+# Produção, no mesmo modelo dos outros sistemas do NADIC (ex.: nadic-ifrn/horarios): as imagens vêm prontas do GitHub
+# Container Registry e o servidor só precisa deste arquivo e do .env. Passo a passo em deploy/README.md.
+#
+#   web  Caddy com o app (PWA) já montado; encaminha /api e /q para a API. Publica a porta PORTA do servidor, atrás do
+#        proxy (nginx ou Apache) que cuida do HTTPS do domínio.
+#   api  FastAPI. Aplica as migrações do banco sozinha ao iniciar.
+#   db   PostgreSQL.
+#
+# Atualizar:  docker compose pull && docker compose up -d       Logs:  docker compose logs -f api
+# Cada serviço guarda até 5 arquivos de log de 20 MB e descarta os mais velhos, para o disco não encher no evento.
+x-logs: &logs
+  driver: json-file
+  options: { max-size: 20m, max-file: '5' }
+
 services:
-  caddy:
-    image: caddy:2-alpine
+  web:
+    image: ${IMAGEM:-ghcr.io/kellyson71/etal-connect-2026}-web:${VERSAO:-latest}
     restart: unless-stopped
-    ports: ["80:80", "443:443"]
-    environment:
-      DOMINIO: ${DOMINIO}
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - ../prototipo:/srv/app:ro
-      - caddy_dados:/data
-      - caddy_config:/config
-    depends_on: [api]
+    # só a própria máquina chega na porta (o proxy do servidor); ENDERECO=0.0.0.0 se o proxy estiver em outro lugar
+    ports: ['${ENDERECO:-127.0.0.1}:${PORTA:-8080}:80']
+    depends_on:
+      api: { condition: service_healthy }
+    logging: *logs
 
   api:
-    build: ../backend
+    image: ${IMAGEM:-ghcr.io/kellyson71/etal-connect-2026}-api:${VERSAO:-latest}
     restart: unless-stopped
     env_file: .env
     environment:
       ETAL_BANCO: postgresql+psycopg://etal:${POSTGRES_PASSWORD}@db:5432/etal
       ETAL_URL_PUBLICA: https://${DOMINIO}
       ETAL_ORIGENS: https://${DOMINIO}
-      ETAL_COOKIE_SEGURO: "true"
+      ETAL_COOKIE_SEGURO: 'true'
+      TZ: America/Fortaleza # hora dos logs
+    volumes:
+      - arquivos_dados:/srv/arquivos # materiais das atividades e fotos das publicações
     depends_on:
       db: { condition: service_healthy }
+    logging: *logs
 
   db:
     image: postgres:16-alpine
@@ -35,11 +47,12 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes: [pg_dados:/var/lib/postgresql/data]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U etal -d etal"]
+      test: ['CMD-SHELL', 'pg_isready -U etal -d etal']
       interval: 5s
       retries: 10
+    logging: *logs
 
+# Volumes nomeados (e não pastas do servidor): a API roda sem root e já encontra /srv/arquivos com o dono certo.
 volumes:
-  caddy_dados:
-  caddy_config:
+  arquivos_dados:
   pg_dados:

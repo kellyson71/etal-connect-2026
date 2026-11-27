@@ -35,7 +35,7 @@ No Docker: Caddy entrega os arquivos e encaminha /api e /q para a API. O navegad
 | http://127.0.0.1:8011 | API local em outra porta; exige CORS compatível |
 | string vazia | API na mesma origem; configuração entregue pelo deploy |
 
-O cliente envia cookies com credentials: include. Ao iniciar com API, lê programação, avisos e perfil. O modo de avisos é SSE por padrão; vivo: consulta muda para consultas a cada 12 segundos.
+O cliente envia cookies com credentials: include. Ao iniciar com API, lê programação, avisos e perfil. O modo de avisos é SSE por padrão; vivo: consulta muda para consultas a cada minuto, só com a aba visível.
 
 ## Offline
 
@@ -73,4 +73,4 @@ Não editar o index.html gerado. Preservar a geometria e as regras em docs/mapas
 
 Docker Compose usa PostgreSQL 16 e Caddy. A API roda com um processo porque o SSE vive na memória. Escalar exige distribuir os eventos por outro mecanismo. A configuração Vercel usa função Python e consulta periódica, com PostgreSQL externo. A existência desses arquivos não é evidência de implantação ativa.
 
-O workflow backend.yml contém testes e uma etapa condicional de implantação. A documentação não presume uma rotina git flow nem um histórico de releases apenas por existir uma sugestão de fluxo.
+O workflow backend.yml contém testes e uma etapa condicional de implantação. O vercel.yml publica a versão de teste na Vercel a cada push no develop, com o Vercel CLI e o segredo VERCEL_TOKEN (o projeto da Vercel fica numa conta sem vínculo com o GitHub); sem o segredo, não publica. A documentação não presume uma rotina git flow nem um histórico de releases apenas por existir uma sugestão de fluxo.

@@ -28,6 +28,27 @@ def test_agenda(app_cliente):
     assert app_cliente.get('/api/eu').json()['saved'] == []
 
 
+def test_minicurso_nao_se_salva_no_app(app_cliente):
+    entrar(app_cliente)
+    r = app_cliente.post('/api/eu/agenda/react-native')
+    assert r.status_code == 409 and 'SUAP' in r.json()['detail']
+    assert app_cliente.get('/api/eu').json()['saved'] == []
+
+
+def test_inscricoes_em_minicurso_vem_da_lista_importada(app_cliente, tmp_path):
+    from app import importar
+    entrar(app_cliente, 'Ana Teste', matricula='20250009')
+    lista = tmp_path / 'inscritos.csv'
+    lista.write_text('nome;matricula;email;atividades\nAna Teste;20250009;;react-native|game-maker nao-existe\n'
+                     'Bia Nova;;bia@exemplo.com;react-native\n', encoding='utf-8')
+    assert importar.inscritos(str(lista)) == (1, 3)
+    assert importar.inscritos(str(lista)) == (0, 0)  # importar de novo não duplica
+    assert sorted(app_cliente.get('/api/eu').json()['saved']) == ['game-maker', 'react-native']
+    prog = {x['id']: x for x in app_cliente.get('/api/programacao').json()['sessions']}
+    assert prog['react-native']['taken'] == 2
+    assert app_cliente.delete('/api/eu/agenda/react-native').status_code == 409  # cancelar é no SUAP
+
+
 def test_presenca_por_qr(app_cliente):
     entrar(app_cliente)
     # QR do evento: só credencia
@@ -77,16 +98,43 @@ def test_org_aviso_troca_sala_e_exportacao(app_cliente):
     assert 'svg' in app_cliente.get('/api/org/qrs').text
 
 
-def test_visitante_por_link(app_cliente):
+def test_visitante_por_link(app_cliente, monkeypatch):
+    from app.config import config
+    from app.rotas import auth
+    enviados = []
+    monkeypatch.setattr(config(), 'smtp_host', 'smtp.exemplo.com')
+    monkeypatch.setattr(auth, '_enviar_link', lambda email, nome, url: enviados.append(url) or True)
     r = app_cliente.post('/api/auth/visitante', json={'nome': 'Bia Fora', 'email': 'bia@exemplo.com'})
-    assert r.status_code == 202
-    link = r.json()['link']
+    assert r.status_code == 202 and r.json() == {'enviado': True}
+    link = enviados[0]
     r = app_cliente.get(link.replace('http://teste', ''), follow_redirects=False)
     assert r.status_code == 302 and 'login=ok' in r.headers['location']
     assert app_cliente.get('/api/eu').json()['person']['name'] == 'Bia Fora'
     # o mesmo link não serve duas vezes
     r = app_cliente.get(link.replace('http://teste', ''), follow_redirects=False)
     assert 'link-expirado' in r.headers['location']
+
+
+def test_visitante_sem_smtp_entra_direto(app_cliente, monkeypatch):
+    from app.config import config
+    from app.db import SessionLocal as Sessao
+    from app.modelos import Pessoa
+    monkeypatch.setattr(config(), 'organizacao', 'org@exemplo.com')
+    r = app_cliente.post('/api/auth/visitante', json={'nome': 'Caio Fora', 'email': 'caio@exemplo.com', 'cidade': 'Pau dos Ferros'})
+    assert r.status_code == 202 and r.json()['entrou']
+    assert app_cliente.get('/api/eu').json()['person']['name'] == 'Caio Fora'
+    # sem confirmar o e-mail, nunca vira organização
+    app_cliente.post('/api/auth/sair')
+    app_cliente.post('/api/auth/visitante', json={'nome': 'Falso Org', 'email': 'org@exemplo.com'})
+    with Sessao() as db:
+        assert db.query(Pessoa).filter_by(email='org@exemplo.com').one().papel == 'participante'
+    # e-mail de uma conta do SUAP não entra por aqui
+    with Sessao() as db:
+        db.add(Pessoa(tipo='suap', matricula='2020123', nome='Ana', email='ana@ifrn.edu.br', papel='participante'))
+        db.commit()
+    app_cliente.post('/api/auth/sair')
+    r = app_cliente.post('/api/auth/visitante', json={'nome': 'Ana Falsa', 'email': 'ana@ifrn.edu.br'})
+    assert r.status_code == 409
 
 
 def test_qr_aberto_na_camera(app_cliente):
@@ -132,20 +180,20 @@ def test_login_suap_com_senha(app_cliente, monkeypatch):
         def __init__(self, **_):
             pass
 
-        def __enter__(self):
+        async def __aenter__(self):
             return self
 
-        def __exit__(self, *_):
+        async def __aexit__(self, *_):
             return False
 
-        def post(self, url, json):
+        async def post(self, url, json):
             return Resp(200, {'access': 'a', 'refresh': 'r'}) if json['password'] == 'certa' else Resp(401, {})
 
-        def get(self, url, headers):
+        async def get(self, url, headers):
             assert url.endswith('/api/rh/eu/') and headers['Authorization'] == 'Bearer a'
             return Resp(200, {'identificacao': '20241014', 'nome_usual': 'Ana Souza', 'email': 'ana@escolar.ifrn.edu.br', 'foto': '/media/f.jpg'})
 
-    monkeypatch.setattr(httpx, 'Client', Falso)
+    monkeypatch.setattr(httpx, 'AsyncClient', Falso)
     assert app_cliente.post('/api/auth/suap/senha', json={'matricula': '20241014', 'senha': 'errada'}).status_code == 401
     assert app_cliente.post('/api/auth/suap/senha', json={'matricula': '20241014', 'senha': 'certa'}).status_code == 200
     eu = app_cliente.get('/api/eu').json()['person']
@@ -173,3 +221,14 @@ def test_debug_qr_so_para_administrador_em_demo(app_cliente, monkeypatch):
     assert mini[0] in app_cliente.get('/api/eu').json()['present']
     monkeypatch.setattr(config(),'demo',False)
     assert app_cliente.get('/api/org/debug/qrs').status_code == 404
+
+
+def test_programacao_e_avisos_com_etag(app_cliente):
+    """Consulta periódica sem mudança volta 304, sem corpo (economia na Vercel)."""
+    r = app_cliente.get('/api/programacao')
+    etag = r.headers['etag']
+    assert r.status_code == 200 and r.json()['sessions'] and r.headers['cache-control'] == 'no-cache'
+    r2 = app_cliente.get('/api/programacao', headers={'If-None-Match': etag})
+    assert r2.status_code == 304 and r2.content == b''
+    a = app_cliente.get('/api/avisos')
+    assert app_cliente.get('/api/avisos', headers={'If-None-Match': a.headers['etag']}).status_code == 304

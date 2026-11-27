@@ -144,6 +144,18 @@ const TIPOS = {
 };
 const TIPOS_G = new Set(['pal', 'mesa', 'mini', 'camp']);
 const tipoDe = (x) => TIPOS[x.type] || { k: 'out', g: 'out', icon: 'cal', formato: '' };
+/* Minicurso e oficina têm vaga limitada e a inscrição é feita no SUAP: no app não se salvam. No SUAP a inscrição é por
+   atividade (minicurso, palestra, mesa...), feita antes do evento; o servidor acha a pessoa nas listas de inscritos e
+   manda essas atividades em S.inscricoes. Sem servidor, os minicursos da agenda de exemplo contam como inscritos. */
+const comInscricao = (x) => tipoDe(x).g === 'mini';
+const inscrito = (x) => !!x && (S.inscricoes.has(x.id) || (comInscricao(x) && S.saved.has(x.id)));
+const linkInscricao = (x) => x.inscricao || x.link || '';
+const vagasLivres = (x) => (x.seats ? Math.max(0, x.seats - (x.taken || 0)) : null);
+/* vagas preenchidas, discreto: barrinha e "26 de 30" (cheio vira "Esgotado") */
+const vagasLinha = (x) =>
+  !x.seats
+    ? ''
+    : `<span class="vagas-linha ${vagasLivres(x) === 0 ? 'cheio' : vagasLivres(x) <= 5 ? 'pouca' : ''}">${seatBar(x)}<small>${vagasLivres(x) === 0 ? 'Esgotado' : `${Math.min(x.taken || 0, x.seats)} de ${x.seats} vagas`}</small></span>`;
 const duracao = (x) => {
   if (!x.end) return '';
   const [a, b] = [x.time, x.end].map((t) => {
@@ -190,13 +202,15 @@ const speakersList = () => {
   const seen = new Set();
   return D.sessions.filter((x) => x.speakerShort && !seen.has(x.speakerShort) && seen.add(x.speakerShort));
 };
+/* Em minutos, para a soma não acumular resto de ponto flutuante (1,5 h virava 1.4999999999999982). */
 const hoursOf = (s) => {
   const [a, b] = [s.time, s.end].map((t) => {
     const [h, m] = t.split(':').map(Number);
-    return h + m / 60;
+    return h * 60 + m;
   });
-  return b - a;
+  return (b - a) / 60;
 };
+const horasTxt = (h) => (Math.round(h * 10) / 10).toLocaleString('pt-BR');
 const seatBar = (s) =>
   !s.seats
     ? ''

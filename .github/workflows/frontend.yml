@@ -1,7 +1,7 @@
 name: frontend
 on:
   push:
-    paths: ['prototipo/**', 'mapa3d/**', 'scripts/**', 'dados/**', 'package.json', 'eslint.config.js', '.github/workflows/frontend.yml']
+    paths: ['prototipo/**', 'mapa3d/**', 'scripts/**', 'dados/**', 'backend/**', 'package.json', 'eslint.config.js', '.github/workflows/frontend.yml']
   pull_request:
     paths: ['prototipo/**', 'mapa3d/**', 'scripts/**', 'dados/**']
 
@@ -21,7 +21,8 @@ jobs:
         run: npm test
 
   navegador:
-    # abre as telas do app num Chromium e toca nas ações de cada uma, sem erro de JavaScript
+    # abre as telas do app num Chromium e toca nas ações de cada uma, sem erro de JavaScript; e, de ponta a ponta com
+    # a API de verdade (SQLite temporário), a presença sem rede e as publicações
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,6 +30,6 @@ jobs:
         with: { node-version: 22 }
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
-      - run: pip install playwright && python -m playwright install --with-deps chromium
-      - name: Telas e ações
+      - run: pip install playwright -r backend/requirements.txt && python -m playwright install --with-deps chromium
+      - name: Telas, ações, presença sem rede e publicações
         run: npm run test:navegador

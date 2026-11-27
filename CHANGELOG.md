@@ -2,6 +2,64 @@
 
 O projeto segue o git flow: `main` tem só versões publicadas, `develop` junta as funcionalidades e cada uma nasce num ramo `feature/*`.
 
+## 0.12.0 (2026-11-27)
+
+Perfil, avaliações e pessoas
+- Perfil em passos, com progresso e crachá ao vivo, guardado também no servidor; fundo do crachá escolhido no perfil.
+- Segunda leitura do QR da sala, perto do fim, vale como saída e libera a avaliação da atividade (estrelas, comentários rápidos e comentário aberto).
+- Busca de pessoas pelo nome, com o perfil público: o que a pessoa fez, conduziu e a colocação nos campeonatos. A mesma pessoa não aparece duas vezes.
+- Painel: participantes por categoria (inscritos, presentes, até o fim, avaliaram, faltaram), NADIC, curso e interesse; planilha CSV do filtro atual e link para o Google Sheets (`=IMPORTDATA`); dados do público; ranking e comentários das avaliações, sem nomes.
+
+Inscrições do SUAP
+- O servidor lê a página pública de inscrição do evento no SUAP e põe na agenda de cada pessoa as atividades em que ela está inscrita; os minicursos mostram as vagas reais.
+- Minicurso não se salva no app: mostra as vagas, o selo Inscrito e leva à inscrição no SUAP. A importação de inscritos ganha a coluna de atividades.
+- Programação sempre completa, com Minha agenda como filtro; o início junta o destaque e a agenda da pessoa num bloco só; edição de perfil unificada.
+
+Entrada e publicações
+- Visitante sem servidor de e-mail entra direto, sem confirmar o e-mail; por isso essa entrada nunca dá acesso à organização e recusa e-mails de contas do SUAP. Com SMTP, continua o link de uso único.
+- Antes do evento, quem entrou já publica, comenta e usa o chat; durante o evento, continua valendo o QR da recepção.
+
+Correções
+- Mapa 3D reabre sozinho quando o navegador derruba o contexto WebGL, com a câmera guardada; a planta de reserva ganhou Tentar de novo.
+- Horas dos certificados sem resto de ponto flutuante e com vírgula (1,5 h).
+- Vercel: deploy de produção pelo GitHub Actions a cada push no `develop`.
+
+Preparo para o evento
+- Banco com migrações (Alembic): a API aplica as que faltam ao iniciar, e um banco antigo é atualizado sem perder dados.
+- Limites por pessoa e não por rede (o Wi-Fi do campus sai por um endereço só): 6 senhas erradas por matrícula por minuto, com um teto por rede; links de visitante e leituras de QR também limitados.
+- Fila curta para o SUAP: um número fixo de entradas conversa com ele ao mesmo tempo; quem passa de 12 s de espera vê a contagem e o app tenta de novo sozinho.
+- Materiais das atividades em disco, abertos no app ou baixados.
+- Presença lida sem internet: o app guarda só QR do ETAL, avisa que ainda não vale e envia quando a rede volta; o servidor confere a hora da leitura com as regras de sempre.
+- Teste de ponta a ponta da presença sem rede, com a API de verdade, na CI.
+- `docs/regras-de-negocio.md`: as regras do app em anotações.
+
+Publicações no servidor
+- Feed com fotos, comentários, chat geral, curtidas, salvos, denúncias e moderação passam a ficar no servidor (antes, só no aparelho), com as mesmas telas.
+- Chegam ao vivo para quem está com a tela aberta; o aviso leva só a versão, e o app só busca de novo se algo mudou.
+- Fotos regravadas no servidor, sem a localização; matrícula e e-mail de quem publica não vão para os outros.
+- Três denúncias de pessoas diferentes tiram o conteúdo do ar até a organização revisar; toda moderação fica no histórico.
+- Limites por pessoa e limpeza depois de 90 dias (`python -m app.manutencao publicacoes`).
+- Moderação também no painel do computador, pela API.
+
+Publicação no servidor do NADIC
+- Duas imagens prontas, publicadas no GitHub Container Registry a cada push na `main`, no mesmo modelo do horários: o app (Caddy com o site e o mapa 3D já montados) e a API. O servidor só precisa do `docker-compose.yml` e do `.env`; com os segredos de SSH, o GitHub também atualiza o servidor.
+- Corrigido: a imagem da API não levava as migrações do banco e não subia; e o mapa 3D (gerado no build) ficava fora do site servido pelo Docker.
+- O app fica atrás do proxy do servidor (trechos prontos para nginx e Apache) ou, com as portas livres, pede o próprio certificado.
+- Vercel mais econômica: o app consulta a cada minuto, só com a aba visível (antes, a cada 12 s), e a programação e os avisos voltam 304 sem corpo quando nada mudou. No plano gratuito, as consultas de abas abertas tinham estourado a cota do mês.
+- Versão de teste na Vercel em dia com as migrações e as dependências novas (antes quebraria na próxima versão), com teste para não voltar a quebrar.
+- `deploy/README.md` (passo a passo), `deploy/diagnostico.sh` (o que o servidor tem) e `deploy/backup.sh` (banco e arquivos, 14 dias).
+
+Plano B
+- Listas de presença em papel para imprimir pelo painel (uma por atividade, já com quem salvou na agenda) e o lançamento delas depois, com presença marcada como manual.
+- `docs/contingencia.md`: o que fazer se o app, a internet, o SUAP ou o servidor falharem.
+
+Monitoramento e teste de carga
+- Uma linha JSON por requisição (rota sem tokens, sem IP nem dado da pessoa) e rodízio dos logs no Docker.
+- Painel da organização → Servidor: requisições, tempos, erros, fila do SUAP, celulares ao vivo e movimento dos últimos 10 minutos.
+- Verificação de saúde com o banco, usada pelo Docker.
+- Teste de carga (`scripts/carga/rodar-local.sh`): 700 pessoas na abertura, com PostgreSQL e um SUAP de mentira. Resultados em `docs/tecnico/09-teste-de-carga.md`.
+- Por causa do teste: o teto da rede no login conta só senha errada (antes barrava 498 de 700 pessoas atrás do mesmo Wi-Fi); fila do SUAP de 8 para 16; o app insiste por até 4 minutos com a fila cheia.
+
 ## 0.11.0 (2026-11-15)
 
 - Código do app dividido por assunto: 30 partes em `prototipo/app/` (entrada, início, agenda, atividade, publicações, mapa, campeonatos, organização, leitor de QR, navegação, servidor…), montadas no `app.js` por `npm run app`, sem mudar o comportamento.

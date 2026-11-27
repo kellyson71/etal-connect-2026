@@ -7,14 +7,8 @@ ACOES['profile-edit'] = (el, e, a) => {
 
 ACOES['cartao-pular'] = (el, e, a) => {
   cardSkip();
-  cardDemoDone = true;
-  if (el.closest('.ct-invite')) {
-    el.closest('.ct-invite').remove();
-    toast('Dá para personalizar depois em Perfil');
-  } else {
-    navBack();
-    toast('Dá para personalizar depois em Perfil');
-  }
+  navBack();
+  toast('Tudo bem! Dá para completar depois em Perfil.');
 };
 
 ACOES['profile-preset'] = (el, e, a) => {

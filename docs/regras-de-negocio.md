@@ -1,0 +1,117 @@
+# Regras do app (anotações)
+
+Anotando aqui as regras que a gente foi decidindo pro ETAL Connect, pra não se perder. Os números dá pra mudar depois, mas é assim que tá hoje.
+
+## Entrar no app
+
+- Quem é do IFRN entra com o SUAP. Pode ser pelo botão do SUAP (a autorização da API do SUAP já tá liberada pra gente) ou digitando matrícula e senha.
+- A senha do SUAP só passa pelo nosso servidor na hora de entrar. A gente não guarda senha em lugar nenhum, nem em log.
+- Do SUAP o app só pega o que aparece no crachá: nome, foto, curso, campus e matrícula. Nada de CPF.
+- Quem não é do IFRN entra como convidado (visitante): coloca nome, e-mail, perfil, instituição e cidade, aceita o termo, e recebe um link no e-mail. O link vale 30 minutos e só funciona uma vez.
+- Depois de entrar, fica logado por 30 dias no aparelho.
+
+## Pra ninguém usar o app pra descobrir senha dos outros
+
+- Cada matrícula pode errar a senha no máximo 6 vezes por minuto. Na 7ª tentativa o app bloqueia aquela matrícula por um minuto. Assim não dá pra ficar chutando senha de alguém pelo nosso app. Só conta senha errada: quem ficou esperando na fila e tentou de novo não perde tentativa.
+- O limite é por matrícula, e não pela internet que a pessoa tá usando. No Wi-Fi do campus todo mundo sai pelo mesmo endereço, e se fosse por endereço o evento inteiro travaria na abertura.
+- Mesmo assim tem um teto por rede: no máximo 60 senhas erradas por minuto vindas da mesma rede. Conta só as erradas, porque no teste de carga um teto de 120 logins por minuto por rede barrou 498 de 700 pessoas (o campus inteiro sai pelo mesmo endereço). Quem acerta a senha não esbarra nisso.
+- O resto do app tem um teto por rede bem alto (3.000 pedidos por minuto), só contra abuso.
+- Convidado: no máximo 3 links por e-mail a cada 10 minutos. Mais que isso o app diz pra olhar a caixa de entrada e o spam.
+
+## Muita gente entrando ao mesmo tempo
+
+- Na abertura vai todo mundo entrar junto. O app não manda tudo de uma vez pro SUAP: no máximo 16 entradas conversam com o SUAP ao mesmo tempo, o resto espera a vez. No teste com 700 pessoas chegando em 1 minuto, todo mundo entrou: metade em até 8 s, a última em 33 s.
+- Ninguém fica parado numa tela de carregamento sem saber o que tá acontecendo. Se a fila encher, cada espera é de no máximo uns 12 segundos; aí o app mostra "Muita gente entrando agora. Tentando de novo em X s…" e tenta sozinho, sem a pessoa fazer nada, por até 4 minutos.
+- Se o SUAP cair de vez, o app avisa que o SUAP não respondeu. Aí o plano B é entrar como convidado ou a equipe credenciar na mão.
+
+## Credenciamento e presença
+
+- O credenciamento é lendo o QR da recepção. Durante o evento, sem credenciamento a pessoa vê o app, mas não participa das publicações (não posta, não comenta, não denuncia); o chat fica aberto.
+- Presença numa atividade é lendo o QR da sala. O QR principal é o de papel na porta.
+- O QR é assinado pelo servidor, então não dá pra inventar um QR que funcione.
+- O QR de uma atividade só vale de 20 minutos antes até o fim dela.
+- Ler de novo não duplica: é uma presença por pessoa por atividade.
+- Cada pessoa pode ler no máximo 30 QRs por minuto. Isso é só pra barrar coisa estranha, ninguém lê tanto QR assim.
+- Se ler o QR de uma atividade sem estar credenciado, o app credencia junto.
+- A equipe pode credenciar na mão pelo painel (pra quem tá sem celular, sem bateria, etc).
+- Risco que a gente conhece: alguém tirar foto do QR e mandar pra quem não tá na sala. Por enquanto a defesa é a janela de horário. Dá pra apertar depois (QR no telão que muda, conferir a lotação).
+
+## Leu o QR sem internet
+
+Isso eu fiquei com receio, então ficou assim:
+
+- Se o celular tá sem internet na hora de ler, o app só guarda a leitura se for um QR de verdade do ETAL e de uma atividade que existe na programação. QR errado ou qualquer outro QR não é guardado.
+- A leitura guardada NÃO vale ainda. O app mostra "Leitura guardada, ainda não vale" e a presença só conta quando ele conseguir enviar.
+- Quando a internet volta, o app envia sozinho e avisa se deu certo ou não.
+- Quem decide é o servidor, com as mesmas regras: o QR tem que ser válido, a leitura tem que ter sido feita durante a atividade, e o envio tem que chegar até 60 minutos depois do fim dela.
+- A hora que o celular manda só serve pra restringir, nunca pra aumentar o prazo. Então não abre brecha: quem já não conseguiria marcar presença com internet também não consegue sem.
+- Se o servidor recusar, a leitura sai da fila e o app avisa o motivo. Não fica tentando pra sempre.
+- Presença que veio assim fica marcada como "adiada" no banco, pra organização saber.
+
+## Agenda
+
+- A pessoa salva as palestras, mesas e demais atividades abertas que quer ver.
+- Minicurso (e oficina) tem vaga limitada e a inscrição é feita no SUAP, não no app. Por isso minicurso não tem marcador: o app mostra as vagas preenchidas (ex.: 26 de 30) e um botão que leva à inscrição no SUAP.
+- No SUAP a inscrição é por atividade (minicurso, palestra, mesa...) e é feita antes do evento. O servidor lê a página pública de inscrição do evento, acha a pessoa pelo nome do SUAP nas listas de inscritos e põe essas atividades na agenda dela, com o selo "Inscrito" (na tela inicial, na programação e no filtro "Minha agenda"). Inscrição não sai pelo app: cancelar é pelo SUAP.
+- Nos minicursos a lista do SUAP manda sozinha: o que sai da lista sai da agenda. As vagas mostradas (preenchidas e total) são as da página do SUAP.
+- A comparação é por nome, porque a página não traz matrícula: nome completo igual, ou nome usual com o mesmo primeiro e último nome. Os nomes das listas ficam só na memória do servidor por alguns minutos; não vão para o banco nem para o app.
+- Sem a página do SUAP, vale a lista que a organização importa (coluna `atividades`).
+- A aba Programação mostra tudo; "Minha agenda" é o filtro com o que a pessoa salvou e os minicursos em que está inscrita.
+- Pode salvar duas coisas no mesmo horário, mas o app avisa.
+- Lembrete 10 minutos antes de cada atividade salva, com a sala e o caminho.
+
+## Materiais das atividades
+
+- Só a organização envia material: PDF, imagem, ZIP, slides (PPT/PPTX) ou texto, até 15 MB. Também dá pra colocar link.
+- O participante só abre o material depois de marcar presença na atividade. A organização vê tudo.
+- Abre dentro do app, mas tem o botão de baixar pra quem quiser.
+
+## Organização (painel do administrador)
+
+- Só entra no painel quem tá na lista da organização (matrícula ou e-mail). Participante e convidado não veem o painel.
+- A organização pode:
+  - mandar aviso pra todo mundo (chega na hora);
+  - trocar a sala de uma atividade (sai um aviso automático);
+  - mudar o número das salas;
+  - criar e editar atividade, com materiais;
+  - credenciar na mão;
+  - nos campeonatos: abrir e fechar inscrição, inscrever ou tirar jogador, marcar o vencedor de cada partida (e desfazer) e editar as regras;
+  - moderar as publicações;
+  - imprimir os QRs das salas e exportar a lista de presença pros certificados.
+- Plano B: imprimir as listas em papel do dia e, depois, lançar o que foi assinado (ver [contingencia.md](contingencia.md)). A presença lançada assim fica marcada como "manual".
+- A tela de QRs de teste (debug) só aparece pra organização e só no modo de demonstração. No evento de verdade ela não existe.
+
+## Publicações
+
+- Ver as publicações é pra quem entrou. O chat geral é aberto pra quem entrou, credenciado ou não.
+- Postar, curtir, comentar e denunciar: antes do evento, basta ter entrado (a conversa começa antes do primeiro dia). Durante o evento (do início da primeira atividade ao fim da última), só quem já tá credenciado. Depois do evento volta a valer só o login.
+- Ficam no servidor: todo mundo vê as mesmas, e quem tá com a tela aberta vê chegar na hora, sem recarregar.
+- O que fica guardado: o texto, as fotos (até 6 por post, cada uma com descrição), a atividade e o dia, quem curtiu, os comentários, o chat geral, as denúncias e o histórico da moderação.
+- As fotos são reduzidas no celular, e o servidor ainda grava cada uma de novo, tirando o que vem escondido na foto (tipo a localização do GPS).
+- Os outros veem nome, foto e curso de quem publicou. Matrícula e e-mail não vão pra ninguém.
+- Nas publicações aparece o nome e a foto do SUAP (ou do cadastro de convidado). O que a pessoa muda só no app não aparece pros outros.
+- O app mostra as 300 publicações mais recentes e as 200 últimas mensagens do chat.
+- Pra ninguém encher o feed: no máximo 10 posts a cada 10 minutos, 30 comentários ou mensagens a cada 5 minutos e 10 denúncias a cada 10 minutos, por pessoa.
+- Cada um pode apagar o que é seu, e aí apaga de vez: junto vão os comentários, as curtidas e as fotos.
+- Quem modera é só a organização, pelo app ou pelo painel do computador. Pode tirar do ar, colocar de volta ou arquivar a denúncia, sempre com uma anotação, e fica no histórico quem fez e quando. Post de outra pessoa a organização não apaga de vez: tira do ar.
+- Se 3 pessoas diferentes denunciarem a mesma coisa, ela sai do ar sozinha até a organização olhar.
+- Quem publicou não fica sabendo quem denunciou.
+- Por quanto tempo: 90 dias. Depois disso a gente roda a limpeza (`python -m app.manutencao publicacoes`) e apaga tudo, com as fotos. As denúncias ficam só com a cópia do texto, pro histórico da moderação.
+- Sem servidor (a demonstração), as publicações continuam ficando só no celular, com os exemplos.
+
+## Perfil e crachá
+
+- Dá pra mudar o nome que aparece e a foto no app, mas isso não muda nada no SUAP.
+- O perfil público mostra o crachá sem matrícula e sem e-mail.
+- Pra quem entrou com senha do SUAP, o app mostra os eventos e certificados do SUAP da pessoa. Esses dados ficam só 20 minutos no servidor, ligados àquele login, e o certificado só baixa se for da própria pessoa. Se o certificado não existir, o app não inventa um.
+
+## O que é real e o que é exemplo
+
+- Nada aqui é oficial do IFRN, do SUAP ou do ETAL. Presença pelo app não é presença oficial.
+- A programação de exemplo segue a do VII ETAL (26 a 28 de novembro de 2025), mais algumas atividades de demonstração. Salas, vagas, campeonatos e números do painel são exemplo.
+- O mapa é feito do levantamento e da planta de 2012, conferido no local, mas não é planta oficial. Não tem GPS dentro do prédio.
+
+## O que ainda falta decidir
+
+- LGPD: termo, política de privacidade e por quanto tempo os dados ficam (inclusive as cópias nas denúncias).
+- Quão rápido o SUAP de verdade responde na abertura (o teste de carga usou um SUAP de mentira). Dá pra medir antes com poucas contas de teste e, se precisar, aumentar a fila.

@@ -7,6 +7,8 @@ const fresh = () => ({
   credAt: null,
   present: {},
   saved: new Set(D.enrolled),
+  /* atividades em que a pessoa está inscrita no SUAP (vem do servidor; ficam na agenda e não saem pelo app) */
+  inscricoes: new Set(),
   tab: 'home',
   stacks: {
     community: [{ s: 'community' }],
@@ -28,7 +30,10 @@ const fresh = () => ({
   tourTab: 'chave',
   reminders: new Set(remSaved()),
   votes: new Set(),
+  /* avaliações: id → { n, quick: [], text } (nota de 1 a 5, comentários rápidos e comentário aberto) */
   ratings: {},
+  /* saída: segunda leitura do QR da sala, no fim da atividade; libera a avaliação */
+  left: {},
   asked: {},
   contacts: [],
 });

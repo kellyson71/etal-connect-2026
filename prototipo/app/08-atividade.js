@@ -193,8 +193,9 @@ Screens.activity = ({ id }) => {
     return {
       html: `${header('', { right: `<button class="iconbtn" data-act="share" data-id="${id}" aria-label="Enviar para o computador">${ic('laptop')}</button>` })}
         <div class="pad stack class-open">
-          <div class="co-head st" ${st(0)}><span class="tag ok">${ic('check')}Presença às ${here}</span><span class="kind">${s.type} · ${s.room}</span></div>
+          <div class="co-head st" ${st(0)}><span class="tag ok">${ic('check')}${S.left[id] ? `Das ${here} às ${S.left[id]}` : `Presença às ${here}`}</span><span class="kind">${s.type} · ${s.room}</span></div>
           <h1 class="title-lg st" ${st(1)}>${s.title}</h1>
+          <div class="co-rapido st" ${st(1)}><button data-act="rolar" data-alvo=".mats">${ic('file')}Materiais${s.materials?.length ? ` <em>${s.materials.length}</em>` : ''}</button><button data-act="ask" data-id="${id}">${ic('chat')}Perguntar</button><button data-act="${S.left[id] ? 'avaliar' : 'rolar'}" data-id="${id}" data-alvo=".rate-lock">${ic('star')}${notaDe(id) ? `${notaDe(id)}/5` : 'Avaliar'}</button></div>
           <button class="teacher st" ${st(2)} data-go="speaker" data-id="${id}">${spAv(s, true)}<span><b>${s.speakerShort}</b><small>${s.role}</small></span><span class="time"><b>${s.time}–${s.end}</b><small>${d.week}, ${s.day} nov</small></span></button>
           <button class="sendpc st" ${st(3)} data-act="share" data-id="${id}"><span class="sp-ic">${ic('laptop')}</span><span><b>Abrir no computador</b><small>${s.link}</small></span>${ic('chev')}</button>
           <section class="st" ${st(4)}><h2 class="h">Materiais</h2></section>
@@ -202,7 +203,7 @@ Screens.activity = ({ id }) => {
           <section class="block st" ${st(10)}><h2 class="h">Nesta aula</h2><ul class="learn">${s.learn.map((l) => `<li>${ic('check')}<span>${l}</span></li>`).join('')}</ul></section>
           <section class="block st" ${st(11)}><h2 class="h">Leve para a sala</h2><p class="desc">${s.requirements}</p></section>
           <section class="block st" ${st(12)}><div class="sec"><h2>Perguntas</h2><button data-act="ask" data-id="${id}">Perguntar</button></div>${questionsOf(id)}</section>
-          <section class="block rate st" ${st(13)}><h2 class="h">Avalie esta atividade</h2><div class="stars" role="radiogroup" aria-label="Nota">${[1, 2, 3, 4, 5].map((n) => `<button class="${(S.ratings[id] || 0) >= n ? 'on' : ''}" data-act="rate" data-id="${id}" data-n="${n}" aria-label="${n} de 5">${ic('star')}</button>`).join('')}</div></section>
+          <div class="st" ${st(13)}>${rateBlock(id)}</div>
         </div>`,
     };
   }
@@ -225,6 +226,13 @@ Screens.activity = ({ id }) => {
         <div class="gl-quando"><small>${d.week} · ${s.day} nov</small><b>${s.time}</b><span>até ${s.end}${duracao(s) ? ` · ${duracao(s)}` : ''}</span></div>
         ${vagasRestam == null ? '' : `<div class="gl-vagas ${vagasRestam === 0 ? 'cheio' : vagasRestam <= 5 ? 'pouca' : ''}"><small>Vagas</small><b>${vagasRestam === 0 ? 'Esgotado' : vagasRestam}</b>${vagasRestam ? `<span>de ${s.seats}</span>` : ''}${seatBar(s)}</div>`}
       </div>`;
+  /* minicurso: a inscrição é no SUAP (vaga limitada); o app mostra se a pessoa já está inscrita ou leva até lá */
+  const link = linkInscricao(s);
+  const inscricao = inscrito(s)
+    ? `<div class="inscricao ok st" ${st(3)}>${ic('check')}<span><b>Inscrição feita</b><small>Você se inscreveu pelo SUAP. Chegue no horário para registrar a presença.</small></span></div>`
+    : !comInscricao(s)
+      ? ''
+      : `<div class="inscricao st" ${st(3)}>${ic('id')}<span><b>${vagasRestam === 0 ? 'Vagas esgotadas' : 'Inscrição pelo SUAP'}</b><small>${vagasRestam === 0 ? 'Confira no SUAP se abriu alguma vaga.' : 'Vagas limitadas: a inscrição é feita no SUAP, pelo botão abaixo.'}</small></span></div>`;
   const lugar = `<button class="lugar st" ${st(4)} ${mapAct(s)} aria-label="Ver ${s.room} no mapa"><canvas class="thumb3d"></canvas><span class="lg-tx"><b>${s.room}</b><small>${Number.isInteger(s.floor) ? floorOf(s.floor).label : ''}</small></span><span class="lg-ir">${ic('route')}Como chegar</span></button>`;
   const lembrar = `<button class="remindrow st ${lembrete ? 'on' : ''}" ${st(5)} data-act="remind" data-id="${id}" aria-pressed="${lembrete}">${ic('alarm')}<span>${lembrete ? `Lembrete às ${hhmm(toMin(s.time) - LEAD)}` : `Lembrar ${LEAD} min antes`}</span><i class="switch"></i></button>`;
   const fonte = '';
@@ -246,12 +254,14 @@ Screens.activity = ({ id }) => {
         : '';
   return {
     mount: mountThumb(s),
-    html: `${header('', { right: `<button class="iconbtn bm ${S.saved.has(id) ? 'on' : ''}" data-act="save" data-id="${id}" aria-label="Salvar">${ic('bookmark')}</button>` })}
+    html: `${header('', { right: comInscricao(s) || inscrito(s) ? '' : `<button class="iconbtn bm ${S.saved.has(id) ? 'on' : ''}" data-act="save" data-id="${id}" aria-label="${S.saved.has(id) ? 'Remover da agenda' : 'Salvar na agenda'}">${ic('bookmark')}</button>` })}
       <div class="pad stack detail detalhe-v2">
         <span class="kind kind-tp tp-${t.k} st" ${st(0)}>${ic(t.icon)}${s.type}</span>
         <h1 class="title-lg st" ${st(1)}>${s.title}</h1>
+        ${API && pendenteDe(id) ? `<p class="leitura-pendente st" ${st(1)}>${ic('qr')}<span><b>Leitura guardada, ainda sem valer.</b> O app envia a presença quando a internet voltar.</span></p>` : ''}
         ${t.g === 'mesa' ? '' : quem}
         ${blocos}
+        ${inscricao}
         ${lugar}
         ${t.g === 'mesa' ? quem.replace('<ul>', '<h2 class="h">Quem conversa</h2><ul>') : ''}
         ${lembrar}
@@ -260,7 +270,11 @@ Screens.activity = ({ id }) => {
         ${extra}
         ${s.materials.length ? `<p class="locked st" ${st(9)}>${ic('lock')}${s.materials.length} ${s.materials.length === 1 ? 'material' : 'materiais'} depois da presença</p>` : ''}
       </div>
-      <div class="cta-bar"><button class="btn primary big" data-act="scan">${ic('qr')}Registrar presença</button></div>`,
+      <div class="cta-bar">${
+        comInscricao(s) && !inscrito(s) && link
+          ? `<a class="btn ${vagasRestam === 0 ? 'soft' : 'primary'} big" href="${esc(link)}" target="_blank" rel="noopener">${ic('open')}${vagasRestam === 0 ? 'Ver no SUAP' : 'Inscrever-se no SUAP'}</a>`
+          : `<button class="btn primary big" data-act="scan">${ic('qr')}Registrar presença</button>`
+      }</div>`,
   };
 };
 

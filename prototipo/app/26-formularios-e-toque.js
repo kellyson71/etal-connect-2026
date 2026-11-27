@@ -5,12 +5,16 @@
 document.addEventListener('submit', async (e) => {
   if (e.target.dataset.form === 'community-report') {
     e.preventDefault();
-    if (!S.auth || !S.credAt) {
+    if (!communityPode()) {
       toast('Leia o QR Code da recepção para participar.');
       return;
     }
     const data = new FormData(e.target);
     const target = e.target.dataset.target;
+    if (API) {
+      pubDenunciar(target, String(data.get('reason') || ''), String(data.get('detail') || ''));
+      return;
+    }
     if (
       communityWrite((v) =>
         SOCIAL.report(v, target, communityAuthor(), String(data.get('reason') || ''), String(data.get('detail') || '')),
@@ -57,6 +61,13 @@ document.addEventListener('submit', async (e) => {
       if (onBadge) {
         $('.bx-face.filled', $('.login')).innerHTML = badgeFace(lgPending);
         $('[data-live="hello"]').textContent = `Tudo certo, ${D.person.first}!`;
+      } else if (top().s === 'cartao') {
+        /* na edição do perfil: troca só a foto e o nome, sem perder o que foi digitado no resto do formulário */
+        const pg = vp.querySelector('.page:not(.leaving)');
+        const eu = $('.ct-eu', pg);
+        if (eu) eu.outerHTML = cartaoEu();
+        $('[data-form="cartao"]', pg)?.dispatchEvent(new Event('input'));
+        mapaFixoEnviar('etal:mapa:sincronizar', {});
       } else {
         rerender();
         mapaFixoEnviar('etal:mapa:sincronizar', {});
@@ -68,7 +79,7 @@ document.addEventListener('submit', async (e) => {
 
   if (['community-post', 'community-message', 'community-comment'].includes(e.target.dataset.form)) {
     e.preventDefault();
-    if (!S.auth || !S.credAt) {
+    if (!S.auth || (e.target.dataset.form !== 'community-message' && !communityPode())) {
       toast('Leia o QR da recepção para participar.');
       return;
     }
@@ -84,6 +95,12 @@ document.addEventListener('submit', async (e) => {
       .slice(0, kind === 'community-post' ? 2000 : 1000);
     if (!text && !(kind === 'community-post' && communityDraft.images.length)) {
       toast('Escreva algo para compartilhar.');
+      return;
+    }
+    if (API) {
+      pubEnviar(kind, text, f.dataset.id).then((ok) => {
+        if (ok) communityLimparRascunho(kind, f.dataset.id, 'Publicado');
+      });
       return;
     }
     const item = {
@@ -112,24 +129,7 @@ document.addEventListener('submit', async (e) => {
         (v.comments[f.dataset.id] ||= []).push(item);
       }
     });
-    if (!saved) return;
-    if (kind === 'community-post') {
-      communityDraft.post = '';
-      communityDraft.cursor = 0;
-      communityDraft.images = [];
-      communityDraft.activity = '';
-      communityDraft.day = D.now.day;
-      communityDraft.tag = 'No evento';
-      communityDraft.contextReady = false;
-      communityDraft.activityManual = false;
-      communityMode = 'feed';
-      navBack();
-      toast('Publicação salva neste aparelho');
-    } else {
-      if (kind === 'community-message') communityDraft.message = '';
-      else delete communityDraft.comments[f.dataset.id];
-      rerender();
-    }
+    if (saved) communityLimparRascunho(kind, f.dataset.id, 'Publicação salva neste aparelho');
     return;
   }
   if (e.target.dataset.form === 'tourjoin') {
@@ -315,7 +315,7 @@ document.addEventListener('submit', async (e) => {
     if (!v.city) return say('Informe a sua cidade.', $('#gcity'));
     if (!$('#gok').checked) return say('Para criar a conta, é preciso concordar com o uso dos dados.', $('#gok'));
     if (API) {
-      /* Visitante de verdade: o servidor manda um link de entrada para o e-mail. */
+      /* Visitante de verdade: com e-mail configurado, o servidor manda um link; sem, já abre a sessão. */
       const btn = $('button[type="submit"]', gf);
       btn?.classList.add('loading');
       try {
@@ -325,11 +325,15 @@ document.addEventListener('submit', async (e) => {
           instituicao: v.inst || null,
           cidade: v.city,
         });
+        if (j.entrou) {
+          /* Servidor sem e-mail: a conta de visitante já abriu a sessão. */
+          apiState(await API.get('/api/eu'));
+          lgFilled(D.person);
+          return;
+        }
         err.classList.add('ok');
         err.hidden = false;
-        err.innerHTML = j.link
-          ? `Link de teste (sem e-mail configurado): <a href="${esc(j.link)}">entrar</a>`
-          : `Pronto! Enviamos um link de entrada para <b>${esc(v.email)}</b>. Abra o e-mail neste aparelho.`;
+        err.innerHTML = `Pronto! Enviamos um link de entrada para <b>${esc(v.email)}</b>. Abra o e-mail neste aparelho.`;
       } catch (x) {
         say(x.message);
       } finally {
@@ -370,11 +374,26 @@ document.addEventListener('submit', async (e) => {
   try {
     if (API) {
       /* Servidor do ETAL: pede o token JWT ao SUAP, lê o perfil e abre a sessão. A senha não fica guardada. */
-      try {
-        await API.post('/api/auth/suap/senha', { matricula: mat, senha: pwd });
-      } catch (x) {
-        say(x.message);
-        return;
+      /* Na abertura do evento muita gente entra junto: se a fila do SUAP estiver cheia, o servidor responde 503 com
+         Retry-After e o app espera esses segundos (contando na tela) e tenta de novo, sem a pessoa fazer nada, por até
+         4 minutos (no teste de carga com 700 pessoas e o SUAP lento, a última entrou em pouco mais de 2). */
+      const desde = Date.now();
+      for (;;) {
+        try {
+          await API.post('/api/auth/suap/senha', { matricula: mat, senha: pwd });
+          break;
+        } catch (x) {
+          if (x.status === 503 && x.retryAfter && Date.now() - desde < 240000) {
+            for (let s = x.retryAfter; s > 0; s--) {
+              if (state) state.textContent = `Muita gente entrando agora. Tentando de novo em ${s} s…`;
+              await new Promise((ok) => setTimeout(ok, 1000));
+            }
+            if (state) state.textContent = 'Consultando o SUAP…';
+            continue;
+          }
+          say(x.message);
+          return;
+        }
       }
       const me = await API.get('/api/eu');
       apiState(me);

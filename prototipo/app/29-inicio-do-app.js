@@ -240,6 +240,31 @@ const setups = {
     S.tourTab = 'jogadores';
     S.stacks.profile.push({ s: 'games' }, { s: 'tournament', p: { id: 'fifa' } });
   },
+  cartao: () => {
+    S.stacks.home.push({ s: 'cartao', p: { intro: 1 } });
+  },
+  'aula-fim': () => {
+    ok();
+    S.present['react-native'] = '14:03';
+    S.left['react-native'] = '15:52';
+    S.stacks.home.push({ s: 'activity', p: { id: 'react-native' } });
+  },
+  avaliar: () => {
+    ok();
+    S.present['react-native'] = '14:03';
+    S.left['react-native'] = '15:52';
+    S.stacks.home.push({ s: 'activity', p: { id: 'react-native' } });
+    setTimeout(() => openOverlay(Overlays.avaliar('react-native', 5), 'ask'), 500);
+  },
+  pessoas: () => {
+    S.tab = 'profile';
+    S.stacks.profile.push({ s: 'pessoas' });
+  },
+  pessoa: () => {
+    S.tab = 'profile';
+    const p = pessoasLocais()[0];
+    if (p) S.stacks.profile.push({ s: 'pessoas' }, { s: 'pessoa', p: { id: p.id } });
+  },
 };
 (setups[q] || (() => {}))();
 telaGrande();

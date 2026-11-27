@@ -1,0 +1,7 @@
+# Gera as imagens a partir do código, sem passar pelo GitHub. Para testar o deploy numa máquina com o repositório:
+#   cd deploy && docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
+services:
+  web:
+    build: { context: .., dockerfile: deploy/web.Dockerfile }
+  api:
+    build: ../backend

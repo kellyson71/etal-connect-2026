@@ -32,7 +32,7 @@ Os dados de alunos (inclusive menores de idade) ficam dentro do IFRN.
 | `POST /api/auth/visitante` → `GET /api/auth/link` | visitantes | link de entrada por e-mail (30 min, uso único) |
 | `POST /api/auth/dev` | só com `ETAL_LOGIN_DEV=1` | entrada sem senha, para testar |
 | `GET /api/eu` | logado | perfil, agenda, presenças, credenciamento |
-| `POST/DELETE /api/eu/agenda/{id}` | logado | salvar atividade (respeita vagas) |
+| `POST/DELETE /api/eu/agenda/{id}` | logado | salvar atividade (respeita vagas); minicurso e oficina não (409: inscrição no SUAP) |
 | `POST /api/presenca` | logado | QR do evento credencia; QR de atividade registra presença (sem duplicar) |
 | `POST /api/org/avisos` | organização | aviso (vai na hora para todos) |
 | `PATCH /api/org/atividades/{id}/sala` | organização | troca de sala com aviso automático |
@@ -41,6 +41,14 @@ Os dados de alunos (inclusive menores de idade) ficam dentro do IFRN.
 | `GET /api/org/presencas.csv`, `/credenciados.csv` | organização | exportação para o SUAP (certificados) |
 | `GET /api/org/qrs` | organização | página para imprimir os QRs (evento e um por atividade) |
 | `GET /q/{token}` | todos | QR lido pela câmera do celular, fora do app: abre o app |
+| `GET /api/publicacoes` | logado | feed, comentários, chat, curtidas e salvos; para a organização, também ocultos, denúncias e histórico |
+| `POST /api/publicacoes`, `/{id}/comentarios` | credenciado durante o evento; antes e depois, logado | publicar (até 6 fotos), comentar |
+| `POST /api/publicacoes/mensagens` | logado | mandar mensagem no chat geral |
+| `POST /api/publicacoes/{id}/curtir`, `/salvar`, `/denunciar`; `DELETE /api/publicacoes/{id}` | como publicar (salvar e apagar: logado) | curtir, salvar, denunciar, apagar o que é seu |
+| `GET /api/org/listas-papel?dia=` | organização | listas de presença em papel para imprimir (plano B) |
+| `POST /api/org/presenca-manual` | organização | lança uma lista em papel: credencia e registra presença (`via = 'manual'`) |
+| `GET /api/org/sistema` | organização | números do servidor nos últimos 10 minutos |
+| `POST /api/publicacoes/moderar` | organização | ocultar, restaurar ou arquivar denúncia, com nota e histórico |
 
 Documentação interativa: `/api/docs`.
 
@@ -49,7 +57,55 @@ Documentação interativa: `/api/docs`.
 O QR leva um token assinado com o segredo do servidor (não dá para inventar um válido) e a URL `https://DOMINIO/q/<token>`.
 O de uma atividade só é aceito de 20 minutos antes até o fim dela (`ETAL_JANELA_PRESENCA`, `ETAL_ANTECEDENCIA_MIN`).
 Limite: uma presença por pessoa e atividade; leitura repetida não duplica.
+Sem internet na hora da leitura, o app guarda só QR assinado do ETAL de uma atividade da programação (ou do
+credenciamento) e envia depois com a hora da leitura (`lidoEm`). O servidor aceita se a leitura caiu dentro da janela da
+atividade e se o envio chegou até `ETAL_TOLERANCIA_ENVIO_MIN` (60) minutos depois do fim; hora no futuro é recusada. A
+hora do aparelho só restringe: o que não valeria com internet também não vale sem. Essas presenças ficam com
+`via = 'qr-adiado'`.
 Risco conhecido: foto do QR mandada para quem não está na sala. Mitigações possíveis, da mais simples à mais forte: janela de horário (já feita); QR projetado no telão que muda a cada minuto; conferência da lotação pela organização.
+
+### Limites e fila do SUAP
+
+| Onde | Limite |
+|---|---|
+| Senha do SUAP (`/api/auth/suap/senha`) | 6 senhas erradas por matrícula por minuto; 60 senhas erradas por endereço de rede (`ETAL_TETO_REDE_SENHA_ERRADA`); quem acerta só tem o teto geral |
+| Link de visitante | 3 por e-mail a cada 10 minutos; teto de 300 por endereço de rede |
+| Presença | 30 leituras por pessoa por minuto |
+| Publicações | 10 posts a cada 10 min, 30 comentários ou mensagens a cada 5 min, 10 denúncias a cada 10 min, por pessoa |
+| Rotas com teto geral | `ETAL_TETO_REDE` (3.000) por endereço de rede por minuto |
+| Conversa com o SUAP | até `ETAL_SUAP_SIMULTANEOS` (16) ao mesmo tempo; quem espera mais de `ETAL_SUAP_ESPERA` (12 s) recebe 503 com `Retry-After`, e o app tenta de novo sozinho |
+
+O limite é por pessoa porque no Wi-Fi do campus todos saem pelo mesmo endereço; os números saíram do teste de carga
+([09-teste-de-carga.md](09-teste-de-carga.md)). Os contadores ficam na memória do processo (um processo só da API).
+
+### Monitoramento e logs
+
+- Uma linha JSON por requisição na saída da API (`docker compose logs -f api`): hora, método, rota como modelo
+  (`/q/{token}`, sem o token), situação e tempo. Sem IP, sem query, sem dado da pessoa; o log de acesso do uvicorn fica
+  desligado (gravava o endereço inteiro). Erro 5xx vai com o rastro. O Docker guarda 5 arquivos de 20 MB por serviço.
+- Painel da organização → Servidor (`GET /api/org/sistema`, a cada 10 s): requisições por minuto, tempos (mediana,
+  95%, 99%), erros, limites batendo, fila do SUAP, celulares no ao vivo, banco, entradas, presenças e publicações dos
+  últimos 10 minutos, e as rotas mais lentas.
+- `GET /api/saude` consulta o banco; o Docker usa para saber se a API está de pé (`HEALTHCHECK`).
+- Capacidade de um processo: `ETAL_THREADS` (60) para as rotas comuns e `ETAL_BANCO_CONEXOES` + `ETAL_BANCO_EXTRAS`
+  (30 + 20) conexões com o PostgreSQL.
+
+### Publicações
+
+Ficam nas tabelas `publicacoes` (publicação, comentário ou mensagem), `curtidas`, `salvos`, `denuncias` e `moderacao`;
+as fotos, em disco como os materiais, regravadas em JPEG (sai o EXIF, com a localização). O app recebe o estado no
+mesmo formato que usava no aparelho (`prototipo/community.js`), e as telas não mudaram. Quem publicou aparece por um
+código (`p<id>`), nunca pela matrícula ou e-mail. Ao vivo: cada mudança sobe a versão e o SSE avisa só o número; o app
+busca de novo se a versão mudou e a tela de publicações está aberta, com atraso aleatório de até 3 s. Três denúncias de
+pessoas diferentes (`ETAL_DENUNCIAS_PARA_OCULTAR`) tiram o conteúdo do ar até a revisão. Limpeza depois do evento:
+`python -m app.manutencao publicacoes` (apaga as com mais de `ETAL_PUBLICACOES_DIAS`, 90).
+
+### Banco e arquivos
+
+O banco muda por migrações (Alembic, em `backend/migracoes/`): a API aplica as que faltam ao iniciar; um banco antigo,
+criado antes das migrações, é marcado na primeira e atualizado. Nova mudança no modelo:
+`cd backend && .venv/bin/alembic revision --autogenerate -m "o que mudou"`. Os materiais das atividades ficam em disco
+(`ETAL_ARQUIVOS`, volume `arquivos_dados` no Docker), não no banco; o app abre dentro dele ou baixa (`?baixar=true`).
 
 ## Rodar localmente
 
@@ -65,16 +121,11 @@ A programação de exemplo sai do protótipo: `node scripts/app/exportar-program
 
 ## Pôr no ar
 
-1. Na máquina do IFRN: Docker e Docker Compose instalados; portas 80 e 443 abertas para a internet.
-2. DNS: `etal.nadic.ifrn.edu.br` apontando para a máquina (pedido à TI do IFRN).
-3. `git clone` do repositório; `cd deploy && cp .env.example .env` e preencher (segredo, senha do banco, SUAP, organização, e-mail).
-4. `docker compose up -d --build`. O Caddy pede o certificado HTTPS sozinho.
-5. Importar a programação: `docker compose exec api python -m app.importar programacao seed/programacao.json`.
-6. Importar inscritos do SUAP (opcional): `docker compose exec api python -m app.importar inscritos /caminho/inscritos.csv`.
-7. Imprimir os QRs: `https://DOMINIO/api/org/qrs` (logado como organização).
-8. Implantação automática: no GitHub, segredos `SSH_HOST`, `SSH_USUARIO`, `SSH_CHAVE`, `PASTA` e variável `IMPLANTAR=sim`.
-
-Backup: `docker compose exec db pg_dump -U etal etal > backup.sql` (agendar no cron da máquina durante o evento).
+Passo a passo completo em [`deploy/README.md`](../../deploy/README.md). Resumo: o GitHub gera duas imagens a cada push
+na `main` (`.github/workflows/publicar.yml`), o app (Caddy com o site montado) e a API, e publica no GitHub Container
+Registry, como os outros sistemas do NADIC. O servidor só tem `docker-compose.yml` e `.env`; o proxy dele (nginx ou
+Apache) encaminha o domínio para `127.0.0.1:8080`. Com os segredos de SSH configurados, o GitHub também atualiza o
+servidor. Migrações do banco rodam sozinhas quando a API sobe. Backup: `deploy/backup.sh`.
 
 ## Fases
 

@@ -17,11 +17,15 @@ window.ETAL_API = (() => {
     if (!r.ok) {
       const msg =
         j && (typeof j.detail === 'string' ? j.detail : Array.isArray(j.detail) ? 'Confira os dados enviados.' : null);
-      throw Object.assign(new Error(msg || 'Não foi possível falar com o servidor.'), { status: r.status });
+      /* Retry-After: a fila do SUAP está cheia (ou um limite curto); o app pode tentar de novo depois disso */
+      const retryAfter = +r.headers.get('Retry-After') || 0;
+      throw Object.assign(new Error(msg || 'Não foi possível falar com o servidor.'), { status: r.status, retryAfter });
     }
     return j;
   }
-  /* Sem conexão contínua (hospedagem em funções, como a Vercel): consulta a cada 12 s e avisa só do que mudou. */
+  /* Sem conexão contínua (hospedagem em funções, como a Vercel): consulta a cada minuto, só com a aba visível, e avisa
+     só do que mudou. A programação e os avisos vêm com ETag: sem mudança, o servidor responde 304, sem corpo. No plano
+     gratuito da Vercel, consultar a cada 12 s com abas abertas estourou a cota do mês. */
   function poll(h) {
     let seen = null;
     let rooms = null;
@@ -54,11 +58,23 @@ window.ETAL_API = (() => {
         /* sem rede: tenta de novo */
       }
     };
+    const INTERVALO = 60000;
+    let ultima = Date.now();
+    const talvez = () => {
+      if (!document.hidden && Date.now() - ultima >= INTERVALO - 1000) {
+        ultima = Date.now();
+        tick();
+      }
+    };
     tick();
-    const t = setInterval(() => {
-      if (!document.hidden) tick();
-    }, 12000);
-    return { close: () => clearInterval(t) };
+    const t = setInterval(talvez, INTERVALO);
+    document.addEventListener('visibilitychange', talvez); // voltou para a aba depois de um tempo: confere na hora
+    return {
+      close: () => {
+        clearInterval(t);
+        document.removeEventListener('visibilitychange', talvez);
+      },
+    };
   }
   return {
     url,

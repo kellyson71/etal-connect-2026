@@ -1,7 +1,11 @@
 """Importa a programação (JSON no formato do app) e inscritos exportados do SUAP (CSV).
 
   python -m app.importar programacao seed/programacao.json
-  python -m app.importar inscritos inscritos.csv        # colunas: nome; matricula; email (separador ; ou ,)
+  python -m app.importar inscritos inscritos.csv        # colunas: nome; matricula; email; atividades (separador ; ou ,)
+
+Na coluna opcional `atividades` vão os IDs dos minicursos em que a pessoa se inscreveu no SUAP, separados por espaço ou
+`|` (ex.: `react-native|game-maker`). Minicurso tem vaga limitada e a inscrição é no SUAP: no app ele não se salva, e é
+esta lista que diz quem está inscrito (e quantas vagas já foram preenchidas).
 """
 import csv
 import json
@@ -11,8 +15,8 @@ from pathlib import Path
 
 from sqlalchemy import select
 
-from .db import SessionLocal, criar_tabelas
-from .modelos import Atividade, Pessoa
+from .db import SessionLocal, migrar
+from .modelos import Agenda, Atividade, Pessoa
 
 CAMPOS = {'id', 'type', 'title', 'short', 'description', 'speaker', 'role', 'date', 'day', 'time', 'end', 'floor', 'zone', 'room', 'seats', 'taken'}
 
@@ -37,10 +41,11 @@ def programacao(arquivo: str) -> int:
     return n
 
 
-def inscritos(arquivo: str) -> int:
+def inscritos(arquivo: str) -> tuple[int, int]:
+    """Devolve (pessoas novas, inscrições novas em minicursos)."""
     texto = Path(arquivo).read_text(encoding='utf-8-sig')
     leitor = csv.DictReader(texto.splitlines(), delimiter=';' if texto.count(';') > texto.count(',') else ',')
-    n = 0
+    n = ins = 0
     with SessionLocal() as db:
         for linha in leitor:
             l = {k.strip().lower(): (v or '').strip() for k, v in linha.items() if k}
@@ -50,18 +55,25 @@ def inscritos(arquivo: str) -> int:
             p = (matricula and db.scalar(select(Pessoa).where(Pessoa.matricula == matricula))) or \
                 (email and db.scalar(select(Pessoa).where(Pessoa.email == email)))
             if not p:
-                db.add(Pessoa(tipo='suap' if matricula else 'visitante', matricula=matricula, email=email, nome=nome))
+                p = Pessoa(tipo='suap' if matricula else 'visitante', matricula=matricula, email=email, nome=nome)
+                db.add(p)
+                db.flush()
                 n += 1
+            for aid in l.get('atividades', '').replace('|', ' ').replace(',', ' ').split():
+                if db.get(Atividade, aid) and not db.scalar(select(Agenda).where(Agenda.pessoa_id == p.id, Agenda.atividade_id == aid)):
+                    db.add(Agenda(pessoa_id=p.id, atividade_id=aid))
+                    ins += 1
         db.commit()
-    return n
+    return n, ins
 
 
 if __name__ == '__main__':
-    criar_tabelas()
+    migrar()
     acao, arg = sys.argv[1], sys.argv[2]
     if acao == 'programacao':
         print(f'{programacao(arg)} atividades importadas')
     elif acao == 'inscritos':
-        print(f'{inscritos(arg)} pessoas novas')
+        pessoas, inscricoes = inscritos(arg)
+        print(f'{pessoas} pessoas novas, {inscricoes} inscrições novas em minicursos')
     else:
         raise SystemExit('ação desconhecida: programacao | inscritos')

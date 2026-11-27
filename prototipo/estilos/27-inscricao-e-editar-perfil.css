@@ -1,0 +1,264 @@
+/* Minicursos com inscrição no SUAP (vagas discretas, selo "Inscrito", bloco no detalhe) e a edição do perfil unificada. */
+
+/* vagas preenchidas, discreto: barrinha curta e "26 de 30 vagas" */
+.vagas-linha {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.vagas-linha .seats {
+  width: 56px;
+  margin: 0;
+}
+.vagas-linha.pouca small {
+  color: #8a5200;
+  font-weight: 600;
+}
+.vagas-linha.cheio small {
+  font-weight: 600;
+}
+:root[data-theme='dark'] .vagas-linha.pouca small {
+  color: #f3c47a;
+}
+.ses-selo.inscrito,
+.selo-inscrito {
+  background: var(--green-50);
+  color: var(--green-ink);
+}
+.ses-selo .i,
+.selo-inscrito .i {
+  width: 12px;
+  height: 12px;
+  stroke-width: 3;
+}
+.selo-inscrito {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
+}
+.meus-mini {
+  border: 1px solid color-mix(in srgb, var(--green) 30%, transparent);
+}
+.next-vazio {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  text-align: left;
+  border-radius: calc(20px * var(--rk, 1));
+  background: var(--card);
+  color: var(--ink);
+}
+.next-vazio > .i:first-child {
+  width: 20px;
+  height: 20px;
+  color: var(--accent-ink);
+  flex: none;
+}
+.next-vazio span {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.next-vazio b {
+  font-size: 14px;
+}
+.next-vazio small {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.next-vazio > .i:last-child {
+  color: var(--muted);
+  flex: none;
+}
+
+/* bloco da inscrição no detalhe do minicurso */
+.inscricao {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 14px 14px 16px;
+  border-radius: calc(18px * var(--rk, 1));
+  background: var(--card);
+  border: 1px solid var(--line);
+}
+.inscricao > .i {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  color: var(--accent-ink);
+}
+.inscricao span {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.inscricao b {
+  font-size: 14.5px;
+}
+.inscricao small {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+.inscricao .btn {
+  flex: none;
+  gap: 6px;
+}
+.inscricao .btn .i {
+  width: 14px;
+  height: 14px;
+}
+.inscricao.ok {
+  background: var(--green-50);
+  border-color: transparent;
+}
+.inscricao.ok > .i {
+  color: var(--green-ink);
+  stroke-width: 3;
+}
+.inscricao.ok b {
+  color: var(--green-ink);
+}
+.cta-bar a.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+/* editar perfil: foto e nome no topo, o cartão de contato logo abaixo */
+.ct-eu {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  text-align: left;
+  border-radius: 18px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+.ct-eu .av {
+  width: 46px;
+  height: 46px;
+  flex: none;
+}
+.ct-eu > span:not(.av):not(.ct-eu-edit) {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ct-eu b {
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ct-eu small {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.ct-eu-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-ink);
+}
+.ct-eu-edit .i {
+  width: 14px;
+  height: 14px;
+}
+/* barra fixa embaixo: Salvar e, na primeira vez, "Pular por agora" sempre à vista */
+.ct-barra {
+  display: flex;
+  gap: 10px;
+  z-index: 3;
+}
+.ct-barra .btn {
+  flex: 1;
+  justify-content: center;
+}
+.ct-barra.dupla .btn.soft {
+  flex: 0.8;
+}
+.ct-hello p {
+  margin: 0 auto;
+  max-width: 32ch;
+  line-height: 1.45;
+}
+.ct-eu .av {
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--blue-50);
+  color: var(--accent-ink);
+  font: 600 16px/1 var(--display);
+}
+.ct-eu .av img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* home: destaque (agora ou a próxima) e, logo abaixo, o resto da agenda */
+.now-top .tag {
+  flex: none;
+}
+.now-top .tag.salva {
+  background: var(--blue-50);
+  color: var(--accent-ink);
+}
+.now-top .tag.aberta {
+  background: var(--amber-50);
+  color: var(--amber-ink);
+}
+.now-top .tag:not(.ok):not(.salva):not(.aberta) {
+  background: var(--line);
+  color: var(--muted);
+}
+.now-actions a.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-decoration: none;
+}
+.now-actions .btn .i {
+  width: 16px;
+  height: 16px;
+}
+.remind-btn.on {
+  color: var(--accent-ink);
+}
+.remind-btn.on .i {
+  fill: currentColor;
+}
+.next-cap {
+  margin: 2px 4px -4px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+}
