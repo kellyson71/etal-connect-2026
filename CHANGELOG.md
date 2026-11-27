@@ -2,6 +2,19 @@
 
 O projeto segue o git flow: `main` tem só versões publicadas, `develop` junta as funcionalidades e cada uma nasce num ramo `feature/*`.
 
+## 0.13.0 (2026-11-27)
+
+ETAL 2026
+- Programação final do ETAL 2026 (3 e 4 de dezembro) em `backend/seed/programacao-2026.json`: credenciamento, os 13 minicursos com sala e ministrante, competições, palestras, mesas, apresentações e encerramento.
+- Com `ETAL_PROGRAMACAO_INICIAL`, a API carrega a programação ao iniciar só se o banco ainda não tem atividades; depois, quem manda é o painel. O `docker-compose.yml` já aponta para a de 2026.
+- Com servidor, os dias do evento e o "agora" saem da programação (antes eram os de 2025, fixos), com o mês certo nas telas e no crachá. Antes do evento tudo aparece como por vir; depois, como encerrado.
+- Campeonatos: os de exemplo de 2025 saem; sem chaves publicadas, a tela mostra as competições da agenda.
+- Lugar ainda sem marcação no mapa aparece sem a prévia 3D; o exemplo embarcado só complementa a mesma atividade (mesmo dia).
+
+Entrada e divulgação
+- O painel manda quem não entrou para a entrada do ETAL e, depois de entrar, volta direto para a página pedida, sem a abertura do crachá. O botão do crachá passa a dizer Entrar no ETAL.
+- Prévia do link com a arte do ETAL Connect (Open Graph) no WhatsApp e nas redes.
+
 ## 0.12.0 (2026-11-27)
 
 Perfil, avaliações e pessoas
