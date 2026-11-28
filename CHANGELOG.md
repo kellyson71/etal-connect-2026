@@ -2,7 +2,7 @@
 
 O projeto segue o git flow: `main` tem só versões publicadas, `develop` junta as funcionalidades e cada uma nasce num ramo `feature/*`.
 
-## Não lançado
+## 0.14.0 (2026-11-28)
 
 Competição de jogos do ETAL 2026
 - Os 7 jogos de 2026 (Clash Royale, Mortal Kombat 1, FIFA, Guitar Hero III, Mario Kart 8 Deluxe, Super Bomberman R e Super Smash Bros. Ultimate) em `window.JOGOS` (`prototipo/data.js`), resumidos dos regulamentos da organização: vagas, formato, fases por dia, o que desclassifica e as regras da partida. FIFA aparece esgotado.
