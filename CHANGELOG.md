@@ -8,6 +8,7 @@ Competição de jogos do ETAL 2026
 - Os 7 jogos de 2026 (Clash Royale, Mortal Kombat 1, FIFA, Guitar Hero III, Mario Kart 8 Deluxe, Super Bomberman R e Super Smash Bros. Ultimate) em `window.JOGOS` (`prototipo/data.js`), resumidos dos regulamentos da organização: vagas, formato, fases por dia, o que desclassifica e as regras da partida. FIFA aparece esgotado.
 - Campeonatos, sem chave publicada: prazo da inscrição (27 a 30/11, contado pelo relógio), botão para o formulário dos jogos e para os regulamentos, os passos da inscrição, a regra de prioridade quando os horários batem (com exemplo) e a grade dos jogos com a arte de cada um. Cada jogo abre uma tela com as fases até o campeão, "Fique de olho" e as regras.
 - Atividade da competição de jogos: os jogos num trilho e, enquanto a inscrição está aberta, o botão do formulário no lugar de Registrar presença. Atividade sem ministrante não mostra mais a linha "undefined".
+- Minicursos 2026: resumos do Docker na prática e do Deploy gratuito; o minicurso do Jilcimar passa a ser "Além dos Prompts: Criando Agentes Autônomos com Inteligência Artificial", com descrição e tópicos (o SUAP já usa esse título, e as vagas só casam com ele).
 - Programação 2026: a confraternização sai (é interna). Em produção, a programação já carregada não muda sozinha: `python -m app.manutencao remover-atividade confraternizacao` tira a atividade (e das agendas), recusando se já houver presença, avaliação ou material.
 
 Revisão antes do evento (produção com servidor)
