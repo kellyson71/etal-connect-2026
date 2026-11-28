@@ -1,0 +1,548 @@
+/* estilos/29-jogos-do-ano.css · competição de jogos antes das chaves: inscrição, prioridade, jogos e regras.
+   Parte do app.css, montado na ordem dos números (scripts/app/montar-app.mjs): a ordem importa, porque
+   as partes mais novas refinam as anteriores. */
+
+/* títulos de seção com respiro: aqui o título fica dentro da seção, junto da lista */
+:is(.jg-det section, section.jg-sec) > .h:has(+ ol, + ul, + p) {
+  margin-bottom: 10px;
+}
+
+/* topo: prazo, números, aviso de esgotado e os dois caminhos (formulário e regulamentos) */
+.jg-topo {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
+  border-radius: calc(22px * var(--rk, 1));
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgba(101, 179, 46, 0.35), transparent 55%),
+    linear-gradient(160deg, #2a4584, #1b2d5c);
+  color: #fff;
+  overflow: hidden;
+}
+.jg-topo h2 {
+  margin: 0;
+  font: 700 23px/1.1 var(--display);
+}
+.jg-topo > p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.85);
+}
+.jg-prazo {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 11px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.jg-topo.aberta .jg-prazo {
+  background: #65b32e;
+  color: #0d2208;
+}
+.jg-prazo i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: tPulse 1.6s ease-in-out infinite;
+}
+.jg-topo.fim .jg-prazo {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.75);
+}
+.jg-topo .jg-aviso {
+  background: rgba(255, 196, 87, 0.16);
+  color: #ffe3a8;
+}
+.jg-acoes {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+.jg-acoes .btn {
+  flex: 1;
+  padding-inline: 10px;
+}
+.jg-topo .btn.primary {
+  background: #fff;
+  color: #1b2d5c;
+}
+.jg-topo .btn.soft {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+/* aviso (vagas preenchidas) */
+.jg-aviso {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 0;
+  padding: 11px 13px;
+  border-radius: calc(14px * var(--rk, 1));
+  background: var(--amber-50);
+  color: var(--amber-ink);
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+.jg-aviso .i {
+  width: 19px;
+  height: 19px;
+  flex: none;
+  margin-top: 1px;
+}
+
+/* passos da inscrição */
+.jg-passos {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  border-radius: calc(18px * var(--rk, 1));
+  background: var(--card);
+}
+.jg-passos li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 11px 14px;
+}
+.jg-passos li + li {
+  border-top: 1px solid var(--line);
+}
+.jg-passos .i {
+  width: 34px;
+  height: 34px;
+  padding: 8px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--blue-50);
+  color: var(--accent-ink);
+}
+.jg-passos b,
+.jg-fases b,
+.jg-prio b {
+  display: block;
+  font: 600 15px/1.3 var(--display);
+}
+.jg-passos small,
+.jg-fases small {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* prioridade quando os horários batem */
+.jg-prio {
+  padding: 14px;
+  border-radius: calc(18px * var(--rk, 1));
+  background: var(--card);
+}
+.jg-prio .h {
+  margin: 0 0 6px;
+}
+.jg-prio p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+.jg-prio ol {
+  list-style: none;
+  margin: 12px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.jg-prio li {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  align-items: center;
+  column-gap: 10px;
+  padding: 9px 11px;
+  border-radius: calc(13px * var(--rk, 1));
+  background: var(--green-50);
+}
+.jg-prio li > i {
+  grid-row: span 2;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--card);
+  font: 700 13px var(--display);
+  font-style: normal;
+}
+.jg-prio li small {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--green-ink);
+}
+.jg-prio li small .i {
+  width: 14px;
+  height: 14px;
+}
+.jg-prio li.fora {
+  background: color-mix(in srgb, var(--red) 9%, var(--card));
+}
+.jg-prio li.fora b {
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--red) 70%, transparent);
+  color: var(--muted);
+}
+.jg-prio li.fora small {
+  color: var(--red);
+}
+.jg-prio .jg-nota {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* grade dos jogos */
+.jg-sub {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+.jg-grade {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.jg-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: calc(18px * var(--rk, 1));
+  background: var(--card);
+  overflow: hidden;
+  text-align: left;
+  transition: transform 0.2s var(--ease);
+}
+.jg-card:active {
+  transform: scale(0.97);
+}
+.jg-card:last-child:nth-child(odd) {
+  grid-column: span 2;
+}
+.jg-arte {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--blue-50);
+}
+.jg-card:last-child:nth-child(odd) .jg-arte {
+  aspect-ratio: 21 / 9;
+}
+.jg-arte img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.jg-arte em {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  padding: 3px 8px;
+  border-radius: 99px;
+  background: var(--red);
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 700;
+  font-style: normal;
+}
+.jg-card.esgotado img {
+  filter: grayscale(0.75);
+  opacity: 0.7;
+}
+.jg-tx {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 9px 12px 12px;
+}
+.jg-tx b {
+  font: 600 14.5px/1.25 var(--display);
+}
+.jg-tx small {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+/* um jogo */
+.jg-hero {
+  aspect-ratio: 16 / 9;
+  border-radius: calc(22px * var(--rk, 1));
+  overflow: hidden;
+  background: var(--blue-50);
+  box-shadow: 0 12px 30px -18px rgba(20, 30, 60, 0.6);
+}
+.jg-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.jg-fatos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.jg-fatos > div {
+  display: flex;
+  flex-direction: column;
+  padding: 11px 12px;
+  border-radius: calc(16px * var(--rk, 1));
+  background: var(--card);
+  min-width: 0;
+}
+.jg-fatos small {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.jg-fatos b {
+  margin-top: 3px;
+  font: 700 19px/1.15 var(--display);
+}
+.jg-fatos span {
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--ink-2);
+}
+.jg-fatos .cheio b {
+  color: var(--red);
+}
+.jg-prazo-linha {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--green-ink);
+}
+.jg-prazo-linha .i {
+  width: 18px;
+  height: 18px;
+}
+.jg-prazo-linha.ultimo {
+  color: var(--amber-ink);
+}
+
+/* fases, de cima para baixo, ligadas por uma linha até o campeão */
+.jg-fases {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.jg-fases li {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  padding-bottom: 14px;
+}
+.jg-fases li:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 21px;
+  top: 44px;
+  bottom: 2px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--line-2);
+}
+.jg-dia {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  background: var(--blue-50);
+  color: var(--accent-ink);
+  line-height: 1;
+}
+.jg-dia small {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.jg-dia b {
+  font: 700 17px var(--display);
+}
+.jg-dia.n {
+  background: var(--card);
+  border: 2px solid var(--line-2);
+}
+.jg-fases li > span:last-child {
+  padding-top: 3px;
+}
+.jg-fases .fim > .i {
+  width: 44px;
+  height: 44px;
+  padding: 11px;
+  flex: none;
+  border-radius: 13px;
+  background: #ffd56b;
+  color: #6b4300;
+}
+
+/* o que pode tirar alguém do campeonato */
+.jg-olho {
+  padding: 14px 14px 12px;
+  border-radius: calc(18px * var(--rk, 1));
+  background: color-mix(in srgb, var(--red) 8%, var(--card));
+  border: 1px solid color-mix(in srgb, var(--red) 22%, transparent);
+}
+.jg-olho .h {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 10px;
+  color: var(--red);
+}
+.jg-olho .h .i {
+  width: 18px;
+  height: 18px;
+}
+.jg-olho ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.jg-olho li {
+  position: relative;
+  padding-left: 16px;
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.jg-olho li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 0.5em;
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--red);
+}
+
+.jg-regras {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.jg-regras li {
+  display: flex;
+  gap: 9px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+.jg-regras .i {
+  width: 17px;
+  height: 17px;
+  flex: none;
+  margin-top: 2px;
+  color: var(--green-ink);
+}
+.jg-reg {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: calc(16px * var(--rk, 1));
+  background: var(--card);
+  color: var(--ink);
+}
+.jg-reg > span {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.jg-reg b {
+  font: 600 15px var(--display);
+}
+.jg-reg small {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.jg-reg .i {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  color: var(--accent-ink);
+}
+
+/* na atividade da competição: os jogos num trilho */
+.jg-trilho {
+  display: flex;
+  gap: 8px;
+  margin: 0 -18px;
+  padding: 2px 18px 4px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.jg-trilho button {
+  flex: none;
+  width: 136px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 0 0 9px;
+  border-radius: calc(14px * var(--rk, 1));
+  background: var(--card);
+  overflow: hidden;
+  text-align: left;
+  scroll-snap-align: start;
+}
+.jg-trilho img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  display: block;
+  margin-bottom: 6px;
+}
+.jg-trilho b {
+  padding: 0 10px;
+  font: 600 13px/1.25 var(--display);
+}
+.jg-trilho small {
+  padding: 0 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.jg-ativ .jg-sub {
+  margin-top: 8px;
+}

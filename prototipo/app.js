@@ -2679,7 +2679,9 @@ Screens.activity = ({ id }) => {
             (p, i) => `<li>${spAv(p)}<span><b>${p.name}</b><small>${i === 0 ? 'Mediação' : p.role}</small></span></li>`,
           )
           .join('')}</ul></section>`
-      : `<button class="teacher ${t.g === 'pal' ? 'quem-fala' : ''} st" ${st(2)} data-go="speaker" data-id="${id}">${spAv(s, t.g === 'pal')}<span><b>${s.speakerShort}</b><small>${s.role}</small></span>${ic('chev', 'i card-chev')}</button>`;
+      : s.speakerShort
+        ? `<button class="teacher ${t.g === 'pal' ? 'quem-fala' : ''} st" ${st(2)} data-go="speaker" data-id="${id}">${spAv(s, t.g === 'pal')}<span><b>${s.speakerShort}</b><small>${s.role}</small></span>${ic('chev', 'i card-chev')}</button>`
+        : '';
   const vagasRestam = s.seats && contagemReal(s) ? Math.max(0, s.seats - (s.taken || 0)) : null;
   const blocos = `<div class="glance st" ${st(3)}>
         <div class="gl-quando"><small>${d.week} · ${diaMes(s.day)}</small><b>${s.time}</b><span>até ${s.end}${duracao(s) ? ` · ${duracao(s)}` : ''}</span></div>
@@ -2708,6 +2710,19 @@ Screens.activity = ({ id }) => {
       .replace(/\.$/, '')
       .split(/,\s*|\s+e\s+(?=[a-zà-ú]+\s)/i)
       .filter(Boolean);
+  /* competição de jogos sem chave publicada: os jogos do ano (tela Campeonatos) e a inscrição pelo formulário */
+  const jogos = t.g === 'camp' && !s.tournament && s.type === 'Campeonato' ? jogosAno() : null;
+  const prazo = jogos && prazoJogos(jogos);
+  const blocoJogos = jogos
+    ? `<section class="jg-ativ st" ${st(6)}><div class="sec"><h2>Os jogos</h2><button data-go="games">Inscrição e regras</button></div><div class="jg-trilho">${jogos.jogos
+        .map(
+          (g) =>
+            `<button data-go="jogoRegras" data-id="${g.id}"><img src="${assetUrl(g.arte)}" style="object-position:${g.foco || '50% 50%'}" alt="" loading="lazy" onerror="this.remove()"><b>${esc(g.nome)}</b><small>${g.esgotado ? 'Esgotado' : `${g.vagas} vagas`}</small></button>`,
+        )
+        .join(
+          '',
+        )}</div><p class="jg-sub">${prazo.t}. A vaga é pedida no formulário dos jogos, à parte do SUAP.</p></section>`
+    : '';
   const extra =
     t.g === 'mini'
       ? `${s.learn?.length ? `<section class="st" ${st(7)}><h2 class="h">O que você vai fazer</h2><ol class="passos-aula">${s.learn.map((l) => `<li>${l}</li>`).join('')}</ol></section>` : ''}${leva.length ? `<section class="levar st" ${st(8)}><h2 class="h">${ic('laptop')}${esc(s.requirementsTitle || 'Leve para a sala')}</h2><ul>${leva.map((l) => `<li>${l.charAt(0).toUpperCase() + l.slice(1)}</li>`).join('')}</ul></section>` : ''}`
@@ -2729,13 +2744,16 @@ Screens.activity = ({ id }) => {
         ${lembrar}
         ${DEMO && lembrete ? `<button class="remindtest st" ${st(5)} data-act="remindtest" data-id="${id}">${ic('bell')}Ver como o lembrete chega</button>` : ''}
         ${fonte}${sobre}
+        ${blocoJogos}
         ${extra}
         ${s.materials.length ? `<p class="locked st" ${st(9)}>${ic('lock')}${s.materials.length} ${s.materials.length === 1 ? 'material' : 'materiais'} depois da presença</p>` : ''}
       </div>
       <div class="cta-bar">${
         comInscricao(s) && !inscrito(s) && link
           ? `<a class="btn ${vagasRestam === 0 ? 'soft' : 'primary'} big" href="${esc(link)}" target="_blank" rel="noopener">${ic('open')}${vagasRestam === 0 ? 'Ver no SUAP' : 'Inscrever-se no SUAP'}</a>`
-          : `<button class="btn primary big" data-act="scan">${ic('qr')}Registrar presença</button>`
+          : prazo?.k === 'aberta'
+            ? botaoFormulario(jogos)
+            : `<button class="btn primary big" data-act="scan">${ic('qr')}Registrar presença</button>`
       }</div>`,
   };
 };
@@ -4667,22 +4685,119 @@ const competicoes = () => D.sessions.filter((x) => tipoDe(x).g === 'camp' && !x.
 const gamesLead = () => {
   const t = D.tournaments[0];
   if (t) return `${dayOf(t.day)?.long || ''}, na ${esc(t.room)}. Entre na chave ou venha torcer.`;
+  if (jogosAno())
+    return `${jogosAno().jogos.length} jogos em dois dias: classificatórias na quinta à tarde e finais na sexta. A vaga é pedida num formulário à parte.`;
   return 'As chaves e as regras aparecem aqui quando a organização publicar. Por enquanto, os horários:';
 };
+const listaCompeticoes = (n, so = () => true) =>
+  `<ul class="splist st" ${st(n)}>${competicoes()
+    .filter(so)
+    .map(
+      (x) =>
+        `<li ${goOf(x)}><span class="date"><small>${dayOf(x.day)?.week || ''}</small><b>${x.day}</b></span><span><b>${esc(x.short)}</b><small>${esc(x.type)}</small><em>${x.time} às ${x.end} · ${esc(x.room || '')}</em></span>${ic('chev', 'i chev')}</li>`,
+    )
+    .join('')}</ul>`;
+
+/* ---- jogos do ano (window.JOGOS, em data.js): antes das chaves, a inscrição, os jogos e as regras de cada um ---- */
+const jogosAno = () => (!D.tournaments.length && window.JOGOS?.jogos?.length ? window.JOGOS : null);
+const ehJogo = (x) => x.type === 'Campeonato';
+const diaMesBr = (iso) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
+/* fase da inscrição pelo relógio do aparelho, no fuso do campus: antes, aberta (e se é o último dia) ou encerrada */
+function prazoJogos(j) {
+  const agora = Date.now();
+  const abre = Date.parse(`${j.abre}T00:00:00-03:00`);
+  const fecha = Date.parse(`${j.fecha}T23:59:59-03:00`);
+  if (agora < abre) return { k: 'antes', t: `Inscrições de ${diaMesBr(j.abre)} a ${diaMesBr(j.fecha)}` };
+  if (agora > fecha) return { k: 'fim', t: 'Inscrições encerradas' };
+  const ultimo = fecha - agora < 864e5;
+  return { k: 'aberta', t: ultimo ? 'Último dia de inscrição' : `Inscrições abertas até ${diaMesBr(j.fecha)}`, ultimo };
+}
+const botaoFormulario = (j, cls = 'primary big') =>
+  `<a class="btn ${cls}" href="${esc(j.formulario)}" target="_blank" rel="noopener">${ic('open')}Inscrever-se nos jogos</a>`;
+const cartaoJogo = (g, i) =>
+  `<button class="jg-card st ${g.esgotado ? 'esgotado' : ''}" ${st(5 + i)} data-go="jogoRegras" data-id="${g.id}">
+      <span class="jg-arte"><img src="${assetUrl(g.arte)}" style="object-position:${g.foco || '50% 50%'}" alt="" loading="lazy" onerror="this.remove()">${g.esgotado ? '<em>Esgotado</em>' : ''}</span>
+      <span class="jg-tx"><b>${esc(g.nome)}</b><small>${g.esgotado ? 'Vagas preenchidas' : `${g.vagas} vagas`} · ${esc(g.modo)}</small></span>
+    </button>`;
+function telaJogosAno(j) {
+  const p = prazoJogos(j);
+  const total = j.jogos.reduce((n, g) => n + g.vagas, 0);
+  const esgotados = j.jogos.filter((g) => g.esgotado);
+  const [a, b, c] = j.jogos.filter((g) => !g.esgotado);
+  return `<section class="jg-topo st ${p.k}" ${st(1)}>
+        <span class="jg-prazo">${p.k === 'aberta' ? '<i></i>' : ''}${p.t}</span>
+        <h2>Competição de jogos</h2>
+        <p>${j.jogos.length} jogos, ${total} vagas. Quinta, 3 de dezembro, a partir das 13h45; finais na sexta, às 13h.</p>
+        ${esgotados.length ? `<p class="jg-aviso">${ic('info')}<span><b>${esgotados.map((g) => esc(g.nome)).join(', ')}:</b> todas as vagas já foram preenchidas.</span></p>` : ''}
+        <div class="jg-acoes">${p.k === 'aberta' ? botaoFormulario(j, 'primary') : ''}<a class="btn soft" href="${esc(j.regulamentos)}" target="_blank" rel="noopener">${ic('file')}Regulamentos</a></div>
+      </section>
+      <section class="jg-sec st" ${st(2)}><h2 class="h">Como funciona a inscrição</h2><ol class="jg-passos">${j.inscricao
+        .map(([i, t, s]) => `<li>${ic(i)}<span><b>${esc(t)}</b><small>${esc(s)}</small></span></li>`)
+        .join('')}</ol></section>
+      ${
+        a && b && c
+          ? `<section class="jg-prio st" ${st(3)}><h2 class="h">Se os horários baterem</h2>
+        <p>Quando duas opções caem no mesmo horário, fica a de maior prioridade. Exemplo:</p>
+        <ol><li class="ok"><i>1ª</i><b>${esc(a.nome)}</b><small>${ic('check')}Vale</small></li><li class="fora"><i>2ª</i><b>${esc(b.nome)}</b><small>${ic('x')}Mesmo horário da 1ª: sai</small></li><li class="ok"><i>3ª</i><b>${esc(c.nome)}</b><small>${ic('check')}Outro horário: vale</small></li></ol>
+        <p class="jg-nota">E nunca mais de ${j.maximo} jogos diferentes por pessoa.</p></section>`
+          : ''
+      }
+      <section class="jg-sec st" ${st(4)}><h2 class="h">Os jogos</h2><p class="jg-sub">Toque num jogo para ver como funciona e as regras.</p></section>
+      <div class="jg-grade">${j.jogos.map(cartaoJogo).join('')}</div>
+      ${competicoes().some(ehJogo) ? `<section class="st" ${st(12)}><h2 class="h">Na programação</h2></section>${listaCompeticoes(13, ehJogo)}` : ''}`;
+}
+/* Um jogo: arte, números, como as fases levam até a final, o que pode desclassificar e as regras da partida. */
+Screens.jogoRegras = ({ id }) => {
+  const j = window.JOGOS;
+  const g = j.jogos.find((x) => x.id === id);
+  const p = prazoJogos(j);
+  const quando = (f, i) => {
+    const d = f.dia && dayOf(f.dia);
+    return d
+      ? `<span class="jg-dia"><small>${d.week}</small><b>${f.dia}</b></span>`
+      : `<span class="jg-dia n"><b>${i + 1}</b></span>`;
+  };
+  const cta = g.esgotado
+    ? `<a class="btn soft big" href="${esc(j.regulamentos)}" target="_blank" rel="noopener">${ic('file')}Regulamento completo</a>`
+    : p.k === 'aberta'
+      ? botaoFormulario(j)
+      : `<button class="btn soft big" disabled>${p.t}</button>`;
+  return {
+    html: `${header('')}
+      <div class="pad stack jg-det">
+        <div class="jg-hero st" ${st(0)}><img src="${assetUrl(g.arte)}" style="object-position:${g.foco || '50% 50%'}" alt="${esc(g.nome)}" onerror="this.remove()"></div>
+        <h1 class="title-lg st" ${st(1)}>${esc(g.nome)}</h1>
+        <div class="jg-fatos st" ${st(2)}>
+          <div class="${g.esgotado ? 'cheio' : ''}"><small>Vagas</small><b>${g.esgotado ? 'Esgotado' : g.vagas}</b><span>${g.esgotado ? `${g.vagas} preenchidas` : 'por ordem de inscrição'}</span></div>
+          <div><small>Disputa</small><b>${esc(g.modo)}</b><span>${esc(g.formato)}</span></div>
+          <div><small>Quando</small><b>${esc(g.dias)}</b><span>${g.fases.some((f) => f.dia) ? 'dia de cada fase abaixo' : 'dia e hora no sorteio'}</span></div>
+        </div>
+        ${g.esgotado ? `<p class="jg-aviso st" ${st(3)}>${ic('info')}<span><b>Todas as vagas do ${esc(g.nome)} já foram preenchidas.</b> Se alguém desistir, a vaga vai para o próximo da lista de espera do formulário.</span></p>` : p.k === 'aberta' ? `<p class="jg-prazo-linha st ${p.ultimo ? 'ultimo' : ''}" ${st(3)}>${ic('alarm')}${p.t}</p>` : ''}
+        <section class="st" ${st(4)}><h2 class="h">Como funciona</h2><ol class="jg-fases">${g.fases
+          .map((f, i) => `<li>${quando(f, i)}<span><b>${esc(f.nome)}</b><small>${esc(f.txt)}</small></span></li>`)
+          .join(
+            '',
+          )}<li class="fim">${ic('trophy')}<span><b>Campeão</b><small>Premiação na sexta, no encerramento.</small></span></li></ol></section>
+        <section class="jg-olho st" ${st(5)}><h2 class="h">${ic('flag')}Fique de olho</h2><ul>${g.destaques.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></section>
+        <section class="st" ${st(6)}><h2 class="h">Regras da partida</h2><ul class="jg-regras">${[
+          ...g.regras,
+          'Pontualidade, respeito e nada de comportamento antiesportivo (insultos, trapaça, provocação).',
+          'O que o regulamento não prevê, a organização decide.',
+        ]
+          .map((x) => `<li>${ic('check')}<span>${esc(x)}</span></li>`)
+          .join('')}</ul></section>
+        <section class="levar st" ${st(7)}>${ic('file')}<span><b>No formulário</b><small>${esc(g.informar)}</small></span></section>
+        <a class="jg-reg st" ${st(8)} href="${esc(j.regulamentos)}" target="_blank" rel="noopener">${ic('file')}<span><b>Regulamento completo</b><small>Os documentos da organização, no Google Drive</small></span>${ic('open')}</a>
+      </div>
+      <div class="cta-bar">${cta}</div>`,
+  };
+};
+
 Screens.games = () => ({
   html: `${header('Campeonatos')}
       <div class="pad stack">
         <p class="games-lead st" ${st(0)}>${gamesLead()}</p>
-        ${
-          D.tournaments.length
-            ? ''
-            : `<ul class="splist st" ${st(1)}>${competicoes()
-                .map(
-                  (x) =>
-                    `<li ${goOf(x)}><span class="date"><small>${dayOf(x.day)?.week || ''}</small><b>${x.day}</b></span><span><b>${esc(x.short)}</b><small>${esc(x.type)}</small><em>${x.time} às ${x.end} · ${esc(x.room || '')}</em></span>${ic('chev', 'i chev')}</li>`,
-                )
-                .join('')}</ul>`
-        }
+        ${D.tournaments.length ? '' : jogosAno() ? telaJogosAno(jogosAno()) : listaCompeticoes(1)}
         ${D.tournaments
           .map((t, i) => {
             const stt = tourSt(t);

@@ -223,7 +223,9 @@ Screens.activity = ({ id }) => {
             (p, i) => `<li>${spAv(p)}<span><b>${p.name}</b><small>${i === 0 ? 'Mediação' : p.role}</small></span></li>`,
           )
           .join('')}</ul></section>`
-      : `<button class="teacher ${t.g === 'pal' ? 'quem-fala' : ''} st" ${st(2)} data-go="speaker" data-id="${id}">${spAv(s, t.g === 'pal')}<span><b>${s.speakerShort}</b><small>${s.role}</small></span>${ic('chev', 'i card-chev')}</button>`;
+      : s.speakerShort
+        ? `<button class="teacher ${t.g === 'pal' ? 'quem-fala' : ''} st" ${st(2)} data-go="speaker" data-id="${id}">${spAv(s, t.g === 'pal')}<span><b>${s.speakerShort}</b><small>${s.role}</small></span>${ic('chev', 'i card-chev')}</button>`
+        : '';
   const vagasRestam = s.seats && contagemReal(s) ? Math.max(0, s.seats - (s.taken || 0)) : null;
   const blocos = `<div class="glance st" ${st(3)}>
         <div class="gl-quando"><small>${d.week} · ${diaMes(s.day)}</small><b>${s.time}</b><span>até ${s.end}${duracao(s) ? ` · ${duracao(s)}` : ''}</span></div>
@@ -252,6 +254,19 @@ Screens.activity = ({ id }) => {
       .replace(/\.$/, '')
       .split(/,\s*|\s+e\s+(?=[a-zà-ú]+\s)/i)
       .filter(Boolean);
+  /* competição de jogos sem chave publicada: os jogos do ano (tela Campeonatos) e a inscrição pelo formulário */
+  const jogos = t.g === 'camp' && !s.tournament && s.type === 'Campeonato' ? jogosAno() : null;
+  const prazo = jogos && prazoJogos(jogos);
+  const blocoJogos = jogos
+    ? `<section class="jg-ativ st" ${st(6)}><div class="sec"><h2>Os jogos</h2><button data-go="games">Inscrição e regras</button></div><div class="jg-trilho">${jogos.jogos
+        .map(
+          (g) =>
+            `<button data-go="jogoRegras" data-id="${g.id}"><img src="${assetUrl(g.arte)}" style="object-position:${g.foco || '50% 50%'}" alt="" loading="lazy" onerror="this.remove()"><b>${esc(g.nome)}</b><small>${g.esgotado ? 'Esgotado' : `${g.vagas} vagas`}</small></button>`,
+        )
+        .join(
+          '',
+        )}</div><p class="jg-sub">${prazo.t}. A vaga é pedida no formulário dos jogos, à parte do SUAP.</p></section>`
+    : '';
   const extra =
     t.g === 'mini'
       ? `${s.learn?.length ? `<section class="st" ${st(7)}><h2 class="h">O que você vai fazer</h2><ol class="passos-aula">${s.learn.map((l) => `<li>${l}</li>`).join('')}</ol></section>` : ''}${leva.length ? `<section class="levar st" ${st(8)}><h2 class="h">${ic('laptop')}${esc(s.requirementsTitle || 'Leve para a sala')}</h2><ul>${leva.map((l) => `<li>${l.charAt(0).toUpperCase() + l.slice(1)}</li>`).join('')}</ul></section>` : ''}`
@@ -273,13 +288,16 @@ Screens.activity = ({ id }) => {
         ${lembrar}
         ${DEMO && lembrete ? `<button class="remindtest st" ${st(5)} data-act="remindtest" data-id="${id}">${ic('bell')}Ver como o lembrete chega</button>` : ''}
         ${fonte}${sobre}
+        ${blocoJogos}
         ${extra}
         ${s.materials.length ? `<p class="locked st" ${st(9)}>${ic('lock')}${s.materials.length} ${s.materials.length === 1 ? 'material' : 'materiais'} depois da presença</p>` : ''}
       </div>
       <div class="cta-bar">${
         comInscricao(s) && !inscrito(s) && link
           ? `<a class="btn ${vagasRestam === 0 ? 'soft' : 'primary'} big" href="${esc(link)}" target="_blank" rel="noopener">${ic('open')}${vagasRestam === 0 ? 'Ver no SUAP' : 'Inscrever-se no SUAP'}</a>`
-          : `<button class="btn primary big" data-act="scan">${ic('qr')}Registrar presença</button>`
+          : prazo?.k === 'aberta'
+            ? botaoFormulario(jogos)
+            : `<button class="btn primary big" data-act="scan">${ic('qr')}Registrar presença</button>`
       }</div>`,
   };
 };

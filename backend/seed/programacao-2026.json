@@ -516,21 +516,6 @@
       "materials": [],
       "requirements": "",
       "room": "Local a confirmar"
-    },
-    {
-      "id": "confraternizacao",
-      "type": "Confraternização",
-      "date": "2026-12-04",
-      "day": 4,
-      "time": "16:20",
-      "end": "18:00",
-      "title": "Confraternização",
-      "short": "Confraternização",
-      "description": "",
-      "learn": [],
-      "materials": [],
-      "requirements": "",
-      "room": "Local a confirmar"
     }
   ]
 }
