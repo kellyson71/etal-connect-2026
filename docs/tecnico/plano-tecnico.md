@@ -100,6 +100,10 @@ busca de novo se a versão mudou e a tela de publicações está aberta, com atr
 pessoas diferentes (`ETAL_DENUNCIAS_PARA_OCULTAR`) tiram o conteúdo do ar até a revisão. Limpeza depois do evento:
 `python -m app.manutencao publicacoes` (apaga as com mais de `ETAL_PUBLICACOES_DIAS`, 90).
 
+Atividade que saiu da programação depois da primeira carga (o painel cria e edita, mas não apaga):
+`python -m app.manutencao remover-atividade <id>` tira a atividade e as agendas que a salvaram; recusa se já há
+presença, avaliação ou material, porque aí ela aconteceu e o caminho é editar.
+
 ### Banco e arquivos
 
 O banco muda por migrações (Alembic, em `backend/migracoes/`): a API aplica as que faltam ao iniciar; um banco antigo,

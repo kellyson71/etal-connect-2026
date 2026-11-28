@@ -284,3 +284,35 @@ def test_importar_programacao_da_planilha(app_cliente):
 def test_importar_programacao_so_organizacao(app_cliente):
     entrar(app_cliente)
     assert app_cliente.post('/api/org/programacao', json=[]).status_code == 403
+
+
+def test_remover_atividade_da_programacao(app_cliente):
+    from pathlib import Path
+
+    from app import importar
+    from app.db import SessionLocal as Sessao
+    from app.manutencao import remover_atividade
+    from app.modelos import Atividade, Presenca, Pessoa
+    from datetime import datetime
+    import pytest
+
+    arquivo = str(Path(__file__).resolve().parents[1] / 'seed/programacao-2026.json')
+    importar.programacao(arquivo)
+    with Sessao() as db:
+        db.add(Atividade(id='confraternizacao', tipo='Confraternização', titulo='Confraternização', curto='Confraternização',
+                         data=datetime(2026, 12, 4).date(), inicio='16:20', fim='18:00', extra={}))
+        db.commit()
+    entrar(app_cliente)
+    assert app_cliente.post('/api/eu/agenda/confraternizacao').json()['ok']  # salva na agenda: sai junto
+    assert remover_atividade('confraternizacao') is True
+    ids = {x['id'] for x in app_cliente.get('/api/programacao').json()['sessions']}
+    assert 'confraternizacao' not in ids and 'encerramento' in ids
+    assert remover_atividade('confraternizacao') is False  # já saiu
+    # atividade com presença não sai por aqui
+    with Sessao() as db:
+        p = db.query(Pessoa).first()
+        db.add(Presenca(pessoa_id=p.id, atividade_id='encerramento', em=datetime(2026, 12, 4, 15, 40)))
+        db.commit()
+    with pytest.raises(ValueError):
+        remover_atividade('encerramento')
+    assert 'encerramento' in {x['id'] for x in app_cliente.get('/api/programacao').json()['sessions']}
