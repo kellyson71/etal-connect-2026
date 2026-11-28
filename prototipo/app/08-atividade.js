@@ -121,12 +121,12 @@ const mountThumb = (x) => (page) => {
 function taughtShow(x) {
   const d = dayOf(x.day);
   const req = x.prerequisites || (x.requirements ? [x.requirements] : []);
-  const vagas = x.seats ? Math.max(0, x.seats - (x.taken || 0)) : null;
+  const vagas = x.seats && contagemReal(x) ? Math.max(0, x.seats - (x.taken || 0)) : null;
   return `<h2 class="h st" ${st(1)}>Ministrando no ETAL</h2>
       <article class="mc-show st" ${st(2)}>
         <div class="mc-photo">${x.speakerPhoto ? `<img src="${esc(x.speakerPhoto)}" alt="${esc(x.speaker)}">` : spAv(x, true)}<span class="mc-kind">${ic(tipoDe(x).icon)}${esc(x.type)}</span></div>
         <div class="mc-body"><h3>${esc(x.title)}</h3>
-          <ul class="mc-meta"><li>${ic('cal')}${d.long} · ${x.time} às ${x.end}</li><li>${ic('pin')}${esc(whereOf(x))}</li>${vagas !== null ? `<li>${ic('users')}${vagas} de ${x.seats} vagas</li>` : ''}</ul>
+          <ul class="mc-meta"><li>${ic('cal')}${d.long} · ${x.time} às ${x.end}</li><li>${ic('pin')}${esc(whereOf(x))}</li>${vagas !== null ? `<li>${ic('users')}${vagas} de ${x.seats} vagas</li>` : x.seats ? `<li>${ic('users')}${x.seats} vagas</li>` : ''}</ul>
           <p class="mc-desc">${esc(x.description)}</p>
           ${req.length ? `<h4>Pré-requisitos</h4><ul class="mc-req">${req.map((r) => `<li>${ic('check')}<span>${esc(r)}</span></li>`).join('')}</ul>` : ''}
           ${x.learn?.length ? `<h4>O que você vai fazer</h4><ol class="mc-learn">${x.learn.map((l, i) => `<li><b>${i + 1}</b><span>${esc(l)}</span></li>`).join('')}</ol>` : ''}
@@ -223,10 +223,13 @@ Screens.activity = ({ id }) => {
             (p, i) => `<li>${spAv(p)}<span><b>${p.name}</b><small>${i === 0 ? 'Mediação' : p.role}</small></span></li>`,
           )
           .join('')}</ul></section>`
-      : `<button class="teacher ${t.g === 'pal' ? 'quem-fala' : ''} st" ${st(2)} data-go="speaker" data-id="${id}">${spAv(s, t.g === 'pal')}<span><b>${s.speakerShort}</b><small>${s.role}</small></span>${ic('chev', 'i card-chev')}</button>`;
-  const vagasRestam = s.seats ? Math.max(0, s.seats - s.taken) : null;
+      : s.speakerShort
+        ? `<button class="teacher ${t.g === 'pal' ? 'quem-fala' : ''} st" ${st(2)} data-go="speaker" data-id="${id}">${spAv(s, t.g === 'pal')}<span><b>${s.speakerShort}</b><small>${s.role}</small></span>${ic('chev', 'i card-chev')}</button>`
+        : '';
+  const vagasRestam = s.seats && contagemReal(s) ? Math.max(0, s.seats - (s.taken || 0)) : null;
   const blocos = `<div class="glance st" ${st(3)}>
         <div class="gl-quando"><small>${d.week} · ${diaMes(s.day)}</small><b>${s.time}</b><span>até ${s.end}${duracao(s) ? ` · ${duracao(s)}` : ''}</span></div>
+        ${s.seats && vagasRestam == null ? `<div class="gl-vagas"><small>Vagas</small><b>${s.seats}</b><span>no total</span></div>` : ''}
         ${vagasRestam == null ? '' : `<div class="gl-vagas ${vagasRestam === 0 ? 'cheio' : vagasRestam <= 5 ? 'pouca' : ''}"><small>Vagas</small><b>${vagasRestam === 0 ? 'Esgotado' : vagasRestam}</b>${vagasRestam ? `<span>de ${s.seats}</span>` : ''}${seatBar(s)}</div>`}
       </div>`;
   /* minicurso: a inscrição é no SUAP (vaga limitada); o app mostra se a pessoa já está inscrita ou leva até lá */
@@ -235,7 +238,7 @@ Screens.activity = ({ id }) => {
     ? `<div class="inscricao ok st" ${st(3)}>${ic('check')}<span><b>Inscrição feita</b><small>Você se inscreveu pelo SUAP. Chegue no horário para registrar a presença.</small></span></div>`
     : !comInscricao(s)
       ? ''
-      : `<div class="inscricao st" ${st(3)}>${ic('id')}<span><b>${vagasRestam === 0 ? 'Vagas esgotadas' : 'Inscrição pelo SUAP'}</b><small>${vagasRestam === 0 ? 'Confira no SUAP se abriu alguma vaga.' : 'Vagas limitadas: a inscrição é feita no SUAP, pelo botão abaixo.'}</small></span></div>`;
+      : `<div class="inscricao st" ${st(3)}>${ic('id')}<span><b>${vagasRestam === 0 ? 'Vagas esgotadas' : 'Inscrição pelo SUAP'}</b><small>${vagasRestam === 0 ? 'Confira no SUAP se abriu alguma vaga.' : 'Vagas limitadas: a inscrição é feita no SUAP, pelo botão abaixo. Cada pessoa se inscreve em um minicurso só.'}</small></span></div>`;
   const lugar = semMapa(s)
     ? `<div class="lugar sem-mapa st" ${st(4)}><span class="lg-tx"><b>${esc(s.room || 'Local a confirmar')}</b><small>Ainda sem marcação no mapa</small></span></div>`
     : `<button class="lugar st" ${st(4)} ${mapAct(s)} aria-label="Ver ${s.room} no mapa"><canvas class="thumb3d"></canvas><span class="lg-tx"><b>${s.room}</b><small>${Number.isInteger(s.floor) ? floorOf(s.floor).label : ''}</small></span><span class="lg-ir">${ic('route')}Como chegar</span></button>`;
@@ -251,6 +254,19 @@ Screens.activity = ({ id }) => {
       .replace(/\.$/, '')
       .split(/,\s*|\s+e\s+(?=[a-zà-ú]+\s)/i)
       .filter(Boolean);
+  /* competição de jogos sem chave publicada: os jogos do ano (tela Campeonatos) e a inscrição pelo formulário */
+  const jogos = t.g === 'camp' && !s.tournament && s.type === 'Campeonato' ? jogosAno() : null;
+  const prazo = jogos && prazoJogos(jogos);
+  const blocoJogos = jogos
+    ? `<section class="jg-ativ st" ${st(6)}><div class="sec"><h2>Os jogos</h2><button data-go="games">Inscrição e regras</button></div><div class="jg-trilho">${jogos.jogos
+        .map(
+          (g) =>
+            `<button data-go="jogoRegras" data-id="${g.id}"><img src="${assetUrl(g.arte)}" style="object-position:${g.foco || '50% 50%'}" alt="" loading="lazy" onerror="this.remove()"><b>${esc(g.nome)}</b><small>${g.esgotado ? 'Esgotado' : `${g.vagas} vagas`}</small></button>`,
+        )
+        .join(
+          '',
+        )}</div><p class="jg-sub">${prazo.t}. A vaga é pedida no formulário dos jogos, à parte do SUAP.</p></section>`
+    : '';
   const extra =
     t.g === 'mini'
       ? `${s.learn?.length ? `<section class="st" ${st(7)}><h2 class="h">O que você vai fazer</h2><ol class="passos-aula">${s.learn.map((l) => `<li>${l}</li>`).join('')}</ol></section>` : ''}${leva.length ? `<section class="levar st" ${st(8)}><h2 class="h">${ic('laptop')}${esc(s.requirementsTitle || 'Leve para a sala')}</h2><ul>${leva.map((l) => `<li>${l.charAt(0).toUpperCase() + l.slice(1)}</li>`).join('')}</ul></section>` : ''}`
@@ -272,13 +288,16 @@ Screens.activity = ({ id }) => {
         ${lembrar}
         ${DEMO && lembrete ? `<button class="remindtest st" ${st(5)} data-act="remindtest" data-id="${id}">${ic('bell')}Ver como o lembrete chega</button>` : ''}
         ${fonte}${sobre}
+        ${blocoJogos}
         ${extra}
         ${s.materials.length ? `<p class="locked st" ${st(9)}>${ic('lock')}${s.materials.length} ${s.materials.length === 1 ? 'material' : 'materiais'} depois da presença</p>` : ''}
       </div>
       <div class="cta-bar">${
         comInscricao(s) && !inscrito(s) && link
           ? `<a class="btn ${vagasRestam === 0 ? 'soft' : 'primary'} big" href="${esc(link)}" target="_blank" rel="noopener">${ic('open')}${vagasRestam === 0 ? 'Ver no SUAP' : 'Inscrever-se no SUAP'}</a>`
-          : `<button class="btn primary big" data-act="scan">${ic('qr')}Registrar presença</button>`
+          : prazo?.k === 'aberta'
+            ? botaoFormulario(jogos)
+            : `<button class="btn primary big" data-act="scan">${ic('qr')}Registrar presença</button>`
       }</div>`,
   };
 };

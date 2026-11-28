@@ -178,11 +178,17 @@ const comInscricao = (x) => tipoDe(x).g === 'mini';
 const inscrito = (x) => !!x && (S.inscricoes.has(x.id) || (comInscricao(x) && S.saved.has(x.id)));
 const linkInscricao = (x) => x.inscricao || x.link || '';
 const vagasLivres = (x) => (x.seats ? Math.max(0, x.seats - (x.taken || 0)) : null);
+/* Com servidor, as vagas preenchidas de um minicurso vêm da página do SUAP (vagasSuap) ou da lista de inscritos
+   importada; sem nenhuma das duas, o app só sabe o total e não diz quantas restam. */
+const contagemReal = (x) =>
+  !API || !!window.ETAL_CONFIG?.demo || !comInscricao(x) || !!x.vagasSuap || (x.taken || 0) > 0;
 /* vagas preenchidas, discreto: barrinha e "26 de 30" (cheio vira "Esgotado") */
 const vagasLinha = (x) =>
   !x.seats
     ? ''
-    : `<span class="vagas-linha ${vagasLivres(x) === 0 ? 'cheio' : vagasLivres(x) <= 5 ? 'pouca' : ''}">${seatBar(x)}<small>${vagasLivres(x) === 0 ? 'Esgotado' : `${Math.min(x.taken || 0, x.seats)} de ${x.seats} vagas`}</small></span>`;
+    : !contagemReal(x)
+      ? `<span class="vagas-linha"><small>${x.seats} vagas</small></span>`
+      : `<span class="vagas-linha ${vagasLivres(x) === 0 ? 'cheio' : vagasLivres(x) <= 5 ? 'pouca' : ''}">${seatBar(x)}<small>${vagasLivres(x) === 0 ? 'Esgotado' : `${Math.min(x.taken || 0, x.seats)} de ${x.seats} vagas`}</small></span>`;
 const duracao = (x) => {
   if (!x.end) return '';
   const [a, b] = [x.time, x.end].map((t) => {
@@ -2218,6 +2224,16 @@ function destaqueHome() {
   const titulo = isNow(s) ? (minha ? 'Agora' : 'Agora no ETAL') : minha ? 'Sua próxima atividade' : 'A seguir no ETAL';
   return { s, titulo, minhas: minhas.filter((x) => x !== s) };
 }
+/* Ao lado do título do Início: antes do evento, quanto falta; durante, o dia e a hora; depois, encerrado. */
+function quandoAgora() {
+  if (D.now.fixo === '00:00' && D.days[0]?.date) {
+    const hoje = new Date(new Date().toDateString());
+    const n = Math.round((new Date(`${D.days[0].date}T00:00`) - hoje) / 864e5);
+    return n <= 1 ? 'Começa amanhã' : `Começa em ${n} dias`;
+  }
+  if (D.now.fixo) return 'Evento encerrado';
+  return `${dayOf(D.now.day).week}, ${diaMes(D.now.day)} · <span id="nowclock">${skyClock()}</span>`;
+}
 function destaqueCard(s) {
   const here = S.present[s.id];
   const agora = isNow(s);
@@ -2230,7 +2246,9 @@ function destaqueCard(s) {
         : comInscricao(s)
           ? `<span class="tag">Inscrição no SUAP</span>`
           : `<span class="tag aberta">Aberto a todos</span>`;
-  const comoChegar = `<button class="btn primary" data-act="openmap" data-floor="${s.floor}" data-zone="${s.zone}">Como chegar</button>`;
+  const comoChegar = semMapa(s)
+    ? ''
+    : `<button class="btn primary" data-act="openmap" data-floor="${s.floor}" data-zone="${s.zone}">Como chegar</button>`;
   const segundo = agora
     ? `<button class="btn soft" data-act="scan">${ic('qr')}Presença</button>`
     : comInscricao(s) && !inscrito(s) && linkInscricao(s)
@@ -2265,15 +2283,15 @@ Screens.home = () => {
     html: `<section class="${UI.sky ? 'hm-sky' : 'hm-plain'}">${UI.sky ? skyArt() : ''}
           <header class="apphead"><span class="wm ${UI.sky ? 'on-sky' : ''}">${mark('mark xs')}<b>etal</b><span>connect</span></span>
           <span class="hd-acts"><button class="iconbtn ${UI.sky ? 'on-sky' : ''}" data-act="tema" aria-label="${isDark() ? 'Usar o tema claro' : 'Usar o tema escuro'}">${ic(isDark() ? 'sun' : 'moon')}</button>
-          <button class="iconbtn ${UI.sky ? 'on-sky' : ''}" data-go="notices" aria-label="Avisos, ${D.notices.filter((n) => n.fresh).length} novos">${ic('bell')}<u class="badge-num">${D.notices.filter((n) => n.fresh).length}</u></button>${profileShortcut()}</span></header>
+          <button class="iconbtn ${UI.sky ? 'on-sky' : ''}" data-go="notices" aria-label="Avisos, ${D.notices.filter((n) => n.fresh).length} novos">${ic('bell')}${D.notices.some((n) => n.fresh) ? `<u class="badge-num">${D.notices.filter((n) => n.fresh).length}</u>` : ''}</button>${profileShortcut()}</span></header>
         </section>
         <div class="pad stack home">
           ${badge()}
-          ${UI.home.live ? `<button class="hm-live st" ${st(1)} aria-live="polite"><span class="hm-live-tag"><i></i>Ao vivo</span><span class="hm-live-row"><span class="hm-live-msg"></span></span>${ic('chev')}</button>` : ''}
+          ${UI.home.live ? `<button class="hm-live st" ${st(1)} aria-live="polite"><span class="hm-live-tag"><i></i>${D.now.fixo === '00:00' ? 'Em breve' : D.now.fixo ? 'Encerrado' : 'Ao vivo'}</span><span class="hm-live-row"><span class="hm-live-msg"></span></span>${ic('chev')}</button>` : ''}
 
           ${
             d.s
-              ? `<div class="sec st" ${st(2)}><h2>${d.titulo}</h2>${d.minhas.length || S.saved.size ? '<button data-act="mine">Minha agenda</button>' : `<span>${dayOf(D.now.day).week}, ${diaMes(D.now.day)} · <span id="nowclock">${skyClock()}</span></span>`}</div>
+              ? `<div class="sec st" ${st(2)}><h2>${d.titulo}</h2>${d.minhas.length || S.saved.size ? '<button data-act="mine">Minha agenda</button>' : `<span>${quandoAgora()}</span>`}</div>
           ${destaqueCard(d.s)}
           ${
             UI.home.agenda
@@ -2559,12 +2577,12 @@ const mountThumb = (x) => (page) => {
 function taughtShow(x) {
   const d = dayOf(x.day);
   const req = x.prerequisites || (x.requirements ? [x.requirements] : []);
-  const vagas = x.seats ? Math.max(0, x.seats - (x.taken || 0)) : null;
+  const vagas = x.seats && contagemReal(x) ? Math.max(0, x.seats - (x.taken || 0)) : null;
   return `<h2 class="h st" ${st(1)}>Ministrando no ETAL</h2>
       <article class="mc-show st" ${st(2)}>
         <div class="mc-photo">${x.speakerPhoto ? `<img src="${esc(x.speakerPhoto)}" alt="${esc(x.speaker)}">` : spAv(x, true)}<span class="mc-kind">${ic(tipoDe(x).icon)}${esc(x.type)}</span></div>
         <div class="mc-body"><h3>${esc(x.title)}</h3>
-          <ul class="mc-meta"><li>${ic('cal')}${d.long} · ${x.time} às ${x.end}</li><li>${ic('pin')}${esc(whereOf(x))}</li>${vagas !== null ? `<li>${ic('users')}${vagas} de ${x.seats} vagas</li>` : ''}</ul>
+          <ul class="mc-meta"><li>${ic('cal')}${d.long} · ${x.time} às ${x.end}</li><li>${ic('pin')}${esc(whereOf(x))}</li>${vagas !== null ? `<li>${ic('users')}${vagas} de ${x.seats} vagas</li>` : x.seats ? `<li>${ic('users')}${x.seats} vagas</li>` : ''}</ul>
           <p class="mc-desc">${esc(x.description)}</p>
           ${req.length ? `<h4>Pré-requisitos</h4><ul class="mc-req">${req.map((r) => `<li>${ic('check')}<span>${esc(r)}</span></li>`).join('')}</ul>` : ''}
           ${x.learn?.length ? `<h4>O que você vai fazer</h4><ol class="mc-learn">${x.learn.map((l, i) => `<li><b>${i + 1}</b><span>${esc(l)}</span></li>`).join('')}</ol>` : ''}
@@ -2661,10 +2679,13 @@ Screens.activity = ({ id }) => {
             (p, i) => `<li>${spAv(p)}<span><b>${p.name}</b><small>${i === 0 ? 'Mediação' : p.role}</small></span></li>`,
           )
           .join('')}</ul></section>`
-      : `<button class="teacher ${t.g === 'pal' ? 'quem-fala' : ''} st" ${st(2)} data-go="speaker" data-id="${id}">${spAv(s, t.g === 'pal')}<span><b>${s.speakerShort}</b><small>${s.role}</small></span>${ic('chev', 'i card-chev')}</button>`;
-  const vagasRestam = s.seats ? Math.max(0, s.seats - s.taken) : null;
+      : s.speakerShort
+        ? `<button class="teacher ${t.g === 'pal' ? 'quem-fala' : ''} st" ${st(2)} data-go="speaker" data-id="${id}">${spAv(s, t.g === 'pal')}<span><b>${s.speakerShort}</b><small>${s.role}</small></span>${ic('chev', 'i card-chev')}</button>`
+        : '';
+  const vagasRestam = s.seats && contagemReal(s) ? Math.max(0, s.seats - (s.taken || 0)) : null;
   const blocos = `<div class="glance st" ${st(3)}>
         <div class="gl-quando"><small>${d.week} · ${diaMes(s.day)}</small><b>${s.time}</b><span>até ${s.end}${duracao(s) ? ` · ${duracao(s)}` : ''}</span></div>
+        ${s.seats && vagasRestam == null ? `<div class="gl-vagas"><small>Vagas</small><b>${s.seats}</b><span>no total</span></div>` : ''}
         ${vagasRestam == null ? '' : `<div class="gl-vagas ${vagasRestam === 0 ? 'cheio' : vagasRestam <= 5 ? 'pouca' : ''}"><small>Vagas</small><b>${vagasRestam === 0 ? 'Esgotado' : vagasRestam}</b>${vagasRestam ? `<span>de ${s.seats}</span>` : ''}${seatBar(s)}</div>`}
       </div>`;
   /* minicurso: a inscrição é no SUAP (vaga limitada); o app mostra se a pessoa já está inscrita ou leva até lá */
@@ -2673,7 +2694,7 @@ Screens.activity = ({ id }) => {
     ? `<div class="inscricao ok st" ${st(3)}>${ic('check')}<span><b>Inscrição feita</b><small>Você se inscreveu pelo SUAP. Chegue no horário para registrar a presença.</small></span></div>`
     : !comInscricao(s)
       ? ''
-      : `<div class="inscricao st" ${st(3)}>${ic('id')}<span><b>${vagasRestam === 0 ? 'Vagas esgotadas' : 'Inscrição pelo SUAP'}</b><small>${vagasRestam === 0 ? 'Confira no SUAP se abriu alguma vaga.' : 'Vagas limitadas: a inscrição é feita no SUAP, pelo botão abaixo.'}</small></span></div>`;
+      : `<div class="inscricao st" ${st(3)}>${ic('id')}<span><b>${vagasRestam === 0 ? 'Vagas esgotadas' : 'Inscrição pelo SUAP'}</b><small>${vagasRestam === 0 ? 'Confira no SUAP se abriu alguma vaga.' : 'Vagas limitadas: a inscrição é feita no SUAP, pelo botão abaixo. Cada pessoa se inscreve em um minicurso só.'}</small></span></div>`;
   const lugar = semMapa(s)
     ? `<div class="lugar sem-mapa st" ${st(4)}><span class="lg-tx"><b>${esc(s.room || 'Local a confirmar')}</b><small>Ainda sem marcação no mapa</small></span></div>`
     : `<button class="lugar st" ${st(4)} ${mapAct(s)} aria-label="Ver ${s.room} no mapa"><canvas class="thumb3d"></canvas><span class="lg-tx"><b>${s.room}</b><small>${Number.isInteger(s.floor) ? floorOf(s.floor).label : ''}</small></span><span class="lg-ir">${ic('route')}Como chegar</span></button>`;
@@ -2689,6 +2710,19 @@ Screens.activity = ({ id }) => {
       .replace(/\.$/, '')
       .split(/,\s*|\s+e\s+(?=[a-zà-ú]+\s)/i)
       .filter(Boolean);
+  /* competição de jogos sem chave publicada: os jogos do ano (tela Campeonatos) e a inscrição pelo formulário */
+  const jogos = t.g === 'camp' && !s.tournament && s.type === 'Campeonato' ? jogosAno() : null;
+  const prazo = jogos && prazoJogos(jogos);
+  const blocoJogos = jogos
+    ? `<section class="jg-ativ st" ${st(6)}><div class="sec"><h2>Os jogos</h2><button data-go="games">Inscrição e regras</button></div><div class="jg-trilho">${jogos.jogos
+        .map(
+          (g) =>
+            `<button data-go="jogoRegras" data-id="${g.id}"><img src="${assetUrl(g.arte)}" style="object-position:${g.foco || '50% 50%'}" alt="" loading="lazy" onerror="this.remove()"><b>${esc(g.nome)}</b><small>${g.esgotado ? 'Esgotado' : `${g.vagas} vagas`}</small></button>`,
+        )
+        .join(
+          '',
+        )}</div><p class="jg-sub">${prazo.t}. A vaga é pedida no formulário dos jogos, à parte do SUAP.</p></section>`
+    : '';
   const extra =
     t.g === 'mini'
       ? `${s.learn?.length ? `<section class="st" ${st(7)}><h2 class="h">O que você vai fazer</h2><ol class="passos-aula">${s.learn.map((l) => `<li>${l}</li>`).join('')}</ol></section>` : ''}${leva.length ? `<section class="levar st" ${st(8)}><h2 class="h">${ic('laptop')}${esc(s.requirementsTitle || 'Leve para a sala')}</h2><ul>${leva.map((l) => `<li>${l.charAt(0).toUpperCase() + l.slice(1)}</li>`).join('')}</ul></section>` : ''}`
@@ -2710,13 +2744,16 @@ Screens.activity = ({ id }) => {
         ${lembrar}
         ${DEMO && lembrete ? `<button class="remindtest st" ${st(5)} data-act="remindtest" data-id="${id}">${ic('bell')}Ver como o lembrete chega</button>` : ''}
         ${fonte}${sobre}
+        ${blocoJogos}
         ${extra}
         ${s.materials.length ? `<p class="locked st" ${st(9)}>${ic('lock')}${s.materials.length} ${s.materials.length === 1 ? 'material' : 'materiais'} depois da presença</p>` : ''}
       </div>
       <div class="cta-bar">${
         comInscricao(s) && !inscrito(s) && link
           ? `<a class="btn ${vagasRestam === 0 ? 'soft' : 'primary'} big" href="${esc(link)}" target="_blank" rel="noopener">${ic('open')}${vagasRestam === 0 ? 'Ver no SUAP' : 'Inscrever-se no SUAP'}</a>`
-          : `<button class="btn primary big" data-act="scan">${ic('qr')}Registrar presença</button>`
+          : prazo?.k === 'aberta'
+            ? botaoFormulario(jogos)
+            : `<button class="btn primary big" data-act="scan">${ic('qr')}Registrar presença</button>`
       }</div>`,
   };
 };
@@ -3326,11 +3363,12 @@ let liveI = 0,
   liveCred = D.liveBase.credenciados;
 function liveMessages() {
   /* sai da programação carregada: um minicurso com vaga e o que está acontecendo agora (com servidor, a do ano) */
-  const vaga = D.sessions.find((x) => comInscricao(x) && x.seats > (x.taken || 0) && !acabou(x));
+  const vaga = D.sessions.find((x) => comInscricao(x) && contagemReal(x) && x.seats > (x.taken || 0) && !acabou(x));
   const agora = D.sessions.find((x) => isNow(x) && !x.simple);
   const mk = D.tournaments[0];
   return [
-    { i: 'users', t: `${liveCred} pessoas credenciadas`, go: 'notices' },
+    /* a contagem de credenciados é do exemplo; com servidor ela não é pública */
+    (!API || window.ETAL_CONFIG?.demo) && { i: 'users', t: `${liveCred} pessoas credenciadas`, go: 'notices' },
     vaga && {
       i: 'pin',
       t: `${vaga.room} com ${vaga.seats - (vaga.taken || 0)} vagas: ${vaga.short}`,
@@ -3732,7 +3770,7 @@ function retroSlides(r) {
     `<div class="re-c">${tag}<small>O que você aprendeu</small><ul class="re-learn">${r.learn.map((l) => `<li>${ic('check')}<span>${l}</span></li>`).join('')}</ul></div>`,
     `<div class="re-c">${tag}<small>Quem fez parte</small><div class="re-people">${r.people.map((x) => `<span><i>${x.initials}</i>${x.speakerShort}</span>`).join('')}</div><dl class="re-stats"><div><dd>${r.questions}</dd><dt>${r.questions === 1 ? 'pergunta' : 'perguntas'}</dt></div><div><dd>${r.contacts}</dd><dt>${r.contacts === 1 ? 'contato' : 'contatos'}</dt></div><div><dd>${r.ratings}</dd><dt>${r.ratings === 1 ? 'avaliação' : 'avaliações'}</dt></div></dl></div>`,
     `<div class="re-c">${tag}<small>Sua colmeia</small><div class="re-comb">${comb('big', r.demo)}</div><p>${got} de ${D.combs.length} favos.</p></div>`,
-    `<div class="re-c">${tag}<small>O que é o ETAL</small><p class="re-long">${D.etal.about}</p><ol class="re-time">${D.etal.editions.map(([y, nm]) => `<li class="${y === '2025' ? 'on' : ''}"><time>${y}</time>${nm}</li>`).join('')}</ol></div>`,
+    `<div class="re-c">${tag}<small>O que é o ETAL</small><p class="re-long">${D.etal.about}</p><ol class="re-time">${D.etal.editions.map(([y, nm]) => `<li class="${y === String(D.event?.year || 2025) ? 'on' : ''}"><time>${y}</time>${nm}</li>`).join('')}</ol></div>`,
     `<div class="re-c re-end">${mark('mark re-mark')}${tag}<h1>Até o próximo ETAL</h1><p>${horasTxt(r.hours)} ${r.hours === 1 ? 'hora' : 'horas'}, ${n} ${n === 1 ? 'atividade' : 'atividades'} e ${got} ${got === 1 ? 'favo' : 'favos'}.</p><div class="re-actions"><button class="btn big re-primary" data-act="retroshare">${ic('share')}Compartilhar</button><button class="btn big re-ghost" data-act="retroclose">Fechar</button></div></div>`,
   ];
 }
@@ -3860,7 +3898,14 @@ const organizadores = () => {
   const extra = orgRead().organizadores || [];
   return [...D.organizadores, ...extra.filter((o) => !D.organizadores.some((d) => d.matricula === o.matricula))];
 };
-const orgDe = () => organizadores().find((o) => o.matricula === String(D.person.id || '')) || null;
+/* Com servidor, quem é da organização diz a API (ETAL_ORGANIZACAO); a lista de matrículas é a do exemplo. */
+const orgComServidor = () => API && !window.ETAL_CONFIG?.demo;
+const orgDe = () =>
+  orgComServidor()
+    ? D.person.org
+      ? { matricula: String(D.person.id || ''), papel: 'Organização' }
+      : null
+    : organizadores().find((o) => o.matricula === String(D.person.id || '')) || null;
 const semAcesso = () => ({
   html: `${header('Painel da organização')}<div class="pad stack"><div class="empty st" ${st(0)}>${illo('mark')}<h3>Só para a organização</h3><p>O painel abre para as matrículas cadastradas como organizadoras do ETAL.</p></div></div>`,
 });
@@ -3934,15 +3979,30 @@ Screens.orgQrs = () => {
     },
   };
 };
+/* Com servidor, os números do painel são os reais (/api/org/resumo e /api/lotacao); sem ele, os do exemplo. */
+let orgReal = null;
+async function orgRealCarregar() {
+  if (orgReal && Date.now() - orgReal.em < 30000) return;
+  try {
+    const [resumo, lotacao] = await Promise.all([API.get('/api/org/resumo'), API.get('/api/lotacao')]);
+    orgReal = { resumo, lotacao, em: Date.now() };
+    if (top().s === 'org') rerender();
+  } catch (_) {
+    /* fica o que já havia */
+  }
+}
 Screens.org = () => {
   const eu = orgDe();
   if (!eu) return semAcesso();
   const now = D.sessions.filter((x) => isNow(x) && x.seats);
-  const present = (x) => Math.min(x.seats, Math.round(x.taken * 0.86 + 1));
+  const present = (x) =>
+    orgComServidor() ? orgReal?.lotacao?.[x.id] || 0 : Math.min(x.seats, Math.round(x.taken * 0.86 + 1));
   const inRooms = now.reduce((n, x) => n + present(x), 0);
   const o = orgRead();
   const manuais = Object.keys(o.manuais || {}).length;
-  const ferramentas = [
+  /* aviso, sala, campeonatos, credenciamento e equipe aqui gravam só neste aparelho: com servidor, ficam no painel
+     completo (admin.html), que fala com a API */
+  const todas = [
     ['bell', 'Enviar aviso', 'Para todo mundo, na hora', 'orgAviso'],
     ['route', 'Trocar sala', 'E avisar os inscritos', 'orgSala'],
     ['trophy', 'Campeonatos', 'Resultados, regras e chave', 'orgJogos'],
@@ -3951,11 +4011,16 @@ Screens.org = () => {
     ['flag', 'Moderação', 'Denúncias e conteúdo da comunidade', 'orgCommunity'],
     ['qr', 'QR Codes das salas', 'Para quando o impresso rasga ou não lê', 'orgQrs'],
   ];
+  const ferramentas = orgComServidor() ? todas.filter(([, , , go]) => ['orgCommunity', 'orgQrs'].includes(go)) : todas;
   return {
     html: `${header('Painel da organização')}<div class="pad stack org">
         <div class="org-eu st" ${st(0)}>${meAv('av')}<span><b>${esc(D.person.first || D.person.name)}</b><small>${esc(eu.papel)} · matrícula ${esc(eu.matricula)}</small></span></div>
         <div class="org-kpis st" ${st(1)}>
-          <div><b>${liveCred + manuais}</b><small>credenciados</small><em>de ${D.org.inscritos} inscritos</em></div>
+          ${
+            orgComServidor()
+              ? `<div><b>${orgReal ? orgReal.resumo.credenciados : '…'}</b><small>credenciados</small><em>de ${orgReal ? orgReal.resumo.pessoas : '…'} no app</em></div>`
+              : `<div><b>${liveCred + manuais}</b><small>credenciados</small><em>de ${D.org.inscritos} inscritos</em></div>`
+          }
           <div><b>${inRooms}</b><small>pessoas em sala</small><em>${now.length} atividades agora</em></div>
         </div>
         <div class="org-ferr st" ${st(2)}>${ferramentas.map(([i, t, sub, go]) => `<button data-go="${go}">${ic(i)}<b>${t}</b><small>${sub}</small></button>`).join('')}</div>
@@ -3973,6 +4038,9 @@ Screens.org = () => {
         <a class="org-desk st" ${st(4)} href="admin.html" target="_blank" rel="noopener">${ic('laptop')}<span><b>Painel completo no computador</b><small>Planta ao vivo, participantes e CSV</small></span>${ic('open')}</a>
 
       </div>`,
+    mount: () => {
+      if (orgComServidor()) orgRealCarregar();
+    },
   };
 };
 Screens.orgAviso = () =>
@@ -4408,7 +4476,7 @@ Screens.suapEvents = () => ({
       <p class="note">Eventos e certificados da sua conta. A inscrição é concluída no portal oficial do SUAP.</p>
       ${API && !suapSummary ? '<p role="status">Consultando sua sessão…</p>' : suapSummary?.connected ? `<ul class="ab-list">${suapSummary.events.map((e) => `<li><b>${esc(e.name)}</b><a href="${esc(e.url)}" target="_blank" rel="noopener">Abrir no SUAP ${ic('open')}</a></li>`).join('') || '<li>Nenhum evento encontrado nesta sessão.</li>'}</ul><h2 class="h">Certificados disponíveis</h2><ul class="ab-list">${suapSummary.certificates.map((c) => `<li><b>${esc(c.name)}</b><a class="btn soft" href="${esc(API.url('/api/eu/suap/certificados/' + encodeURIComponent(c.id)))}" target="_blank" rel="noopener">${ic('download')}Baixar PDF</a></li>`).join('') || '<li>O SUAP não disponibilizou certificados nesta sessão.</li>'}</ul>` : `<p class="note">${esc(suapSummary?.message || 'Entre com sua matrícula e senha para consultar seus eventos e certificados.')}</p>`}
       <a class="btn primary" href="https://suap.ifrn.edu.br/admin/eventos/evento/?tab=tab_participante" target="_blank" rel="noopener">Abrir meus eventos no SUAP ${ic('open')}</a>
-      <a class="btn soft" href="https://suap.ifrn.edu.br/eventos/inscricao/1/8528/" target="_blank" rel="noopener">Programação original do VII ETAL ${ic('open')}</a>
+      <a class="btn soft" href="${esc(D.etal.inscricao)}" target="_blank" rel="noopener">Inscrições do VIII ETAL no SUAP ${ic('open')}</a>
     </div>`,
   mount: () => {
     if (API && !suapSummary) loadSuapSummary();
@@ -4552,7 +4620,7 @@ Screens.credential = () => {
 
 Screens.notices = () => ({
   html: `${header('Avisos')}
-      <div class="pad stack"><ul class="notes">${D.notices.map((n, i) => `<li class="st ${n.fresh ? 'fresh' : ''}" ${st(i)}><time>${n.time}</time><h4>${esc(n.title)}${n.org ? '<em class="org-tag">Organização</em>' : ''}</h4><p>${esc(n.text)}</p></li>`).join('')}</ul></div>`,
+      <div class="pad stack">${D.notices.length ? '' : `<div class="empty st" ${st(0)}>${illo('mark')}<h3>Nenhum aviso ainda</h3><p>Quando a organização mandar um recado, ele aparece aqui e no sino.</p></div>`}<ul class="notes">${D.notices.map((n, i) => `<li class="st ${n.fresh ? 'fresh' : ''}" ${st(i)}><time>${n.time}</time><h4>${esc(n.title)}${n.org ? '<em class="org-tag">Organização</em>' : ''}</h4><p>${esc(n.text)}</p></li>`).join('')}</ul></div>`,
 });
 
 Screens.materials = () => {
@@ -4617,22 +4685,119 @@ const competicoes = () => D.sessions.filter((x) => tipoDe(x).g === 'camp' && !x.
 const gamesLead = () => {
   const t = D.tournaments[0];
   if (t) return `${dayOf(t.day)?.long || ''}, na ${esc(t.room)}. Entre na chave ou venha torcer.`;
+  if (jogosAno())
+    return `${jogosAno().jogos.length} jogos em dois dias: classificatórias na quinta à tarde e finais na sexta. A vaga é pedida num formulário à parte.`;
   return 'As chaves e as regras aparecem aqui quando a organização publicar. Por enquanto, os horários:';
 };
+const listaCompeticoes = (n, so = () => true) =>
+  `<ul class="splist st" ${st(n)}>${competicoes()
+    .filter(so)
+    .map(
+      (x) =>
+        `<li ${goOf(x)}><span class="date"><small>${dayOf(x.day)?.week || ''}</small><b>${x.day}</b></span><span><b>${esc(x.short)}</b><small>${esc(x.type)}</small><em>${x.time} às ${x.end} · ${esc(x.room || '')}</em></span>${ic('chev', 'i chev')}</li>`,
+    )
+    .join('')}</ul>`;
+
+/* ---- jogos do ano (window.JOGOS, em data.js): antes das chaves, a inscrição, os jogos e as regras de cada um ---- */
+const jogosAno = () => (!D.tournaments.length && window.JOGOS?.jogos?.length ? window.JOGOS : null);
+const ehJogo = (x) => x.type === 'Campeonato';
+const diaMesBr = (iso) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
+/* fase da inscrição pelo relógio do aparelho, no fuso do campus: antes, aberta (e se é o último dia) ou encerrada */
+function prazoJogos(j) {
+  const agora = Date.now();
+  const abre = Date.parse(`${j.abre}T00:00:00-03:00`);
+  const fecha = Date.parse(`${j.fecha}T23:59:59-03:00`);
+  if (agora < abre) return { k: 'antes', t: `Inscrições de ${diaMesBr(j.abre)} a ${diaMesBr(j.fecha)}` };
+  if (agora > fecha) return { k: 'fim', t: 'Inscrições encerradas' };
+  const ultimo = fecha - agora < 864e5;
+  return { k: 'aberta', t: ultimo ? 'Último dia de inscrição' : `Inscrições abertas até ${diaMesBr(j.fecha)}`, ultimo };
+}
+const botaoFormulario = (j, cls = 'primary big') =>
+  `<a class="btn ${cls}" href="${esc(j.formulario)}" target="_blank" rel="noopener">${ic('open')}Inscrever-se nos jogos</a>`;
+const cartaoJogo = (g, i) =>
+  `<button class="jg-card st ${g.esgotado ? 'esgotado' : ''}" ${st(5 + i)} data-go="jogoRegras" data-id="${g.id}">
+      <span class="jg-arte"><img src="${assetUrl(g.arte)}" style="object-position:${g.foco || '50% 50%'}" alt="" loading="lazy" onerror="this.remove()">${g.esgotado ? '<em>Esgotado</em>' : ''}</span>
+      <span class="jg-tx"><b>${esc(g.nome)}</b><small>${g.esgotado ? 'Vagas preenchidas' : `${g.vagas} vagas`} · ${esc(g.modo)}</small></span>
+    </button>`;
+function telaJogosAno(j) {
+  const p = prazoJogos(j);
+  const total = j.jogos.reduce((n, g) => n + g.vagas, 0);
+  const esgotados = j.jogos.filter((g) => g.esgotado);
+  const [a, b, c] = j.jogos.filter((g) => !g.esgotado);
+  return `<section class="jg-topo st ${p.k}" ${st(1)}>
+        <span class="jg-prazo">${p.k === 'aberta' ? '<i></i>' : ''}${p.t}</span>
+        <h2>Competição de jogos</h2>
+        <p>${j.jogos.length} jogos, ${total} vagas. Quinta, 3 de dezembro, a partir das 13h45; finais na sexta, às 13h.</p>
+        ${esgotados.length ? `<p class="jg-aviso">${ic('info')}<span><b>${esgotados.map((g) => esc(g.nome)).join(', ')}:</b> todas as vagas já foram preenchidas.</span></p>` : ''}
+        <div class="jg-acoes">${p.k === 'aberta' ? botaoFormulario(j, 'primary') : ''}<a class="btn soft" href="${esc(j.regulamentos)}" target="_blank" rel="noopener">${ic('file')}Regulamentos</a></div>
+      </section>
+      <section class="jg-sec st" ${st(2)}><h2 class="h">Como funciona a inscrição</h2><ol class="jg-passos">${j.inscricao
+        .map(([i, t, s]) => `<li>${ic(i)}<span><b>${esc(t)}</b><small>${esc(s)}</small></span></li>`)
+        .join('')}</ol></section>
+      ${
+        a && b && c
+          ? `<section class="jg-prio st" ${st(3)}><h2 class="h">Se os horários baterem</h2>
+        <p>Quando duas opções caem no mesmo horário, fica a de maior prioridade. Exemplo:</p>
+        <ol><li class="ok"><i>1ª</i><b>${esc(a.nome)}</b><small>${ic('check')}Vale</small></li><li class="fora"><i>2ª</i><b>${esc(b.nome)}</b><small>${ic('x')}Mesmo horário da 1ª: sai</small></li><li class="ok"><i>3ª</i><b>${esc(c.nome)}</b><small>${ic('check')}Outro horário: vale</small></li></ol>
+        <p class="jg-nota">E nunca mais de ${j.maximo} jogos diferentes por pessoa.</p></section>`
+          : ''
+      }
+      <section class="jg-sec st" ${st(4)}><h2 class="h">Os jogos</h2><p class="jg-sub">Toque num jogo para ver como funciona e as regras.</p></section>
+      <div class="jg-grade">${j.jogos.map(cartaoJogo).join('')}</div>
+      ${competicoes().some(ehJogo) ? `<section class="st" ${st(12)}><h2 class="h">Na programação</h2></section>${listaCompeticoes(13, ehJogo)}` : ''}`;
+}
+/* Um jogo: arte, números, como as fases levam até a final, o que pode desclassificar e as regras da partida. */
+Screens.jogoRegras = ({ id }) => {
+  const j = window.JOGOS;
+  const g = j.jogos.find((x) => x.id === id);
+  const p = prazoJogos(j);
+  const quando = (f, i) => {
+    const d = f.dia && dayOf(f.dia);
+    return d
+      ? `<span class="jg-dia"><small>${d.week}</small><b>${f.dia}</b></span>`
+      : `<span class="jg-dia n"><b>${i + 1}</b></span>`;
+  };
+  const cta = g.esgotado
+    ? `<a class="btn soft big" href="${esc(j.regulamentos)}" target="_blank" rel="noopener">${ic('file')}Regulamento completo</a>`
+    : p.k === 'aberta'
+      ? botaoFormulario(j)
+      : `<button class="btn soft big" disabled>${p.t}</button>`;
+  return {
+    html: `${header('')}
+      <div class="pad stack jg-det">
+        <div class="jg-hero st" ${st(0)}><img src="${assetUrl(g.arte)}" style="object-position:${g.foco || '50% 50%'}" alt="${esc(g.nome)}" onerror="this.remove()"></div>
+        <h1 class="title-lg st" ${st(1)}>${esc(g.nome)}</h1>
+        <div class="jg-fatos st" ${st(2)}>
+          <div class="${g.esgotado ? 'cheio' : ''}"><small>Vagas</small><b>${g.esgotado ? 'Esgotado' : g.vagas}</b><span>${g.esgotado ? `${g.vagas} preenchidas` : 'por ordem de inscrição'}</span></div>
+          <div><small>Disputa</small><b>${esc(g.modo)}</b><span>${esc(g.formato)}</span></div>
+          <div><small>Quando</small><b>${esc(g.dias)}</b><span>${g.fases.some((f) => f.dia) ? 'dia de cada fase abaixo' : 'dia e hora no sorteio'}</span></div>
+        </div>
+        ${g.esgotado ? `<p class="jg-aviso st" ${st(3)}>${ic('info')}<span><b>Todas as vagas do ${esc(g.nome)} já foram preenchidas.</b> Se alguém desistir, a vaga vai para o próximo da lista de espera do formulário.</span></p>` : p.k === 'aberta' ? `<p class="jg-prazo-linha st ${p.ultimo ? 'ultimo' : ''}" ${st(3)}>${ic('alarm')}${p.t}</p>` : ''}
+        <section class="st" ${st(4)}><h2 class="h">Como funciona</h2><ol class="jg-fases">${g.fases
+          .map((f, i) => `<li>${quando(f, i)}<span><b>${esc(f.nome)}</b><small>${esc(f.txt)}</small></span></li>`)
+          .join(
+            '',
+          )}<li class="fim">${ic('trophy')}<span><b>Campeão</b><small>Premiação na sexta, no encerramento.</small></span></li></ol></section>
+        <section class="jg-olho st" ${st(5)}><h2 class="h">${ic('flag')}Fique de olho</h2><ul>${g.destaques.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></section>
+        <section class="st" ${st(6)}><h2 class="h">Regras da partida</h2><ul class="jg-regras">${[
+          ...g.regras,
+          'Pontualidade, respeito e nada de comportamento antiesportivo (insultos, trapaça, provocação).',
+          'O que o regulamento não prevê, a organização decide.',
+        ]
+          .map((x) => `<li>${ic('check')}<span>${esc(x)}</span></li>`)
+          .join('')}</ul></section>
+        <section class="levar st" ${st(7)}>${ic('file')}<span><b>No formulário</b><small>${esc(g.informar)}</small></span></section>
+        <a class="jg-reg st" ${st(8)} href="${esc(j.regulamentos)}" target="_blank" rel="noopener">${ic('file')}<span><b>Regulamento completo</b><small>Os documentos da organização, no Google Drive</small></span>${ic('open')}</a>
+      </div>
+      <div class="cta-bar">${cta}</div>`,
+  };
+};
+
 Screens.games = () => ({
   html: `${header('Campeonatos')}
       <div class="pad stack">
         <p class="games-lead st" ${st(0)}>${gamesLead()}</p>
-        ${
-          D.tournaments.length
-            ? ''
-            : `<ul class="splist st" ${st(1)}>${competicoes()
-                .map(
-                  (x) =>
-                    `<li ${goOf(x)}><span class="date"><small>${dayOf(x.day)?.week || ''}</small><b>${x.day}</b></span><span><b>${esc(x.short)}</b><small>${esc(x.type)}</small><em>${x.time} às ${x.end} · ${esc(x.room || '')}</em></span>${ic('chev', 'i chev')}</li>`,
-                )
-                .join('')}</ul>`
-        }
+        ${D.tournaments.length ? '' : jogosAno() ? telaJogosAno(jogosAno()) : listaCompeticoes(1)}
         ${D.tournaments
           .map((t, i) => {
             const stt = tourSt(t);
@@ -4787,7 +4952,7 @@ Screens.tournament = ({ id }) => {
             ${
               ses
                 ? `<button class="btn t-ghost ${watching ? 'on' : ''}" data-act="tourwatch" data-id="${ses.id}" aria-pressed="${!!watching}">${ic(watching ? 'check' : 'cal')}${watching ? 'Na sua agenda' : 'Vou assistir'}</button>
-            <button class="btn t-ghost" data-act="openmap" data-floor="${ses.floor}" data-zone="${ses.zone}">${ic('pin')}Como chegar</button>`
+            ${semMapa(ses) ? '' : `<button class="btn t-ghost" data-act="openmap" data-floor="${ses.floor}" data-zone="${ses.zone}">${ic('pin')}Como chegar</button>`}`
                 : ''
             }
           </div>
@@ -8401,7 +8566,7 @@ async function apiStart() {
       }
     }
     const av = await API.get('/api/avisos');
-    if (av.length) {
+    if (av.length || !window.ETAL_CONFIG?.demo) {
       D.notices.length = 0;
       av.forEach((n) => D.notices.push({ time: n.time, title: n.title, text: n.text, org: true }));
     }

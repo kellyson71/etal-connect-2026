@@ -52,7 +52,8 @@
       "speakerShort": "Caio Oliveira",
       "initials": "CO",
       "role": "Ministrante",
-      "room": "Lab 56"
+      "room": "Lab 56",
+      "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/10301/"
     },
     {
       "id": "react-moderno",
@@ -71,7 +72,8 @@
       "speakerShort": "Lucas Nunes",
       "initials": "LN",
       "role": "Ministrante",
-      "room": "Lab 57"
+      "room": "Lab 57",
+      "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/10301/"
     },
     {
       "id": "docker-na-pratica",
@@ -82,7 +84,7 @@
       "end": "10:00",
       "title": "Docker na prática: do “na minha máquina funciona” ao container rodando em qualquer lugar",
       "short": "Docker na prática",
-      "description": "Minicurso com Pedro Heitor Rêgo Ferreira. Intervalo das 8h30 às 8h50.",
+      "description": "Quem nunca ouviu (ou disse) “na minha máquina funciona”? Esse problema trava muitos projetos de estudantes e equipes. Neste minicurso prático, você vai entender o que é Docker, como containers se diferenciam de máquinas virtuais e como empacotar uma aplicação com suas dependências. Vamos executar containers, criar uma imagem com Dockerfile, persistir dados com volumes e montar um ambiente completo com Docker Compose (API + banco PostgreSQL). No caminho, você aprenderá boas práticas de segurança e a diagnosticar os erros mais comuns, como porta em uso, container que encerra sozinho e aplicação que não conecta ao banco. Intervalo das 8h30 às 8h50.",
       "learn": [],
       "materials": [],
       "requirements": "",
@@ -90,7 +92,8 @@
       "speakerShort": "Pedro Ferreira",
       "initials": "PF",
       "role": "Ministrante",
-      "room": "Lab 65"
+      "room": "Lab 65",
+      "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/10301/"
     },
     {
       "id": "deploy-gratuito",
@@ -101,7 +104,7 @@
       "end": "10:00",
       "title": "Deploy gratuito: coloque seus projetos pessoais no ar sem gastar 1,00 com infraestrutura",
       "short": "Deploy gratuito",
-      "description": "Minicurso com Samuel Franklin de Oliveira Lopes. Intervalo das 8h30 às 8h50.",
+      "description": "Eu demorei muito tempo para pegar essas manhas: muitos projetos pessoais morrem no notebook de quem os criou porque subir uma aplicação parece caro e complicado. Neste minicurso prático, vamos pegar uma API em Python (FastAPI) e levá-la do computador até a internet usando apenas planos gratuitos. Você vai containerizar a aplicação com Docker, automatizar testes e deploy com GitHub Actions, conectar um banco PostgreSQL na nuvem, publicar o back-end e o front-end e resolver na prática os problemas que aparecem nesse caminho, como variáveis de ambiente, CORS e cold start. Ao final, você terá um projeto funcional e acessível por uma URL pública. Intervalo das 8h30 às 8h50.",
       "learn": [],
       "materials": [],
       "requirements": "",
@@ -109,7 +112,8 @@
       "speakerShort": "Samuel Lopes",
       "initials": "SL",
       "role": "Ministrante",
-      "room": "Lab 60"
+      "room": "Lab 60",
+      "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/10301/"
     },
     {
       "id": "apis-com-spring-mvc",
@@ -128,7 +132,8 @@
       "speakerShort": "Hian Silva",
       "initials": "HS",
       "role": "Ministrante",
-      "room": "Sala a confirmar"
+      "room": "Sala a confirmar",
+      "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/10301/"
     },
     {
       "id": "database-engineering",
@@ -147,7 +152,8 @@
       "speakerShort": "Pedro Sousa",
       "initials": "PS",
       "role": "Ministrante",
-      "room": "Lab 58"
+      "room": "Lab 58",
+      "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/10301/"
     },
     {
       "id": "tarefas-no-notion",
@@ -166,7 +172,8 @@
       "speakerShort": "Klaywin Dias",
       "initials": "KD",
       "role": "Ministrante",
-      "room": "Sala a confirmar"
+      "room": "Sala a confirmar",
+      "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/10301/"
     },
     {
       "id": "capture-the-flag",
@@ -249,7 +256,8 @@
       "speakerShort": "Heitor Duarte",
       "initials": "HD",
       "role": "Ministrante",
-      "room": "Sala a confirmar"
+      "room": "Sala a confirmar",
+      "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/10301/"
     },
     {
       "id": "arquitetura-de-sistemas",
@@ -268,7 +276,8 @@
       "speakerShort": "João Fontes",
       "initials": "JF",
       "role": "Ministrante",
-      "room": "Lab 60"
+      "room": "Lab 60",
+      "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/10301/"
     },
     {
       "id": "react-native-e-opencv",
@@ -287,7 +296,8 @@
       "speakerShort": "Adryan Leite",
       "initials": "AL",
       "role": "Ministrante",
-      "room": "Lab 65"
+      "room": "Lab 65",
+      "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/10301/"
     },
     {
       "id": "do-prompt-ao-software",
@@ -296,17 +306,25 @@
       "day": 3,
       "time": "13:00",
       "end": "15:30",
-      "title": "Do Prompt ao Software: Specification-Driven Development na Era da IA",
-      "short": "Do prompt ao software",
-      "description": "Minicurso com Jilcimar da Silva Fernandes. Intervalo das 14h30 às 14h50.",
-      "learn": [],
+      "title": "Além dos Prompts: Criando Agentes Autônomos com Inteligência Artificial",
+      "short": "Agentes autônomos com IA",
+      "description": "Neste minicurso, os participantes conhecerão os fundamentos dos agentes autônomos de Inteligência Artificial, aprendendo como funcionam, como são estruturados e como podem ser aplicados no desenvolvimento de soluções inteligentes e na automação de processos. Na prática, será utilizado o OpenBot para criar agentes integrados ao WhatsApp, explorando aplicações como captação de leads, atendimento automatizado, suporte e desenvolvimento de soluções personalizadas. Também serão abordadas boas práticas de segurança, privacidade, LGPD e supervisão humana. Intervalo das 14h30 às 14h50.",
+      "learn": [
+        "Introdução à IA e aos modelos generativos",
+        "Chatbots, assistentes e agentes: diferenças e funcionamento",
+        "Arquitetura de um agente: modelo, instruções, ferramentas, memória e APIs",
+        "Configuração de agentes no OpenBot e integração com o WhatsApp",
+        "Na prática: agente de captação e qualificação de leads",
+        "Segurança, limites de autonomia, supervisão humana e LGPD"
+      ],
       "materials": [],
       "requirements": "",
       "speaker": "Jilcimar da Silva Fernandes",
       "speakerShort": "Jilcimar Fernandes",
       "initials": "JF",
       "role": "Ministrante",
-      "room": "Lab 57"
+      "room": "Lab 57",
+      "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/10301/"
     },
     {
       "id": "agentes-de-ia",
@@ -325,7 +343,8 @@
       "speakerShort": "Kellyson Raphael",
       "initials": "KR",
       "role": "Ministrante",
-      "room": "Lab 56"
+      "room": "Lab 56",
+      "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/10301/"
     },
     {
       "id": "git-e-github-sem-medo",
@@ -344,7 +363,8 @@
       "speakerShort": "Tallys Batista",
       "initials": "TB",
       "role": "Ministrante",
-      "room": "Lab 58"
+      "room": "Lab 58",
+      "link": "https://suap.ifrn.edu.br/eventos/inscricao/1/10301/"
     },
     {
       "id": "jogos-digitais",
@@ -498,21 +518,6 @@
       "end": "16:20",
       "title": "Entrega dos prêmios e encerramento",
       "short": "Prêmios e encerramento",
-      "description": "",
-      "learn": [],
-      "materials": [],
-      "requirements": "",
-      "room": "Local a confirmar"
-    },
-    {
-      "id": "confraternizacao",
-      "type": "Confraternização",
-      "date": "2026-12-04",
-      "day": 4,
-      "time": "16:20",
-      "end": "18:00",
-      "title": "Confraternização",
-      "short": "Confraternização",
       "description": "",
       "learn": [],
       "materials": [],

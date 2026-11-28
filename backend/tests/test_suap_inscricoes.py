@@ -78,3 +78,12 @@ def test_titulos_parecidos_nao_se_confundem():
     m = correspondencia(lidas, [A(id='encerramento', titulo='Banda Inteira, Cerimônia de Encerramento e Entrega de Premiações'),
                                 A(id='banda', titulo='Banda Inteira')])
     assert m['banda'] is lidas[0] and m['encerramento'] is lidas[1]
+
+
+def test_titulo_com_aspas_retas_no_suap_e_curvas_no_app():
+    from types import SimpleNamespace
+    from app import suap_inscricoes
+    lidas = suap_inscricoes.ler_pagina("""<div class="box-item"><h5><strong>Minicurso</strong></h5><p>20 vaga(s) remanescente(s)</p>
+<p>Docker na prática: do "na minha máquina funciona" ao container rodando (Minicurso de 2:30h)</p></div>""")
+    app = SimpleNamespace(id='docker', titulo='Docker na prática: do “na minha máquina funciona” ao container rodando')
+    assert suap_inscricoes.correspondencia(lidas, [app])['docker'].restantes == 20

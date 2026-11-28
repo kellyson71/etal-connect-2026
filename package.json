@@ -1,6 +1,6 @@
 {
   "name": "etal-connect",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "private": true,
   "description": "App do ETAL (IFRN Campus Pau dos Ferros): crachá, programação, presença por QR e mapa 3D do campus",
   "type": "module",

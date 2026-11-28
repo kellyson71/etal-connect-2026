@@ -253,3 +253,66 @@ def test_programacao_inicial_so_em_banco_vazio(app_cliente):
     s = app_cliente.get('/api/programacao').json()['sessions']
     assert {x['date'] for x in s} == {'2026-12-03', '2026-12-04'}
     assert next(x for x in s if x['id'] == 'agentes-de-ia')['speaker'] == 'Kellyson Raphael'
+    assert all(x['link'].endswith('/10301/') for x in s if x['type'] == 'Minicurso')  # inscrição do ETAL 2026 no SUAP
+
+
+def test_importar_programacao_da_planilha(app_cliente):
+    entrar(app_cliente, 'Org', org=True)
+    linhas = [
+        {'titulo': 'Oficina de Arduino', 'tipo': 'Oficina', 'data': '2025-11-27', 'inicio': '14:00', 'fim': '16:00', 'sala': 'Lab 3', 'vagas': 20},
+        {'titulo': 'Oficina de Arduino', 'tipo': 'Oficina', 'data': '2025-11-28', 'inicio': '09:00', 'fim': '11:00'},
+        {'id': 'encerramento', 'titulo': 'Encerramento do ETAL', 'data': '2025-11-28', 'inicio': '17:00', 'fim': '18:00'},
+        {'titulo': 'Sem horário', 'data': '2025-11-27', 'inicio': '25:00', 'fim': '10:00'},
+        {'titulo': 'Ao contrário', 'data': '2025-11-27', 'inicio': '10:00', 'fim': '09:00'},
+    ]
+    antes = len(app_cliente.get('/api/programacao').json()['sessions'])
+    previa = app_cliente.post('/api/org/programacao?previa=true', json=linhas).json()['linhas']
+    assert [x.get('acao') for x in previa] == ['nova', 'nova', 'atualiza', None, None]
+    assert 'início' in previa[3]['erro'] and 'fim' in previa[4]['erro']
+    assert len(app_cliente.get('/api/programacao').json()['sessions']) == antes
+
+    r = app_cliente.post('/api/org/programacao', json=linhas).json()
+    assert [x['id'] for x in r['atividades']] == ['oficina-de-arduino', 'oficina-de-arduino-2', 'encerramento']
+    sessoes = {x['id']: x for x in app_cliente.get('/api/programacao').json()['sessions']}
+    assert len(sessoes) == antes + 2 and sessoes['oficina-de-arduino']['seats'] == 20
+    assert sessoes['encerramento']['title'] == 'Encerramento do ETAL' and sessoes['encerramento']['time'] == '17:00'
+    # importar de novo atualiza as mesmas, sem duplicar
+    assert [x['acao'] for x in app_cliente.post('/api/org/programacao', json=linhas[:3]).json()['linhas']] == ['atualiza'] * 3
+    assert len(app_cliente.get('/api/programacao').json()['sessions']) == antes + 2
+
+
+def test_importar_programacao_so_organizacao(app_cliente):
+    entrar(app_cliente)
+    assert app_cliente.post('/api/org/programacao', json=[]).status_code == 403
+
+
+def test_remover_atividade_da_programacao(app_cliente):
+    from pathlib import Path
+
+    from app import importar
+    from app.db import SessionLocal as Sessao
+    from app.manutencao import remover_atividade
+    from app.modelos import Atividade, Presenca, Pessoa
+    from datetime import datetime
+    import pytest
+
+    arquivo = str(Path(__file__).resolve().parents[1] / 'seed/programacao-2026.json')
+    importar.programacao(arquivo)
+    with Sessao() as db:
+        db.add(Atividade(id='confraternizacao', tipo='Confraternização', titulo='Confraternização', curto='Confraternização',
+                         data=datetime(2026, 12, 4).date(), inicio='16:20', fim='18:00', extra={}))
+        db.commit()
+    entrar(app_cliente)
+    assert app_cliente.post('/api/eu/agenda/confraternizacao').json()['ok']  # salva na agenda: sai junto
+    assert remover_atividade('confraternizacao') is True
+    ids = {x['id'] for x in app_cliente.get('/api/programacao').json()['sessions']}
+    assert 'confraternizacao' not in ids and 'encerramento' in ids
+    assert remover_atividade('confraternizacao') is False  # já saiu
+    # atividade com presença não sai por aqui
+    with Sessao() as db:
+        p = db.query(Pessoa).first()
+        db.add(Presenca(pessoa_id=p.id, atividade_id='encerramento', em=datetime(2026, 12, 4, 15, 40)))
+        db.commit()
+    with pytest.raises(ValueError):
+        remover_atividade('encerramento')
+    assert 'encerramento' in {x['id'] for x in app_cliente.get('/api/programacao').json()['sessions']}

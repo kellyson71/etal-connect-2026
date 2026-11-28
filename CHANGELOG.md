@@ -2,6 +2,30 @@
 
 O projeto segue o git flow: `main` tem só versões publicadas, `develop` junta as funcionalidades e cada uma nasce num ramo `feature/*`.
 
+## 0.14.0 (2026-11-28)
+
+Competição de jogos do ETAL 2026
+- Os 7 jogos de 2026 (Clash Royale, Mortal Kombat 1, FIFA, Guitar Hero III, Mario Kart 8 Deluxe, Super Bomberman R e Super Smash Bros. Ultimate) em `window.JOGOS` (`prototipo/data.js`), resumidos dos regulamentos da organização: vagas, formato, fases por dia, o que desclassifica e as regras da partida. FIFA aparece esgotado.
+- Campeonatos, sem chave publicada: prazo da inscrição (27 a 30/11, contado pelo relógio), botão para o formulário dos jogos e para os regulamentos, os passos da inscrição, a regra de prioridade quando os horários batem (com exemplo) e a grade dos jogos com a arte de cada um. Cada jogo abre uma tela com as fases até o campeão, "Fique de olho" e as regras.
+- Atividade da competição de jogos: os jogos num trilho e, enquanto a inscrição está aberta, o botão do formulário no lugar de Registrar presença. Atividade sem ministrante não mostra mais a linha "undefined".
+- Minicursos 2026: resumos do Docker na prática e do Deploy gratuito; o minicurso do Jilcimar passa a ser "Além dos Prompts: Criando Agentes Autônomos com Inteligência Artificial", com descrição e tópicos (o SUAP já usa esse título, e as vagas só casam com ele).
+- Programação 2026: a confraternização sai (é interna). Em produção, a programação já carregada não muda sozinha: `python -m app.manutencao remover-atividade confraternizacao` tira a atividade (e das agendas), recusando se já houver presença, avaliação ou material.
+
+Revisão antes do evento (produção com servidor)
+- Vagas dos minicursos vindas do SUAP: a página de inscrição do ETAL 2026 já lista os 13 minicursos e todos casam com a programação (título com aspas retas no SUAP e curvas no app agora casa). Sem o número do SUAP, o app mostra só o total, sem dizer quantas restam.
+- Inscrição: o minicurso avisa que cada pessoa se inscreve em um só, como pede a página do SUAP.
+- Início antes do evento: "Em breve" e "Começa em N dias" no lugar de "Ao vivo" e da hora; sem a contagem de credenciados de exemplo; sem "Como chegar" em lugar ainda sem marcação no mapa; o sino não mostra zero.
+- Avisos: com servidor, só os da organização (os de exemplo de 2025 saíam no app e no painel), com estado vazio.
+- Painel: a Visão geral usa os participantes, credenciamentos e avisos reais; o cabeçalho diz quanto falta para o evento.
+- Painel da organização no app: com servidor, quem é da organização diz a API; números reais e só as ferramentas que falam com o servidor (QR Codes e moderação), o resto no painel completo.
+- Marca e links de 2026: logo do VIII ETAL, edição 2026 na linha do tempo, página do evento e inscrições do SUAP de 2026.
+
+ETAL 2026
+- Inscrições abertas no SUAP (evento 10301): os 13 minicursos da programação de 2026 ganham o botão Inscrever-se com o link do evento. O `docker-compose.yml` passa a apontar `ETAL_SUAP_INSCRICOES_URL` para 2026, valendo mais que o `.env` do servidor.
+
+Painel
+- Importar planilha na aba Programação: cola as linhas do Google Sheets ou escolhe um CSV, confere a prévia (novas, atualizadas e com erro) e grava tudo de uma vez (`POST /api/org/programacao`). O Exportar CSV sai nas mesmas colunas, para editar e importar de volta.
+
 ## 0.13.0 (2026-11-27)
 
 ETAL 2026

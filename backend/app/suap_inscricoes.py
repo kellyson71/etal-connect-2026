@@ -40,7 +40,7 @@ _cache: dict = {'em': 0.0, 'erro_em': 0.0, 'atividades': None, 'url': ''}
 
 def normalizar(texto: str) -> str:
     sem_acento = unicodedata.normalize('NFKD', texto or '').encode('ascii', 'ignore').decode()
-    return re.sub(r'[^a-z0-9 ]+', ' ', sem_acento.lower()).strip()
+    return ' '.join(re.sub(r'[^a-z0-9 ]+', ' ', sem_acento.lower()).split())  # aspas retas e curvas viram a mesma coisa
 
 
 def partes(nome: str) -> tuple[str, ...]:

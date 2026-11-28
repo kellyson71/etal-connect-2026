@@ -810,6 +810,220 @@ window.TOUR = {
   },
 };
 
+/* Competição de jogos digitais do ETAL 2026, resumida dos regulamentos da organização (pasta `regulamentos`). A vaga
+   é pedida num formulário próprio, à parte do SUAP, por quem já está inscrito no evento. Enquanto não há chave
+   publicada, a tela Campeonatos mostra a inscrição, os jogos e as regras daqui. dia: 3 ou 4 (dezembro), ou null
+   quando o regulamento não diz o dia da fase; foco: o ponto da arte que fica no recorte (capa em pé). */
+window.JOGOS = {
+  edicao: 2026,
+  formulario: 'https://docs.google.com/forms/d/e/1FAIpQLSfKQr_OtfQr6-2hNgA7OK0tOYAIZIYu0__-57aGoLb5kJizCw/viewform',
+  abre: '2026-11-27',
+  fecha: '2026-11-30',
+  regulamentos: 'https://drive.google.com/drive/folders/1BWTYCX_pRZR-p4L5skyRcsXJY8gPKtwb?usp=sharing',
+  maximo: 2,
+  inscricao: [
+    ['id', 'Inscrito no ETAL', 'O campeonato é para quem já fez a inscrição no evento, pelo SUAP.'],
+    ['file', 'Formulário dos jogos', 'Nome, matrícula, o apelido na chave, e-mail escolar e WhatsApp.'],
+    ['list', 'Até 3 opções, em ordem', 'A 3ª é reserva. Cada pessoa joga no máximo 2 jogos diferentes.'],
+    [
+      'users',
+      'Por ordem de inscrição',
+      'As vagas enchem na ordem de chegada. Se alguém desiste, entra o próximo da lista.',
+    ],
+    ['cal', 'Sorteio na véspera', 'Chaves e horários saem nas redes do evento no dia anterior às partidas.'],
+  ],
+  jogos: [
+    {
+      id: 'clash-royale',
+      nome: 'Clash Royale',
+      arte: 'assets/games/clashroyale.jpg',
+      vagas: 32,
+      modo: '1 × 1',
+      formato: 'Mata-mata',
+      dias: 'Qui e sex',
+      informar: 'Nome, matrícula e o apelido na chave. A conta precisa ter 32 cartas ou mais liberadas.',
+      fases: [
+        { dia: 3, nome: '16 avos, oitavas e quartas', txt: '32 jogadores em eliminação direta: quem perde sai.' },
+        { dia: 4, nome: 'Semifinais, final e 3º lugar', txt: 'Os 4 que passaram das quartas.' },
+      ],
+      destaques: [
+        'Cartas evoluídas são proibidas.',
+        'Vale o deck de duelo. Ele não muda durante o dia; só dá para trocar de um dia para o outro.',
+        'A conta precisa ter pelo menos 32 cartas liberadas.',
+      ],
+      regras: [
+        'Cada partida tem até 5 minutos: 3 de tempo normal e 2 de morte súbita.',
+        'Se nenhuma torre cair até o fim, vence quem deixou a torre do adversário com menos vida.',
+        '3 minutos de intervalo entre as partidas para ajustar o deck.',
+      ],
+    },
+    {
+      id: 'mortal-kombat',
+      nome: 'Mortal Kombat 1',
+      arte: 'assets/games/mk1.jpg',
+      vagas: 16,
+      modo: '1 × 1',
+      formato: 'Mata-mata',
+      dias: 'Qui e sex',
+      informar: 'Nome, matrícula, o apelido na chave e o personagem que você vai usar no campeonato.',
+      fases: [
+        { dia: 3, nome: 'Oitavas e quartas', txt: 'Melhor de 3 rounds: quem vence 2 avança.' },
+        {
+          dia: 4,
+          nome: 'Semifinais, final e 3º lugar',
+          txt: 'Melhor de 3 lutas, cada uma com até 3 rounds: quem vence 2 lutas avança.',
+        },
+      ],
+      destaques: [
+        'Fatality é proibido: quem fizer é desclassificado na hora.',
+        'O personagem é o do formulário, no campeonato inteiro. Não dá para trocar.',
+      ],
+      regras: [
+        'Até 3 minutos de luta por partida.',
+        '5 minutos de intervalo entre as partidas para a troca de jogadores e a escolha dos personagens.',
+      ],
+    },
+    {
+      id: 'fifa',
+      nome: 'FIFA',
+      arte: 'assets/games/fc26.jpg',
+      vagas: 16,
+      esgotado: true,
+      modo: '1 × 1',
+      formato: 'Mata-mata',
+      dias: 'Qui e sex',
+      informar: 'Nome, matrícula, o apelido na chave e o time (só clubes).',
+      fases: [
+        { dia: 3, nome: 'Oitavas e quartas', txt: 'Jogos de 2 tempos de 5 minutos.' },
+        { dia: 4, nome: 'Semifinais, final e 3º lugar', txt: 'Jogos de 2 tempos de 8 minutos.' },
+      ],
+      destaques: [
+        'Só clubes: seleções e times especiais não valem.',
+        'O time da inscrição vale para todas as partidas, sem troca.',
+        'Empate no mata-mata vai para os pênaltis.',
+      ],
+      regras: ['6 minutos de intervalo entre as partidas para a troca de jogadores e ajustes.'],
+    },
+    {
+      id: 'guitar-hero',
+      nome: 'Guitar Hero III',
+      arte: 'assets/games/guitarhero3.jpg',
+      foco: '50% 6%',
+      vagas: 16,
+      modo: '1 × 1',
+      formato: 'Mata-mata',
+      dias: 'Qui e sex',
+      informar: 'Nome, matrícula e o apelido na chave.',
+      fases: [
+        { dia: 3, nome: 'Oitavas', txt: 'Uma música do jogo, combinada entre monitores e jogadores, no medium.' },
+        { dia: 3, nome: 'Quartas', txt: 'Lay Down (Priestess), no medium.' },
+        { dia: 4, nome: 'Semifinais', txt: 'Cliffs of Dover (Eric Johnson), no hard.' },
+        { dia: 4, nome: 'Final', txt: 'Even Flow (Pearl Jam), no expert.' },
+        { dia: 4, nome: '3º lugar', txt: 'One (Metallica), no hard.' },
+      ],
+      destaques: [
+        'Não completou a música, está eliminado.',
+        'As músicas das quartas em diante já estão definidas: dá para treinar.',
+      ],
+      regras: [
+        'Os dois jogadores tocam a mesma música; a partida dura o tempo dela.',
+        'Empate: se a música não estiver no expert, a dificuldade sobe um nível; se já estiver, outra música no expert decide.',
+        'Se ninguém consegue tocar, a dificuldade pode baixar, mas não abaixo do medium nas oitavas, nas quartas e no 3º lugar. Na semifinal e na final, só com a decisão dos coordenadores.',
+        '5 minutos de intervalo entre as partidas.',
+      ],
+    },
+    {
+      id: 'mario-kart',
+      nome: 'Mario Kart 8 Deluxe',
+      arte: 'assets/games/mariokart8.jpg',
+      vagas: 16,
+      modo: '4 por corrida',
+      formato: 'Grupos e copa final',
+      dias: 'Um dia',
+      informar: 'Nome, matrícula e o apelido na chave.',
+      fases: [
+        {
+          dia: null,
+          nome: 'Fase de grupos',
+          txt: '4 grupos de 4. Cada grupo corre uma copa (4 pistas) e só o 1º em pontos passa.',
+        },
+        {
+          dia: null,
+          nome: 'Copa final',
+          txt: 'Os 4 vencedores correm mais uma copa. Quem somar mais pontos é campeão.',
+        },
+      ],
+      destaques: [
+        '150cc, com os itens no padrão da corrida.',
+        'Personagem, kart, rodas e planador são livres, mas só mudam entre uma copa e outra.',
+      ],
+      regras: [
+        'Pontuação padrão do jogo; em corrida de 4 jogadores, valem as posições de 1º a 4º.',
+        'Empate na copa: o próprio jogo decide.',
+        'As copas de cada grupo e da final saem junto com o sorteio.',
+        'Proibida qualquer manipulação externa (controle, conexão) que afete a disputa.',
+      ],
+    },
+    {
+      id: 'bomberman',
+      nome: 'Super Bomberman R',
+      arte: 'assets/games/bomberman.jpg',
+      vagas: 32,
+      modo: '8 por partida',
+      formato: 'Todos contra todos',
+      dias: 'Qui e sex',
+      informar: 'Nome, matrícula e o apelido na chave.',
+      fases: [
+        { dia: null, nome: 'Classificatória', txt: '4 partidas com 8 jogadores. Os 4 primeiros de cada uma passam.' },
+        { dia: null, nome: 'Semifinais', txt: '2 partidas com 8 jogadores. Os 4 primeiros de cada uma passam.' },
+        { dia: null, nome: 'Final', txt: 'Uma partida com os 8. Quem sobrar por último é o campeão.' },
+      ],
+      destaques: [
+        'Só com os Joy-Con da organização: controle próprio não entra.',
+        'Chamou, você tem 3 minutos para chegar. Depois disso, fica em último naquela partida.',
+        'Pausar a partida sem autorização pode desclassificar.',
+      ],
+      regras: [
+        'Modo Batalha Standard, todos contra todos, com rounds de 3 minutos.',
+        'Revenge Carts ligado: quem é eliminado ataca de fora da arena e, se derrubar alguém, volta para a partida.',
+        'Morte súbita ligada: quando o tempo acaba, blocos caem das bordas para o centro.',
+        'A colocação segue a ordem de eliminação. Quem cai junto desempata numa partida extra.',
+        'Personagem livre a cada partida; 2 minutos para conferir o controle antes da primeira.',
+      ],
+    },
+    {
+      id: 'smash',
+      nome: 'Super Smash Bros. Ultimate',
+      arte: 'assets/games/smash.jpg',
+      vagas: 8,
+      modo: 'Grupos e 1 × 1',
+      formato: 'Grupos e mata-mata',
+      dias: 'Qui e sex',
+      informar: 'Nome, matrícula e o apelido na chave.',
+      fases: [
+        {
+          dia: 3,
+          nome: 'Grupos A e B',
+          txt: '4 jogadores por grupo, numa batalha só. Os 2 melhores de cada grupo passam.',
+        },
+        { dia: 3, nome: 'Semifinais', txt: '1 × 1: 1º do A contra 2º do B, e 1º do B contra 2º do A.' },
+        { dia: 4, nome: 'Final e 3º lugar', txt: 'Quem venceu a semifinal disputa o título; quem perdeu, o 3º lugar.' },
+      ],
+      destaques: [
+        'Stock com 3 vidas e 7 minutos, sem itens e sem perigos de cenário.',
+        'Só com os controles da organização.',
+        'Chamou, você tem 3 minutos para chegar. Na fase final é W.O.; nos grupos, perde os pontos da partida.',
+      ],
+      regras: [
+        'Todos os personagens liberados; dá para trocar entre uma partida e outra.',
+        'Cenário no 1 × 1: o primeiro sai por veto entre Battlefield, Small Battlefield, Pokémon Stadium 2, Smashville e Town and City. Nos seguintes, quem venceu veta 2 e quem perdeu escolhe.',
+        'Acabou o tempo: vence quem tem mais vidas; empatou, quem tem menos dano. Se ainda empatar, uma partida de 1 vida e 3 minutos decide. A morte súbita do jogo não conta.',
+        'Proibido usar bug do jogo, receber orientação durante a partida e qualquer manipulação externa.',
+      ],
+    },
+  ],
+};
+
 /* Extras demonstrativos: vagas, perguntas, contatos e participação. */
 (() => {
   window.DATA.questions = {
@@ -1055,9 +1269,11 @@ window.DATA.etal = {
     ['2023', 'V ETAL', '29 de novembro a 1º de dezembro'],
     ['2024', 'VI ETAL', '27 a 29 de novembro'],
     ['2025', 'VII ETAL', '26 a 28 de novembro'],
+    ['2026', 'VIII ETAL', '3 e 4 de dezembro'],
   ],
   site: 'https://etal.nadic.com.br/',
-  portal: 'https://portal.ifrn.edu.br/eventos/8528/',
+  portal: 'https://portal.ifrn.edu.br/eventos/10301/',
+  inscricao: 'https://suap.ifrn.edu.br/eventos/inscricao/1/10301/',
   source: 'Fonte: eventos registrados no SUAP. A lista traz só as edições encontradas lá.',
 };
 window.DATA.ifrnUrl = 'https://portal.ifrn.edu.br/campus/paudosferros/';

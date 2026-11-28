@@ -270,7 +270,7 @@
     return out;
   })();
   const credOf = (p) => ORG.creds[p.id] || p.cred || null;
-  const credCount = () => PEOPLE.filter(credOf).length;
+  const credCount = () => pessoas().filter(credOf).length;
   /* Demonstração: agenda, presenças, saídas, avaliações e perfil simulados (sempre os mesmos), para os filtros, os
      números do público e o ranking das avaliações funcionarem sem servidor. */
   const SIM_LANGS = ['Python', 'JavaScript', 'Java', 'C', 'PHP', 'TypeScript', 'C#', 'Kotlin', 'SQL', 'GDScript'];
@@ -353,7 +353,7 @@
         areas: p.areas,
         open: p.open,
       }));
-      if (['participantes', 'dados'].includes(current())) render();
+      if (['participantes', 'dados', 'visao'].includes(current())) render();
     } catch (x) {
       toast(x.message);
     } finally {
@@ -531,6 +531,226 @@
     if (novo) toast('Endereço novo gerado; o anterior não funciona mais');
   }
 
+  /* Importar a programação de uma planilha: cola as linhas (com o cabeçalho) ou escolhe um CSV. O cabeçalho pode vir
+     com os nomes que a comissão já usa (Atividade, Horário, Ministrante…). A linha com o id de uma atividade, ou com o
+     mesmo título no mesmo dia, atualiza a que já existe; as outras viram atividades novas. */
+  const semAcento = (t) =>
+    String(t || '')
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '');
+  const COLUNAS = {
+    id: ['id', 'codigo'],
+    titulo: ['titulo', 'atividade', 'nome', 'tema', 'evento'],
+    curto: ['curto', 'nomecurto'],
+    tipo: ['tipo', 'categoria', 'formato', 'modalidade'],
+    data: ['data', 'dia'],
+    inicio: ['inicio', 'horario', 'hora', 'comeco', 'horainicio'],
+    fim: ['fim', 'termino', 'ate', 'final', 'horafim'],
+    sala: ['local', 'sala', 'lugar'],
+    palestrante: ['palestrante', 'quemconduz', 'ministrante', 'responsavel', 'convidado', 'instrutor', 'professor'],
+    papel: ['papel', 'cargo', 'instituicao'],
+    vagas: ['vagas', 'limite', 'limitedevagas'],
+    descricao: ['descricao', 'sobre', 'resumo', 'ementa'],
+    requisitos: ['requisitos', 'oquelevar', 'prerequisitos'],
+  };
+  function lerTabela(texto) {
+    const t = texto.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
+    const l1 = t.split('\n')[0];
+    const sep = l1.includes('\t') ? '\t' : (l1.match(/;/g) || []).length >= (l1.match(/,/g) || []).length ? ';' : ',';
+    const linhas = [];
+    let lin = [],
+      cel = '',
+      aspas = false;
+    for (let i = 0; i < t.length; i++) {
+      const c = t[i];
+      if (aspas) {
+        if (c === '"' && t[i + 1] === '"') ((cel += '"'), i++);
+        else if (c === '"') aspas = false;
+        else cel += c;
+      } else if (c === '"' && !cel) aspas = true;
+      else if (c === sep) (lin.push(cel), (cel = ''));
+      else if (c === '\n') (lin.push(cel), linhas.push(lin), (lin = []), (cel = ''));
+      else cel += c;
+    }
+    lin.push(cel);
+    linhas.push(lin);
+    return linhas.map((l) => l.map((c) => c.trim())).filter((l) => l.some(Boolean));
+  }
+  const hora = (v) => {
+    const m = String(v || '').match(/(\d{1,2})\s*(?:[:h]\s*(\d{2}))?/i);
+    return m && +m[1] < 24 ? `${m[1].padStart(2, '0')}:${m[2] || '00'}` : v || '';
+  };
+  function dataISO(v) {
+    const ano =
+      (D.sessions.find((s) => s.date)?.date || '').slice(0, 4) || String(D.event?.year || new Date().getFullYear());
+    const s = String(v || '').trim();
+    let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return m[0];
+    m = s.match(/(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/);
+    if (m)
+      return `${m[3] ? (m[3].length === 2 ? '20' + m[3] : m[3]) : ano}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
+    m = s.match(/\d{1,2}/); // "3", "Qui 3": dia do evento
+    const d = m && D.days.find((x) => x.day === +m[0]);
+    return d?.date || (m ? `${ano}-${(D.days[0]?.date || '').slice(5, 7) || '01'}-${m[0].padStart(2, '0')}` : s);
+  }
+  function linhasDaTabela(tab) {
+    const [cab, ...resto] = tab;
+    const campo = cab.map((c) => Object.keys(COLUNAS).find((k) => COLUNAS[k].includes(semAcento(c))) || null);
+    if (!campo.includes('titulo')) return { erro: 'Falta a coluna com o nome da atividade (Título ou Atividade).' };
+    const lugares = placesAll();
+    const linhas = resto.map((l) => {
+      const b = {};
+      campo.forEach((k, i) => {
+        if (k && !(k in b)) b[k] = l[i] || '';
+      });
+      /* "14:00–16:00" ou "14h às 16h" numa coluna só */
+      const faixa = !b.fim && (b.inicio || '').split(/\s*[-–—]\s*|\s+(?:às|as|a|até|ate)\s+/i);
+      if (faixa && faixa.length === 2 && faixa.every((x) => /\d/.test(x))) [b.inicio, b.fim] = faixa;
+      const o = { titulo: b.titulo, data: dataISO(b.data || state.day), inicio: hora(b.inicio), fim: hora(b.fim) };
+      const tipo =
+        b.tipo &&
+        [...new Set([...TIPOS_ATIV, ...D.sessions.map((s) => s.type)])].find((t) => semAcento(t) === semAcento(b.tipo));
+      o.tipo = tipo || (b.tipo ? b.tipo[0].toUpperCase() + b.tipo.slice(1) : 'Palestra');
+      if (b.id) o.id = b.id;
+      for (const k of ['curto', 'palestrante', 'papel', 'descricao', 'requisitos']) if (k in b) o[k] = b[k] || null;
+      if ('vagas' in b) o.vagas = parseInt(b.vagas, 10) || null;
+      if ('sala' in b) {
+        const r = b.sala && lugares.find((q) => semAcento(q.name) === semAcento(b.sala));
+        Object.assign(o, { sala: r ? r.name : b.sala || null, andar: r ? r.floor : null, zona: r ? r.zone : null });
+      }
+      return o;
+    });
+    return { linhas, colunas: cab.filter((_, i) => campo[i]), ignoradas: cab.filter((c, i) => c && !campo[i]) };
+  }
+  /* sem servidor, a prévia é feita aqui: mesmas regras do /api/org/programacao */
+  function previaLocal(linhas) {
+    return linhas.map((o, i) => {
+      if (!o.titulo || o.titulo.length < 2) return { linha: i + 1, erro: 'Falta o título.' };
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(o.data))
+        return { linha: i + 1, erro: 'Data que não deu para ler (use 03/12/2026).' };
+      if (!/^\d{2}:\d{2}$/.test(o.inicio) || !/^\d{2}:\d{2}$/.test(o.fim))
+        return { linha: i + 1, erro: 'Horário inválido (use 14:00).' };
+      if (o.inicio >= o.fim) return { linha: i + 1, erro: 'O fim precisa ser depois do início.' };
+      const x =
+        (o.id && D.sessions.find((s) => s.id === o.id)) ||
+        D.sessions.find((s) => s.date === o.data && semAcento(s.title) === semAcento(o.titulo));
+      return { linha: i + 1, acao: x ? 'atualiza' : 'nova', id: x?.id, titulo: o.titulo };
+    });
+  }
+  const IMP = { linhas: [], previa: [] };
+  function importarDialog() {
+    const dlg = $('#dlg');
+    dlg.className = 'largo';
+    dlg.innerHTML = `<form method="dialog" data-form="importar" class="importar"><h2>${ic('sheet')}Importar programação</h2>
+      <p>Na planilha, selecione as linhas <b>com o cabeçalho</b>, copie e cole aqui. Colunas que o painel entende: Título (ou Atividade), Tipo, Data, Início, Fim (ou Horário “14:00–16:00”), Local, Palestrante, Vagas, Descrição.</p>
+      <label class="fld">Linhas da planilha<textarea name="tabela" rows="6" placeholder="Título&#9;Data&#9;Início&#9;Fim&#9;Local&#10;Oficina de Arduino&#9;03/12&#9;14:00&#9;16:00&#9;Lab 56"></textarea></label>
+      <div class="imp-bts"><label class="btn soft sm">${ic('file')}Escolher CSV<input type="file" name="arquivo" accept=".csv,.tsv,.txt,text/csv" hidden></label>
+        <button class="btn ghost sm" type="button" data-act="csv" data-v="programacao">${ic('download')}Baixar a programação atual como modelo</button></div>
+      <div class="imp-previa" aria-live="polite"></div>
+      <div class="acts"><button class="btn soft" type="button" data-act="close">Cancelar</button><button class="btn primary" type="submit" disabled>${ic('check')}Importar</button></div></form>`;
+    dlg.showModal();
+    IMP.linhas = [];
+    IMP.previa = [];
+  }
+  let impVez = 0;
+  async function importarPrevia(f, texto) {
+    const box = f.querySelector('.imp-previa');
+    const ok = f.querySelector('[type=submit]');
+    ok.disabled = true;
+    const vez = ++impVez;
+    if (!texto.trim()) return void (box.innerHTML = '');
+    const r = linhasDaTabela(lerTabela(texto));
+    if (r.erro) return void (box.innerHTML = `<p class="sis-alerta">${esc(r.erro)}</p>`);
+    box.innerHTML = '<p>Conferindo…</p>';
+    let previa;
+    try {
+      previa = API ? (await API.post('/api/org/programacao?previa=true', r.linhas)).linhas : previaLocal(r.linhas);
+    } catch (x) {
+      if (vez === impVez) box.innerHTML = `<p class="sis-alerta">${esc(x.message)}</p>`;
+      return;
+    }
+    if (vez !== impVez) return;
+    IMP.linhas = r.linhas;
+    IMP.previa = previa;
+    const conta = (a) => previa.filter((p) => p.acao === a).length;
+    const erros = previa.filter((p) => p.erro).length;
+    const validas = previa.length - erros;
+    box.innerHTML = `<p class="imp-resumo"><b>${conta('nova')}</b> novas · <b>${conta('atualiza')}</b> atualizadas${erros ? ` · <b class="imp-erro">${erros} com erro</b> (ficam de fora)` : ''}${r.ignoradas.length ? `<br><small>Colunas ignoradas: ${esc(r.ignoradas.join(', '))}</small>` : ''}</p>
+      <div class="tbl-wrap"><table><thead><tr><th></th><th>Dia</th><th>Horário</th><th>Atividade</th><th>Local</th></tr></thead><tbody>${r.linhas
+        .map((o, i) => {
+          const p = previa[i] || {};
+          return `<tr class="${p.erro ? 'imp-ruim' : ''}"><td>${p.erro ? '<span class="pill full">Erro</span>' : p.acao === 'nova' ? '<span class="pill ok">Nova</span>' : '<span class="pill ifrn">Atualiza</span>'}</td>
+            <td class="num">${esc(o.data.split('-').reverse().slice(0, 2).join('/'))}</td><td class="num">${esc(o.inicio)}–${esc(o.fim)}</td>
+            <td class="title"><b>${esc(o.titulo || '—')}</b>${p.erro ? `<small class="imp-erro">${esc(p.erro)}</small>` : o.palestrante ? `<small>${esc(o.palestrante)}</small>` : ''}</td>
+            <td>${esc(o.sala || '')}${o.zona ? ' <small>no mapa</small>' : ''}</td></tr>`;
+        })
+        .join('')}</tbody></table></div>`;
+    ok.disabled = !validas;
+    ok.innerHTML = `${ic('check')}Importar ${validas} ${validas === 1 ? 'atividade' : 'atividades'}`;
+  }
+  async function importarConfirmar(f) {
+    const ok = f.querySelector('[type=submit]');
+    ok.disabled = true;
+    const boas = IMP.linhas.filter((_, i) => !IMP.previa[i]?.erro);
+    let lista;
+    if (API) {
+      try {
+        lista = (await API.post('/api/org/programacao', boas)).atividades;
+      } catch (x) {
+        ok.disabled = false;
+        toast(x.message);
+        return;
+      }
+    } else {
+      lista = boas.map((o) => {
+        const id =
+          (o.id && D.sessions.find((s) => s.id === o.id)?.id) ||
+          D.sessions.find((s) => s.date === o.data && semAcento(s.title) === semAcento(o.titulo))?.id;
+        const old = id && D.sessions.find((s) => s.id === id);
+        /* coluna que não veio na planilha fica como estava */
+        const antes = old
+          ? {
+              curto: old.short,
+              sala: old.room,
+              andar: old.floor,
+              zona: old.zone,
+              palestrante: old.speaker,
+              papel: old.role,
+              descricao: old.description,
+              requisitos: old.requirements,
+              vagas: old.seats,
+            }
+          : {};
+        const materiais = (old?.materials || []).map((m) => ({
+          tipo: m.kind,
+          nome: m.name,
+          url: m.url,
+          detalhe: m.meta,
+        }));
+        const a = activityLocal({ ...antes, ...o, dia: +o.data.slice(8), materiais }, id);
+        ORG.atividades = { ...(ORG.atividades || {}), [a.id]: a };
+        /* as próximas linhas já enxergam esta (o mesmo título em dois dias, por exemplo) */
+        if (old) D.sessions.splice(D.sessions.indexOf(old), 1, { ...old, ...a });
+        else D.sessions.push(a);
+        return a;
+      });
+      save();
+    }
+    for (const x of lista) {
+      const i = D.sessions.findIndex((s) => s.id === x.id);
+      if (i >= 0) D.sessions[i] = { ...D.sessions[i], ...x };
+      else D.sessions.push(x);
+    }
+    if (API && !window.ETAL_CONFIG?.demo) API.calendario(D, D.sessions);
+    const novas = IMP.previa.filter((p) => p.acao === 'nova').length;
+    $('#dlg').close();
+    if (lista[0] && D.days.some((d) => d.day === lista[0].day)) state.day = lista[0].day;
+    render();
+    toast(`${novas} ${novas === 1 ? 'atividade nova' : 'atividades novas'}, ${lista.length - novas} atualizadas`);
+  }
+
   /* ---------- navegação ---------- */
   const SECTIONS = [
     ['visao', 'Visão geral', 'home'],
@@ -638,9 +858,15 @@
       );
     });
   }
+  /* antes do evento, quanto falta; depois, encerrado; durante, o dia e a hora */
   const relogio = () => {
-    $('#clock').textContent =
-      `${dayOf(D.now.day)?.week || ''} ${D.now.day} ${dayOf(D.now.day)?.mes || 'nov'} · ${D.now.time}`;
+    const dia = `${dayOf(D.now.day)?.week || ''} ${D.now.day} ${dayOf(D.now.day)?.mes || 'nov'}`;
+    let txt = `${dia} · ${D.now.time}`;
+    if (D.now.fixo === '00:00' && D.days[0]?.date) {
+      const n = Math.round((new Date(`${D.days[0].date}T00:00`) - new Date(new Date().toDateString())) / 864e5);
+      txt = `${n <= 1 ? 'Começa amanhã' : `Começa em ${n} dias`} · ${dia}`;
+    } else if (D.now.fixo) txt = 'Evento encerrado';
+    $('#clock').textContent = txt;
   };
   relogio();
 
@@ -670,7 +896,16 @@
 
   /* Credenciamentos por hora: os simulados mais os feitos neste painel. */
   function hourRows() {
-    const rows = D.org.porHora.map(([h, v]) => [h, v]);
+    /* com servidor, só os credenciamentos de verdade; sem ele, a curva de exemplo */
+    const rows = API ? [] : D.org.porHora.map(([h, v]) => [h, v]);
+    if (API)
+      pessoas().forEach((p) => {
+        if (!p.cred) return;
+        const h = +p.cred.split(':')[0];
+        const r = rows.find((q) => q[0] === h);
+        if (r) r[1] += 1;
+        else rows.push([h, 1]);
+      });
     Object.values(ORG.creds).forEach((t) => {
       const h = +t.split(':')[0];
       const r = rows.find((q) => q[0] === h);
@@ -681,6 +916,8 @@
   }
   /* Barras verticais, uma série: credenciamento por hora. Valor só no pico; o resto vem na dica. */
   function hourChart(rows) {
+    if (!rows.length)
+      return '<p class="empty">Ninguém credenciado ainda. O gráfico aparece com os primeiros credenciamentos.</p>';
     const W = 560,
       H = 230,
       L = 34,
@@ -710,7 +947,9 @@
   }
   /* Composição em duas categorias: IFRN e visitantes, com rótulo direto em cada parte. */
   function originRows() {
+    if (!pessoas().length) return '<p class="empty">Ainda sem participantes no app.</p>';
     const row = (label, list) => {
+      if (!list.length) return `<div class="stack-row"><span>${label}</span><small>nenhum ainda</small></div>`;
       const a = list.filter((p) => p.ifrn).length,
         b = list.length - a;
       const pa = Math.round((a / list.length) * 100);
@@ -719,17 +958,20 @@
         <div style="flex:${b};background:var(--s-vis)" data-tip="${label} visitantes: ${b} (${100 - pa}%)" tabindex="0">${b}</div></div></div>`;
     };
     return `<ul class="legend"><li><i style="background:var(--s-ifrn)"></i>IFRN</li><li><i style="background:var(--s-vis)"></i>Visitantes</li></ul>
-      ${row('Inscritos', PEOPLE)}${row('Credenciados', PEOPLE.filter(credOf))}`;
+      ${row(API ? 'No app' : 'Inscritos', pessoas())}${row('Credenciados', pessoas().filter(credOf))}`;
   }
   function cityBars() {
     const n = {};
-    PEOPLE.filter((p) => !p.ifrn).forEach((p) => {
-      n[p.city] = (n[p.city] || 0) + 1;
-    });
+    pessoas()
+      .filter((p) => !p.ifrn && p.city)
+      .forEach((p) => {
+        n[p.city] = (n[p.city] || 0) + 1;
+      });
     const list = Object.entries(n)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 6);
     const max = list[0]?.[1] || 1;
+    if (!list.length) return '<p class="empty">Nenhum visitante ainda.</p>';
     return `<ul class="hbars">${list.map(([c, v]) => `<li data-tip="${c}: ${v} visitantes"><span>${esc(c)}</span><span class="track"><i style="width:${(v / max) * 100}%"></i></span><b>${v}</b></li>`).join('')}</ul>`;
   }
   const meter = (x) => {
@@ -870,12 +1112,14 @@
       return window.COMMUNITY.moderationHTML(socialV, socialModFilter);
     },
     visao() {
+      if (API && !REAIS) pessoasCarregar();
       const now = D.sessions.filter((x) => isNow(x) && x.seats);
       const inRooms = now.reduce((n, x) => n + present(x), 0);
       const cred = credCount();
-      const vis = PEOPLE.filter((p) => !p.ifrn).length;
+      const todos = pessoas().length;
+      const vis = pessoas().filter((p) => !p.ifrn).length;
       return `<div class="grid g-kpi">
-          <section class="card kpi"><b>${cred}</b><span>credenciados de ${PEOPLE.length}</span><span class="bar"><i style="width:${(cred / PEOPLE.length) * 100}%"></i></span></section>
+          <section class="card kpi"><b>${cred}</b><span>credenciados de ${todos}${API ? ' no app' : ''}</span><span class="bar"><i style="width:${todos ? (cred / todos) * 100 : 0}%"></i></span></section>
           <section class="card kpi"><b>${inRooms}</b><span>em sala agora</span></section>
           <section class="card kpi"><b>${vis}</b><span>visitantes</span></section>
           <section class="card kpi"><b>${ORG.notices.length}</b><span>avisos enviados</span></section>
@@ -956,7 +1200,7 @@
     programacao() {
       const list = D.sessions.filter((x) => x.day === state.day).sort((a, b) => a.time.localeCompare(b.time));
       return `<section class="card"><div class="toolbar"><div class="seg" role="group" aria-label="Dia">${D.days.map((d) => `<button type="button" data-act="day" data-v="${d.day}" aria-pressed="${d.day === state.day}">${d.week} ${d.day}</button>`).join('')}</div>
-        <span class="count">${list.length} atividades</span><button class="btn soft sm" data-act="csv" data-v="programacao" type="button">${ic('download')}Exportar CSV</button><button class="btn primary sm" data-act="ativ" type="button">${ic('plus')}Nova atividade</button></div>
+        <span class="count">${list.length} atividades</span><button class="btn soft sm" data-act="csv" data-v="programacao" type="button">${ic('download')}Exportar CSV</button><button class="btn soft sm" data-act="importar" type="button">${ic('sheet')}Importar planilha</button><button class="btn primary sm" data-act="ativ" type="button">${ic('plus')}Nova atividade</button></div>
         <div class="tbl-wrap"><table><thead><tr><th>Horário</th><th>Atividade</th><th>Tipo</th><th>Local</th><th>Inscritos</th><th>Situação</th><th></th></tr></thead><tbody>
         ${list
           .map(
@@ -1181,7 +1425,9 @@
       .join('')}</tbody></table></div>`;
   }
   function feed(limit) {
-    const list = [...ORG.notices.map((n) => ({ ...n, org: true })), ...D.notices].slice(0, limit || 99);
+    /* com servidor, só os avisos enviados (os de D.notices são do exemplo de 2025) */
+    const list = [...ORG.notices.map((n) => ({ ...n, org: true })), ...(API ? [] : D.notices)].slice(0, limit || 99);
+    if (!list.length) return '<p class="empty">Nenhum aviso enviado ainda.</p>';
     return `<ul class="feed">${list.map((n) => `<li class="${n.org ? 'org' : ''}"><time>${n.time}</time><span><b>${esc(n.title)}</b><small>${esc(n.text)}${n.to ? ` · para ${esc(n.to)}` : ''}</small></span></li>`).join('')}</ul>`;
   }
 
@@ -1411,18 +1657,35 @@
     const rows =
       kind === 'programacao'
         ? [
-            ['dia', 'inicio', 'fim', 'atividade', 'tipo', 'local', 'inscritos', 'vagas', 'exemplo'],
-            ...D.sessions.map((x) => [
-              x.day,
-              x.time,
-              x.end,
-              x.title,
-              x.type,
-              where(x),
-              x.taken || '',
-              x.seats || '',
-              x.demo ? 'sim' : 'não',
-            ]),
+            /* as mesmas colunas que o Importar planilha lê: exportar, editar e importar de volta */
+            [
+              'id',
+              'data',
+              'inicio',
+              'fim',
+              'titulo',
+              'tipo',
+              'local',
+              'palestrante',
+              'vagas',
+              'descricao',
+              'inscritos',
+            ],
+            ...[...D.sessions]
+              .sort((a, b) => (a.date || '').localeCompare(b.date || '') || a.time.localeCompare(b.time))
+              .map((x) => [
+                x.id,
+                x.date ? x.date.split('-').reverse().join('/') : x.day,
+                x.time,
+                x.end,
+                x.title,
+                x.type,
+                x.room || '',
+                x.speaker || '',
+                x.seats || '',
+                x.description || '',
+                x.taken || '',
+              ]),
           ]
         : [
             [
@@ -1540,6 +1803,7 @@
       render();
     }
     if (a === 'planilha') planilhaDialog();
+    if (a === 'importar') importarDialog();
     if (a === 'planilhanovo') planilhaDialog(true);
     if (a === 'copiar') {
       const inp = el.closest('form').querySelector('[data-copiar]');
@@ -1688,6 +1952,11 @@
       const to = D.sessions.find((x) => x.id === d.get('to'));
       sendNotice(d.get('title').trim(), d.get('text').trim(), to ? `inscritos em ${to.short}` : '', to ? to.id : null);
     }
+    if (f.dataset.form === 'importar') {
+      e.preventDefault();
+      importarConfirmar(f);
+      return;
+    }
     if (f.dataset.form === 'ativ') {
       e.preventDefault();
       const id = f.dataset.id;
@@ -1802,7 +2071,22 @@
     const nome = row.querySelector('[name=mname]');
     if (!nome.value.trim()) nome.value = f.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ');
   });
-  document.addEventListener('input', (e) => {});
+  /* Importar programação: confere a cada colagem ou digitação (com uma pausa curta) e ao escolher o arquivo. */
+  let impPausa;
+  document.addEventListener('input', (e) => {
+    const f = e.target.closest('form[data-form=importar]');
+    if (!f || e.target.name !== 'tabela') return;
+    clearTimeout(impPausa);
+    impPausa = setTimeout(() => importarPrevia(f, e.target.value), 350);
+  });
+  document.addEventListener('change', (e) => {
+    const f = e.target.closest('form[data-form=importar]');
+    if (!f || e.target.name !== 'arquivo' || !e.target.files[0]) return;
+    e.target.files[0].text().then((t) => {
+      f.tabela.value = t;
+      importarPrevia(f, t);
+    });
+  });
   /* Número de sala: salva ao sair do campo ou com Enter. */
   /* Jogador do campeonato: salva ao sair do campo. Apelido vazio tira a pessoa da chave. */
   document.addEventListener('change', (e) => {
